@@ -1,5 +1,5 @@
 # ~/~ begin <<docs/src/stencils.md#src/examples/eca.jl>>[init]
-using MindTheGap.Stencil
+using CarboKitten.Stencil
 using GnuplotLite
 
 rule(i::Int) = function (x::AbstractVector{T}) where T <: Integer

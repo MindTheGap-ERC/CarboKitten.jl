@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/carbocat-transport.md#src/Burgess2013/Transport.jl>>[init]
 module Transport
 
-using MindTheGap.Stencil
+using ...Stencil
 using Transducers
 
 struct Product

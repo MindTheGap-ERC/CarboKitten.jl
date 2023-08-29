@@ -106,7 +106,7 @@ end
 An Elementary Cellular Automata is a one-dimensional CA with two states. Every next generation depends on the direct neighbourhood of three cells. Since there are $2^3 = 8$ patterns and two outcomes for every pattern, there are $2^8 = 256$ possible ECA.
 
 ``` {.julia file=src/examples/eca.jl}
-using MindTheGap.Stencil
+using CarboKitten.Stencil
 using GnuplotLite
 
 rule(i::Int) = function (x::AbstractVector{T}) where T <: Integer
@@ -192,7 +192,7 @@ end
 ```
 
 ``` {.julia file=src/examples/game-of-life.jl}
-using MindTheGap.Stencil
+using CarboKitten.Stencil
 using GnuplotLite
 
 function game_of_life(w, h)
@@ -258,7 +258,7 @@ Notice, that for the periodic boundaries, the bottom left and top right are neig
 <details><summary>Source code for plotting boundary types</summary>
 
 ``` {.julia file=src/examples/convolution.jl}
-using MindTheGap.Stencil
+using CarboKitten.Stencil
 using GnuplotLite
 
 function plot_boundary_types(output::String)

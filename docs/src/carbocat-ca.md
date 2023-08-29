@@ -39,7 +39,7 @@ The paper talks about a 50x50 grid initialized with uniform random values.
 ``` {.julia file=src/Burgess2013/CA.jl}
 module CA
 
-using MindTheGap.Stencil
+using ...Stencil
 
 <<cycle-permutation>>
 <<burgess2013-rules>>
@@ -62,11 +62,11 @@ end
 
 First, let us reproduce Figure 3 in Burgess 2013.
 
-![First 8 generations](fig/burgess2013-fig3.svg)
+![First 8 generations](burgess-fig3.svg)
 
 By eye comparison seems to indicate that this CA is working the same. I'm curious to the behaviour after more iterations. Let's try 10, 100, 1000 and so on.
 
-![Assymptotic behaviour](fig/burgess2013-long-times.svg)
+![Assymptotic behaviour](burgess-long.svg)
 
 The little qualitative change between 100 and 1000 iterations would indicate that this CA remains "interesting" for a long time.
 
@@ -74,10 +74,11 @@ On my laptop I can run about 150 iterations per second with current code. When u
 
 <details><summary>Plotting code</summary>
 
-``` {.julia file=src/figures/ca.jl}
-using MindTheGap.Burgess2013.CA
-using MindTheGap.Stencil: Reflected
-using MindTheGap.Utility
+```@example
+using CarboKitten
+using CarboKitten.Burgess2013.CA
+using CarboKitten.Stencil: Reflected
+using CarboKitten.Utility
 using GnuplotLite
 
 function plot_array(w::Int, h::Int, msgs; xtics="set xtics", ytics="set ytics")
@@ -142,6 +143,8 @@ function plot(output::String)
     end
 end
 
+plot("burgess-fig3.svg")
+
 function plot_long_times(output::String)
     init = rand(0:3, 50, 50)
     result = select(CA.run(Reflected{2}, init, 3), [10, 100, 1000])
@@ -161,30 +164,8 @@ function plot_long_times(output::String)
                        ytics="set ytics 10, 10, 50")
     end
 end
-```
 
-``` {.make file=figures.mk}
-.RECIPEPREFIX = >
-.PHONY: all _all
-
-fig := docs/fig
-
-all: _all
-
-<<build>>
-
-_all: $(targets)
-```
-
-``` {.make #build}
-targets += $(fig)/burgess2013-fig3.svg
-targets += $(fig)/burgess2013-long-times.svg
-
-docs/fig/burgess2013-fig3.svg: src/figures/ca.jl
-> julia --project=. -e 'include("$<"); plot("$@")'
-
-docs/fig/burgess2013-long-times.svg: src/figures/ca.jl
-> julia --project=. -e 'include("$<"); plot_long_times("$@")'
+plot_long_times("burgess-long.svg")
 ```
 
 </details>

@@ -22,7 +22,7 @@ Base.zero(::Type{Deposit{N}}) where {N} =
 ``` {.julia file=src/Burgess2013/Transport.jl}
 module Transport
 
-using MindTheGap.Stencil
+using ...Stencil
 using Transducers
 
 struct Product

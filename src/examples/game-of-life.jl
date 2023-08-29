@@ -1,5 +1,5 @@
 # ~/~ begin <<docs/src/stencils.md#src/examples/game-of-life.jl>>[init]
-using MindTheGap.Stencil
+using CarboKitten.Stencil
 using GnuplotLite
 
 function game_of_life(w, h)

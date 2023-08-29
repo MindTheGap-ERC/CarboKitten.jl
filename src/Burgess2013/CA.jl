@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/carbocat-ca.md#src/Burgess2013/CA.jl>>[init]
 module CA
 
-using MindTheGap.Stencil
+using ...Stencil
 
 # ~/~ begin <<docs/src/carbocat-ca.md#cycle-permutation>>[init]
 cycle_permutation(n_species::Int) =

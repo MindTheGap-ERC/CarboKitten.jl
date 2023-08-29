@@ -1,5 +1,5 @@
 # ~/~ begin <<docs/src/stencils.md#src/examples/convolution.jl>>[init]
-using MindTheGap.Stencil
+using CarboKitten.Stencil
 using GnuplotLite
 
 function plot_boundary_types(output::String)

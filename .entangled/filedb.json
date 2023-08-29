@@ -133,7 +133,7 @@
     {
       "path": "docs/src/carbocat-ca.md",
       "deps": null,
-      "modified": "2023-08-29T15:30:40.372227",
+      "modified": "2023-08-29T15:32:44.042149",
       "hexdigest": "bfb4add8c5c739fb3931217a1577383d149f59dd3640fa170940c8718697ff7e"
     },
     {
@@ -151,8 +151,8 @@
     {
       "path": "docs/src/carbocat.md",
       "deps": null,
-      "modified": "2023-08-02T15:14:31.558685",
-      "hexdigest": "d6a7b574164430525d4d1b0bc7c70dedc9f05ca70fea323f7a7cd61fbefef35f"
+      "modified": "2023-08-29T15:53:12.470753",
+      "hexdigest": "033c6a5685fe26a62e34411dad3008b338668f5dd76bbf116609fb0e6275b2a2"
     },
     {
       "path": "docs/src/stencils.md",

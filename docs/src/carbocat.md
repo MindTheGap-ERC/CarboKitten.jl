@@ -1,9 +1,3 @@
----
-title: CarboKitten
-subtitle: CarboCAT in Julia
-bibliography: [docs/ref.bib]
----
-
 # About
 CarboCAT is primarily based on a very simple cellular automaton (CA). We may explore this CA as a first step in implementing the model in Julia.
 

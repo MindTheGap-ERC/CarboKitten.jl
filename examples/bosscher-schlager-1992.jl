@@ -1,5 +1,5 @@
-# ~/~ begin <<docs/src/bosscher-1992.md#src/BS92/fig8.jl>>[init]
-using MindTheGap.BS92
+# ~/~ begin <<docs/src/bosscher-1992.md#examples/bosscher-schlager-1992.jl>>[init]
+using CarboKitten.BS92
 using Plots
 
 function main()
@@ -27,6 +27,9 @@ function main()
           subplot=2,
           framestyle=:box)
 
-     savefig("docs/fig/bs92-fig8.html")
+     mkpath("docs/src/fig")
+     savefig("docs/src/fig/bs92-fig8.html")
 end
+
+main()
 # ~/~ end

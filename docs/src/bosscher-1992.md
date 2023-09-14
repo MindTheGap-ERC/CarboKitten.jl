@@ -181,8 +181,8 @@ Note the simplicity of this result: there is no dependency on space, only on the
 :::details
 ### Plotting code
 
-``` {.julia file=src/BS92/fig8.jl}
-using MindTheGap.BS92
+``` {.julia file=examples/bosscher-schlager-1992.jl}
+using CarboKitten.BS92
 using Plots
 
 function main()
@@ -210,8 +210,11 @@ function main()
           subplot=2,
           framestyle=:box)
 
-     savefig("docs/fig/bs92-fig8.html")
+     mkpath("docs/src/fig")
+     savefig("docs/src/fig/bs92-fig8.html")
 end
+
+main()
 ```
 :::
 

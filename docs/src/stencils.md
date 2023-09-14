@@ -86,7 +86,9 @@ More efficient implementations are imaginable. For instance we could use normal 
 
 We will now test this function first on an Elementary CA (ECA), Conway's Game of Life, and a convolution.
 
+```@raw html
 <details><summary>Stencil module</summary>
+```
 
 ``` {.julia file=src/Stencil.jl}
 module Stencil
@@ -100,7 +102,9 @@ export Boundary, Reflected, Periodic, Constant, stencil, convolution, offset_ind
 end
 ```
 
+```@raw html
 </details>
+```
 
 ## Elementary Cellular Automata
 An Elementary Cellular Automata is a one-dimensional CA with two states. Every next generation depends on the direct neighbourhood of three cells. Since there are $2^3 = 8$ patterns and two outcomes for every pattern, there are $2^8 = 256$ possible ECA.
@@ -144,7 +148,13 @@ end
 
 Even these one-dimensional CA show highly complex behaviour. For instance, it has been shown that rule 110 is Turing complete.
 
+```@raw html
 <details><summary>Plotting code</summary>
+```
+
+```@example
+
+```
 
 ``` {.julia #eca-plot}
 function plot_eca(output::String, r::Int, n::Int, iter::Int)
@@ -179,7 +189,9 @@ $(fig)/rule%.svg: src/examples/eca.jl
 > julia --project=. -e 'include("./src/examples/eca.jl"); plot_eca("$@", $(*F), 256, 100)'
 ```
 
+```@raw html
 </details>
+```
 
 ## Game of Life
 Perhaps the most famous CA is Conway's Game of Life. This is a two-dimensional two-state (dead/alive) CA, with the following rules: a cell is alive in the next generation if it is alive and has two neighbours or if it has three neighbours; in all other cases the cell is dead.

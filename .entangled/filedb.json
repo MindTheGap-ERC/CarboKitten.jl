@@ -109,14 +109,6 @@
       "hexdigest": "a81f054500d4019090524dfb979f063f4e5fb53bfd6733cf1e42096f64a2034c"
     },
     {
-      "path": "src/BS92/fig8.jl",
-      "deps": [
-        "docs/src/bosscher-1992.md"
-      ],
-      "modified": "2023-08-29T13:12:36.901671",
-      "hexdigest": "8e0732b4f376d44db30149f1cca2f7cf887bdb5f7f195fde81bf6e0da9c845f0"
-    },
-    {
       "path": "src/Burgess2013/Transport.jl",
       "deps": [
         "docs/src/carbocat-transport.md"
@@ -127,8 +119,8 @@
     {
       "path": "docs/src/bosscher-1992.md",
       "deps": null,
-      "modified": "2023-08-02T15:02:49.796313",
-      "hexdigest": "1b20da6f1e11cc9e4600ad00116bdfe767e9aee867526bb21c052abf73bbf7c4"
+      "modified": "2023-09-14T11:16:21.454131",
+      "hexdigest": "1d99ef509ad40c6b6a8a7dd21507854cd36190f9b30d6c715929642699f1f340"
     },
     {
       "path": "docs/src/carbocat-ca.md",
@@ -157,8 +149,8 @@
     {
       "path": "docs/src/stencils.md",
       "deps": null,
-      "modified": "2023-08-29T15:11:51.009827",
-      "hexdigest": "1a3332fbc3682fe66f6d82b41cb2a901be8673d8f241a4201cbf18a7617dc216"
+      "modified": "2023-08-30T10:45:42.561400",
+      "hexdigest": "9ff29e6db47d45164086aff875e472662a6ca7b427264d58b9a31cfae558eab6"
     },
     {
       "path": "docs/src/utility.md",
@@ -171,24 +163,47 @@
       "deps": null,
       "modified": "2023-08-29T15:06:53.972437",
       "hexdigest": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "docs/src/bs92-w-erosion.md",
+      "deps": null,
+      "modified": "2023-08-30T16:10:02.606945",
+      "hexdigest": "f3d10e7fc6b83a594449dc00bfb41061b41531c94d6219d757df697f78f3d426"
+    },
+    {
+      "path": "src/Erosion.jl",
+      "deps": [
+        "docs/src/bs92-w-erosion.md"
+      ],
+      "modified": "2023-08-30T16:10:02.587945",
+      "hexdigest": "7a49c1fb19be436425941b9ec94ee2e5b316faa7a7b71bd301d77ffdfc3dcde8"
+    },
+    {
+      "path": "examples/bosscher-schlager-1992.jl",
+      "deps": [
+        "docs/src/bosscher-1992.md"
+      ],
+      "modified": "2023-09-14T11:16:21.467131",
+      "hexdigest": "8ee1cafbbc9cc83699031014346d5492934e402048701e9f8b6e7754f31653cb"
     }
   ],
   "source": [],
   "target": [
-    "src/figures/plot-tanh.gnuplot",
-    "src/Burgess2013/Transport.jl",
-    "src/Burgess2013.jl",
-    "src/BS92/fig8.jl",
-    "src/examples/convolution.jl",
-    "src/BS92.jl",
-    "src/Stencil.jl",
-    "src/examples/eca.jl",
-    "src/Utility.jl",
     "src/Burgess2013/Config.jl",
-    "src/Burgess2013/CA.jl",
-    "src/examples/game-of-life.jl",
+    "src/Erosion.jl",
+    "src/Burgess2013.jl",
+    "src/BS92.jl",
     "src/BS92/fig8-sealevel.jl",
+    "src/Burgess2013/Production.jl",
+    "src/figures/plot-tanh.gnuplot",
+    "src/examples/game-of-life.jl",
     "src/figures/burgess2013-fig2.gnuplot",
-    "src/Burgess2013/Production.jl"
+    "src/Burgess2013/CA.jl",
+    "src/examples/convolution.jl",
+    "src/examples/eca.jl",
+    "src/Stencil.jl",
+    "examples/bosscher-schlager-1992.jl",
+    "src/Burgess2013/Transport.jl",
+    "src/Utility.jl"
   ]
 }

@@ -12,6 +12,14 @@ pkg> instantiate
 
 more documentation to appear soon.
 
+### Examples
+
+You'll get the best experience by running examples from the Julia REPL. There are however also some example scripts, that should work stand-alone.
+
+```shell
+julia --project=. examples/bosscher-schlager-1992.jl
+```
+
 ## License
 
 Copyright University of Utrecht and Netherlands eScience Center 2023. This repository is licensed under the Apache v2 license, see LICENSE.

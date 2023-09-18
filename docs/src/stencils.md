@@ -113,8 +113,8 @@ An Elementary Cellular Automata is a one-dimensional CA with two states. Every n
 using CarboKitten.Stencil
 using GnuplotLite
 
-rule(i::Int) = function (x::AbstractVector{T}) where T <: Integer
-    d = x[1]*4 + x[2]*2 + x[3]
+rule(i::Int) = function (foo::AbstractVector{T}) where T <: Integer
+    d = foo[1]*4 + foo[2]*2 + foo[3]
     i & (1 << d) == 0 ? 0 : 1
 end
 

@@ -20,6 +20,20 @@ You'll get the best experience by running examples from the Julia REPL. There ar
 julia --project=. examples/bosscher-schlager-1992.jl
 ```
 
+However, it is more efficient to run them from the REPL. Either run,
+
+```shell
+julia --project=.
+```
+
+or start the REPL from VS Code. In the REPL you can run
+
+```julia
+include("examples/bosscher-sclager-1992.jl")
+```
+
+After that, you may edit an example and rerun.
+
 ## License
 
 Copyright University of Utrecht and Netherlands eScience Center 2023. This repository is licensed under the Apache v2 license, see LICENSE.

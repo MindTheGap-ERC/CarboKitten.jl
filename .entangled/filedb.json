@@ -89,8 +89,8 @@
       "deps": [
         "docs/src/stencils.md"
       ],
-      "modified": "2023-08-29T15:11:42.544759",
-      "hexdigest": "fea5e14c897f8369501362bbb8e90bc2bd6e9e113e1ecfd17ee9a4b9f6136f46"
+      "modified": "2023-09-18T12:06:28.502239",
+      "hexdigest": "dc95e7134c3653136f6122f2c6c14b29dc38d22865fd7c5ce618b37fbf5f1cfc"
     },
     {
       "path": "src/figures/plot-tanh.gnuplot",
@@ -125,8 +125,8 @@
     {
       "path": "docs/src/carbocat-ca.md",
       "deps": null,
-      "modified": "2023-08-29T15:32:44.042149",
-      "hexdigest": "bfb4add8c5c739fb3931217a1577383d149f59dd3640fa170940c8718697ff7e"
+      "modified": "2023-09-18T13:49:08.806617",
+      "hexdigest": "97c0dc835ad97687b8bb518f735536d06cf631cf29828c7c1eb5534af226b215"
     },
     {
       "path": "docs/src/carbocat-cpt.md",
@@ -149,8 +149,8 @@
     {
       "path": "docs/src/stencils.md",
       "deps": null,
-      "modified": "2023-08-30T10:45:42.561400",
-      "hexdigest": "9ff29e6db47d45164086aff875e472662a6ca7b427264d58b9a31cfae558eab6"
+      "modified": "2023-09-18T12:06:28.532240",
+      "hexdigest": "2d808f8be9a20287b8a0046c192098184f04b2fbf1f7d1f2d7b0dab565328d3d"
     },
     {
       "path": "docs/src/utility.md",
@@ -185,25 +185,34 @@
       ],
       "modified": "2023-09-14T11:16:21.467131",
       "hexdigest": "8ee1cafbbc9cc83699031014346d5492934e402048701e9f8b6e7754f31653cb"
+    },
+    {
+      "path": "examples/burgess-2013-ca.jl",
+      "deps": [
+        "docs/src/carbocat-ca.md"
+      ],
+      "modified": "2023-09-18T13:49:08.788617",
+      "hexdigest": "8db8b8432753257c0ce90cff4fad9614aed1952031216c4dd1c41da88f2e5d73"
     }
   ],
   "source": [],
   "target": [
+    "src/examples/eca.jl",
     "src/Burgess2013/Config.jl",
     "src/Erosion.jl",
-    "src/Burgess2013.jl",
     "src/BS92.jl",
     "src/BS92/fig8-sealevel.jl",
-    "src/Burgess2013/Production.jl",
-    "src/figures/plot-tanh.gnuplot",
-    "src/examples/game-of-life.jl",
-    "src/figures/burgess2013-fig2.gnuplot",
-    "src/Burgess2013/CA.jl",
+    "src/Utility.jl",
     "src/examples/convolution.jl",
-    "src/examples/eca.jl",
-    "src/Stencil.jl",
-    "examples/bosscher-schlager-1992.jl",
+    "src/figures/burgess2013-fig2.gnuplot",
     "src/Burgess2013/Transport.jl",
-    "src/Utility.jl"
+    "src/figures/plot-tanh.gnuplot",
+    "src/Burgess2013.jl",
+    "examples/bosscher-schlager-1992.jl",
+    "src/Stencil.jl",
+    "src/Burgess2013/CA.jl",
+    "src/Burgess2013/Production.jl",
+    "examples/burgess-2013-ca.jl",
+    "src/examples/game-of-life.jl"
   ]
 }

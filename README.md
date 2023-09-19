@@ -4,13 +4,18 @@
 
 ## Running
 
-Start the Julia REPL, and get into Pkg mode by pressing `]`.
+Start the Julia REPL, and get into Pkg mode by pressing `]`. You may activate the package environment using `activate .` and then install the dependencies using `instantiate`. These steps only need to be run once.
 
 ```julia
+pkg> activate .
 pkg> instantiate
 ```
 
-more documentation to appear soon.
+If you want to start a REPL with the correct environment already activated, use the `--project=.` flag.
+
+```shell
+julia --project=.
+```
 
 ### Examples
 

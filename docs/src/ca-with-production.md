@@ -253,6 +253,9 @@ module Script
             gid["y"] = collect(y_axis)
             gid["height"] = collect(initial_height)
             gid["t"] = collect((0:(n_writes-1)) .* (input.Δt * input.write_interval))
+            attr = attributes(gid)
+            attr["delta_t"] = input.Δt
+            attr["subsidence_rate"] = input.subsidence_rate
 
             n_facies = length(input.facies)
             ds = create_dataset(fid, "sediment", datatype(Float64),
@@ -267,18 +270,18 @@ module Script
     end
 
     DEFAULT_INPUT = Input(
-        sea_level = sealevel_curve(),
-        subsidence_rate = 0.0,
-        initial_depth = x -> x,
+        sea_level = _ -> 0.0, 
+        subsidence_rate = 50.0,
+        initial_depth = _ -> 2.0,
         grid_size = (50, 50),
-        phys_scale = 3.0,
-        Δt = 10,
-        write_interval = 100,
-        time_steps = 8000,
+        phys_scale = 1.0,
+        Δt = 0.001,
+        write_interval = 1,
+        time_steps = 1000,
         facies = [
-            Facies((4, 10), (6, 10), 0.05, 0.8, 300),
-            Facies((4, 10), (6, 10), 0.04, 0.1, 300),
-            Facies((4, 10), (6, 10), 0.01, 0.005, 300)
+            Facies((4, 10), (6, 10), 500.0, 0.8, 300),
+            Facies((4, 10), (6, 10), 400.0, 0.1, 300),
+            Facies((4, 10), (6, 10), 100.0, 0.005, 300)
         ],
         insolation = 2000.0
     )
@@ -296,10 +299,15 @@ module Script
 
     function main()
         h5open("data/ca-prod.h5", "r") do fid
+            attr = attributes(fid["input"])
+            Δt = attr["delta_t"][]
+            subsidence_rate = attr["subsidence_rate"][]
+            t_end = fid["input/t"][end-1]
+            total_subsidence = subsidence_rate * t_end
             total_sediment = sum(fid["sediment"][:,:,:,:]; dims=3)
-            initial_height = fid["input"]["height"][:]
-            height = initial_height' .- cumsum(total_sediment; dims=4)
-            height[1,:,1,:]
+            initial_height = fid["input/height"][:]
+            elevation = cumsum(total_sediment; dims=4) .* Δt .- initial_height .- total_subsidence
+            elevation[1,:,1,:]
         end
     end
 end

@@ -199,35 +199,44 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2023-09-20T00:38:11.515101",
-      "hexdigest": "e88608d0d7573d8cf37b1144f41a8013fb2941251e87bd02857f7516853a0c09"
+      "modified": "2023-09-20T16:01:19.629094",
+      "hexdigest": "7856af636fefd75f2173154f5bfcee0c6f92113af72701cb6db2aa7ed390831a"
     },
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2023-09-20T00:38:11.538101",
-      "hexdigest": "0cc98cb495bb80fc9df595071ec9254a116af493f6ec395f50c50059a4859185"
+      "modified": "2023-09-20T16:01:19.650094",
+      "hexdigest": "5472cda148e11442d9e7c4b9ccc69390f9d4a1af50c1732c03e771130c7dd8cc"
+    },
+    {
+      "path": "examples/visualize_production.jl",
+      "deps": [
+        "docs/src/ca-with-production.md"
+      ],
+      "modified": "2023-09-20T16:00:04.220597",
+      "hexdigest": "b8f1357064734e725a62d1400494e51e0b73ac055bbce82029eb6981fe36a83b"
     }
   ],
   "source": [],
   "target": [
-    "src/Erosion.jl",
     "src/examples/convolution.jl",
-    "src/Burgess2013/Transport.jl",
+    "src/Erosion.jl",
+    "src/Burgess2013.jl",
+    "src/figures/burgess2013-fig2.gnuplot",
+    "src/examples/eca.jl",
+    "src/Burgess2013/Production.jl",
     "src/figures/plot-tanh.gnuplot",
     "src/Utility.jl",
     "src/BS92/fig8-sealevel.jl",
-    "src/Burgess2013.jl",
-    "src/Burgess2013/CA.jl",
-    "src/figures/burgess2013-fig2.gnuplot",
     "examples/bosscher-schlager-1992.jl",
     "examples/burgess-2013-ca.jl",
-    "src/examples/eca.jl",
-    "src/BS92.jl",
     "examples/ca-with-prod.jl",
-    "src/examples/game-of-life.jl",
     "src/Burgess2013/Config.jl",
-    "src/Burgess2013/Production.jl",
-    "src/Stencil.jl"
+    "src/Stencil.jl",
+    "src/Burgess2013/Transport.jl",
+    "src/Burgess2013/CA.jl",
+    "examples/visualize_production.jl",
+    "src/BS92.jl",
+    "src/examples/game-of-life.jl"
   ]
 }

@@ -6,6 +6,7 @@ We need as an input:
 - initial depth (function of space)
 - sea-level curve (function of time)
 - subsidence (function of time)
+- facies types
 
 These should all behave as a functions, but could also be some interpolated data. The signs of these quantities should be such that the following equation holds:
 
@@ -14,15 +15,6 @@ $$T + E = S + W$$
 Saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation plus change in Water depth.
 
 ``` {.julia #ca-prod-input}
-struct Facies
-    viability_range::Tuple{Int, Int}
-    activation_range::Tuple{Int, Int}
-
-    maximum_growth_rate::Float64
-    extinction_coefficient::Float64
-    saturation_intensity::Float64
-end
-
 @kwdef struct Input
     sea_level
     subsidence_rate
@@ -37,15 +29,6 @@ end
 
     facies::Vector{Facies}
     insolation::Float64
-end
-
-function production(insolation::Float64, facies::Facies, water_depth::Float64)
-    gₘ = facies.maximum_growth_rate
-    I₀ = insolation
-    Iₖ = facies.saturation_intensity
-    w = water_depth
-    k = facies.extinction_coefficient
-    return w > 0.0 ? gₘ * tanh(I₀/Iₖ * exp(-w * k)) : 0.0
 end
 ```
 
@@ -70,13 +53,30 @@ From a dynamical modeling point of view, CarboCAT operates analogous to a forwar
 
 $$P_i: S \to \Delta.$$
 
-The suffix $i$ here is used to indicate that the propagator depends on the input.
+The suffix $i$ here is used to indicate that the propagator depends on the input. We'll have a second function $U$ that *updates* the state with the given frame,
+
+$$U: (S, \Delta) \to S.$$
+
+In practice however, the update function changes the state in-place.
+
+## Init
+
+We fill the height map with the initial depth function. It is assumed that the height only depends on the second index.
 
 ``` {.julia #ca-prod-model}
 function initial_state(input::Input)  # -> State
-    <<ca-prod-init>>
+    height = zeros(Float64, input.grid_size...)
+    for i in CartesianIndices(height)
+        height[i] = input.initial_depth(i[2] * input.phys_scale)
+    end
+    return State(0.0, height)
 end
+```
 
+## Propagator
+The propagator computes the production rates (and also erosion) given the state of the model.
+
+``` {.julia #ca-prod-model}
 function propagator(input::Input)
     <<ca-prod-init-propagator>>
     function (s::State)  # -> Frame
@@ -85,45 +85,12 @@ function propagator(input::Input)
 end
 ```
 
-We'll have a second function $U$ that *updates* the state with th given frame,
-
-$$U: (S, \Delta) \to S.$$
-
-In practice however, the update function changes the state in-place.
-
-``` {.julia #ca-prod-model}
-function updater(input::Input)
-    n_facies = length(input.facies)
-    function (s::State, Δ::Frame)
-        <<ca-prod-update>>
-    end
-end
-```
-
-## Init
-
-We fill the height map with the initial depth function. It is assumed that the height only depends on the second index.
-
-``` {.julia #ca-prod-init}
-# n_facies = length(input.facies)
-height = zeros(Float64, input.grid_size...)
-for i in CartesianIndices(height)
-    height[i] = input.initial_depth(i[2] * input.phys_scale)
-end
-return State(0.0, height)
-```
-
-## Propagator
 The propagator keeps the cellular automaton as an internal state, but this may also be considered to be an input function. This may change when you'd want to influence the CA with environmental factors. Then the CA becomes an integral component of the dynamical model. The CA would then have to keep state in the `State` variable. We burn the first 20 iterations of the CA to start with a realistic pattern.
 
 ``` {.julia #ca-prod-init-propagator}
 n_facies = length(input.facies)
 ca_init = rand(0:n_facies, input.grid_size...)
-# ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
-ca = run_ca(Periodic{2}, input.facies, ca_init, 3)
-for _ in 1:20
-    take!(ca)
-end
+ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
 
 function water_depth(s::State)
     s.height .- input.sea_level(s.time)
@@ -134,15 +101,14 @@ Now, to generate a production from a given state, we advance the CA by one step 
 
 ``` {.julia #ca-prod-propagate}
 result = zeros(Float64, input.grid_size..., n_facies)
-# facies_map, ca = peel(ca)
-facies_map = take!(ca)
+facies_map, ca = peel(ca)
 w = water_depth(s)
 for idx in CartesianIndices(facies_map)
     f = facies_map[idx]
     if f == 0
         continue
     end
-    result[Tuple(idx)..., f] = production(input.insolation, input.facies[f], w[idx])
+    result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
 end
 return Frame(result)
 ```
@@ -150,10 +116,15 @@ return Frame(result)
 ## Updater
 Every iteration we update the height variable with the subsidence rate, and add sediments to the height.
 
-``` {.julia #ca-prod-update}
-s.height .-= sum(Δ.production; dims=3) .* input.Δt
-s.height .+= input.subsidence_rate * input.Δt
-s.time += input.Δt
+``` {.julia #ca-prod-model}
+function updater(input::Input)
+    n_facies = length(input.facies)
+    function (s::State, Δ::Frame)
+        s.height .-= sum(Δ.production; dims=3) .* input.Δt
+        s.height .+= input.subsidence_rate * input.Δt
+        s.time += input.Δt
+    end
+end
 ```
 
 ## Loop
@@ -182,53 +153,15 @@ using CarboKitten.Stencil: Periodic
 using CarboKitten.Utility
 using CarboKitten.BS92: sealevel_curve
 using CarboKitten.Stencil
+using CarboKitten.Burgess2013
 
 using .Iterators: drop, peel
 
 <<ca-prod-input>>
 <<ca-prod-frame>>
 <<ca-prod-state>>
-
-
-cycle_permutation(n_species::Int) =
-    (circshift(1:n_species, x) for x in Iterators.countfrom(0))
-
-function rules(facies::Vector{Facies})
-    function (neighbourhood::Matrix{Int}, order::Vector{Int})
-        cell_facies = neighbourhood[3, 3]
-        neighbour_count(f) = sum(neighbourhood .== f)
-        if cell_facies == 0
-            for f in order
-                n = neighbour_count(f)
-                (a, b) = facies[f].activation_range
-                if a <= n && n <= b
-                    return f
-                end
-            end
-            0
-        else
-            n = neighbour_count(cell_facies) - 1
-            (a, b) = facies[cell_facies].viability_range
-            (a <= n && n <= b ? cell_facies : 0)
-        end
-    end    
-end
-
-function run_ca(::Type{B}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {B <: Boundary{2}}
-    r = rules(facies)
-    Channel{Matrix{Int}}() do ch
-        target = Matrix{Int}(undef, size(init))
-        put!(ch, init)
-        stencil_op = stencil(Int, B, (5, 5), r)
-        for perm in cycle_permutation(n_species)
-            stencil_op(init, target, perm)
-            init, target = target, init
-            put!(ch, init)
-        end
-    end
-end
-
 <<ca-prod-model>>
+
 end # CaProd
 
 module Script

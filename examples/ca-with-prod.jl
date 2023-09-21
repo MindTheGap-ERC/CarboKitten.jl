@@ -6,19 +6,11 @@ using CarboKitten.Stencil: Periodic
 using CarboKitten.Utility
 using CarboKitten.BS92: sealevel_curve
 using CarboKitten.Stencil
+using CarboKitten.Burgess2013
 
 using .Iterators: drop, peel
 
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-input>>[init]
-struct Facies
-    viability_range::Tuple{Int, Int}
-    activation_range::Tuple{Int, Int}
-
-    maximum_growth_rate::Float64
-    extinction_coefficient::Float64
-    saturation_intensity::Float64
-end
-
 @kwdef struct Input
     sea_level
     subsidence_rate
@@ -34,15 +26,6 @@ end
     facies::Vector{Facies}
     insolation::Float64
 end
-
-function production(insolation::Float64, facies::Facies, water_depth::Float64)
-    gₘ = facies.maximum_growth_rate
-    I₀ = insolation
-    Iₖ = facies.saturation_intensity
-    w = water_depth
-    k = facies.extinction_coefficient
-    return w > 0.0 ? gₘ * tanh(I₀/Iₖ * exp(-w * k)) : 0.0
-end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-frame>>[init]
 struct Frame
@@ -55,67 +38,21 @@ mutable struct State
     height :: Array{Float64, 2}
 end
 # ~/~ end
-
-
-cycle_permutation(n_species::Int) =
-    (circshift(1:n_species, x) for x in Iterators.countfrom(0))
-
-function rules(facies::Vector{Facies})
-    function (neighbourhood::Matrix{Int}, order::Vector{Int})
-        cell_facies = neighbourhood[3, 3]
-        neighbour_count(f) = sum(neighbourhood .== f)
-        if cell_facies == 0
-            for f in order
-                n = neighbour_count(f)
-                (a, b) = facies[f].activation_range
-                if a <= n && n <= b
-                    return f
-                end
-            end
-            0
-        else
-            n = neighbour_count(cell_facies) - 1
-            (a, b) = facies[cell_facies].viability_range
-            (a <= n && n <= b ? cell_facies : 0)
-        end
-    end    
-end
-
-function run_ca(::Type{B}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {B <: Boundary{2}}
-    r = rules(facies)
-    Channel{Matrix{Int}}() do ch
-        target = Matrix{Int}(undef, size(init))
-        put!(ch, init)
-        stencil_op = stencil(Int, B, (5, 5), r)
-        for perm in cycle_permutation(n_species)
-            stencil_op(init, target, perm)
-            init, target = target, init
-            put!(ch, init)
-        end
-    end
-end
-
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[init]
 function initial_state(input::Input)  # -> State
-    # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-init>>[init]
-    # n_facies = length(input.facies)
     height = zeros(Float64, input.grid_size...)
     for i in CartesianIndices(height)
         height[i] = input.initial_depth(i[2] * input.phys_scale)
     end
     return State(0.0, height)
-    # ~/~ end
 end
-
+# ~/~ end
+# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[1]
 function propagator(input::Input)
     # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-init-propagator>>[init]
     n_facies = length(input.facies)
     ca_init = rand(0:n_facies, input.grid_size...)
-    # ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
-    ca = run_ca(Periodic{2}, input.facies, ca_init, 3)
-    for _ in 1:20
-        take!(ca)
-    end
+    ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
 
     function water_depth(s::State)
         s.height .- input.sea_level(s.time)
@@ -124,34 +61,31 @@ function propagator(input::Input)
     function (s::State)  # -> Frame
         # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[init]
         result = zeros(Float64, input.grid_size..., n_facies)
-        # facies_map, ca = peel(ca)
-        facies_map = take!(ca)
+        facies_map, ca = peel(ca)
         w = water_depth(s)
         for idx in CartesianIndices(facies_map)
             f = facies_map[idx]
             if f == 0
                 continue
             end
-            result[Tuple(idx)..., f] = production(input.insolation, input.facies[f], w[idx])
+            result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
         end
         return Frame(result)
         # ~/~ end
     end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[1]
+# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[2]
 function updater(input::Input)
     n_facies = length(input.facies)
     function (s::State, Δ::Frame)
-        # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-update>>[init]
         s.height .-= sum(Δ.production; dims=3) .* input.Δt
         s.height .+= input.subsidence_rate * input.Δt
         s.time += input.Δt
-        # ~/~ end
     end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[2]
+# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[3]
 function run_model(input::Input)
     Channel{Frame}() do ch
         s = initial_state(input)
@@ -166,6 +100,7 @@ function run_model(input::Input)
     end
 end
 # ~/~ end
+
 end # CaProd
 
 module Script

@@ -14,20 +14,38 @@ cycle_permutation(n_species::Int) =
 The `stencil` function has an `args...` variadic arguments that are forwarded to the given rule. This means we can create a `rules` function that we pass the preference order as a second argument.
 
 ``` {.julia #burgess2013-rules}
-function rules(neighbourhood::Matrix{Int}, order::Vector{Int})
-    cell_species = neighbourhood[3, 3]
-    neighbour_count(species) = sum(neighbourhood .== species)
-    if cell_species == 0
-        for species in order
-            n = neighbour_count(species)
-            if 6 <= n && n <= 10
-                return species
+function rules(facies::Vector{Facies})
+    function (neighbourhood::Matrix{Int}, order::Vector{Int})
+        cell_facies = neighbourhood[3, 3]
+        neighbour_count(f) = sum(neighbourhood .== f)
+        if cell_facies == 0
+            for f in order
+                n = neighbour_count(f)
+                (a, b) = facies[f].activation_range
+                if a <= n && n <= b
+                    return f
+                end
             end
+            0
+        else
+            n = neighbour_count(cell_facies) - 1
+            (a, b) = facies[cell_facies].viability_range
+            (a <= n && n <= b ? cell_facies : 0)
         end
-        0
-    else
-        n = neighbour_count(cell_species) - 1
-        (4 <= n && n <= 10 ? cell_species : 0)
+    end    
+end
+
+function run_ca(::Type{B}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {B <: Boundary{2}}
+    r = rules(facies)
+    Channel{Matrix{Int}}() do ch
+        target = Matrix{Int}(undef, size(init))
+        put!(ch, init)
+        stencil_op = stencil(Int, B, (5, 5), r)
+        for perm in cycle_permutation(n_species)
+            stencil_op(init, target, perm)
+            init, target = target, init
+            put!(ch, init)
+        end
     end
 end
 ```
@@ -40,22 +58,12 @@ The paper talks about a 50x50 grid initialized with uniform random values.
 module CA
 
 using ...Stencil
+using ..Config: Facies
+
+export run_ca
 
 <<cycle-permutation>>
 <<burgess2013-rules>>
-
-function run(::Type{B}, init::Matrix{Int}, n_species::Int) where {B <: Boundary{2}}
-    Channel{Matrix{Int}}() do ch
-        target = Matrix{Int}(undef, size(init))
-        put!(ch, init)
-        stencil_op = stencil(Int, B, (5, 5), rules)
-        for perm in cycle_permutation(n_species)
-            stencil_op(init, target, perm)
-            init, target = target, init
-            put!(ch, init)
-        end
-    end
-end
 
 end
 ```

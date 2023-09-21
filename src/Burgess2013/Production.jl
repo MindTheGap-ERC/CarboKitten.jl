@@ -1,18 +1,21 @@
 # ~/~ begin <<docs/src/carbocat.md#src/Burgess2013/Production.jl>>[init]
 module Production
 
-using ..Config: Species, Iₖ, k, gₘ
+export production_rate
+
+using ..Config: Facies
 
 # ~/~ begin <<docs/src/bosscher-1992.md#carbonate-production>>[init]
 g(gₘ, I₀, Iₖ, k, w) = gₘ * tanh(I₀/Iₖ * exp(-w * k))
 # ~/~ end
 
-function production_rate(I₀::Float64, s::Species, w::Float64)
-    w > 0.0 ? g(gₘ(s), I₀, Iₖ(s), k(s), w) : 0.0
-end
-
-function production_rate(I₀::Float64, specs::Vector{Species}, spec_map::Matrix{Int}, w::Matrix{Float64})
-    production_rate.(I₀, Iterators.map(i -> specs[i], spec_map), w)
+function production_rate(insolation::Float64, facies::Facies, water_depth::Float64)
+    gₘ = facies.maximum_growth_rate
+    I₀ = insolation
+    Iₖ = facies.saturation_intensity
+    w = water_depth
+    k = facies.extinction_coefficient
+    return w > 0.0 ? gₘ * tanh(I₀/Iₖ * exp(-w * k)) : 0.0
 end
 
 end

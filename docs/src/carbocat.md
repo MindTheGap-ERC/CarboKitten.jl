@@ -45,16 +45,16 @@ The minimal Carbocat model would consist of only species habitation and producti
 ``` {.julia file=src/Burgess2013.jl}
 module Burgess2013
 
-module Types
-    <<ck-types>>
-end
-
 include("Burgess2013/Config.jl")
 include("Burgess2013/CA.jl")
 include("Burgess2013/Production.jl")
 include("Burgess2013/Transport.jl")
 
-<<carbocat-composite>>
+using .CA
+using .Config
+using .Production
+
+export production_rate, run_ca, Facies
 
 end
 ```
@@ -73,7 +73,9 @@ Base.zero(::Type{Product}) = Product(0, 0.0)
 ``` {.julia file=src/Burgess2013/Config.jl}
 module Config
 
-struct Species
+export Facies, MODEL1
+
+struct Facies
     viability_range::Tuple{Int, Int}
     activation_range::Tuple{Int, Int}
 
@@ -82,14 +84,10 @@ struct Species
     saturation_intensity::Float64
 end
 
-Iₖ(s::Species) = s.saturation_intensity
-k(s::Species) = s.extinction_coefficient
-gₘ(s::Species) = s.maximum_growth_rate
-
-model1 = [
-    Species((4, 10), (6, 10), 500, 0.8, 300),
-    Species((4, 10), (6, 10), 400, 0.1, 300),
-    Species((4, 10), (6, 10), 100, 0.005, 300)
+MODEL1 = [
+    Facies((4, 10), (6, 10), 500, 0.8, 300),
+    Facies((4, 10), (6, 10), 400, 0.1, 300),
+    Facies((4, 10), (6, 10), 100, 0.005, 300)
 ]
 
 end
@@ -100,16 +98,19 @@ end
 ``` {.julia file=src/Burgess2013/Production.jl}
 module Production
 
-using ..Config: Species, Iₖ, k, gₘ
+export production_rate
+
+using ..Config: Facies
 
 <<carbonate-production>>
 
-function production_rate(I₀::Float64, s::Species, w::Float64)
-    w > 0.0 ? g(gₘ(s), I₀, Iₖ(s), k(s), w) : 0.0
-end
-
-function production_rate(I₀::Float64, specs::Vector{Species}, spec_map::Matrix{Int}, w::Matrix{Float64})
-    production_rate.(I₀, Iterators.map(i -> specs[i], spec_map), w)
+function production_rate(insolation::Float64, facies::Facies, water_depth::Float64)
+    gₘ = facies.maximum_growth_rate
+    I₀ = insolation
+    Iₖ = facies.saturation_intensity
+    w = water_depth
+    k = facies.extinction_coefficient
+    return w > 0.0 ? gₘ * tanh(I₀/Iₖ * exp(-w * k)) : 0.0
 end
 
 end

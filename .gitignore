@@ -1,3 +1,4 @@
 docs/build
 data/*.h5
+.vscode
 

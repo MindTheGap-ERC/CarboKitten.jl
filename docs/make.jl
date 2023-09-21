@@ -46,13 +46,17 @@ makedocs(
     pages = [
         "Bosscher and Schlager 1992" => "bosscher-1992.md",
         "CarboCAT" => [
-            "summary" => "carbocat.md",
-            "cellular automaton" => "carbocat-ca.md",
-            "model with ca and production" => "ca-with-production.md",
-            "sediment transport" => "carbocat-transport.md"
+            "Summary" => "carbocat.md",
+            "Cellular Automaton" => "carbocat-ca.md",
+            "Model with CA and Production" => "ca-with-production.md",
+            "Sediment Transport" => "carbocat-transport.md"
         ],
         "Algorithms" => [
-            "stencils" => "stencils.md",
-            "utility" => "utility.md"
+            "Stencils" => "stencils.md",
+            "Utility" => "utility.md"
         ]
     ])
+
+deploydocs(
+    repo = "github.com/MindTheGap-ERC/CarboKitten.git"
+)

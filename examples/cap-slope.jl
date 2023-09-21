@@ -1,10 +1,10 @@
-# ~/~ begin <<docs/src/ca-with-production.md#examples/ca-with-prod.jl>>[init]
+# ~/~ begin <<docs/src/ca-with-production.md#examples/cap-slope.jl>>[init]
 using CarboKitten.CaProd
 
 DEFAULT_INPUT = Input(
     sea_level = _ -> 0.0, 
     subsidence_rate = 50.0,
-    initial_depth = _ -> 2.0,
+    initial_depth = x -> x,
     grid_size = (50, 50),
     phys_scale = 1.0,
     Δt = 0.001,
@@ -18,5 +18,5 @@ DEFAULT_INPUT = Input(
     insolation = 2000.0
 )
 
-main(DEFAULT_INPUT, "data/ca-prod.h5")
+main(DEFAULT_INPUT, "data/ca-prod-slope.h5")
 # ~/~ end

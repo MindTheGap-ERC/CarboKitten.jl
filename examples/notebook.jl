@@ -27,7 +27,7 @@ let
 end
 
 # ╔═╡ 06ca199e-642c-4d4e-a465-85589e268fe0
-x, h, p = h5open("../data/ca-prod-slope.h5","r") do fid
+x, h, p = h5open("../data/caps-osc.h5","r") do fid
 	attr = HDF5.attributes(fid["input"])
 	Δt = attr["delta_t"][]
 	subsidence_rate = attr["subsidence_rate"][]
@@ -35,8 +35,8 @@ x, h, p = h5open("../data/ca-prod-slope.h5","r") do fid
 	total_subsidence = subsidence_rate * t_end
 	total_sediment = sum(fid["sediment"][]; dims=3)
 	initial_height = fid["input/height"][]
-	elevation = cumsum(total_sediment; dims=4)[1,:,1,:] .* Δt .- initial_height .- total_subsidence
-	return fid["input/x"][], elevation, fid["sediment"][1,:,:,:]
+	elevation = cumsum(total_sediment; dims=4)[25,:,1,:] .* Δt .- initial_height .- total_subsidence
+	return fid["input/x"][], elevation, fid["sediment"][25,:,:,:]
 end
 
 # ╔═╡ f8969a09-426c-4670-8756-12802711ed33
@@ -47,12 +47,12 @@ let
 	pts = vec(Point{2,Float64}.(x, h))
 	c = vec(argmax(p; dims=2)[:,1,:] .|> (c -> c[2]))
 	rect = Rect2(0.0, 0.0, 1.0, 1.0)
-	m_tmp = GeometryBasics.mesh(Tesselation(rect, (50, 1000)))
+	m_tmp = GeometryBasics.mesh(Tesselation(rect, (100, 1000)))
 	m = GeometryBasics.Mesh(pts, faces(m_tmp))
 
 	f = Figure()
 	ax = Axis(f[1, 1], xlabel="location", ylabel="depth")
-	mesh!(ax, m, color=c, alpha=0.7)
+	mesh!(ax, m, color=c, alpha=0.3)
 	save("crosssection.png", f)
 	f
 end

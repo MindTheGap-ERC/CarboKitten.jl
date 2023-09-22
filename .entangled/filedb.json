@@ -165,8 +165,8 @@
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2023-09-21T22:04:16.565530",
-      "hexdigest": "54bce57ae3b049b0e43e9c79e6acf7cdd15178ab44208e5232bfbed386e98335"
+      "modified": "2023-09-22T14:07:24.741795",
+      "hexdigest": "cfd6a6bc750b5611a3064de33c1956179aeba7c518e383d90d5e5e97c30e3994"
     },
     {
       "path": "src/CaProd.jl",
@@ -191,23 +191,32 @@
       ],
       "modified": "2023-09-21T21:25:21.890066",
       "hexdigest": "83f907e26e9d64e86d9b17c667701f52ab6fc7938e359d2508fc197eea745ac8"
+    },
+    {
+      "path": "examples/caps-osc.jl",
+      "deps": [
+        "docs/src/ca-with-production.md"
+      ],
+      "modified": "2023-09-22T14:07:24.685794",
+      "hexdigest": "55605939fdbef866ec2487f5a998ec3546f4a2696e0bf29c42b1a175546efec9"
     }
   ],
   "source": [],
   "target": [
     "src/Burgess2013/Production.jl",
-    "src/Burgess2013/Transport.jl",
     "src/Burgess2013/Config.jl",
-    "src/BS92.jl",
     "src/figures/plot-tanh.gnuplot",
+    "src/BS92.jl",
     "src/Burgess2013.jl",
     "examples/cap-slope.jl",
     "src/Burgess2013/CA.jl",
     "src/BS92/fig8-sealevel.jl",
     "src/Utility.jl",
+    "src/CaProd.jl",
     "src/figures/burgess2013-fig2.gnuplot",
     "src/Erosion.jl",
-    "src/CaProd.jl",
+    "examples/caps-osc.jl",
+    "src/Burgess2013/Transport.jl",
     "src/Stencil.jl",
     "examples/burgess-2013-ca.jl",
     "examples/ca-with-prod.jl",

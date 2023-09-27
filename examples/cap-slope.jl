@@ -4,8 +4,8 @@ using CarboKitten.CaProd
 DEFAULT_INPUT = Input(
     sea_level = _ -> 0.0, 
     subsidence_rate = 50.0,
-    initial_depth = x -> x,
-    grid_size = (50, 50),
+    initial_depth = x -> x/2.0,
+    grid_size = (50, 100),
     phys_scale = 1.0,
     Δt = 0.001,
     write_interval = 1,

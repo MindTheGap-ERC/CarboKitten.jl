@@ -63,7 +63,7 @@ function stencil(::Type{T}, ::Type{BT}, n::NTuple{dim,Int}, f::Function) where {
     function(z_in::AbstractArray{T, dim}, z_out::AbstractArray{T, dim}, args...)
         @assert (size(z_in) == size(z_out)) "sizes of arrays need to be equal"
         shape = size(z_in)
-        for i in CartesianIndices(shape)
+        Threads.@threads for i in CartesianIndices(shape)
             for (k, Δi) in enumerate(CartesianIndices(stencil_shape))
                 stencil[k] = offset_value(BT, z_in, i, Δi)
             end

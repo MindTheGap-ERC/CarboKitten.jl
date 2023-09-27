@@ -66,7 +66,7 @@ function propagator(input::Input)
         result = zeros(Float64, input.grid_size..., n_facies)
         facies_map, ca = peel(ca)
         w = water_depth(s)
-        for idx in CartesianIndices(facies_map)
+        Threads.@threads for idx in CartesianIndices(facies_map)
             f = facies_map[idx]
             if f == 0
                 continue
@@ -122,6 +122,8 @@ function main(input::Input, output::String)
         gid["t"] = collect((0:(n_writes-1)) .* (input.Δt * input.write_interval))
         attr = attributes(gid)
         attr["delta_t"] = input.Δt
+        attr["write_interval"] = input.write_interval
+        attr["time_steps"] = input.time_steps
         attr["subsidence_rate"] = input.subsidence_rate
 
         n_facies = length(input.facies)

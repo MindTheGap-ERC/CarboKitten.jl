@@ -70,15 +70,68 @@ end
 
 First, let us reproduce Figure 3 in Burgess 2013.
 
-![First 8 generations](burgess-fig3.svg)
+![First 8 generations](fig/b13-fig3.png)
 
-By eye comparison seems to indicate that this CA is working the same. I'm curious to the behaviour after more iterations. Let's try 10, 100, 1000 and so on.
+By eye comparison seems to indicate that this CA is working the same. I'm curious to the behaviour after more iterations. Let's try 10, 100, 10000 and so on.
 
-![Assymptotic behaviour](burgess-long.svg)
+![Assymptotic behaviour](fig/b13-long-term.png)
 
 The little qualitative change between 100 and 1000 iterations would indicate that this CA remains "interesting" for a long time.
 
 On my laptop I can run about 150 iterations per second with current code. When using periodic boundaries, I get to 1500 iterations per second, which is peculiar. A lot can still be optimized.
+
+```@raw html
+<details><summary>Plotting code</summary>
+```
+
+``` {.julia .build file=examples/ca/burgess-2013.jl target="docs/src/fig/b13-fig3.png"}
+using CarboKitten
+using CarboKitten.Burgess2013
+using CarboKitten.Stencil: Reflected
+using CarboKitten.Utility
+using GLMakie
+
+function main()
+    init = rand(0:3, 50, 50)
+    ca = run_ca(Reflected{2}, MODEL1, init, 3)
+
+    fig = Figure(resolution=(1000, 500))
+    for (i, st) in zip(CartesianIndices((2, 4)), ca)
+        ax = Axis(fig[Tuple(i)...], aspect=AxisAspect(1))
+        heatmap!(ax, st)
+    end
+    save("docs/src/fig/b13-fig3.png", fig)
+end
+
+main()
+```
+
+
+``` {.julia .build file=examples/ca/long-term.jl target="docs/src/fig/b13-long-term.png"}
+using CarboKitten
+using CarboKitten.Burgess2013
+using CarboKitten.Stencil
+using CarboKitten.Utility
+using GLMakie
+
+function main()
+    init = rand(0:3, 50, 50)
+    result = select(run_ca(Periodic{2}, MODEL1, init, 3), [10, 100, 10000])
+
+    fig = Figure(resolution=(1000, 333))
+    for (i, st) in enumerate(result)
+        ax = Axis(fig[1, i], aspect=AxisAspect(1))
+        heatmap!(ax, st)
+    end
+    save("docs/src/fig/b13-long-term.png", fig)
+end
+
+main()
+```
+
+```@raw html
+</details>
+```
 
 ## Howto run
 We start with randomized initial conditions on a 50x50 grid.
@@ -103,43 +156,41 @@ plot((heatmap(r, colorbar=:none) for r in result)..., layout=(2, 4))
 
 What this says is: create a `heatmap` for each of our eight results, then expand those into a function call to `plot` (as in `plot(hm1, hm2, ..., hm8, layout=(2, 4))`).
 
-<details><summary>Plotting code</summary>
+## Parameter scan
 
-``` {.julia file=examples/burgess-2013-ca.jl}
+``` {.julia file=examples/ca/parameter-scan.jl}
 using CarboKitten
-using CarboKitten.Burgess2013.CA
-using CarboKitten.Stencil: Reflected
+using CarboKitten.Burgess2013
+using CarboKitten.Stencil
 using CarboKitten.Utility
-using Plots
+using GLMakie
+using .Iterators: peel, drop
 
 function main()
-    plotlyjs()
-    l = @layout([a b c d; e f g h])
+    fig = Figure(resolution=(2000, 2000))
+    for i in 4:12
+        for j in (i+1):12
+            print(".")
+            gl = fig[i, j] = GridLayout()
+            for k in i:j
+                # for l in k:j
+                let l = j
+                    init = rand(0:3, 50, 50)
+                    facies = [
+                        Facies((i, j), (k, l), 0, 0, 0),
+                        Facies((i, j), (k, l), 0, 0, 0),
+                        Facies((i, j), (k, l), 0, 0, 0),
+                    ]
+                    (result, _) = peel(drop(run_ca(Periodic{2}, facies, init, 3), 10))
 
-    init = rand(0:3, 50, 50)
-    result = Iterators.take(CA.run(Reflected{2}, init, 3), 8)
-
-    plot((heatmap(r, colorbar=:none, 
-                     aspect_ratio=1, 
-                     xlims=(0, 50), 
-                     ylims=(0, 50)) for r in result)...,
-        layout=(2, 4),
-        size=(800, 400))
-    savefig("docs/src/fig/b13-first-8-iterations.html")
+                    ax = Axis(gl[k-i, l-k], aspect=AxisAspect(1), xticksvisible=false, yticksvisible=false)
+                    heatmap!(ax, result)
+                end
+            end
+        end
+    end
+    save("docs/src/fig/parameter-scan.png", fig)
 end
-
-
-# plot("burgess-fig3.svg")
-
-function plot_long_times(output::String)
-    init = rand(0:3, 50, 50)
-    result = select(CA.run(Reflected{2}, init, 3), [10, 100, 1000])
-end
-
-# plot_long_times("burgess-long.svg")
 
 main()
 ```
-
-</details>
-

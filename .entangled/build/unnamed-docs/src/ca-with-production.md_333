@@ -1,0 +1,39 @@
+# ~/~ begin <<docs/src/ca-with-production.md#unnamed-docs/src/ca-with-production.md:333>>[init]
+using HDF5
+using GLMakie
+using GeometryBasics
+
+function main()
+    x, t, h, p = h5open("data/ca-prod-slope.h5","r") do fid
+        attr = HDF5.attributes(fid["input"])
+        Δt = attr["delta_t"][]
+        subsidence_rate = attr["subsidence_rate"][]
+        t_end = fid["input/t"][end-1]
+        total_subsidence = subsidence_rate * t_end
+        total_sediment = sum(fid["sediment"][]; dims=3)
+        initial_height = fid["input/height"][]
+        elevation = cumsum(total_sediment; dims=4)[25,:,1,:] .* Δt .- initial_height .- total_subsidence
+        t = fid["input/t"][]
+        return fid["input/x"][], [t; Δt*attr["time_steps"][]], hcat(.- initial_height .- total_subsidence, elevation), fid["sediment"][25,:,:,:]
+    end
+	pts = vec(Point{2,Float64}.(x, h[:,2:end]))
+	c = vec(argmax(p; dims=2)[:,1,:] .|> (c -> c[2]))
+	rect = Rect2(0.0, 0.0, 1.0, 1.0)
+	m_tmp = GeometryBasics.mesh(Tesselation(rect, (100, 1000)))
+	m = GeometryBasics.Mesh(pts, faces(m_tmp))
+
+	f = Figure()
+	ax = Axis(f[1, 1], xlabel="location", ylabel="depth", limits=((-12,100), nothing))
+	mesh!(ax, m, color=c, alpha=0.7)
+	for idx in [1,501,1001]
+		lines!(ax, x, h[:, idx], color=:black)
+		text!(ax, -2.0, h[1, idx]; text="$(t[idx]) Myr", align=(:right, :center))
+	end
+	for idx in [250,750]
+		lines!(ax, x, h[:, idx], color=:black, linewidth=0.5)
+	end
+	save("docs/src/fig/b13-crosssection.png", f)
+end
+
+main()
+# ~/~ end

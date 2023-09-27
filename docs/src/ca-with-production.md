@@ -111,7 +111,7 @@ Now, to generate a production from a given state, we advance the CA by one step 
 result = zeros(Float64, input.grid_size..., n_facies)
 facies_map, ca = peel(ca)
 w = water_depth(s)
-for idx in CartesianIndices(facies_map)
+Threads.@threads for idx in CartesianIndices(facies_map)
     f = facies_map[idx]
     if f == 0
         continue
@@ -191,6 +191,8 @@ function main(input::Input, output::String)
         gid["t"] = collect((0:(n_writes-1)) .* (input.Δt * input.write_interval))
         attr = attributes(gid)
         attr["delta_t"] = input.Δt
+        attr["write_interval"] = input.write_interval
+        attr["time_steps"] = input.time_steps
         attr["subsidence_rate"] = input.subsidence_rate
 
         n_facies = length(input.facies)
@@ -237,14 +239,14 @@ main(DEFAULT_INPUT, "data/ca-prod.h5")
 ## Case 2
 For the second case, we start with a slope.
 
-``` {.julia file=examples/cap-slope.jl}
+``` {.julia .build file=examples/cap-slope.jl target=data/ca-prod-slope.h5}
 using CarboKitten.CaProd
 
 DEFAULT_INPUT = Input(
     sea_level = _ -> 0.0, 
     subsidence_rate = 50.0,
-    initial_depth = x -> x,
-    grid_size = (50, 50),
+    initial_depth = x -> x/2.0,
+    grid_size = (50, 100),
     phys_scale = 1.0,
     Δt = 0.001,
     write_interval = 1,
@@ -288,15 +290,15 @@ main(DEFAULT_INPUT, "data/caps-osc.h5")
 
 # Visualizing output
 
-![](crosssection.png)
+![](fig/b13-crosssection.png)
 
-```@example
+``` {.julia .build target=docs/src/fig/b13-crosssection.png deps=data/ca-prod-slope.h5}
 using HDF5
-using CairoMakie
+using GLMakie
 using GeometryBasics
 
 function main()
-    x, h, p = h5open("../../data/ca-prod-slope.h5","r") do fid
+    x, t, h, p = h5open("data/ca-prod-slope.h5","r") do fid
         attr = HDF5.attributes(fid["input"])
         Δt = attr["delta_t"][]
         subsidence_rate = attr["subsidence_rate"][]
@@ -304,24 +306,27 @@ function main()
         total_subsidence = subsidence_rate * t_end
         total_sediment = sum(fid["sediment"][]; dims=3)
         initial_height = fid["input/height"][]
-        # compute cumulative production and correct for initial height and subsidence
-        elevation = cumsum(total_sediment; dims=4)[1,:,1,:] .* Δt .- initial_height .- total_subsidence
-        return fid["input/x"][], elevation, fid["sediment"][1,:,:,:]
+        elevation = cumsum(total_sediment; dims=4)[25,:,1,:] .* Δt .- initial_height .- total_subsidence
+        t = fid["input/t"][]
+        return fid["input/x"][], [t; Δt*attr["time_steps"][]], hcat(.- initial_height .- total_subsidence, elevation), fid["sediment"][25,:,:,:]
     end
+	pts = vec(Point{2,Float64}.(x, h[:,2:end]))
+	c = vec(argmax(p; dims=2)[:,1,:] .|> (c -> c[2]))
+	rect = Rect2(0.0, 0.0, 1.0, 1.0)
+	m_tmp = GeometryBasics.mesh(Tesselation(rect, (100, 1000)))
+	m = GeometryBasics.Mesh(pts, faces(m_tmp))
 
-    pts = vec(Point{2,Float64}.(x, h))
-    # colours determined by which facies has maximum production
-    c = vec(argmax(p; dims=2)[:,1,:] .|> (c -> c[2]))
-    # create mesh for regular grid
-    rect = Rect2(0.0, 0.0, 1.0, 1.0)
-    m_tmp = GeometryBasics.mesh(Tesselation(rect, (50, 1000)))
-    # and move vertices to x, h positions
-    m = GeometryBasics.Mesh(pts, faces(m_tmp))
-
-    f = Figure()
-    ax = Axis(f[1, 1], xlabel="location", ylabel="depth")
-    mesh!(ax, m, color=c, alpha=0.7)
-    save("crosssection.png", f)
+	f = Figure()
+	ax = Axis(f[1, 1], xlabel="location", ylabel="depth", limits=((-12,100), nothing))
+	mesh!(ax, m, color=c, alpha=0.7)
+	for idx in [1,501,1001]
+		lines!(ax, x, h[:, idx], color=:black)
+		text!(ax, -2.0, h[1, idx]; text="$(t[idx]) Myr", align=(:right, :center))
+	end
+	for idx in [250,750]
+		lines!(ax, x, h[:, idx], color=:black, linewidth=0.5)
+	end
+	save("docs/src/fig/b13-crosssection.png", f)
 end
 
 main()

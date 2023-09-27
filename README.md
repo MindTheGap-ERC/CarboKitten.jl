@@ -1,6 +1,7 @@
 # CarboKitten
-
 **Modeling Carbonate Platforms in Julia**
+
+[![Entangled badge](https://img.shields.io/badge/entangled-Use%20the%20source!-%2300aeff)](https://entangled.github.io/)
 
 ## Running
 
@@ -11,10 +12,10 @@ pkg> activate .
 pkg> instantiate
 ```
 
-If you want to start a REPL with the correct environment already activated, use the `--project=.` flag.
+If you want to start a REPL with the correct environment already activated, use the `--project=.` flag. Use the `-t` flag to enable processing in multiple threads.
 
 ```shell
-julia --project=.
+julia --project=. -t 4
 ```
 
 ### Examples
@@ -38,6 +39,33 @@ include("examples/bosscher-sclager-1992.jl")
 ```
 
 After that, you may edit an example and rerun.
+
+## Development
+While developing, you'll need to run the Entangled watch daemon to keep Markdown and Julia code synchronized.
+
+```shell
+entangled watch
+```
+
+The documentation is generated using `Documenter.jl`. The most efficient way to serve this documentation and have it update upon changes, is to run `LiveServer` from the Julia REPL or
+
+```shell
+make serve-docs
+```
+
+To generate the more expensive figures (actually resulting from simulation etc.), you need to run a `DaemonMode` process in the background.
+
+```shell
+make run-daemon
+```
+
+After that, you can run
+
+```shell
+make figures
+```
+
+To run simulations and plot figures depending on those.
 
 ## License
 

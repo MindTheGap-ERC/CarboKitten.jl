@@ -10,7 +10,7 @@ using .CA
 using .Config
 using .Production
 
-export production_rate, run_ca, Facies
+export production_rate, run_ca, Facies, MODEL1
 
 end
 # ~/~ end

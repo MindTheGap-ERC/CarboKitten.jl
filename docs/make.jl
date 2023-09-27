@@ -35,10 +35,20 @@ module Entangled
     end
 end
 
+function copydir(src, dst)
+    for (path, subdir, files) in walkdir(src)
+        mkpath(joinpath(dst, subdir...))
+        for f in files
+            cp(joinpath(path, subdir..., f), joinpath(dst, subdir..., f))
+        end
+    end
+end
+
 is_markdown(path) = splitext(path)[2] == ".md"
 sources = filter(is_markdown, readdir(joinpath(@__DIR__, "src"), join=true))
 path = mktempdir()
 Entangled.transpile_file.(sources, path)
+copydir("docs/src/fig", joinpath(path, "fig"))
 
 makedocs(
     source=path,

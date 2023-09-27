@@ -1,8 +1,5 @@
----
-title: Carbonate Production
-subtitle: reproducing Bosscher 1992
-bibliography: [docs/ref.bib]
----
+# Carbonate Production
+**reproducing Bosscher & Schlager 1992**
 
 The paper by @Bosscher1992 is an early computer model for simulating reef growth. This paper contains some of the essential ingredients that we find back in CarboCAT. Here we will try to reproduce their results.
 

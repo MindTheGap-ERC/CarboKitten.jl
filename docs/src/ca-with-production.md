@@ -262,6 +262,21 @@ DEFAULT_INPUT = Input(
 main(DEFAULT_INPUT, "data/ca-prod-slope.h5")
 ```
 
+``` {.julia .build file=examples/plot-cap-slope.jl target=docs/src/fig/b13-crosssection.png deps=data/ca-prod-slope.h5}
+using CarboKitten.Visualization
+using GLMakie
+
+function main()
+    f = Figure()
+    plot_crosssection(f[1,1], "data/ca-prod-slope.h5")
+	save("docs/src/fig/b13-crosssection.png", f)
+end
+
+main()
+```
+
+![](fig/b13-crosssection.png)
+
 ## Case 3
 Now add an oscillating sea level.
 
@@ -288,17 +303,39 @@ DEFAULT_INPUT = Input(
 main(DEFAULT_INPUT, "data/caps-osc.h5")
 ```
 
+``` {.julia .build file=examples/plot-caps-osc.jl target=docs/src/fig/b13-capsosc-crosssection.png deps=data/caps-osc.h5}
+using CarboKitten.Visualization
+using GLMakie
+
+function main()
+    f = Figure()
+    plot_crosssection(f[1,1], "data/caps-osc.h5")
+	save("docs/src/fig/b13-capsosc-crosssection.png", f)
+end
+
+main()
+```
+
+![](fig/b13-capsosc-crosssection.png)
+
 # Visualizing output
 
-![](fig/b13-crosssection.png)
+``` {.julia file=src/Visualization.jl}
+module Visualization
 
-``` {.julia .build target=docs/src/fig/b13-crosssection.png deps=data/ca-prod-slope.h5}
+export plot_crosssection
+
 using HDF5
 using GLMakie
 using GeometryBasics
 
-function main()
-    x, t, h, p = h5open("data/ca-prod-slope.h5","r") do fid
+function plot_crosssection(pos, datafile)
+    # x: 1-d array with x-coordinates
+    # t: 1-d array with time-coordinates (n_steps + 1)
+    # h[x, t]: height fn, monotonic increasing in time
+    # p[x, facies, t]: production rate
+    # taken at y = y_max / 2, h[x, 1] is initial height
+    n_facies, x, t, h, p = h5open(datafile,"r") do fid
         attr = HDF5.attributes(fid["input"])
         Δt = attr["delta_t"][]
         subsidence_rate = attr["subsidence_rate"][]
@@ -306,18 +343,40 @@ function main()
         total_subsidence = subsidence_rate * t_end
         total_sediment = sum(fid["sediment"][]; dims=3)
         initial_height = fid["input/height"][]
-        elevation = cumsum(total_sediment; dims=4)[25,:,1,:] .* Δt .- initial_height .- total_subsidence
+        center = div(size(total_sediment)[1], 2)
+        elevation = cumsum(total_sediment; dims=4)[center,:,1,:] .* Δt .- initial_height .- total_subsidence
         t = fid["input/t"][]
-        return fid["input/x"][], [t; Δt*attr["time_steps"][]], hcat(.- initial_height .- total_subsidence, elevation), fid["sediment"][25,:,:,:]
+        n_facies = size(fid["sediment"])[3]
+
+        return n_facies,
+               fid["input/x"][],
+               [t; Δt*attr["time_steps"][]],
+               hcat(.- initial_height .- total_subsidence, elevation),
+               fid["sediment"][center,:,:,:]
     end
+
 	pts = vec(Point{2,Float64}.(x, h[:,2:end]))
 	c = vec(argmax(p; dims=2)[:,1,:] .|> (c -> c[2]))
 	rect = Rect2(0.0, 0.0, 1.0, 1.0)
 	m_tmp = GeometryBasics.mesh(Tesselation(rect, (100, 1000)))
 	m = GeometryBasics.Mesh(pts, faces(m_tmp))
 
-	f = Figure()
-	ax = Axis(f[1, 1], xlabel="location", ylabel="depth", limits=((-12,100), nothing))
+	# pts = vec(Point{2,Float64}.(x, h))
+	# c = argmax(p; dims=2)[:,1,:] .|> (c -> c[2])
+    # w = size(x)[1]
+
+    # face(idx) = let k = idx[1] + idx[2]*w
+    #     TriangleFace(k, k+1, k+1+w), TriangleFace(k+1+w, k+w, k)
+    # end
+
+	ax = Axis(pos, xlabel="location", ylabel="depth", limits=((-12,x[end]), nothing))
+    # for f in 1:n_facies
+    #     locs = CartesianIndices((size(x)[1], size(t)[1] - 1))[c .== f]
+    #     triangles = collect(Iterators.flatten(face.(locs)))
+    #     m = GeometryBasics.Mesh(pts, triangles)
+    #     mesh!(ax, m)
+    # end
+
 	mesh!(ax, m, color=c, alpha=0.7)
 	for idx in [1,501,1001]
 		lines!(ax, x, h[:, idx], color=:black)
@@ -326,8 +385,7 @@ function main()
 	for idx in [250,750]
 		lines!(ax, x, h[:, idx], color=:black, linewidth=0.5)
 	end
-	save("docs/src/fig/b13-crosssection.png", f)
 end
 
-main()
+end
 ```

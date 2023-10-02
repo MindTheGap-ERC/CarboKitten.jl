@@ -3,11 +3,10 @@
 
 [![Entangled badge](https://img.shields.io/badge/entangled-Use%20the%20source!-%2300aeff)](https://entangled.github.io/)
 
-![](fig/b13-crosssection.png)
+## About
+CarboKitten is a clone of Peter Burgess' CarboCAT, a model for growing carbonate platforms.
 
-
-```@contents
-```
+![](fig/b13-capsosc-crosssection.png)
 
 ## Julia Quickstarter
 
@@ -17,6 +16,9 @@ This code is written in [Julia](https://julia-lang.org/). You may want to check 
 - [Tutorial on Julia for Science and Engineering](https://www.matecdev.com/posts/julia-tutorial-science-engineering.html)
 
 There are several ways to work with Julia that may be a bit different from what you're used to, if that is Matlab, Python or R.
+
+### Installing Julia
+The best way to install Julia is to use `juliaup` at [github.com/JuliaLang/juliaup](https://github.com/JuliaLang/juliaup).
 
 ### REPL
 The most basic way to work in Julia, is to start the REPL (Read Eval Print Loop).
@@ -74,5 +76,123 @@ julia> Pluto.run()
 ┌ Info: 
 │ Press Ctrl+C in this terminal to stop Pluto
 └ 
+```
+
+### Plotting
+The most used library to do plotting in Julia is called `Plots`. However, this library comes with a fair share of problems: there are a number of back-ends for which the generated plots may look slightly different. Here "back-end" means some plotting library written in a different language than Julia.
+
+A nicer plotting library that also happens to be a bit more versatile is `Makie`. This has three back-ends that are `CairoMakie`, `GLMakie` and `WGLMakie`. These are all written in Julia, but they focus on different kinds of results. `CairoMakie` is usually slow but results in publication quality vector graphics: `SVG` or `PDF`. `GLMakie` is very fast, renders on your graphics card, but only produces raster images, say `PNG`. Then `WGLMakie` does a similar thing, but through the web-browser.
+
+Some plots in the documentation were rendered using Gnuplot. At some point these should be phased out for `CairoMakie` ones.
+
+## Entangled
+The documentation for CarboKitten is using [Entangled](https://entangled.github.io) for Literate Programming. This means that code blocks in the documentation contribute to the actual functioning code in the library. When you develop the library code, you should have the Entangled daemon running to keep the documentation synchronized.
+
+```shell
+entangled watch
+```
+
+Entangled is still under development and it may occur that the daemon complains about not knowing wether to `tangle` or `stitch`, for example when you've accidentally written both markdown and source code. If this happens you may manually `entangled tangle` or `entangled stitch` with the `--force` argument to decide the issue. It may be worth saving your work in version control before doing so.
+
+### Building
+The following currently works only on Linux and MacOS, mainly because usually there is no GNU Make installed on Windows. Support for Windows (probably through `nmake`) will happen in the future.
+
+To recreate the plots in the documentation, Entangled creates a `Makefile` in `.entangled/build`. This will run a workflow writing intermediate data in HDF5 format to the `data` folder and final plots end up in `docs/src/fig`. To run this you should first start the Julia `DaemonMode` daemon,
+
+```shell
+make run-daemon
+```
+
+And then create the figures in a different shell.
+
+```shell
+make figures
+```
+
+This may seem like a complication, and it is, but it also significantly speeds up creating all the figures. Once you have all the intermediate data in place, running `make figures` will only do something if some of the scripts involved have changed.
+
+The documentation can be rendered with `Documenter.jl`.
+
+```shell
+make serve-docs
+```
+
+## Project structure
+
+```
+.
+├── data                # data files
+├── docs                # documentation
+│   ├── make.jl         # docs build script
+│   ├── Manifest.toml   # 
+│   ├── Project.toml    # dependencies for building docs
+│   └── src             # markdown source for docs
+├── entangled.toml      # entangled config
+├── examples            # example scripts
+├── Makefile            # command-line short hands
+├── Manifest.toml       #
+├── Project.toml        # project dependencies
+├── README.md           # 
+└── src                 # tangled library source
+```
+
+## Authors
+
+Lead engineer: __Johan Hidding__  
+Netherlands eScience Center  
+email: j.hidding [at] esciencecenter.nl   
+Web page: [www.esciencecenter.nl/team/johan-hidding-msc/](https://www.esciencecenter.nl/team/johan-hidding-msc/)  
+ORCID: [0000-0002-7550-1796](https://orcid.org/0000-0002-7550-1796)
+
+Original author: __Peter Burgess__  
+University of Liverpool  
+Web page: [www.liverpool.ac.uk/environmental-sciences/staff/peter-burgess](https://www.liverpool.ac.uk/environmental-sciences/staff/peter-burgess/)
+
+Project lead: __Emilia Jarochowska__  
+Utrecht University  
+email: e.b.jarochowska [at] uu.nl  
+Web page: [www.uu.nl/staff/EBJarochowska](https://www.uu.nl/staff/EBJarochowska)  
+ORCID: [0000-0001-8937-9405](https://orcid.org/0000-0001-8937-9405)
+
+**Other team members:**
+
+__Niklas Hohmann__  
+Utrecht University  
+email: n.h.hohmann [at] uu.nl  
+Web page: [www.uu.nl/staff/NHohmann](https://www.uu.nl/staff/NHHohmann)  
+ORCID: [0000-0003-1559-1838](https://orcid.org/0000-0003-1559-1838)
+
+__Xianyi Liu__  
+Utrecht University  
+email: x.liu6 [at] uu.nl  
+Web page: [www.uu.nl/staff/XLiu6](https://www.uu.nl/staff/XLiu6)  
+ORCID: 
+
+__Hanno Spreeuw__  
+Netherlands eScience Center  
+email: h.spreeuw [at] esciencecenter.nl  
+Web page: [www.esciencecenter.nl/team/dr-hanno-spreeuw/](https://www.esciencecenter.nl/team/dr-hanno-spreeuw)  
+ORCID: [0000-0002-5057-0322](https://orcid.org/0000-0002-5057-0322)
+
+__David De Vleeschouwer__  
+Westfälische Wilhelms-Universität Münster  
+Web page: [www.uni-muenster.de/GeoPalaeontologie/erdsystemforschung/staff/DeVleeschouwer](https://www.uni-muenster.de/GeoPalaeontologie/erdsystemforschung/staff/DeVleeschouwer.html)  
+ORCID: [0000-0002-3323-807X](https://orcid.org/0000-0002-3323-807X)
+
+## Copyright
+
+Copyright 2023 Netherlands eScience Center and Utrecht University
+
+## License
+
+Apache 2.0 License, see LICENSE file for license text.
+
+## Funding information
+
+Funded by the European Union (ERC, MindTheGap, StG project no 101041077). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Council. Neither the European Union nor the granting authority can be held responsible for them.
+
+## Contents
+
+```@contents
 ```
 

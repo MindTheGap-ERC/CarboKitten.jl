@@ -6,4 +6,5 @@ hooks=["build"]
 # Daemon should be running:
 #   julia --startup-file=no -e 'using DaemonMode; serve()'
 Julia = "julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' {script}"
+Gnuplot = "gnuplot {script} > $@"
 

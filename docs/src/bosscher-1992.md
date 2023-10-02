@@ -5,16 +5,16 @@ The paper by @Bosscher1992 is an early computer model for simulating reef growth
 
 ## Parameters
 
-> - $G_m$ maximum growth rate. The maximum rate of reef growth is in the range of $10-15 {\rm mm\ yr^{-1}}$ (Macintyre etal., 1977; Adey, 1978; Davies, 1983).
-> - $k$ extinction coefficient. This is a measure of the extinction of photosynthetically active radiation (PAR), i.e. light with a wavelength of 400-700 nm.  The value of k for oceanic waters ranges from $0.04$ to $0.16\ {\rm m^{-1}}$ (Jerlov, 1976); reported values for reef waters also lie within this range (Brakel, 1979; Van den Hoek et al., 1975; Weinberg, 1976; Chalker, 1981; Porter, 1985).
-> - $I_0$ surface light intensity. The light intensity at the water surface at midday in the tropics lies in the range of $2000-2250\ {\rm \mu E\ m^{-2}s^{-1}}$.
-> - $I_k$ saturating light intensity. Light saturating intensities are in the range $50-450\ {\rm \mu E\ m^{-2}s^{-1}}$, depending on species and water depth (Chalker, 1981; Wyman et al., 1987). Photoadaptation of reef-building corals has not been taken into account. More generally, light does not become a limiting factor for coral growth until it reaches roughly 10% of its surface value (B. E. Chalker, in Done, 1983).
+> * Maximum growth rate $G_m$. The maximum rate of reef growth is in the range of $10-15 {\rm mm\ yr^{-1}}$ (Macintyre etal., 1977; Adey, 1978; Davies, 1983).
+> * Extinction coefficient $k$. This is a measure of the extinction of photosynthetically active radiation (PAR), i.e. light with a wavelength of 400-700 nm.  The value of k for oceanic waters ranges from $0.04$ to $0.16\ {\rm m^{-1}}$ (Jerlov, 1976); reported values for reef waters also lie within this range (Brakel, 1979; Van den Hoek et al., 1975; Weinberg, 1976; Chalker, 1981; Porter, 1985).
+> * Surface light intensity $I_0$. The light intensity at the water surface at midday in the tropics lies in the range of $2000-2250\ {\rm \mu E\ m^{-2}s^{-1}}$.
+> * Saturating light intensity $I_k$. Light saturating intensities are in the range $50-450\ {\rm \mu E\ m^{-2}s^{-1}}$, depending on species and water depth (Chalker, 1981; Wyman et al., 1987). Photoadaptation of reef-building corals has not been taken into account. More generally, light does not become a limiting factor for coral growth until it reaches roughly 10% of its surface value (B. E. Chalker, in Done, 1983).
 *from BS92*
 
 ## Growth Rate
 The growth rate is
 
-[$$g(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right),$$]{#eq:growth-function}
+$$g(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right),$$
 
 ``` {.julia #carbonate-production}
 g(gₘ, I₀, Iₖ, k, w) = gₘ * tanh(I₀/Iₖ * exp(-w * k))
@@ -43,11 +43,13 @@ Notice that the numbers inside the exponential need to be unit-free, so does the
 
 To reproduce Figure 2 in B13, I had to change the values for $g_m$ to 500, 250, and 125 respectively, the other values from Table 2 remained the same. I guess this was done for illustration purposes.
 
-![](fig/burgess2013-fig2.svg)
+![](fig/b13-fig2.svg)
 
+```@raw html
 <details><summary>Plotting code</summary>
+```
 
-``` {.gnuplot file=src/figures/plot-tanh.gnuplot}
+``` {.gnuplot .build file=examples/plot-tanh.gnuplot target=docs/src/fig/tanh.svg}
 set term svg size 700, 300 font "sans serif, 14" linewidth 1.5
 set xrange [-5:10]
 set yrange [-0.1:1.1]
@@ -58,7 +60,7 @@ set ylabel "y"
 plot tanh(exp(-x)) lc rgb 'black', tanh(exp(4)*exp(-x)), tanh(exp(-0.5*x))
 ```
 
-``` {.gnuplot file=src/figures/burgess2013-fig2.gnuplot}
+``` {.gnuplot .build file=examples/burgess2013-fig2.gnuplot target=docs/src/fig/b13-fig2.svg}
 set term svg size 500, 600 font "sans serif,14" linewidth 1.5
 set trange [0:100]
 set yrange [100:0]
@@ -73,22 +75,9 @@ plot 500*tanh(6.7 * exp(-0.8 * t)), t title 'Carbonate factory 1', \
      125*tanh(6.7 * exp(-0.005 * t)), t title 'Carbonate factory 3'
 ```
 
-``` {.make .build-artifact #plot-tanh}
-.RECIPEPREFIX = >
-.PHONY: all
-
-all: docs/fig/burgess2013-fig2.svg docs/fig/tanh.svg
-
-docs/fig/burgess2013-fig2.svg: src/figures/burgess2013-fig2.gnuplot
-> @mkdir -p $(@D)
-> gnuplot $< > $@
-
-docs/fig/tanh.svg: src/figures/plot-tanh.gnuplot
-> @mkdir -p $(@D)
-> gnuplot $< > $@
-```
-
+```@raw html
 </details>
+```
 
 ## Depth Evolution
 
@@ -111,30 +100,36 @@ It seems Eq. 5 in BS92 (the most important equation in the paper mind you!) is m
 ## Crosssection
 The most impressive result in BS92 is the last figure. They show an input curve for $s(t)$ but give no functional description. The curve starts with a linear drop from 0 to 120m depth over a time of 20000 years, then slowly rises with $s(t) = a +  bt + A \sin(2\pi t / P)$, with a period $P = \sim 15-20 {\rm kyr}$, amplitude $A = \sim 40 {\rm m}$. It might be easiest to take a screenshot of the PDF and convert the graph into a table.
 
-:::details
-### Extracting Sealevel Curve from an image
+```@raw html
+<details><summary>Extracting Sealevel Curve from an image</summary>
+```
 
-``` {.julia file=src/BS92/fig8-sealevel.jl}
-using Images
-using DataFrames
-using CSV
+``` {.julia .build file=src/BS92/fig8-sealevel.jl target=data/bs92-sealevel-curve.csv deps="data/bs92-sealevel-input.png"}
+module Script
+    using Images
+    using DataFrames
+    using CSV
 
-function main()
-    img = load("data/bs92-sealevel-input.png")
-    img_gray = Gray.(img)
-    signal = 1.0 .- channelview(img_gray)
-    signal ./= sum(signal; dims=[1])
-    (n_y, n_x) = size(signal)
-    y = sum(signal .* (1:n_y); dims=[1]) / n_y * 200.0
-    df = DataFrame(
-        time = LinRange(0.0, 80_000.0, n_x),
-        depth = y[1, :])
-    CSV.write("data/bs92-sealevel-curve.csv", df)
+    function main()
+        img = load("data/bs92-sealevel-input.png")
+        img_gray = Gray.(img)
+        signal = 1.0 .- channelview(img_gray)
+        signal ./= sum(signal; dims=[1])
+        (n_y, n_x) = size(signal)
+        y = sum(signal .* (1:n_y); dims=[1]) / n_y * 200.0
+        df = DataFrame(
+            time = LinRange(0.0, 80_000.0, n_x),
+            depth = y[1, :])
+        CSV.write("data/bs92-sealevel-curve.csv", df)
+    end
 end
 
-main()
+Script.main()
 ```
-:::
+
+```@raw html
+</details>
+```
 
 Using `DifferentialEquations.jl` we can integrate Equation @eq:growth-eqn. Interestingly, the only integrator that gave me noise free results is `Euler`. This may be due to the sudden shut-down of production at $w = 0$.
 
@@ -171,48 +166,53 @@ end
 
 Finally, we can try to reproduce figure 8 in BS92.
 
-!include docs/fig/bs92-fig8.html
+![](fig/bs92-fig8.png)
 
 Note the simplicity of this result: there is no dependency on space, only on the initial depth $h_0$.
 
-:::details
-### Plotting code
+```@raw html
+<details><summary>Plotting code</summary>
+```
 
-``` {.julia file=examples/bosscher-schlager-1992.jl}
-using CarboKitten.BS92
-using Plots
+``` {.julia .build file=examples/bosscher-schlager-1992.jl target=docs/src/fig/bs92-fig8.png deps=data/bs92-sealevel-curve.csv}
+module Script
+     using CarboKitten.BS92
+     using Plots
 
-function main()
-     h0 = LinRange(0, 200, 101)
-     result = hcat([BS92.model(BS92.SCENARIO_A, h).u for h in h0]...)
-     t = LinRange(0, 80_000, 81)
+     function main()
+          h0 = LinRange(0, 200, 101)
+          result = hcat([BS92.model(BS92.SCENARIO_A, h).u for h in h0]...)
+          t = LinRange(0, 80_000, 81)
 
-     plotlyjs()
+          plotlyjs()
 
-     plot(h0, result',
-          xaxis=("initial depth (m)"),
-          yaxis=("depth (m)", :flip),
-          legend_position=:none, lc=:steelblue,
-          size=(700, 700), fontfamily="Merriweather,serif")
+          plot(h0, result',
+               xaxis=("initial depth (m)"),
+               yaxis=("depth (m)", :flip),
+               legend_position=:none, lc=:steelblue,
+               size=(700, 700), fontfamily="Merriweather,serif")
 
-     plot!(t, BS92.SCENARIO_A.sealevel(t),
-          title="sea level curve", titlelocation=:left,
-          titlefontsize=12,
-          xaxis=("time (years)"),
-          yaxis=("depth (m)", :flip),
-          guidefontsize=10,
-          legend_position=:none,
-          lc=:steelblue,
-          inset=(1, bbox(0.11, 0.60, 0.45, 0.28)),
-          subplot=2,
-          framestyle=:box)
+          plot!(t, BS92.SCENARIO_A.sealevel(t),
+               title="sea level curve", titlelocation=:left,
+               titlefontsize=12,
+               xaxis=("time (years)"),
+               yaxis=("depth (m)", :flip),
+               guidefontsize=10,
+               legend_position=:none,
+               lc=:steelblue,
+               inset=(1, bbox(0.11, 0.60, 0.45, 0.28)),
+               subplot=2,
+               framestyle=:box)
 
-     mkpath("docs/src/fig")
-     savefig("docs/src/fig/bs92-fig8.html")
+          mkpath("docs/src/fig")
+          savefig("docs/src/fig/bs92-fig8.png")
+     end
 end
 
-main()
+Script.main()
 ```
-:::
 
-## References
+```@raw html
+</details>
+```
+

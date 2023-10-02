@@ -4,7 +4,19 @@
 .RECIPEPREFIX = >
 .PHONY = all
 
-all: docs/src/fig/b13-fig3.png docs/src/fig/b13-long-term.png data/ca-prod-slope.h5 docs/src/fig/b13-crosssection.png data/caps-osc.h5 docs/src/fig/b13-capsosc-crosssection.png
+all: docs/src/fig/tanh.svg docs/src/fig/b13-fig2.svg data/bs92-sealevel-curve.csv docs/src/fig/bs92-fig8.png docs/src/fig/b13-fig3.png docs/src/fig/b13-long-term.png data/ca-prod-slope.h5 docs/src/fig/b13-crosssection.png data/caps-osc.h5 docs/src/fig/b13-capsosc-crosssection.png
+
+docs/src/fig/tanh.svg: examples/plot-tanh.gnuplot 
+> gnuplot examples/plot-tanh.gnuplot > $@
+
+docs/src/fig/b13-fig2.svg: examples/burgess2013-fig2.gnuplot 
+> gnuplot examples/burgess2013-fig2.gnuplot > $@
+
+data/bs92-sealevel-curve.csv: src/BS92/fig8-sealevel.jl data/bs92-sealevel-input.png
+> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' src/BS92/fig8-sealevel.jl
+
+docs/src/fig/bs92-fig8.png: examples/bosscher-schlager-1992.jl data/bs92-sealevel-curve.csv
+> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/bosscher-schlager-1992.jl
 
 docs/src/fig/b13-fig3.png: examples/ca/burgess-2013.jl 
 > julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/ca/burgess-2013.jl

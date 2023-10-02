@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/bosscher-1992.md#src/figures/plot-tanh.gnuplot>>[init]
+# ~/~ begin <<docs/src/bosscher-1992.md#examples/plot-tanh.gnuplot>>[init]
 set term svg size 700, 300 font "sans serif, 14" linewidth 1.5
 set xrange [-5:10]
 set yrange [-0.1:1.1]

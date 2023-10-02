@@ -43,6 +43,9 @@ Additionally you should learn how to work with Julia packages. If you want to ex
 pkg> dev <path to CarboKitten>
 ```
 
+### VS Code
+VSCode has very good support for working with Julia. Install the official Julia plugin and you should be good to go. Explore options by pressing `Ctrl+Shift+P` and type Julia to see what you can do. For example: start a REPL, run current script etc.
+
 ### Jupyter
 You can run Julia code from Jupyter if you install the Julia kernel. Press `]` in the REPL to get into Pkg-mode, the prompt will change
 

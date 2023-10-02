@@ -1,6 +1,51 @@
 # Combining CA with production
 This model combines BS92 production with the B13 cellular automaton.
 
+## Complete example
+This example is running for 10000 steps to 1Myr on a 100 $\times$ 50 grid, starting with a sloped height down to 50m. The `sea_level`, and `initial_depth` arguments are functions. The `phys_scale` argument translate pixels on the grid into physical metres. The `write_interval` indicates to write output every 10 iterations, summing the production over that range. You may copy paste the following code into your own script or notebook, and play around with input values.
+
+``` {.julia .build file=examples/caps-osc.jl target=data/caps-osc.h5}
+using CarboKitten.CaProd
+
+DEFAULT_INPUT = CaProd.Input(
+    sea_level = t -> 4 * sin(2π * t / 0.2), 
+    subsidence_rate = 50.0,
+    initial_depth = x -> x / 2,
+    grid_size = (50, 100),
+    phys_scale = 1.0,
+    Δt = 0.0001,
+    write_interval = 10,
+    time_steps = 10000,
+    facies = [
+        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
+        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
+        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
+    ],
+    insolation = 2000.0
+)
+
+CaProd.main(DEFAULT_INPUT, "data/caps-osc.h5")
+```
+
+This writes output to an HDF5 file that you may use for further analysis and visualization.
+
+``` {.julia .build file=examples/plot-caps-osc.jl target=docs/src/fig/b13-capsosc-crosssection.png deps=data/caps-osc.h5}
+module Script
+    using CarboKitten.Visualization
+    using GLMakie
+
+    function main()
+        f = Figure()
+        plot_crosssection(f[1,1], "data/caps-osc.h5")
+	    save("docs/src/fig/b13-capsosc-crosssection.png", f)
+    end
+end
+
+Script.main()
+```
+
+![](fig/b13-capsosc-crosssection.png)
+
 ## Input
 
 - initial depth (function of space)
@@ -276,49 +321,6 @@ Script.main()
 ```
 
 ![](fig/b13-crosssection.png)
-
-## Case 3
-Now add an oscillating sea level.
-
-``` {.julia .build file=examples/caps-osc.jl target=data/caps-osc.h5}
-using CarboKitten.CaProd
-
-DEFAULT_INPUT = CaProd.Input(
-    sea_level = t -> 4 * sin(2π * t / 0.2), 
-    subsidence_rate = 50.0,
-    initial_depth = x -> x / 2,
-    grid_size = (50, 100),
-    phys_scale = 1.0,
-    Δt = 0.0001,
-    write_interval = 10,
-    time_steps = 10000,
-    facies = [
-        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
-    ],
-    insolation = 2000.0
-)
-
-CaProd.main(DEFAULT_INPUT, "data/caps-osc.h5")
-```
-
-``` {.julia .build file=examples/plot-caps-osc.jl target=docs/src/fig/b13-capsosc-crosssection.png deps=data/caps-osc.h5}
-module Script
-    using CarboKitten.Visualization
-    using GLMakie
-
-    function main()
-        f = Figure()
-        plot_crosssection(f[1,1], "data/caps-osc.h5")
-	    save("docs/src/fig/b13-capsosc-crosssection.png", f)
-    end
-end
-
-Script.main()
-```
-
-![](fig/b13-capsosc-crosssection.png)
 
 # Visualizing output
 

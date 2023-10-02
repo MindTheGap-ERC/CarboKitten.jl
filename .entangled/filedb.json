@@ -113,8 +113,8 @@
     {
       "path": "docs/src/index.md",
       "deps": null,
-      "modified": "2023-09-27T15:22:52.658683",
-      "hexdigest": "1465d4fedf192b9eda848e1b2776f93582c87b3381b150ceb676a0a1b78b3a4d"
+      "modified": "2023-10-02T17:10:45.068103",
+      "hexdigest": "ebe9fb98918122dbd14141a5cdcca8763c4cba9f9e29f8c50098a48b45e08385"
     },
     {
       "path": "docs/src/bs92-w-erosion.md",
@@ -141,8 +141,8 @@
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2023-10-02T15:01:01.706003",
-      "hexdigest": "9b0dceae2124eb077eecad02c1b45d90b6282756c36949926d0462f16e70c5de"
+      "modified": "2023-10-02T16:25:27.448153",
+      "hexdigest": "d20c13c8c9ff86ad534c5fef6a07f0c0db11a690b593b0da2ac0a158d082612a"
     },
     {
       "path": "src/CaProd.jl",

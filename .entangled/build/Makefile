@@ -4,7 +4,7 @@
 .RECIPEPREFIX = >
 .PHONY = all
 
-all: docs/src/fig/b13-fig3.png docs/src/fig/b13-long-term.png data/ca-prod-slope.h5 docs/src/fig/b13-crosssection.png docs/src/fig/b13-capsosc-crosssection.png
+all: docs/src/fig/b13-fig3.png docs/src/fig/b13-long-term.png data/ca-prod-slope.h5 docs/src/fig/b13-crosssection.png data/caps-osc.h5 docs/src/fig/b13-capsosc-crosssection.png
 
 docs/src/fig/b13-fig3.png: examples/ca/burgess-2013.jl 
 > julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/ca/burgess-2013.jl
@@ -17,6 +17,9 @@ data/ca-prod-slope.h5: examples/cap-slope.jl
 
 docs/src/fig/b13-crosssection.png: examples/plot-cap-slope.jl data/ca-prod-slope.h5
 > julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/plot-cap-slope.jl
+
+data/caps-osc.h5: examples/caps-osc.jl 
+> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/caps-osc.jl
 
 docs/src/fig/b13-capsosc-crosssection.png: examples/plot-caps-osc.jl data/caps-osc.h5
 > julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/plot-caps-osc.jl

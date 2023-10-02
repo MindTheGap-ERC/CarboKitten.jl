@@ -1,8 +1,6 @@
 # ~/~ begin <<docs/src/ca-with-production.md#src/CaProd.jl>>[init]
 module CaProd
 
-export Input, Facies, main
-
 using CarboKitten
 using CarboKitten.Stencil: Periodic
 using CarboKitten.Utility
@@ -32,13 +30,13 @@ end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-frame>>[init]
 struct Frame
-    production :: Array{Float64, 3}
+    production::Array{Float64,3}
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-state>>[init]
 mutable struct State
-    time :: Float64
-    height :: Array{Float64, 2}
+    time::Float64
+    height::Array{Float64,2}
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[init]
@@ -109,8 +107,8 @@ function stack_frames(fs::Vector{Frame})  # -> Frame
 end
 
 function main(input::Input, output::String)
-    x_axis = (0:(input.grid_size[2] - 1)) .* input.phys_scale
-    y_axis = (0:(input.grid_size[1] - 1)) .* input.phys_scale
+    x_axis = (0:(input.grid_size[2]-1)) .* input.phys_scale
+    y_axis = (0:(input.grid_size[1]-1)) .* input.phys_scale
     initial_height = input.initial_depth.(x_axis)
     n_writes = input.time_steps ÷ input.write_interval
 
@@ -133,7 +131,7 @@ function main(input::Input, output::String)
 
         results = map(stack_frames, partition(run_model(input), input.write_interval))
         for (step, frame) in enumerate(take(results, n_writes))
-            ds[:,:,:,step] = frame.production
+            ds[:, :, :, step] = frame.production
         end
     end
 end

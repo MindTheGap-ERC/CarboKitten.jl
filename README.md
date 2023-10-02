@@ -3,6 +3,9 @@
 
 [![Entangled badge](https://img.shields.io/badge/entangled-Use%20the%20source!-%2300aeff)](https://entangled.github.io/)
 
+## Project layout
+
+
 ## Running
 
 Start the Julia REPL, and get into Pkg mode by pressing `]`. You may activate the package environment using `activate .` and then install the dependencies using `instantiate`. These steps only need to be run once.
@@ -35,7 +38,7 @@ julia --project=.
 or start the REPL from VS Code. In the REPL you can run
 
 ```julia
-include("examples/bosscher-sclager-1992.jl")
+include("examples/bosscher-schlager-1992.jl")
 ```
 
 After that, you may edit an example and rerun.

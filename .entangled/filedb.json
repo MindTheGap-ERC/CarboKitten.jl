@@ -157,46 +157,40 @@
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2023-09-27T23:54:27.744672",
-      "hexdigest": "d35e7caddb4c79d2a0771f775c40dfe4f7091315e77400932b5be693b864627d"
+      "modified": "2023-10-02T15:01:01.706003",
+      "hexdigest": "9b0dceae2124eb077eecad02c1b45d90b6282756c36949926d0462f16e70c5de"
     },
     {
       "path": "src/CaProd.jl",
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2023-09-23T12:42:35.628805",
-      "hexdigest": "8e4c5ff071add55a0b8c4ffebc9746fe43e3a7152382ea7c5630dcd8467c00dd"
+      "modified": "2023-10-02T14:56:42.676298",
+      "hexdigest": "def8c814ae9e2e228c6f0e1587c1a72beba009e78cf4e8b66cd503637e523f52"
     },
     {
       "path": "examples/ca-with-prod.jl",
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2023-09-21T21:14:55.298171",
-      "hexdigest": "e51aeae06a417fbbb644a8202776432d3f38c604645cc455abee2e024f7d8b8c"
+      "modified": "2023-10-02T14:54:04.277255",
+      "hexdigest": "2131293d9ea8cddfc793b1c76482da14ce9a327a5ef33b54b70f1404b9ff6702"
     },
     {
       "path": "examples/cap-slope.jl",
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2023-09-27T15:09:42.025088",
-      "hexdigest": "82c974093997dff9bcc33ea179c239c21a065df1daa458bdd43dee69a24f4948"
+      "modified": "2023-10-02T14:52:19.554566",
+      "hexdigest": "595c5634298f38033d94e27d23f3f59b5c35cb41ed8e1fcb7383fce4fac3079a"
     },
     {
       "path": "examples/caps-osc.jl",
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2023-09-22T14:07:24.685794",
-      "hexdigest": "55605939fdbef866ec2487f5a998ec3546f4a2696e0bf29c42b1a175546efec9"
-    },
-    {
-      "path": "README.md",
-      "deps": null,
-      "modified": "2023-09-23T17:28:56.768370",
-      "hexdigest": "ab3418a0b8d69179b00bde19984b0c4812de6dcc5a70d005d8613d9a6fbc6f16"
+      "modified": "2023-10-02T14:54:42.153505",
+      "hexdigest": "e5051ca2816f8847be744ec5ca6ed7f8640661e5c80c39c53aa4b442d1413d6e"
     },
     {
       "path": "examples/ca/burgess-2013.jl",
@@ -235,42 +229,42 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2023-09-27T23:07:24.741368",
-      "hexdigest": "1c14b562b1a59824aa606facd009d5c64fd22fc654aee74da157a31705360820"
+      "modified": "2023-10-02T14:51:31.947252",
+      "hexdigest": "59c52a8d8a7f8d2e7f18b624ef0b85536aea57131d4afda5626dd2076d0aa123"
     },
     {
       "path": "examples/plot-caps-osc.jl",
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2023-09-27T23:54:47.898999",
-      "hexdigest": "4c75bc5ce28ee5d4a3f3ec41d45a4a5935db0f9438d22cfd4bb5021a016b27aa"
+      "modified": "2023-10-02T14:55:05.324657",
+      "hexdigest": "eb81b5a1d94e6119bb171471fb270d8ccfbb10c3e391137680e097c156c13137"
     }
   ],
   "source": [],
   "target": [
-    "examples/plot-caps-osc.jl",
-    "src/figures/burgess2013-fig2.gnuplot",
-    "src/Burgess2013/CA.jl",
-    "src/CaProd.jl",
-    "examples/ca/burgess-2013.jl",
-    "examples/ca-with-prod.jl",
-    "src/Burgess2013/Production.jl",
     "src/Visualization.jl",
+    "src/Burgess2013/Production.jl",
+    "examples/plot-cap-slope.jl",
+    "src/CaProd.jl",
+    "src/Utility.jl",
+    "src/figures/burgess2013-fig2.gnuplot",
+    "src/BS92.jl",
+    "src/Burgess2013/Transport.jl",
+    "src/Burgess2013/Config.jl",
+    "examples/cap-slope.jl",
+    "src/Burgess2013/CA.jl",
+    "examples/ca-with-prod.jl",
+    "examples/ca/burgess-2013.jl",
+    "examples/caps-osc.jl",
+    "src/figures/plot-tanh.gnuplot",
+    "examples/bosscher-schlager-1992.jl",
+    "src/Stencil.jl",
+    "examples/plot-caps-osc.jl",
     "src/BS92/fig8-sealevel.jl",
     "src/Erosion.jl",
-    "src/figures/plot-tanh.gnuplot",
-    "examples/caps-osc.jl",
-    "examples/ca/long-term.jl",
-    "examples/bosscher-schlager-1992.jl",
-    "examples/plot-cap-slope.jl",
-    "src/Burgess2013/Config.jl",
-    "src/Burgess2013.jl",
-    "src/Utility.jl",
-    "src/Stencil.jl",
     "examples/ca/parameter-scan.jl",
-    "src/BS92.jl",
-    "examples/cap-slope.jl",
-    "src/Burgess2013/Transport.jl"
+    "examples/ca/long-term.jl",
+    "src/Burgess2013.jl"
   ]
 }

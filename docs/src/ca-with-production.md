@@ -40,7 +40,7 @@ Each iteration of the model, we produce a `Frame`.
 
 ``` {.julia #ca-prod-frame}
 struct Frame
-    production :: Array{Float64, 3}
+    production::Array{Float64,3}
 end
 ```
 
@@ -48,8 +48,8 @@ The frame is used to update a *state* $S$. The frame should be considered a delt
 
 ``` {.julia #ca-prod-state}
 mutable struct State
-    time :: Float64
-    height :: Array{Float64, 2}
+    time::Float64
+    height::Array{Float64,2}
 end
 ```
 
@@ -156,8 +156,6 @@ end
 ``` {.julia file=src/CaProd.jl}
 module CaProd
 
-export Input, Facies, main
-
 using CarboKitten
 using CarboKitten.Stencil: Periodic
 using CarboKitten.Utility
@@ -178,8 +176,8 @@ function stack_frames(fs::Vector{Frame})  # -> Frame
 end
 
 function main(input::Input, output::String)
-    x_axis = (0:(input.grid_size[2] - 1)) .* input.phys_scale
-    y_axis = (0:(input.grid_size[1] - 1)) .* input.phys_scale
+    x_axis = (0:(input.grid_size[2]-1)) .* input.phys_scale
+    y_axis = (0:(input.grid_size[1]-1)) .* input.phys_scale
     initial_height = input.initial_depth.(x_axis)
     n_writes = input.time_steps ÷ input.write_interval
 
@@ -202,7 +200,7 @@ function main(input::Input, output::String)
 
         results = map(stack_frames, partition(run_model(input), input.write_interval))
         for (step, frame) in enumerate(take(results, n_writes))
-            ds[:,:,:,step] = frame.production
+            ds[:, :, :, step] = frame.production
         end
     end
 end
@@ -216,24 +214,24 @@ The first case uses the same settings as Burgess 2013: an initial depth of 2m, s
 ``` {.julia file=examples/ca-with-prod.jl}
 using CarboKitten.CaProd
 
-DEFAULT_INPUT = Input(
-    sea_level = _ -> 0.0, 
-    subsidence_rate = 50.0,
-    initial_depth = _ -> 2.0,
-    grid_size = (50, 50),
-    phys_scale = 1.0,
-    Δt = 0.001,
-    write_interval = 1,
-    time_steps = 1000,
-    facies = [
-        Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-        Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-        Facies((4, 10), (6, 10), 100.0, 0.005, 300)
-    ],
-    insolation = 2000.0
+DEFAULT_INPUT = CaProd.Input(
+  sea_level=_ -> 0.0,
+  subsidence_rate=50.0,
+  initial_depth=_ -> 2.0,
+  grid_size=(50, 50),
+  phys_scale=1.0,
+  Δt=0.001,
+  write_interval=1,
+  time_steps=1000,
+  facies=[
+    CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
+    CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
+    CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
+  ],
+  insolation=2000.0
 )
 
-main(DEFAULT_INPUT, "data/ca-prod.h5")
+CaProd.main(DEFAULT_INPUT, "data/ca-prod.h5")
 ```
 
 ## Case 2
@@ -242,37 +240,39 @@ For the second case, we start with a slope.
 ``` {.julia .build file=examples/cap-slope.jl target=data/ca-prod-slope.h5}
 using CarboKitten.CaProd
 
-DEFAULT_INPUT = Input(
-    sea_level = _ -> 0.0, 
-    subsidence_rate = 50.0,
-    initial_depth = x -> x/2.0,
-    grid_size = (50, 100),
-    phys_scale = 1.0,
-    Δt = 0.001,
-    write_interval = 1,
-    time_steps = 1000,
-    facies = [
-        Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-        Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-        Facies((4, 10), (6, 10), 100.0, 0.005, 300)
+DEFAULT_INPUT = CaProd.Input(
+    sea_level=_ -> 0.0,
+    subsidence_rate=50.0,
+    initial_depth=x -> x / 2.0,
+    grid_size=(50, 100),
+    phys_scale=1.0,
+    Δt=0.001,
+    write_interval=1,
+    time_steps=1000,
+    facies=[
+        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
+        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
+        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
     ],
-    insolation = 2000.0
+    insolation=2000.0
 )
 
-main(DEFAULT_INPUT, "data/ca-prod-slope.h5")
+CaProd.main(DEFAULT_INPUT, "data/ca-prod-slope.h5")
 ```
 
 ``` {.julia .build file=examples/plot-cap-slope.jl target=docs/src/fig/b13-crosssection.png deps=data/ca-prod-slope.h5}
+module Script
 using CarboKitten.Visualization
 using GLMakie
 
 function main()
     f = Figure()
-    plot_crosssection(f[1,1], "data/ca-prod-slope.h5")
-	save("docs/src/fig/b13-crosssection.png", f)
+    plot_crosssection(f[1, 1], "data/ca-prod-slope.h5")
+    save("docs/src/fig/b13-crosssection.png", f)
+end
 end
 
-main()
+Script.main()
 ```
 
 ![](fig/b13-crosssection.png)
@@ -280,10 +280,10 @@ main()
 ## Case 3
 Now add an oscillating sea level.
 
-``` {.julia file=examples/caps-osc.jl}
+``` {.julia .build file=examples/caps-osc.jl target=data/caps-osc.h5}
 using CarboKitten.CaProd
 
-DEFAULT_INPUT = Input(
+DEFAULT_INPUT = CaProd.Input(
     sea_level = t -> 4 * sin(2π * t / 0.2), 
     subsidence_rate = 50.0,
     initial_depth = x -> x / 2,
@@ -293,27 +293,29 @@ DEFAULT_INPUT = Input(
     write_interval = 10,
     time_steps = 10000,
     facies = [
-        Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-        Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-        Facies((4, 10), (6, 10), 100.0, 0.005, 300)
+        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
+        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
+        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
     ],
     insolation = 2000.0
 )
 
-main(DEFAULT_INPUT, "data/caps-osc.h5")
+CaProd.main(DEFAULT_INPUT, "data/caps-osc.h5")
 ```
 
 ``` {.julia .build file=examples/plot-caps-osc.jl target=docs/src/fig/b13-capsosc-crosssection.png deps=data/caps-osc.h5}
-using CarboKitten.Visualization
-using GLMakie
+module Script
+    using CarboKitten.Visualization
+    using GLMakie
 
-function main()
-    f = Figure()
-    plot_crosssection(f[1,1], "data/caps-osc.h5")
-	save("docs/src/fig/b13-capsosc-crosssection.png", f)
+    function main()
+        f = Figure()
+        plot_crosssection(f[1,1], "data/caps-osc.h5")
+	    save("docs/src/fig/b13-capsosc-crosssection.png", f)
+    end
 end
 
-main()
+Script.main()
 ```
 
 ![](fig/b13-capsosc-crosssection.png)

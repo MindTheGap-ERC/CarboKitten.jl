@@ -54,6 +54,7 @@ makedocs(
     source=path,
     sitename="CarboKitten",
     pages = [
+        "Index and Intro to Julia" => "index.md",
         "Bosscher and Schlager 1992" => "bosscher-1992.md",
         "CarboCAT" => [
             "Summary" => "carbocat.md",

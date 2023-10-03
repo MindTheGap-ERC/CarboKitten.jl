@@ -77,13 +77,13 @@
     {
       "path": "docs/src/bosscher-1992.md",
       "deps": null,
-      "modified": "2023-10-02T15:39:55.603059",
+      "modified": "2023-10-03T14:33:46.604709",
       "hexdigest": "620785caa7221b21d426e296c27cfee3d98239d569745f050d1ee317e209a07e"
     },
     {
       "path": "docs/src/carbocat-ca.md",
       "deps": null,
-      "modified": "2023-10-03T10:04:32.241545",
+      "modified": "2023-10-03T14:33:46.605709",
       "hexdigest": "88546f4503e9d893ff4c75b15bd5b27e7262fcab76db97a0ba737214e6c5b931"
     },
     {
@@ -95,25 +95,25 @@
     {
       "path": "docs/src/carbocat.md",
       "deps": null,
-      "modified": "2023-09-26T20:23:17.219092",
+      "modified": "2023-10-03T14:33:46.605709",
       "hexdigest": "0eaad0c9dbc3f9ee76ca5806f2fb0e15f9c440c11d0cecf4b7faebe906d0095f"
     },
     {
       "path": "docs/src/stencils.md",
       "deps": null,
-      "modified": "2023-09-23T17:12:49.121904",
+      "modified": "2023-10-03T14:33:46.616709",
       "hexdigest": "1add42b5aaf27027505482565444f681f7f69eb6ce936d067e67edab516c1872"
     },
     {
       "path": "docs/src/utility.md",
       "deps": null,
-      "modified": "2023-08-02T15:02:49.864313",
-      "hexdigest": "f3aa3714059726824061f7843df19fdcfeb4f6a9a9d42485304a11127d1e7d66"
+      "modified": "2023-10-03T14:35:22.025342",
+      "hexdigest": "c39fdbeaa543229e5c562a38edba9441dc1367f333b4aba531541dabda2b9869"
     },
     {
       "path": "docs/src/index.md",
       "deps": null,
-      "modified": "2023-10-03T01:11:11.180020",
+      "modified": "2023-10-03T14:33:46.616709",
       "hexdigest": "1a7b5a209f1ef1475c31271c8d98f5d1fc881c2cc5f1b34cdd81ff2190ce77c3"
     },
     {
@@ -141,7 +141,7 @@
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2023-10-02T16:25:27.448153",
+      "modified": "2023-10-03T14:33:46.604709",
       "hexdigest": "d20c13c8c9ff86ad534c5fef6a07f0c0db11a690b593b0da2ac0a158d082612a"
     },
     {
@@ -243,12 +243,13 @@
   ],
   "source": [],
   "target": [
+    "src/Burgess2013/Config.jl",
     "src/Utility.jl",
     "src/Burgess2013/Production.jl",
     "src/Burgess2013/CA.jl",
     "examples/caps-osc.jl",
-    "examples/ca-with-prod.jl",
     "examples/bosscher-schlager-1992.jl",
+    "examples/ca-with-prod.jl",
     "src/Erosion.jl",
     "examples/plot-cap-slope.jl",
     "examples/ca/long-term.jl",
@@ -257,13 +258,12 @@
     "examples/plot-tanh.gnuplot",
     "src/BS92/fig8-sealevel.jl",
     "examples/plot-caps-osc.jl",
-    "src/Visualization.jl",
     "examples/ca/parameter-scan.jl",
     "src/BS92.jl",
     "examples/ca/burgess-2013.jl",
     "src/Burgess2013.jl",
     "src/Stencil.jl",
-    "src/Burgess2013/Config.jl",
+    "src/Visualization.jl",
     "src/CaProd.jl",
     "src/Burgess2013/Transport.jl"
   ]

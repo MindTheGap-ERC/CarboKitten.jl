@@ -85,48 +85,54 @@ On my laptop I can run about 150 iterations per second with current code. When u
 ```
 
 ``` {.julia .build file=examples/ca/burgess-2013.jl target="docs/src/fig/b13-fig3.png"}
-using CarboKitten
-using CarboKitten.Burgess2013
-using CarboKitten.Stencil: Reflected
-using CarboKitten.Utility
-using GLMakie
+module Script
+    using .Iterators: flatten
+    using CarboKitten
+    using CarboKitten.Burgess2013
+    using CarboKitten.Stencil: Reflected
+    using CarboKitten.Utility
+    using GLMakie
 
-function main()
-    init = rand(0:3, 50, 50)
-    ca = run_ca(Reflected{2}, MODEL1, init, 3)
+    function main()
+        init = rand(0:3, 50, 50)
+        ca = run_ca(Reflected{2}, MODEL1, init, 3)
 
-    fig = Figure(resolution=(1000, 500))
-    for (i, st) in zip(CartesianIndices((2, 4)), ca)
-        ax = Axis(fig[Tuple(i)...], aspect=AxisAspect(1))
-        heatmap!(ax, st)
+        fig = Figure(resolution=(1000, 500))
+        axis_indices = flatten(eachrow(CartesianIndices((2, 4))))
+        for (i, st) in zip(axis_indices, ca)
+            ax = Axis(fig[Tuple(i)...], aspect=AxisAspect(1))
+            heatmap!(ax, st)
+        end
+        save("docs/src/fig/b13-fig3.png", fig)
     end
-    save("docs/src/fig/b13-fig3.png", fig)
 end
 
-main()
+Script.main()
 ```
 
 
 ``` {.julia .build file=examples/ca/long-term.jl target="docs/src/fig/b13-long-term.png"}
-using CarboKitten
-using CarboKitten.Burgess2013
-using CarboKitten.Stencil
-using CarboKitten.Utility
-using GLMakie
+module Script
+    using CarboKitten
+    using CarboKitten.Burgess2013
+    using CarboKitten.Stencil
+    using CarboKitten.Utility
+    using GLMakie
 
-function main()
-    init = rand(0:3, 50, 50)
-    result = select(run_ca(Periodic{2}, MODEL1, init, 3), [10, 100, 10000])
+    function main()
+        init = rand(0:3, 50, 50)
+        result = select(run_ca(Periodic{2}, MODEL1, init, 3), [10, 100, 10000])
 
-    fig = Figure(resolution=(1000, 333))
-    for (i, st) in enumerate(result)
-        ax = Axis(fig[1, i], aspect=AxisAspect(1))
-        heatmap!(ax, st)
+        fig = Figure(resolution=(1000, 333))
+        for (i, st) in enumerate(result)
+            ax = Axis(fig[1, i], aspect=AxisAspect(1))
+            heatmap!(ax, st)
+        end
+        save("docs/src/fig/b13-long-term.png", fig)
     end
-    save("docs/src/fig/b13-long-term.png", fig)
 end
 
-main()
+Script.main()
 ```
 
 ```@raw html
@@ -159,6 +165,8 @@ What this says is: create a `heatmap` for each of our eight results, then expand
 ## Parameter scan
 
 ``` {.julia file=examples/ca/parameter-scan.jl}
+module Script
+
 using CarboKitten
 using CarboKitten.Burgess2013
 using CarboKitten.Stencil
@@ -192,5 +200,7 @@ function main()
     save("docs/src/fig/parameter-scan.png", fig)
 end
 
-main()
+end  # module Script
+
+Script.main()
 ```

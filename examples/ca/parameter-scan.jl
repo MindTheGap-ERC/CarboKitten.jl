@@ -1,4 +1,6 @@
 # ~/~ begin <<docs/src/carbocat-ca.md#examples/ca/parameter-scan.jl>>[init]
+module Script
+
 using CarboKitten
 using CarboKitten.Burgess2013
 using CarboKitten.Stencil
@@ -32,5 +34,7 @@ function main()
     save("docs/src/fig/parameter-scan.png", fig)
 end
 
-main()
+end  # module Script
+
+Script.main()
 # ~/~ end

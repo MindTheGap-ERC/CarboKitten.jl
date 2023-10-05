@@ -1,4 +1,4 @@
-using Documenter, CarboKitten
+using Documenter
 
 module Entangled
     using DataStructures: DefaultDict
@@ -46,13 +46,16 @@ end
 
 is_markdown(path) = splitext(path)[2] == ".md"
 sources = filter(is_markdown, readdir(joinpath(@__DIR__, "src"), join=true))
-path = mktempdir()
+path = joinpath(@__DIR__, "transpiled")
+rm(path; force=true, recursive=true)
+mkpath(path)
 Entangled.transpile_file.(sources, path)
-copydir("docs/src/fig", joinpath(path, "fig"))
+copydir(joinpath(@__DIR__, "src/fig"), joinpath(path, "fig"))
 
 makedocs(
     source=path,
     sitename="CarboKitten",
+    # repo=Remotes.GitHub("MindTheGap-ERC", "CarboKitten"),
     pages = [
         "Introduction" => "index.md",
         "Bosscher and Schlager 1992" => "bosscher-1992.md",
@@ -69,5 +72,5 @@ makedocs(
     ])
 
 deploydocs(
-    repo = "github.com/MindTheGap-ERC/CarboKitten.git"
+    repo=Remotes.GitHub("MindTheGap-ERC", "CarboKitten")
 )

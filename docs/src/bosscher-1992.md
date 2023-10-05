@@ -144,7 +144,7 @@ using Interpolations
 <<b92-model>>
 
 function sealevel_curve()
-     data = DataFrame(CSV.File("data/bs92-sealevel-curve.csv"))
+     data = DataFrame(CSV.File(pkgdir(BS92, "data", "bs92-sealevel-curve.csv")))
      linear_interpolation(data.time, data.depth)
 end
 
@@ -166,7 +166,7 @@ end
 
 Finally, we can try to reproduce figure 8 in BS92.
 
-![](fig/bs92-fig8.png)
+![](fig/bs92-fig8.svg)
 
 Note the simplicity of this result: there is no dependency on space, only on the initial depth $h_0$.
 
@@ -174,38 +174,25 @@ Note the simplicity of this result: there is no dependency on space, only on the
 <details><summary>Plotting code</summary>
 ```
 
-``` {.julia .build file=examples/bosscher-schlager-1992.jl target=docs/src/fig/bs92-fig8.png deps=data/bs92-sealevel-curve.csv}
+``` {.julia .build file=examples/bosscher-schlager-1992.jl target=docs/src/fig/bs92-fig8.svg deps=data/bs92-sealevel-curve.csv}
 module Script
      using CarboKitten.BS92
-     using Plots
+     using CairoMakie
 
      function main()
           h0 = LinRange(0, 200, 101)
           result = hcat([BS92.model(BS92.SCENARIO_A, h).u for h in h0]...)
           t = LinRange(0, 80_000, 81)
 
-          plotlyjs()
+          fig = Figure(resolution=(600,900))
+          ax = Axis(fig[1,1], xlabel="initial depth (m)", ylabel="depth (m)", yreversed=true)
+          for l in eachrow(result)
+               lines!(ax, h0, vec(l); color=:steelblue4, linewidth=0.5)
+          end
+          ax = Axis(fig[2,1], xlabel="time (years)", ylabel="depth (m)", yreversed=true)
+          lines!(ax, t, BS92.SCENARIO_A.sealevel(t); color=:steelblue4)
 
-          plot(h0, result',
-               xaxis=("initial depth (m)"),
-               yaxis=("depth (m)", :flip),
-               legend_position=:none, lc=:steelblue,
-               size=(700, 700), fontfamily="Merriweather,serif")
-
-          plot!(t, BS92.SCENARIO_A.sealevel(t),
-               title="sea level curve", titlelocation=:left,
-               titlefontsize=12,
-               xaxis=("time (years)"),
-               yaxis=("depth (m)", :flip),
-               guidefontsize=10,
-               legend_position=:none,
-               lc=:steelblue,
-               inset=(1, bbox(0.11, 0.60, 0.45, 0.28)),
-               subplot=2,
-               framestyle=:box)
-
-          mkpath("docs/src/fig")
-          savefig("docs/src/fig/bs92-fig8.png")
+          save("docs/src/fig/bs92-fig8.svg", fig)
      end
 end
 

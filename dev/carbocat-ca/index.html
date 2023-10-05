@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Cellular Automaton · CarboKitten</title><meta name="title" content="Cellular Automaton · CarboKitten"/><meta property="og:title" content="Cellular Automaton · CarboKitten"/><meta property="twitter:title" content="Cellular Automaton · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li><li class="is-active"><a class="tocitem" href>Cellular Automaton</a><ul class="internal"><li><a class="tocitem" href="#Cellular-Automaton"><span>Cellular Automaton</span></a></li><li><a class="tocitem" href="#Howto-run"><span>Howto run</span></a></li><li><a class="tocitem" href="#Parameter-scan"><span>Parameter scan</span></a></li></ul></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../carbocat-transport/">Sediment Transport</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">CarboCAT</a></li><li class="is-active"><a href>Cellular Automaton</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Cellular Automaton</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten/blob/main/docs/transpiled/carbocat-ca.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><hr/><p>title: Species Habitation subtitle: a cellular automaton –-</p><h2 id="Cellular-Automaton"><a class="docs-heading-anchor" href="#Cellular-Automaton">Cellular Automaton</a><a id="Cellular-Automaton-1"></a><a class="docs-heading-anchor-permalink" href="#Cellular-Automaton" title="Permalink"></a></h2><p>The paper talks about cycling the order of preference for occupying an empty cell at each iteration. This means that the rules change slighly every iteration.</p><div class="noweb-label">⪡cycle-permutation⪢≣</div><pre><code class="language- julia hljs">cycle_permutation(n_species::Int) =
+    (circshift(1:n_species, x) for x in Iterators.countfrom(0))</code></pre><p>The <code>stencil</code> function has an <code>args...</code> variadic arguments that are forwarded to the given rule. This means we can create a <code>rules</code> function that we pass the preference order as a second argument.</p><div class="noweb-label">⪡burgess2013-rules⪢≣</div><pre><code class="language- julia hljs">function rules(facies::Vector{Facies})
+    function (neighbourhood::Matrix{Int}, order::Vector{Int})
+        cell_facies = neighbourhood[3, 3]
+        neighbour_count(f) = sum(neighbourhood .== f)
+        if cell_facies == 0
+            for f in order
+                n = neighbour_count(f)
+                (a, b) = facies[f].activation_range
+                if a &lt;= n &amp;&amp; n &lt;= b
+                    return f
+                end
+            end
+            0
+        else
+            n = neighbour_count(cell_facies) - 1
+            (a, b) = facies[cell_facies].viability_range
+            (a &lt;= n &amp;&amp; n &lt;= b ? cell_facies : 0)
+        end
+    end    
+end
+
+function run_ca(::Type{B}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {B &lt;: Boundary{2}}
+    r = rules(facies)
+    Channel{Matrix{Int}}() do ch
+        target = Matrix{Int}(undef, size(init))
+        put!(ch, init)
+        stencil_op = stencil(Int, B, (5, 5), r)
+        for perm in cycle_permutation(n_species)
+            stencil_op(init, target, perm)
+            init, target = target, init
+            put!(ch, init)
+        end
+    end
+end</code></pre><p>This function is not yet adaptible to the given rule set. Such a modification is not so hard to make. </p><p>The paper talks about a 50x50 grid initialized with uniform random values.</p><div class="noweb-label">file:<i>src/Burgess2013/CA.jl</i></div><pre><code class="language- julia hljs">module CA
+
+using ...Stencil
+using ..Config: Facies
+
+export run_ca
+
+&lt;&lt;cycle-permutation&gt;&gt;
+&lt;&lt;burgess2013-rules&gt;&gt;
+
+end</code></pre><p>First, let us reproduce Figure 3 in Burgess 2013.</p><p><img src="../fig/b13-fig3.png" alt="First 8 generations"/></p><p>By eye comparison seems to indicate that this CA is working the same. I&#39;m curious to the behaviour after more iterations. Let&#39;s try 10, 100, 10000 and so on.</p><p><img src="../fig/b13-long-term.png" alt="Assymptotic behaviour"/></p><p>The little qualitative change between 100 and 1000 iterations would indicate that this CA remains &quot;interesting&quot; for a long time.</p><p>On my laptop I can run about 150 iterations per second with current code. When using periodic boundaries, I get to 1500 iterations per second, which is peculiar. A lot can still be optimized.</p><details><summary>Plotting code</summary><div class="noweb-label">file:<i>examples/ca/burgess-2013.jl</i></div><pre><code class="language- julia hljs">module Script
+    using .Iterators: flatten
+    using CarboKitten
+    using CarboKitten.Burgess2013
+    using CarboKitten.Stencil: Reflected
+    using CarboKitten.Utility
+    using GLMakie
+
+    function main()
+        init = rand(0:3, 50, 50)
+        ca = run_ca(Reflected{2}, MODEL1, init, 3)
+
+        fig = Figure(resolution=(1000, 500))
+        axis_indices = flatten(eachrow(CartesianIndices((2, 4))))
+        for (i, st) in zip(axis_indices, ca)
+            ax = Axis(fig[Tuple(i)...], aspect=AxisAspect(1))
+            heatmap!(ax, st)
+        end
+        save(&quot;docs/src/fig/b13-fig3.png&quot;, fig)
+    end
+end
+
+Script.main()</code></pre><div class="noweb-label">file:<i>examples/ca/long-term.jl</i></div><pre><code class="language- julia hljs">module Script
+    using CarboKitten
+    using CarboKitten.Burgess2013
+    using CarboKitten.Stencil
+    using CarboKitten.Utility
+    using GLMakie
+
+    function main()
+        init = rand(0:3, 50, 50)
+        result = select(run_ca(Periodic{2}, MODEL1, init, 3), [10, 100, 10000])
+
+        fig = Figure(resolution=(1000, 333))
+        for (i, st) in enumerate(result)
+            ax = Axis(fig[1, i], aspect=AxisAspect(1))
+            heatmap!(ax, st)
+        end
+        save(&quot;docs/src/fig/b13-long-term.png&quot;, fig)
+    end
+end
+
+Script.main()</code></pre></details><h2 id="Howto-run"><a class="docs-heading-anchor" href="#Howto-run">Howto run</a><a id="Howto-run-1"></a><a class="docs-heading-anchor-permalink" href="#Howto-run" title="Permalink"></a></h2><p>We start with randomized initial conditions on a 50x50 grid.</p><pre><code class="language- julia hljs">init = rand(0:3, 50, 50)</code></pre><p>Then we run the cellular automaton for, in this case eight generations. The <code>CA.run</code> function returns an iterator of 50x50 maps. That means that in principle we can extract an infinity of iterations, but in this cane we only <code>take</code> eight.</p><pre><code class="language- julia hljs">result = Iterators.take(CA.run(Reflected{2}, init, 3), 8)</code></pre><p>In Julia we may plot those as follows</p><pre><code class="language- julia hljs">using Plots
+# plotly()  # sets back-end; plotly gives me the best results
+plot((heatmap(r, colorbar=:none) for r in result)..., layout=(2, 4))</code></pre><p>What this says is: create a <code>heatmap</code> for each of our eight results, then expand those into a function call to <code>plot</code> (as in <code>plot(hm1, hm2, ..., hm8, layout=(2, 4))</code>).</p><h2 id="Parameter-scan"><a class="docs-heading-anchor" href="#Parameter-scan">Parameter scan</a><a id="Parameter-scan-1"></a><a class="docs-heading-anchor-permalink" href="#Parameter-scan" title="Permalink"></a></h2><div class="noweb-label">file:<i>examples/ca/parameter-scan.jl</i></div><pre><code class="language- julia hljs">module Script
+
+using CarboKitten
+using CarboKitten.Burgess2013
+using CarboKitten.Stencil
+using CarboKitten.Utility
+using GLMakie
+using .Iterators: peel, drop
+
+function main()
+    fig = Figure(resolution=(2000, 2000))
+    for i in 4:12
+        for j in (i+1):12
+            print(&quot;.&quot;)
+            gl = fig[i, j] = GridLayout()
+            for k in i:j
+                # for l in k:j
+                let l = j
+                    init = rand(0:3, 50, 50)
+                    facies = [
+                        Facies((i, j), (k, l), 0, 0, 0),
+                        Facies((i, j), (k, l), 0, 0, 0),
+                        Facies((i, j), (k, l), 0, 0, 0),
+                    ]
+                    (result, _) = peel(drop(run_ca(Periodic{2}, facies, init, 3), 10))
+
+                    ax = Axis(gl[k-i, l-k], aspect=AxisAspect(1),
+                              xticksvisible=false, xticklabelsvisible=false,
+                              yticksvisible=false, yticklabelsvisible=false)
+                    heatmap!(ax, result)
+                end
+            end
+        end
+    end
+    save(&quot;docs/src/fig/parameter-scan.png&quot;, fig)
+end
+
+end  # module Script
+
+Script.main()</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../carbocat/">« Summary</a><a class="docs-footer-nextpage" href="../ca-with-production/">Model with CA and Production »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.0 on <span class="colophon-date" title="Thursday 5 October 2023 17:41">Thursday 5 October 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

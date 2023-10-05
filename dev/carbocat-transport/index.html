@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Sediment Transport · CarboKitten</title><meta name="title" content="Sediment Transport · CarboKitten"/><meta property="og:title" content="Sediment Transport · CarboKitten"/><meta property="twitter:title" content="Sediment Transport · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li><li><a class="tocitem" href="../carbocat-ca/">Cellular Automaton</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li class="is-active"><a class="tocitem" href>Sediment Transport</a><ul class="internal"><li><a class="tocitem" href="#Transport"><span>Transport</span></a></li></ul></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">CarboCAT</a></li><li class="is-active"><a href>Sediment Transport</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Sediment Transport</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten/blob/main/docs/transpiled/carbocat-transport.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><hr/><p>title: CarboKitten subtitle: Sediment Transport –-</p><h2 id="Transport"><a class="docs-heading-anchor" href="#Transport">Transport</a><a id="Transport-1"></a><a class="docs-heading-anchor-permalink" href="#Transport" title="Permalink"></a></h2><p>The sediment that is produced is distributed into lower lying neighbour cells that are not occupied by a producer. A user defined fraction of sediment from a producer is transported, first divided equally to lower neighbours, cascading to its neighbours by splitting in half and so on. The cascade stops when the sediment reaches a minimal threshold.</p><p>Thus, this step has two free parameters: the transported fraction of produced carbonate and the lower threshold.</p><p>Apparent from the illustration in B13 Figure 4, a 8-cell neighbourhood is used. Nothing is mentioned about the order in which the transport is computed. We may tag transported sediment with a bit flip and assign a new lythofacies to transported sediment.</p><div class="noweb-label">⪡ck-types⪢≣</div><pre><code class="language- julia hljs">struct Deposit{N}
+    amount::NTuple{N, Float64}
+end
+
+Base.zero(::Type{Deposit{N}}) where {N} =
+    Deposit{N}(ntuple(_ -&gt; zero(Float64), N))</code></pre><div class="noweb-label">file:<i>src/Burgess2013/Transport.jl</i></div><pre><code class="language- julia hljs">module Transport
+
+using ...Stencil
+using Transducers
+
+struct Product
+    species::Int
+    amount::Float64
+end
+
+Base.zero(::Type{Product}) = Product(0, 0.0)
+
+struct Deposit{N}
+    amount::NTuple{N, Float64}
+end
+
+Base.zero(::Type{Deposit{N}}) where {N} =
+    Deposit{N}(ntuple(_ -&gt; zero(Float64), N))
+
+function deposit(
+        ::Type{B},
+        production::Matrix{Product},
+        elevation::Matrix{Float64},
+        transported::Matrix{Deposit{N}},
+        lim::Float64,
+        idx::CartesianIndex,
+        p::Product
+    ) where {B &lt;: Boundary{2}, N}
+
+    if p.amount &lt;= lim
+        transported[idx][p.species] += p.amount
+        return
+    end
+
+    shape = size(production)
+    targets = CartesianIndices((-1:1,-1:1)) |&gt;
+        Filter(Δi -&gt; Δi!=CartesianIndex(0,0)) |&gt;
+        Map(Δi -&gt; offset_index(B, shape, idx, Δi)) |&gt;
+        Filter(j -&gt; !isnothing(j) &amp;&amp;
+                    elevation[j] &gt;= elevation[idx] &amp;&amp;
+                    production[j].species == 0) |&gt;
+        collect
+
+    if isempty(targets)
+        transported[idx][p.species] += p.amount
+        return
+    end
+    transported[idx][p.species] += p.amount / 2
+    for j in targets
+        q = Product(p.species, p.amount / (2 * length(targets)))
+        deposit(B, production, elevation, transported, lim, j, q)
+    end
+end
+
+function transport(
+        ::Type{B},
+        n_species::Int,
+        production::Matrix{Product},
+        elevation::Matrix{Float64},
+        fraction::Float64,
+        lim::Float64
+    ) where {B &lt;: Boundary{2}}
+
+    shape = size(production)
+    result = zeros(Transported{n_species})
+
+    for i in CartesianIndices(shape)
+        production[i].amount &lt;= lim &amp;&amp; continue
+        p = copy(production[i])
+        p.amount *= fraction
+        production[i].amount -= p.amount
+        deposit(B, production, elevation, result, lim, i, p)
+    end
+
+    return result
+end
+
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ca-with-production/">« Model with CA and Production</a><a class="docs-footer-nextpage" href="../stencils/">Stencils »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.0 on <span class="colophon-date" title="Thursday 5 October 2023 17:41">Thursday 5 October 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

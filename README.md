@@ -37,6 +37,13 @@ If you want to start a REPL with the correct environment already activated, use 
 julia --project=. -t 4
 ```
 
+### Global dependencies
+CarboKitten has some dependencies that are only needed for developing, but not for using the library. You may want to install those in the global environment:
+
+```shell
+julia -e 'using Pkg; Pkg.add.(["DaemonMode", "LiveServer", "Revise"])'
+```
+
 ### Examples
 
 You'll get the best experience by running examples from the Julia REPL. There are however also some example scripts, that should work stand-alone.

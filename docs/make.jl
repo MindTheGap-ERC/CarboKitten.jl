@@ -72,5 +72,5 @@ makedocs(
     ])
 
 deploydocs(
-    repo=Remotes.GitHub("MindTheGap-ERC", "CarboKitten")
+    repo="github.com/MindTheGap-ERC/CarboKitten"
 )

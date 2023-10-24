@@ -3,10 +3,17 @@ using CarboKitten.CaProd
 using DataFrames
 using CSV
 using Interpolations
-#datasl = CSV.read("data/bs92-sealevel-curve.csv", DataFrame, header=1)
 
+function sealevel_curve(t,filepath)
+    data = DataFrame(CSV.File(filepath))
+    data = hcat(collect(0:length(data.sl).-1)./1000, data.sl)
+    x = linear_interpolation(data[:,1], data[:,2])
+    return x(t)
+end
+
+#CSV.read("data/all-sealevel/$name.csv", DataFrame, header=1)[!,1][round(Int,t*1000)+1]
 DEFAULT_INPUT = CaProd.Input(
-    sea_level = t -> CSV.read("data/all-sealevel/sl.csv", DataFrame, header=1)[!,1][round(Int,t*1000)+1],
+    sea_level = t -> sealevel_curve(t,"data/all-sealevel/sl1.csv"),
     subsidence_rate=50.0,
     initial_depth=x -> x / 2.0,
     grid_size=(50, 100),
@@ -24,3 +31,4 @@ DEFAULT_INPUT = CaProd.Input(
 
 CaProd.main(DEFAULT_INPUT, "data/ca-extSL.h5")
 # ~/~ end
+name = "Auto000_Allo000_Stoch100V2"

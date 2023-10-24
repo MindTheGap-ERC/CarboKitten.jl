@@ -21,7 +21,8 @@ function sealevel()
     for file in files
         file_path = joinpath(folder_path,file)
         name, _ = splitext(file)
-        data = read(file_path, String)
+        data = split(read(file_path, String),"\n")
+        #readdlm(file_path,Float64)
         CSV.write("data/all-sealevel/$name.csv", DataFrame(sl = data))
     end
 

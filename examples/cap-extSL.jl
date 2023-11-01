@@ -12,6 +12,14 @@ function sealevel_curve(t,filepath)
     return x(t)
 end 
 
+folder_path = "data/all-sealevel"
+files = filter(x -> occursin(".csv", x), readdir(folder_path))
+
+for i in files
+    file_path = joinpath(folder_path,i)
+    name, _ = splitext(i)
+    println("running $name")
+    
 DEFAULT_INPUT = CaProd.Input(
     sea_level = t -> sealevel_curve(t,file_path),
     subsidence_rate=50.0,
@@ -29,11 +37,6 @@ DEFAULT_INPUT = CaProd.Input(
     insolation=2000.0
 )
 
-folder_path = "data/all-sealevel"
-files = filter(x -> occursin(".csv", x), readdir(folder_path))
 
-for i in files
-    file_path = joinpath(folder_path,i)
-    name, _ = splitext(i)
-    CaProd.main(DEFAULT_INPUT, "data/ca-extSL-$name.h5")
+    CaProd.main(DEFAULT_INPUT, "data/ca-extSL$name.h5")
 end

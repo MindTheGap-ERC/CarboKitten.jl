@@ -1,11 +1,13 @@
-# ~/~ begin <<docs/src/stencils.md#unnamed-docs/src/stencils.md:134>>[init]
+# ~/~ begin <<docs/src/stencils.md#unnamed-docs/src/stencils.md:142>>[init]
 using CarboKitten.Stencil
 using GLMakie
 
+# ~/~ begin <<docs/src/stencils.md#eca-rule>>[init]
 rule(i::Int) = function (foo::AbstractVector{T}) where T <: Integer
     d = foo[1]*4 + foo[2]*2 + foo[3]
     i & (1 << d) == 0 ? 0 : 1
 end
+# ~/~ end
 
 function eca(r::Int, n::Int, iter::Int)
     y = Array{Int}(undef, n, iter)

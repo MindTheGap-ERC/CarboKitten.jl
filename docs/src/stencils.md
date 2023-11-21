@@ -105,14 +105,22 @@ end
 ### Elementary Cellular Automata
 An Elementary Cellular Automata is a one-dimensional CA with two states. Every next generation depends on the direct neighbourhood of three cells. Since there are $2^3 = 8$ patterns and two outcomes for every pattern, there are $2^8 = 256$ possible ECA.
 
-``` {.julia .build target=docs/src/fig/eca.png}
-using CarboKitten.Stencil
-using GLMakie
+The `rule` function creates the stencil rule from a given integer:
 
+``` {.julia #eca-rule}
 rule(i::Int) = function (foo::AbstractVector{T}) where T <: Integer
     d = foo[1]*4 + foo[2]*2 + foo[3]
     i & (1 << d) == 0 ? 0 : 1
 end
+```
+
+The rest of the script is boring
+
+``` {.julia .build target=docs/src/fig/eca.png}
+using CarboKitten.Stencil
+using GLMakie
+
+<<eca-rule>>
 
 function eca(r::Int, n::Int, iter::Int)
     y = Array{Int}(undef, n, iter)

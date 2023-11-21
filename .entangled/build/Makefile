@@ -36,11 +36,11 @@ docs/src/fig/b13-fig3.png: examples/ca/burgess-2013.jl
 docs/src/fig/b13-long-term.png: examples/ca/long-term.jl 
 > julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/ca/long-term.jl
 
-docs/src/fig/eca.png: .entangled/build/unnamed-docs/src/stencils.md_134 
-> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_134
+docs/src/fig/eca.png: .entangled/build/unnamed-docs/src/stencils.md_142 
+> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_142
 
-docs/src/fig/life.gif: .entangled/build/unnamed-docs/src/stencils.md_174 
-> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_174
+docs/src/fig/life.gif: .entangled/build/unnamed-docs/src/stencils.md_182 
+> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_182
 
-docs/src/fig/boundary_types.png: .entangled/build/unnamed-docs/src/stencils.md_217 
-> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_217
+docs/src/fig/boundary_types.png: .entangled/build/unnamed-docs/src/stencils.md_225 
+> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_225

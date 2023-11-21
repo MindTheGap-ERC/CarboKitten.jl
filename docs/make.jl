@@ -50,7 +50,10 @@ path = joinpath(@__DIR__, "transpiled")
 rm(path; force=true, recursive=true)
 mkpath(path)
 Entangled.transpile_file.(sources, path)
-copydir(joinpath(@__DIR__, "src/fig"), joinpath(path, "fig"))
+
+for subdir in ["fig", "assets"]
+    copydir(joinpath(@__DIR__, "src", subdir), joinpath(path, subdir))
+end
 
 makedocs(
     source=path,

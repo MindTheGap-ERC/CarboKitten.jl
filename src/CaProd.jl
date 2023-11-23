@@ -39,16 +39,7 @@ mutable struct State
     height::Array{Float64,2}
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[init]
-function initial_state(input::Input)  # -> State
-    height = zeros(Float64, input.grid_size...)
-    for i in CartesianIndices(height)
-        height[i] = input.initial_depth(i[2] * input.phys_scale)
-    end
-    return State(0.0, height)
-end
-# ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[1]
+# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagator>>[init]
 function propagator(input::Input)
     # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-init-propagator>>[init]
     n_facies = length(input.facies)
@@ -76,7 +67,16 @@ function propagator(input::Input)
     end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[2]
+# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[init]
+function initial_state(input::Input)  # -> State
+    height = zeros(Float64, input.grid_size...)
+    for i in CartesianIndices(height)
+        height[i] = input.initial_depth(i[2] * input.phys_scale)
+    end
+    return State(0.0, height)
+end
+# ~/~ end
+# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[1]
 function updater(input::Input)
     n_facies = length(input.facies)
     function (s::State, Δ::Frame)
@@ -86,7 +86,7 @@ function updater(input::Input)
     end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[3]
+# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[2]
 function run_model(input::Input)
     Channel{Frame}() do ch
         s = initial_state(input)

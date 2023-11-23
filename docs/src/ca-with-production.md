@@ -129,7 +129,7 @@ end
 ## Propagator
 The propagator computes the production rates (and also erosion) given the state of the model.
 
-``` {.julia #ca-prod-model}
+``` {.julia #ca-prod-propagator}
 function propagator(input::Input)
     <<ca-prod-init-propagator>>
     function (s::State)  # -> Frame
@@ -214,6 +214,7 @@ using .Iterators: drop, peel, partition, map, take
 <<ca-prod-input>>
 <<ca-prod-frame>>
 <<ca-prod-state>>
+<<ca-prod-propagator>>
 <<ca-prod-model>>
 
 function stack_frames(fs::Vector{Frame})  # -> Frame

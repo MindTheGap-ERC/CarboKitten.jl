@@ -63,13 +63,14 @@ end
 # ~/~ begin <<docs/src/submarine-transport.md#cat-update>>[init]
 function deposit_material(
     grid_size::NTuple{2, Int},
+    Δt::Float64,
     Δz::Float64,
     s::State,
     facies::T) where T <: AbstractArray{Float64,3}
 
   Threads.@threads for idx in CartesianIndices(grid_size)
     prod = facies[Tuple(idx)..., :]
-    Δh = sum(prod) .* input.Δt
+    Δh = sum(prod) .* Δt
     fractions = prod ./ sum(prod)
     column = s.sediment[Tuple(idx)..., :, :]
     bucket = sum(column[1, :])

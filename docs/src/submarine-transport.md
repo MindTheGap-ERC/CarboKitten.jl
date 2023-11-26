@@ -71,6 +71,71 @@ There are several choices on how to structure the sediment buffer. We can grow s
 
 Another choice is to keep the sea floor in the same layer of the buffer, and copy down sediment when a layer is full. We may need to implement both to see which is more efficient. 
 
+``` {.julia file=test/SedimentStackSpec.jl}
+@testset "SedimentStack" begin
+  stack = zeros(Float64, 10, 3)
+  push_sediment!(stack, [5.0, 0, 0])
+  @test pop_sediment!(stack, 1.5) == [1.5, 0.0, 0.0]
+end
+```
+
+``` {.julia file=src/SedimentStack.jl}
+module SedimentStack
+
+export push_sediment!, pop_sediment!
+
+function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
+  Δ = sum(parcel)
+  bucket = sum(col[1, :])
+
+  if bucket + Δ < 1.0
+    col[1,:] .+= parcel
+    return
+  end
+
+  frac = parcel ./ Δ
+  col[1,:] .+= frac .* (1.0 - bucket)
+  Δ -= (1.0 - bucket)
+  n = floor(Int64, Δ)
+
+  col[n+2:end,:] = col[1:end-n-1,:]
+  na = [CartesianIndex()]
+  col[2:n+1,:] .= frac[na,:]
+  Δ -= n
+
+  col[1,:] .= frac .* Δ
+end
+
+@inline function pop_fraction(col::AbstractMatrix{F}, Δ::F) where F <: Real
+  bucket = sum(col[1,:])
+  @assert Δ < bucket "pop_fraction can only pop from the top cell"
+  parcel = (Δ / bucket) .* col[1,:]
+  col[1,:] .-= parcel
+  return parcel
+end
+
+function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
+  bucket = sum(col[1,:])
+  if Δ < bucket
+    return pop_fraction(col, Δ)
+  end
+
+  parcel = copy(col[1,:])
+  Δ -= bucket
+  n = floor(Int64, Δ)
+
+  parcel .+= sum(col[2:n+1,:]; dims=1)'
+  col[1:end-n-1, :] = col[n+2:end, :]
+  col[end-n-1:end, :] .= 0
+  Δ -= n
+
+  parcel .+= pop_fraction(col, Δ)
+  return parcel
+end
+
+end # module
+```
+
 #### Current choice
 Implementation will be such that depth $z$ is the smallest axis, such that depth transects are contiguous in memory. The sediment buffer will be four dimensional containing fractions for each species, i.e. $\in [0, 1]$, and one additional slice to record the time.
 
@@ -88,13 +153,14 @@ Each time step we compute the production as before, resulting in a $\Delta_{\pro
 ``` {.julia #cat-update}
 function deposit_material(
     grid_size::NTuple{2, Int},
+    Δt::Float64,
     Δz::Float64,
     s::State,
     facies::T) where T <: AbstractArray{Float64,3}
 
   Threads.@threads for idx in CartesianIndices(grid_size)
     prod = facies[Tuple(idx)..., :]
-    Δh = sum(prod) .* input.Δt
+    Δh = sum(prod) .* Δt
     fractions = prod ./ sum(prod)
     column = s.sediment[Tuple(idx)..., :, :]
     bucket = sum(column[1, :])

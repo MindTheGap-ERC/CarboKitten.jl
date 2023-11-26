@@ -6,5 +6,6 @@ include("./Utility.jl")
 include("./BS92.jl")
 include("./CaProd.jl")
 include("./Visualization.jl")
+include("./SedimentStack.jl")
 
 end # module CarboKitten

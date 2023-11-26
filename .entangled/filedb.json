@@ -302,9 +302,9 @@
     {
       "path": "docs/src/submarine-transport.md",
       "deps": null,
-      "modified": "2023-11-23T16:38:48.399183",
-      "hexdigest": "29f3519560029595e6781e37989a5f47425af90ff2ac6bee11f6845a9fadbecd",
-      "size": 10799
+      "modified": "2023-11-26T01:22:17.007713",
+      "hexdigest": "da1935fda8ba7c3514e9fc85198f7cf603920f776de3781b854b393d89f1d189",
+      "size": 12230
     },
     {
       "path": "src/CATP.jl",
@@ -312,9 +312,27 @@
         "docs/src/ca-with-production.md",
         "docs/src/submarine-transport.md"
       ],
-      "modified": "2023-11-23T16:38:48.223182",
-      "hexdigest": "79c5ef5b747e8adc9f982a06c1ce85fb0c60f0d9815a66089dadcb3b7aaf2dfc",
-      "size": 3848
+      "modified": "2023-11-25T23:53:39.626522",
+      "hexdigest": "336dfce79cb709308e218fc4f06c532cf930b868597f8b3368b3f14b93fea613",
+      "size": 3860
+    },
+    {
+      "path": "src/SedimentStack.jl",
+      "deps": [
+        "docs/src/submarine-transport.md"
+      ],
+      "modified": "2023-11-26T01:22:16.953712",
+      "hexdigest": "21cb607190ac0953ff0a8a2de632d33c27eda20e75ca0455855d8b4712a82565",
+      "size": 1253
+    },
+    {
+      "path": "test/SedimentStackSpec.jl",
+      "deps": [
+        "docs/src/submarine-transport.md"
+      ],
+      "modified": "2023-11-26T00:59:42.891453",
+      "hexdigest": "199717c1c42d744b3360a9dd56b028357269da22910c8c46b8cc5424d3a2fe35",
+      "size": 246
     }
   ],
   "source": [],
@@ -329,10 +347,12 @@
     "src/BS92/fig8-sealevel.jl",
     "examples/ca-with-prod.jl",
     ".entangled/build/unnamed-docs/src/stencils.md_182",
+    "src/SedimentStack.jl",
     "examples/plot-caps-osc.jl",
     "src/Erosion.jl",
     "src/Stencil.jl",
     "examples/bosscher-schlager-1992.jl",
+    "test/SedimentStackSpec.jl",
     "src/Burgess2013/Production.jl",
     ".entangled/build/unnamed-docs/src/stencils.md_142",
     "src/CaProd.jl",

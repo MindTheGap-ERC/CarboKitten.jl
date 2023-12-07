@@ -191,7 +191,9 @@ function main()
                     ]
                     (result, _) = peel(drop(run_ca(Periodic{2}, facies, init, 3), 10))
 
-                    ax = Axis(gl[k-i, l-k], aspect=AxisAspect(1), xticksvisible=false, yticksvisible=false)
+                    ax = Axis(gl[k-i, l-k], aspect=AxisAspect(1),
+                              xticksvisible=false, xticklabelsvisible=false,
+                              yticksvisible=false, yticklabelsvisible=false)
                     heatmap!(ax, result)
                 end
             end

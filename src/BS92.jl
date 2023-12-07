@@ -31,7 +31,7 @@ end
 # ~/~ end
 
 function sealevel_curve()
-     data = DataFrame(CSV.File("data/bs92-sealevel-curve.csv"))
+     data = DataFrame(CSV.File(pkgdir(BS92, "data", "bs92-sealevel-curve.csv")))
      linear_interpolation(data.time, data.depth)
 end
 

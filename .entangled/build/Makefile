@@ -4,7 +4,7 @@
 .RECIPEPREFIX = >
 .PHONY = all
 
-all: docs/src/fig/tanh.svg docs/src/fig/b13-fig2.svg data/bs92-sealevel-curve.csv docs/src/fig/bs92-fig8.png docs/src/fig/b13-fig3.png docs/src/fig/b13-long-term.png data/caps-osc.h5 docs/src/fig/b13-capsosc-crosssection.png data/ca-prod-slope.h5 docs/src/fig/b13-crosssection.png
+all: docs/src/fig/tanh.svg docs/src/fig/b13-fig2.svg data/bs92-sealevel-curve.csv docs/src/fig/bs92-fig8.svg data/caps-osc.h5 docs/src/fig/b13-capsosc-crosssection.png data/ca-prod-slope.h5 docs/src/fig/b13-crosssection.png docs/src/fig/b13-fig3.png docs/src/fig/b13-long-term.png docs/src/fig/eca.png docs/src/fig/life.gif docs/src/fig/boundary_types.png
 
 docs/src/fig/tanh.svg: examples/plot-tanh.gnuplot 
 > gnuplot examples/plot-tanh.gnuplot > $@
@@ -15,14 +15,8 @@ docs/src/fig/b13-fig2.svg: examples/burgess2013-fig2.gnuplot
 data/bs92-sealevel-curve.csv: src/BS92/fig8-sealevel.jl data/bs92-sealevel-input.png
 > julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' src/BS92/fig8-sealevel.jl
 
-docs/src/fig/bs92-fig8.png: examples/bosscher-schlager-1992.jl data/bs92-sealevel-curve.csv
+docs/src/fig/bs92-fig8.svg: examples/bosscher-schlager-1992.jl data/bs92-sealevel-curve.csv
 > julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/bosscher-schlager-1992.jl
-
-docs/src/fig/b13-fig3.png: examples/ca/burgess-2013.jl 
-> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/ca/burgess-2013.jl
-
-docs/src/fig/b13-long-term.png: examples/ca/long-term.jl 
-> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/ca/long-term.jl
 
 data/caps-osc.h5: examples/caps-osc.jl 
 > julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/caps-osc.jl
@@ -35,3 +29,18 @@ data/ca-prod-slope.h5: examples/cap-slope.jl
 
 docs/src/fig/b13-crosssection.png: examples/plot-cap-slope.jl data/ca-prod-slope.h5
 > julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/plot-cap-slope.jl
+
+docs/src/fig/b13-fig3.png: examples/ca/burgess-2013.jl 
+> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/ca/burgess-2013.jl
+
+docs/src/fig/b13-long-term.png: examples/ca/long-term.jl 
+> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/ca/long-term.jl
+
+docs/src/fig/eca.png: .entangled/build/unnamed-docs/src/stencils.md_134 
+> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_134
+
+docs/src/fig/life.gif: .entangled/build/unnamed-docs/src/stencils.md_174 
+> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_174
+
+docs/src/fig/boundary_types.png: .entangled/build/unnamed-docs/src/stencils.md_217 
+> julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_217

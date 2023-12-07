@@ -105,9 +105,9 @@ end
 ### Elementary Cellular Automata
 An Elementary Cellular Automata is a one-dimensional CA with two states. Every next generation depends on the direct neighbourhood of three cells. Since there are $2^3 = 8$ patterns and two outcomes for every pattern, there are $2^8 = 256$ possible ECA.
 
-```@example
+``` {.julia .build target=docs/src/fig/eca.png}
 using CarboKitten.Stencil
-using Plots
+using GLMakie
 
 rule(i::Int) = function (foo::AbstractVector{T}) where T <: Integer
     d = foo[1]*4 + foo[2]*2 + foo[3]
@@ -125,22 +125,24 @@ function eca(r::Int, n::Int, iter::Int)
     y
 end
 
-plot_eca(r::Int, n::Int, iter::Int) =
-    heatmap(eca(r, n, iter)', colorbar=:none, aspect_ratio=1,
-                              xlim=(1, 256), ylim=(1, 128),
-                              yflip=true, c=:Blues, title="rule $(r)")
-
-plot((plot_eca(r, 256, 128) for r in [18, 30, 110])..., layout=(3, 1), size=(600, 900))
+fig = Figure(resolution=(1200,400))
+for (idx, r) in enumerate([18, 30, 110])
+    ax = Axis(fig[1,idx]; title="rule $(r)", yreversed=true, limits=((1, 256), (1, 128)))
+    heatmap!(ax, eca(r, 256, 128); colormap=:Blues)
+end
+save("docs/src/fig/eca.png", fig)
 ```
+
+![](fig/eca.png)
 
 Even these one-dimensional CA show highly complex behaviour. For instance, it has been shown that rule 110 is Turing complete.
 
 ### Game of Life
 Perhaps the most famous CA is Conway's Game of Life. This is a two-dimensional two-state (dead/alive) CA, with the following rules: a cell is alive in the next generation if it is alive and has two neighbours or if it has three neighbours; in all other cases the cell is dead.
 
-```@example
+``` {.julia .build target=docs/src/fig/life.gif}
 using CarboKitten.Stencil
-using Plots
+using GLMakie
 using .Iterators: take
 
 "x is a 3x3 region around the cell at x[2,2]."
@@ -163,21 +165,28 @@ function game_of_life(w, h)
     end
 end
 
-@gif for frame in take(game_of_life(50, 50), 150)
-    heatmap(frame, aspect_ratio=1, colorbar=:none, xlim=(0.5, 50.5), ylim=(0.5, 50.5))
-end fps=10
+life = take(game_of_life(50, 50), 150)
+fig = Figure()
+ax = Axis(fig[1,1], aspect=1)
+record(fig, "docs/src/fig/life.gif", life; framerate=10) do frame
+    heatmap!(ax, frame; colormap=:Blues)
+end
 ```
+
+![](fig/life.gif)
 
 ### Testing boundaries with a convolution
 To test the different boundary types, lets try the following setup. We take a 16x16 image with all zeros except the bottom left gets a value of 1 and the top right pixel gets a value of 2. Now convolve with a Gaussian and see what happens. For the constant boundary, I've set the value to 0.1, to see the effect.
 
-![](boundary_types.png)
+![](fig/boundary_types.png)
 
 Notice, that for the periodic boundaries, the bottom left and top right are neighbouring. So there the two pixels appear as a single peak. In the reflected case we see a clear distinction between the two corners.
 
-```@example
+``` {.julia .build target=docs/src/fig/boundary_types.png}
+module Script
+
 using CarboKitten.Stencil
-using Plots
+using GLMakie
 
 function plot_boundary_types()
     n = 16
@@ -195,17 +204,14 @@ function plot_boundary_types()
     y_constant = Array{Float64}(undef, n, n)
     convolution(Constant{2, 0.1}, k)(y0, y_constant)
 
-    args = Dict(:colorbar => :none, :aspect_ratio => 1, :xlim => (0.5, 16.5), :ylim => (0.5, 16.5))
-    plot(
-        heatmap(y_periodic; args...),
-        heatmap(y_reflected; args...),
-        heatmap(y_constant; args...),
-        layout=(1, 3),
-        size=(900, 300)
-    )
-
-    savefig("boundary_types.png")
+    fig = Figure(resolution=(900, 300))
+    for (i, y) in enumerate([y_periodic, y_reflected, y_constant])
+        ax = Axis(fig[1,i]; aspect=1)
+        heatmap!(ax, y; colormap=:viridis)
+    end
+    save("docs/src/fig/boundary_types.png", fig)
 end
+end 
 
-plot_boundary_types() ; nothing  # hide
+Script.plot_boundary_types()
 ```

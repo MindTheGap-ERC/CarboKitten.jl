@@ -77,7 +77,7 @@ function propagator(input::Input)
                 continue
             end
             result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
-            if w[idx] > 0
+            if w[idx] < 0
                 result = result .- dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
             else
                 result = result

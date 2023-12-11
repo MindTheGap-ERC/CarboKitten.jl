@@ -65,7 +65,7 @@ end
 
 # check whether the system reaches 
 function dissolution(temp::Float64,precip::Float64, alpha::Float64, pco2::Float64,water_depth::Float64, facies::Facies)
-    z0 = water_depth
+    z0 = -water_depth
     I = precip .* facies.inf #assume vertical infiltration
     lambda = precip .* facies.inf ./ (alpha .* facies.L)
     ceq, Deq = calculate_ceq(temp,pco2,precip,facies) # pass ceq Deq from the last function

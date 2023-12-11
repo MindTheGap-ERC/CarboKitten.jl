@@ -12,7 +12,7 @@ function sealevel_curve(t,filepath)
     return x(t)
 end 
 
-folder_path = "data/all-sealevel"
+folder_path = "data/allsealvel"
 files = filter(x -> occursin(".csv", x), readdir(folder_path))
 
 for i in files

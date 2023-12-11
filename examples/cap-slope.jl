@@ -11,9 +11,9 @@ DEFAULT_INPUT = CaProd.Input(
     write_interval=1,
     time_steps=1000,
     facies=[
-        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
+        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1000, 2730, 0.5),
+        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300, 1000, 2730, 0.5),
+        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300, 1000, 2730, 0.5)
     ],
     insolation=2000.0
 )

@@ -7,6 +7,7 @@ using CarboKitten.Utility
 using CarboKitten.BS92: sealevel_curve
 using CarboKitten.Stencil
 using CarboKitten.Burgess2013
+using CarboKitten.carb_dissolution
 
 using HDF5
 using .Iterators: drop, peel, partition, map, take
@@ -26,6 +27,12 @@ using .Iterators: drop, peel, partition, map, take
 
     facies::Vector{Facies}
     insolation::Float64
+
+    temp #temperature
+    precip #precipitation
+    pco2 #co2
+    alpha #reaction rate
+
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-frame>>[init]
@@ -70,6 +77,11 @@ function propagator(input::Input)
                 continue
             end
             result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
+            if w[idx] > 0
+                result = result .- dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
+            else
+                result = result
+            end
         end
         return Frame(result)
         # ~/~ end
@@ -82,6 +94,7 @@ function updater(input::Input)
     function (s::State, Δ::Frame)
         s.height .-= sum(Δ.production; dims=3) .* input.Δt
         s.height .+= input.subsidence_rate * input.Δt
+        
         s.time += input.Δt
     end
 end

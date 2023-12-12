@@ -69,7 +69,7 @@ function dissolution(temp::Float64,precip::Float64, alpha::Float64, pco2::Float6
     I = precip .* facies.inf #assume vertical infiltration
     lambda = precip .* facies.inf ./ (alpha .* facies.L)
     ceq, Deq = calculate_ceq(temp,pco2,precip,facies) # pass ceq Deq from the last function
-    return (1 - exp(-z0./lambda)) > 0.8 ? Deq :  (I .* ceq ./facies.density) .* (1 - (lambda./z0)).* (1 - exp(-z0./lambda))
+    return (1 - exp(-z0./lambda)) > 0.8 ? Deq :  (I .* ceq ./facies.density) .* (1 - (lambda./z0).* (1 - exp(-z0./lambda)))
     
 end
 

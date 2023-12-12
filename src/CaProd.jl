@@ -38,6 +38,7 @@ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-frame>>[init]
 struct Frame
     production::Array{Float64,3}
+
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-state>>[init]
@@ -73,15 +74,18 @@ function propagator(input::Input)
         w = water_depth(s)
         Threads.@threads for idx in CartesianIndices(facies_map)
             f = facies_map[idx]
-            if f == 0
-                continue
+
+            if f == 0 
+            continue
             end
+            
             result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
+            #=
             if w[idx] < 0
-                result = result .- dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
+                result[Tuple(idx)..., f] = result[Tuple(idx)..., f] .- dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
             else
-                result = result
-            end
+                result[Tuple(idx)..., f] = result[Tuple(idx)..., f]
+            end=#
         end
         return Frame(result)
         # ~/~ end
@@ -94,7 +98,6 @@ function updater(input::Input)
     function (s::State, Δ::Frame)
         s.height .-= sum(Δ.production; dims=3) .* input.Δt
         s.height .+= input.subsidence_rate * input.Δt
-        
         s.time += input.Δt
     end
 end

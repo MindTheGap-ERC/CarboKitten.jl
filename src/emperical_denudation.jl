@@ -2,7 +2,7 @@
 module emperical_denudation
 
 using CarboKitten.CaProd
-export D
+export calculate_D
 # calculate planar slopes based on [ARCGIS apporach](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm)
 
 
@@ -31,7 +31,7 @@ function calculate_D(precip::Float64, elevation::Matrix{Float64}, cellsize::Floa
     D[i,j] = (9.1363 ./ (1 .+ exp.(-0.008519.*(precip .- 580.51)))) .* (9.0156 ./ (1 .+ exp.(-0.1245.*(slope[i,j] .- 4.91086))))
         end
     end
-    return D
+    return D./1000 #m/kyr
 end
 
 end

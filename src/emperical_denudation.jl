@@ -12,10 +12,9 @@ function calculate_slope(elevation::Matrix{T}, cellsize::T) where T
 
     for i in 2:nrows-1
         for j in 2:ncols-1
-            dzdx = (elevation[i, j + 1] - elevation[i, j - 1]) / (2 * cellsize)
-            dzdy = (elevation[i + 1, j] - elevation[i - 1, j]) / (2 * cellsize)
-
-            slope[i, j] = atan(sqrt(dzdx^2 + dzdy^2)) * (180 / π)
+            dzdx = ((elevation[i - 1, j + 1] + 2*elevation[i, j + 1] + elevation[i + 1, j + 1]) - (elevation[i - 1, j - 1] + 2*elevation[i, j - 1] + elevation[i + 1, j - 1])) ./ (8 * cellsize)
+            dzdy = ((elevation[i + 1, j - 1] + 2*elevation[i + 1, j] + elevation[i + 1, j + 1]) - (elevation[i - 1, j - 1] + 2*elevation[i - 1, j] + elevation[i - 1, j + 1]))/ (8 * cellsize)
+            slope[i, j] = atan.(sqrt.(dzdx.^2 + dzdy.^2))  * (180 / π)
         end
     end
 
@@ -23,10 +22,15 @@ function calculate_slope(elevation::Matrix{T}, cellsize::T) where T
 end
 
 
-function calculate_D(precip:Float64,elevation:::Matrix{T}, cellsize::T)
+function calculate_D(precip::Float64, elevation::Matrix{T}, cellsize::T)
     slope = calculate_slope(elevation,cellsize)
     # function format
-    return 
+    for i in 2:nrows-1
+        for j in 2:ncols-1
+    D[i,j] = (9.1363 ./ (1 .+ exp.(-0.008519.*(precip .- 580.51)))) .* (9.0156 ./ (1 .+ exp.(-0.1245.*(slope .- 4.91086))))
+        end
+    end
+    return D
 end
 
 end

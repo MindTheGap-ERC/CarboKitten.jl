@@ -6,9 +6,9 @@ export D
 # calculate planar slopes based on [ARCGIS apporach](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm)
 
 
-function calculate_slope(elevation::Matrix{T}, cellsize::T) where T
+function calculate_slope(elevation::Matrix{Float64}, cellsize::Float64) 
     nrows, ncols = size(elevation)
-    slope = similar(elevation, T)
+    slope = similar(elevation)
 
     for i in 2:nrows-1
         for j in 2:ncols-1
@@ -22,12 +22,13 @@ function calculate_slope(elevation::Matrix{T}, cellsize::T) where T
 end
 
 
-function calculate_D(precip::Float64, elevation::Matrix{T}, cellsize::T)
+function calculate_D(precip::Float64, elevation::Matrix{Float64}, cellsize::Float64)
     slope = calculate_slope(elevation,cellsize)
+    nrows, ncols = size(elevation)
     # function format
     for i in 2:nrows-1
         for j in 2:ncols-1
-    D[i,j] = (9.1363 ./ (1 .+ exp.(-0.008519.*(precip .- 580.51)))) .* (9.0156 ./ (1 .+ exp.(-0.1245.*(slope .- 4.91086))))
+    D[i,j] = (9.1363 ./ (1 .+ exp.(-0.008519.*(precip .- 580.51)))) .* (9.0156 ./ (1 .+ exp.(-0.1245.*(slope[i,j] .- 4.91086))))
         end
     end
     return D

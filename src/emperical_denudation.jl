@@ -10,10 +10,13 @@ function calculate_slope(elevation::Matrix{Float64}, cellsize::Float64)
     nrows, ncols = size(elevation)
     slope = similar(elevation)
 
+    padded_elevation = zeros(Float64, nrows + 2, ncols + 2)
+    padded_elevation[2:end-1, 2:end-1] = elevation
+
     for i in 2:nrows-1
         for j in 2:ncols-1
-            dzdx = ((elevation[i - 1, j + 1] + 2*elevation[i, j + 1] + elevation[i + 1, j + 1]) - (elevation[i - 1, j - 1] + 2*elevation[i, j - 1] + elevation[i + 1, j - 1])) ./ (8 * cellsize)
-            dzdy = ((elevation[i + 1, j - 1] + 2*elevation[i + 1, j] + elevation[i + 1, j + 1]) - (elevation[i - 1, j - 1] + 2*elevation[i - 1, j] + elevation[i - 1, j + 1]))/ (8 * cellsize)
+            dzdx = ((padded_elevation[i - 1, j + 1] + 2*padded_elevation[i, j + 1] + padded_elevation[i + 1, j + 1]) - (padded_elevation[i - 1, j - 1] + 2*padded_elevation[i, j - 1] + padded_elevation[i + 1, j - 1])) ./ (8 * cellsize)
+            dzdy = ((padded_elevation[i + 1, j - 1] + 2*padded_elevation[i + 1, j] + padded_elevation[i + 1, j + 1]) - (padded_elevation[i - 1, j - 1] + 2*padded_elevation[i - 1, j] + padded_elevation[i - 1, j + 1]))/ (8 * cellsize)
             slope[i, j] = atan.(sqrt.(dzdx.^2 + dzdy.^2))  * (180 / π)
         end
     end
@@ -28,7 +31,7 @@ function calculate_D(precip::Float64, elevation::Matrix{Float64}, cellsize::Floa
     # function format
     for i in 2:nrows-1
         for j in 2:ncols-1
-    D[i,j] = (9.1363 ./ (1 .+ exp.(-0.008519.*(precip .- 580.51)))) .* (9.0156 ./ (1 .+ exp.(-0.1245.*(slope[i,j] .- 4.91086))))
+    D[i,j] = (9.1363 ./ (1 .+ exp.(-0.008519.*(precip .- 580.51)))) .* (9.0156 ./ (1 .+ exp.(-0.1245.*(slope[i,j] .- 4.91086)))) # using logistic function
         end
     end
     return D./1000 #m/kyr

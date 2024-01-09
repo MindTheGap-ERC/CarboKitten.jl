@@ -66,20 +66,19 @@ end
 function calculate_redistribution(elevation::Matrix{Float64},cellsize::Float64,Facies::facies)
     nrows, ncols = size(elevation)
     D_matrix = zeros(Float64,3,3)
-    cell = zeros(Float64,nrows,ncols)
+    result = Matrix{Float64}[]
     for i in 2:nrows-1
         for j in 2:ncols-1
             # Extract the 3x3 neighborhood for the current cell
             m = zeros(Float64,3,3)
             neighbourhood = elevation[i-1:i+1, j-1:j+1]
             m .= sediments_redistribution(neighbourhood,cellsize)
-            D = D_physical(neighbourhood, cellsize, Facies.inf)
+            D = D_physical(neighbourhood, cellsize, Facies)
             D_matrix .= D[2,2] .* m
             # Store the result in the corresponding cell of the results matrix
-            cell = D_matrix
+            push!(result, D_matrix)
         end
     end
-    return cell
+    return result
 end
-
 end

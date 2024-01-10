@@ -2,37 +2,31 @@
 module emperical_denudation
 
 using CarboKitten.CaProd
-export calculate_D
+using CarboKitten.Stecil: Periodic
+export empericaldenudation
 # calculate planar slopes based on [ARCGIS apporach](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm)
 
 
-function calculate_slope(elevation::Matrix{Float64}, cellsize::Float64) 
-    nrows, ncols = size(elevation)
-    slope = similar(elevation)
-
-    padded_elevation = zeros(Float64, nrows + 2, ncols + 2)
-    padded_elevation[2:end-1, 2:end-1] = elevation
-
-    for i in 2:nrows-1
-        for j in 2:ncols-1
-            dzdx = ((padded_elevation[i - 1, j + 1] + 2*padded_elevation[i, j + 1] + padded_elevation[i + 1, j + 1]) - (padded_elevation[i - 1, j - 1] + 2*padded_elevation[i, j - 1] + padded_elevation[i + 1, j - 1])) ./ (8 * cellsize)
-            dzdy = ((padded_elevation[i + 1, j - 1] + 2*padded_elevation[i + 1, j] + padded_elevation[i + 1, j + 1]) - (padded_elevation[i - 1, j - 1] + 2*padded_elevation[i - 1, j] + padded_elevation[i - 1, j + 1]))/ (8 * cellsize)
-            slope[i, j] = atan.(sqrt.(dzdx.^2 + dzdy.^2))  * (180 / π)
-        end
-    end
-
-    return slope
+function slope(cellsize::Float64)
+    stencil(Float64,Reflected{2},(3,3),function(w)
+    dzdx = (-w[1,1] - 2 * w[2,1] -w[3,1] + w[1,3] + 2 * w[2,3] + w[3,3])/(8*cellsize)
+    dzdy = (-w[1,1] - 2 * w[1,2] -w[1,3] + w[3,1] + 2 * w[3,2] + w[1,1])/(8*cellsize)
+    atan(sqrt(dzdx^2 + dzd^2))  * (180 / π)
+    end)
 end
 
 
-function calculate_D(precip::Float64, elevation::Matrix{Float64}, cellsize::Float64)
-    slope = calculate_slope(elevation,cellsize)
-    nrows, ncols = size(elevation)
-    # function format
-    for i in 1:nrows
-        for j in 1:ncols
-    D[i,j] = (9.1363 ./ (1 .+ exp.(-0.008519.*(precip .- 580.51)))) .* (9.0156 ./ (1 .+ exp.(-0.1245.*(slope[i,j] .- 4.91086)))) # using logistic function
-        end
+
+function empericaldenudation(precip::Float64, water_depth::Matrix{Float64}, cellsize::Float64)
+    const a = 9.1363
+    const b = -0.008519
+    const c = 580.51
+    const d = 9.0156
+    const e = -0.1245
+    const f = 4.91086
+    if water_depth < 0
+    slope = slope(cellsize)
+    D .= (a ./ (1 .+ exp.(b.*(precip .- c)))) .* (d ./ (1 .+ exp.(e.*(slope .- f)))) # using logistic function
     end
     return D./1000 #m/kyr
 end

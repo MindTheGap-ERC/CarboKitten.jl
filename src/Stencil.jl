@@ -35,11 +35,15 @@ end
 # ~/~ end
 # ~/~ begin <<docs/src/stencils.md#stencil-operation>>[init]
 function stencil(::Type{T}, ::Type{BT}, n::NTuple{dim,Int}, f::Function) where {T,dim,BT<:Boundary{dim}}
+    return stencil(T, T, BT, n, f)
+end
+
+function stencil(::Type{In}, ::Type{Out}, ::Type{BT}, n::NTuple{dim,Int}, f::Function) where {In,Out,dim,BT<:Boundary{dim}}
     m = n .÷ 2
     stencil_shape = range.(.-m, m)
     stencil = zeros(T, n)
 
-    function (z_in::AbstractArray{T,dim}, z_out::AbstractArray{T,dim}, args...)
+    function (z_in::AbstractArray{In,dim}, z_out::AbstractArray{Out,dim}, args...)
         @assert (size(z_in) == size(z_out)) "sizes of arrays need to be equal"
         shape = size(z_in)
         for i in CartesianIndices(shape)

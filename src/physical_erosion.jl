@@ -66,7 +66,6 @@ end
 function calculate_redistribution(elevation::Matrix{Float64},cellsize::Float64,Facies::facies)
     nrows, ncols = size(elevation)
     D_matrix = zeros(Float64,3,3)
-    cell = zeros(Float64,nrows,ncols)
     result = Matrix{Float64}[]
     for i in 2:nrows-1
         for j in 2:ncols-1
@@ -78,9 +77,8 @@ function calculate_redistribution(elevation::Matrix{Float64},cellsize::Float64,F
             D_matrix .= D[2,2] .* m
             # Store the result in the corresponding cell of the results matrix
             push!(result, D_matrix)
-            cell[i, j] += sum(D_matrix)
         end
     end
-    return cell
+    return result
 end
 end

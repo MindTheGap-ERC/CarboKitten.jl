@@ -1,9 +1,10 @@
 # based on Kaufman 2002, Geomorphology
-module carb_dissolution
+module CarbDissolution
 
 export dissolution
 
-using CarboKitten.Burgess2013
+using ..Burgess2013
+
 #include("climateconfig.jl") # using or import is not working, so I use include keyword
 #=
 mutable struct climate
@@ -13,18 +14,22 @@ mutable struct climate
 end
 =#
 #testclimate = climate(1000,288,10^(-1.5))
-function chemparam(temp::Float64)
- A = -0.4883+8.074*0.0001*(temp-273)
- B = -0.3241+1.6*0.0001*(temp-273)
- IA = 0.1 # ion activity
- K1 = 10^(-356.3094-0.06091964*temp+21834.37/temp+126.8339*log10(temp)-1684915/(temp^2))
- K2 = 10^(-107.881-0.03252849*temp+5151.79/temp+38.92561*log10(temp)-563713.9/(temp^2))
- KC = 10^(-171.9065-0.077993*temp+2839.319/temp+71.595*log10(temp))
- KH = 10^(108.3865+0.01985076*temp-6919.53/temp-40.4515*log10(temp)+669365/(temp^2))
- gama_Ca::Float64 = 10^(-4A*sqrt(IA)/(1+10^(-8)*B*sqrt(IA)))
- gama_alk::Float64 = 10^(-A*sqrt(IA)/(1+5.4*10^(-8)*B*sqrt(IA)))
- return A,B,IA,K1,K2,KC,KH,gama_Ca,gama_alk
+
+# Kaufmann 2002, Table 2
+function karst_denudation_parameters(temp::Float64)
+    A = -0.4883+8.074*0.0001*(temp-273)
+    B = -0.3241+1.6*0.0001*(temp-273)
+    IA = 0.1 # ion activity
+
+    ( K1 = 10^(-356.3094-0.06091964*temp+21834.37/temp+126.8339*log10(temp)-1684915/(temp^2))
+    , K2 = 10^(-107.881-0.03252849*temp+5151.79/temp+38.92561*log10(temp)-563713.9/(temp^2))
+    , KC = 10^(-171.9065-0.077993*temp+2839.319/temp+71.595*log10(temp))
+    , KH = 10^(108.3865+0.01985076*temp-6919.53/temp-40.4515*log10(temp)+669365/(temp^2))
+    , activity_Ca = 10^(-4A*sqrt(IA)/(1+10^(-8)*B*sqrt(IA)))
+    , activity_Alk = 10^(-A*sqrt(IA)/(1+5.4*10^(-8)*B*sqrt(IA)))
+    )
 end
+
 #=
 const T = 288
 const P = 1000
@@ -56,21 +61,24 @@ end
 )
 =#
 #calculate ceq and Deq, Kaufman 2002
-function calculate_ceq(temp::Float64, pco2::Float64, precip::Float64, facies::Facies)
-    K1,K2,KC,KH,gama_Ca,gama_alk = chemparam(temp)
-    ceq = (pco2 .* (K1 .* KC .* KH) ./(4 * K2 .* gama_Ca .* (gama_alk).^2)).^(1/3)
-    Deq = precip .* facies.inf * 40 * 1000 * ceq ./ facies.density
-    return ceq, Deq
+function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies::Facies)
+    p = karst_denudation_parameters(temp)
+    eq_c = (pco2 .* (p.K1 * p.KC * p.KH) ./ (4 * p.K2 * p.activity_Ca * (p.activity_Alk)^2)).^(1/3)
+    eq_d = precip .* facies.inf * 40 * 1000 * eq_c ./ facies.density
+    (concentration = eq_c, denudation = eq_d)
 end
 
-# check whether the system reaches 
+# check whether the system reaches equilibrium
 function dissolution(temp::Float64,precip::Float64, alpha::Float64, pco2::Float64,water_depth::Float64, facies::Facies)
-    z0 = -water_depth
-    I = precip .* facies.inf #assume vertical infiltration
-    lambda = precip .* facies.inf ./ (alpha .* facies.L)
-    ceq, Deq = calculate_ceq(temp,pco2,precip,facies) # pass ceq Deq from the last function
-    return (1 - exp(-z0./lambda)) > 0.8 ? Deq :  (I .* ceq ./facies.density) .* (1 - (lambda./z0).* (1 - exp(-z0./lambda)))
-    
+        z0 = -water_depth
+        I = precip .* facies.inf #assume vertical infiltration
+        λ = precip .* facies.inf ./ (alpha .* facies.L)
+        eq = equilibrium(temp,pco2,precip,facies) # pass ceq Deq from the last function
+        if (1 - exp(-z0./λ)) > 0.8
+            eq.denudation 
+        else
+            (I .* eq.concentration ./facies.density) .* (1 - (λ./z0).* (1 - exp(-z0./λ)))
+        end
 end
 
 #dissolution(testclimate,10.0,chemparam,CaProd.Facies((4, 10), (6, 10), 500, 0.8, 300, 1000, 2.73, 0.5))

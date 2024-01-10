@@ -2,12 +2,12 @@
 module CaProd
 
 using CarboKitten
-using CarboKitten.Stencil: Periodic
-using CarboKitten.Utility
-using CarboKitten.BS92: sealevel_curve
-using CarboKitten.Stencil
-using CarboKitten.Burgess2013
-using CarboKitten.carb_dissolution
+using ..Stencil: Periodic
+using ..Utility
+using ..BS92: sealevel_curve
+using ..Stencil
+using ..Burgess2013
+using ..CarbDissolution
 
 using HDF5
 using .Iterators: drop, peel, partition, map, take
@@ -38,7 +38,7 @@ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-frame>>[init]
 struct Frame
     production::Array{Float64,3}
-
+    erosion::Array{Float64,3}
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-state>>[init]
@@ -69,17 +69,24 @@ function propagator(input::Input)
     # ~/~ end
     function (s::State)  # -> Frame
         # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[init]
-        result = zeros(Float64, input.grid_size..., n_facies)
+        production = zeros(Float64, input.grid_size..., n_facies)
+        erosion = zeros(Float64, input.grid_size..., n_facies)
         facies_map, ca = peel(ca)
         w = water_depth(s)
         Threads.@threads for idx in CartesianIndices(facies_map)
             f = facies_map[idx]
 
+            #if w[idx] < 0
+            #    erosion[Tuple(idx)...,f] = dissolution(input.temp,input.precip,input.alpha, input.pco2,[idx],input.facies[f])
+            #end
+
             if f == 0 
             continue
             end
             
-            result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
+            production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
+
+            
             #=
             if w[idx] < 0
                 result[Tuple(idx)..., f] = result[Tuple(idx)..., f] .- dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
@@ -87,7 +94,7 @@ function propagator(input::Input)
                 result[Tuple(idx)..., f] = result[Tuple(idx)..., f]
             end=#
         end
-        return Frame(result)
+        return Frame(production, erosion)#
         # ~/~ end
     end
 end
@@ -97,6 +104,7 @@ function updater(input::Input)
     n_facies = length(input.facies)
     function (s::State, Δ::Frame)
         s.height .-= sum(Δ.production; dims=3) .* input.Δt
+        s.height .+= sum(Δ.erosion; dims=3) .* input.Δt
         s.height .+= input.subsidence_rate * input.Δt
         s.time += input.Δt
     end
@@ -119,7 +127,7 @@ end
 # ~/~ end
 
 function stack_frames(fs::Vector{Frame})  # -> Frame
-    Frame(sum(f.production for f in fs))
+    Frame(sum(f.production for f in fs),sum(f.erosion for f in fs))#
 end
 
 function main(input::Input, output::String)

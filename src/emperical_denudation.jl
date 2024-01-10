@@ -29,8 +29,8 @@ function calculate_D(precip::Float64, elevation::Matrix{Float64}, cellsize::Floa
     slope = calculate_slope(elevation,cellsize)
     nrows, ncols = size(elevation)
     # function format
-    for i in 2:nrows-1
-        for j in 2:ncols-1
+    for i in 1:nrows
+        for j in 1:ncols
     D[i,j] = (9.1363 ./ (1 .+ exp.(-0.008519.*(precip .- 580.51)))) .* (9.0156 ./ (1 .+ exp.(-0.1245.*(slope[i,j] .- 4.91086)))) # using logistic function
         end
     end

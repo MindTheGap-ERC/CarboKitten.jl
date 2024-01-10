@@ -71,28 +71,21 @@ function propagator(input::Input)
         # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[init]
         production = zeros(Float64, input.grid_size..., n_facies)
         erosion = zeros(Float64, input.grid_size..., n_facies)
-        facies_map, ca = peel(ca)
+        facies_map, ca = peel(ca)   
         w = water_depth(s)
         Threads.@threads for idx in CartesianIndices(facies_map)
             f = facies_map[idx]
 
-            #if w[idx] < 0
-            #    erosion[Tuple(idx)...,f] = dissolution(input.temp,input.precip,input.alpha, input.pco2,[idx],input.facies[f])
-            #end
-
             if f == 0 
             continue
             end
-            
-            production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
 
-            
-            #=
-            if w[idx] < 0
-                result[Tuple(idx)..., f] = result[Tuple(idx)..., f] .- dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
+            if w[idx] > 0.0 
+                production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
             else
-                result[Tuple(idx)..., f] = result[Tuple(idx)..., f]
-            end=#
+                erosion[Tuple(idx)...,f] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
+            end
+
         end
         return Frame(production, erosion)#
         # ~/~ end

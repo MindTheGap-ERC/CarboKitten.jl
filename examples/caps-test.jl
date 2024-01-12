@@ -1,6 +1,5 @@
 # ~/~ begin <<docs/src/ca-with-production.md#examples/caps-osc.jl>>[init]
 using CarboKitten.CaProd
-using CSV
 using CarboKitten.Burgess2013
 
 

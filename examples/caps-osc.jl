@@ -1,7 +1,8 @@
 # ~/~ begin <<docs/src/ca-with-production.md#examples/caps-osc.jl>>[init]
 using CarboKitten.CaProd
+using CarboKitten.Burgess2013
 
-DEFAULT_INPUT = CaProd.Input(
+DEFAULT_INPUT = CarboKitten.CaProd.Input(
     sea_level = t -> 4 * sin(2π * t / 0.2), 
     subsidence_rate = 50.0,
     initial_depth = x -> x / 2,
@@ -11,9 +12,9 @@ DEFAULT_INPUT = CaProd.Input(
     write_interval = 1,
     time_steps = 1000,
     facies = [
-        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1000, 2730, 0.5),
-        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300, 1000, 2730, 0.5),
-        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300, 1000, 2730, 0.5)
+        Burgess2013.Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1000, 2730, 0.5),
+        Burgess2013.Facies((4, 10), (6, 10), 400.0, 0.1, 300, 1000, 2730, 0.5),
+        Burgess2013.Facies((4, 10), (6, 10), 100.0, 0.005, 300, 1000, 2730, 0.5)
     ],
     insolation = 2000.0,
     temp = 288.0,
@@ -23,5 +24,5 @@ DEFAULT_INPUT = CaProd.Input(
 
 )
 
-CaProd.main(DEFAULT_INPUT, "data/caps-osc.h5")
+CarboKitten.CaProd.main(DEFAULT_INPUT, "data/caps-osc.h5")
 # ~/~ end

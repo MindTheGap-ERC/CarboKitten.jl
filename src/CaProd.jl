@@ -4,7 +4,7 @@ module CaProd
 using CarboKitten
 using ..Stencil: Periodic
 using ..Utility
-using ..BS92: sealevel_curve
+#using ..BS92: sealevel_curve
 using ..Stencil
 using ..Burgess2013
 using ..CarbDissolution
@@ -70,7 +70,7 @@ function propagator(input::Input)
     function (s::State)  # -> Frame
         # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[init]
         production = zeros(Float64, input.grid_size..., n_facies)
-        erosion = zeros(Float64, input.grid_size..., n_facies)
+        erosion = zeros(Float64, input.grid_size...,n_facies)
         facies_map, ca = peel(ca)   
         w = water_depth(s)
         Threads.@threads for idx in CartesianIndices(facies_map)

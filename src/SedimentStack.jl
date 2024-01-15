@@ -27,7 +27,7 @@ end
 
 function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) where F <: Real
   _, x, y = size(p)
-  for i in CartesianIndices((x, y))
+  @views for i in CartesianIndices((x, y))
     push_sediment!(sediment[:, :, i[1], i[2]], p[:, i[1], i[2]])
   end
 end
@@ -64,7 +64,7 @@ function peek_sediment(sediment::AbstractArray{F,4}, Δ::F) where F <: Real
   _, f, x, y = size(sediment)
   out = Array{F, 3}(undef, f, x, y)
   for i in CartesianIndices((x, y))
-    out[:, i[1], i[2]] = peek_sediment(sediment[:, :, i[1], i[2]], Δ)
+    out[:, i[1], i[2]] = peek_sediment(@view(sediment[:, :, i[1], i[2]]), Δ)
   end
   return out
 end

@@ -190,8 +190,8 @@ version = "0.5.1"
 
 [[deps.CarboKitten]]
 deps = ["HDF5", "Transducers"]
-git-tree-sha1 = "208e031bd5eb07f76f150cc3390a303d64290de2"
-repo-rev = "main"
+git-tree-sha1 = "700c4853f4aa3269a539061fa225ffc6da927343"
+repo-rev = "feature-transport"
 repo-url = ".."
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 version = "0.1.0"

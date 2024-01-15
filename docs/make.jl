@@ -68,6 +68,9 @@ makedocs(
             "Model with CA and Production" => "ca-with-production.md",
             "Sediment Transport" => "carbocat-transport.md"
         ],
+        "CarboKitten" => [
+            "Submarine Transport" => "submarine-transport.md"
+        ],
         "Algorithms" => [
             "Stencils" => "stencils.md",
             "Utility" => "utility.md"
@@ -75,5 +78,5 @@ makedocs(
     ])
 
 deploydocs(
-    repo="github.com/MindTheGap-ERC/CarboKitten"
+    repo="github.com/MindTheGap-ERC/CarboKitten.jl"
 )

@@ -29,15 +29,6 @@
       "size": 1257
     },
     {
-      "path": ".entangled/build/unnamed-docs/src/stencils.md_142",
-      "deps": [
-        "docs/src/stencils.md"
-      ],
-      "modified": "2023-11-21T16:25:40.882969",
-      "hexdigest": "bb259f7140df2db9a0ea460d1cb0837b988edda6f8f9fa6084ddb85e40647938",
-      "size": 860
-    },
-    {
       "path": "examples/cap-slope.jl",
       "deps": [
         "docs/src/ca-with-production.md"
@@ -54,15 +45,6 @@
       "modified": "2023-11-21T16:25:40.885969",
       "hexdigest": "323ff32878d059439ebc3a805d3cb86d7e7ad8444fc768d88e9d5454883fefb7",
       "size": 1314
-    },
-    {
-      "path": ".entangled/build/unnamed-docs/src/stencils.md_225",
-      "deps": [
-        "docs/src/stencils.md"
-      ],
-      "modified": "2023-11-21T16:25:40.887969",
-      "hexdigest": "33749b85c7a9ea35f4d4adc062223f0ebdb689822337e38d3ae2458f9f30b16f",
-      "size": 895
     },
     {
       "path": "examples/bosscher-schlager-1992.jl",
@@ -82,15 +64,6 @@
       "modified": "2023-11-21T16:25:40.890969",
       "hexdigest": "a8a68a613cab71d93658bce1f772eb468193f68bb2d66e3dfcebf81c326d89f7",
       "size": 608
-    },
-    {
-      "path": ".entangled/build/unnamed-docs/src/stencils.md_182",
-      "deps": [
-        "docs/src/stencils.md"
-      ],
-      "modified": "2023-11-21T16:25:40.891969",
-      "hexdigest": "b8b18e64a46312f2a62320b31f7e84e71243e13dccdbc9bdc1b375dd4cf1329f",
-      "size": 772
     },
     {
       "path": "src/Burgess2013/CA.jl",
@@ -223,9 +196,9 @@
       "deps": [
         "docs/src/stencils.md"
       ],
-      "modified": "2023-11-21T16:25:40.914969",
-      "hexdigest": "28c4df483d74e690d71de3fe65696da6646843394b27ec2f6faf0f28656fb35b",
-      "size": 2402
+      "modified": "2024-01-10T17:52:10.899559",
+      "hexdigest": "65717a0a9b4c79c36837f077bdf2cdba2b53a60308e153c7d3c4c214acb84ec9",
+      "size": 2517
     },
     {
       "path": "src/BS92/fig8-sealevel.jl",
@@ -295,26 +268,26 @@
     {
       "path": "docs/src/stencils.md",
       "deps": null,
-      "modified": "2023-10-14T21:32:19.922934",
-      "hexdigest": "ecf9f4849a1f015df8a1dc8b14d08e659cdfcd19a572fda106efeccf55b0f0f3",
-      "size": 8034
+      "modified": "2024-01-10T17:52:10.716558",
+      "hexdigest": "dd7dcdad7a83de6fd92f72069ec85288d524728cbb132b46bb5af5499b6f300b",
+      "size": 8149
     },
     {
       "path": "docs/src/submarine-transport.md",
       "deps": null,
-      "modified": "2023-11-26T01:22:17.007713",
-      "hexdigest": "da1935fda8ba7c3514e9fc85198f7cf603920f776de3781b854b393d89f1d189",
-      "size": 12230
+      "modified": "2024-01-15T10:19:04.421170",
+      "hexdigest": "b4de44faccbecc8ceb7fdcb3c1d64e810a3f357c351bb7c7f440c2f331fc415a",
+      "size": 17713
     },
     {
       "path": "src/CATP.jl",
       "deps": [
-        "docs/src/ca-with-production.md",
-        "docs/src/submarine-transport.md"
+        "docs/src/submarine-transport.md",
+        "docs/src/ca-with-production.md"
       ],
-      "modified": "2023-11-25T23:53:39.626522",
-      "hexdigest": "336dfce79cb709308e218fc4f06c532cf930b868597f8b3368b3f14b93fea613",
-      "size": 3860
+      "modified": "2024-01-15T10:19:07.335189",
+      "hexdigest": "81effbd54a276fbf1c21f66c53a481f1448c3bcbdab2fa9cb248c00edd10965c",
+      "size": 4163
     },
     {
       "path": "src/SedimentStack.jl",
@@ -330,41 +303,68 @@
       "deps": [
         "docs/src/submarine-transport.md"
       ],
-      "modified": "2023-11-26T00:59:42.891453",
-      "hexdigest": "199717c1c42d744b3360a9dd56b028357269da22910c8c46b8cc5424d3a2fe35",
-      "size": 246
+      "modified": "2023-11-27T11:56:12.303783",
+      "hexdigest": "ef96d9431d5b7d877f9588477eb32092ff9e3983df66028f283f05f12c09d156",
+      "size": 435
+    },
+    {
+      "path": ".entangled/build/unnamed-docs/src/stencils.md_229",
+      "deps": [
+        "docs/src/stencils.md"
+      ],
+      "modified": "2024-01-10T17:52:10.888559",
+      "hexdigest": "c868aac0fe23426460a8ae195bc8835f9571fdf94119d0f6598c8d6c7dd5be12",
+      "size": 895
+    },
+    {
+      "path": ".entangled/build/unnamed-docs/src/stencils.md_186",
+      "deps": [
+        "docs/src/stencils.md"
+      ],
+      "modified": "2024-01-10T17:52:10.897559",
+      "hexdigest": "a542ee10b48a462aac64273c22cff8d736c2372d539eecd9d86056b26f71eead",
+      "size": 772
+    },
+    {
+      "path": ".entangled/build/unnamed-docs/src/stencils.md_146",
+      "deps": [
+        "docs/src/stencils.md"
+      ],
+      "modified": "2024-01-10T17:52:10.900559",
+      "hexdigest": "4c02ededaa3bd663dbcae6d0db98d10eec7c5988aa2be1763c7164525709d408",
+      "size": 860
     }
   ],
   "source": [],
   "target": [
-    "examples/plot-cap-slope.jl",
-    "src/Burgess2013/Config.jl",
+    "test/SedimentStackSpec.jl",
+    ".entangled/build/unnamed-docs/src/stencils.md_229",
+    "src/BS92.jl",
     "src/Burgess2013/CA.jl",
-    "src/Utility.jl",
-    "examples/ca/long-term.jl",
+    "src/Burgess2013/Production.jl",
     "examples/plot-tanh.gnuplot",
-    "examples/cap-slope.jl",
+    "src/CaProd.jl",
+    "src/Burgess2013.jl",
+    "src/Burgess2013/Config.jl",
+    "examples/plot-cap-slope.jl",
+    "examples/caps-osc.jl",
     "src/BS92/fig8-sealevel.jl",
     "examples/ca-with-prod.jl",
-    ".entangled/build/unnamed-docs/src/stencils.md_182",
-    "src/SedimentStack.jl",
-    "examples/plot-caps-osc.jl",
-    "src/Erosion.jl",
-    "src/Stencil.jl",
-    "examples/bosscher-schlager-1992.jl",
-    "test/SedimentStackSpec.jl",
-    "src/Burgess2013/Production.jl",
-    ".entangled/build/unnamed-docs/src/stencils.md_142",
-    "src/CaProd.jl",
-    ".entangled/build/unnamed-docs/src/stencils.md_225",
-    "examples/burgess2013-fig2.gnuplot",
-    "examples/caps-osc.jl",
     "src/Burgess2013/Transport.jl",
-    "src/Burgess2013.jl",
-    "src/BS92.jl",
-    "src/Visualization.jl",
+    "examples/plot-caps-osc.jl",
     "examples/ca/parameter-scan.jl",
+    "examples/ca/long-term.jl",
+    "examples/cap-slope.jl",
+    ".entangled/build/unnamed-docs/src/stencils.md_186",
     "examples/ca/burgess-2013.jl",
-    "src/CATP.jl"
+    ".entangled/build/unnamed-docs/src/stencils.md_146",
+    "examples/bosscher-schlager-1992.jl",
+    "src/CATP.jl",
+    "src/Stencil.jl",
+    "src/SedimentStack.jl",
+    "src/Visualization.jl",
+    "src/Erosion.jl",
+    "src/Utility.jl",
+    "examples/burgess2013-fig2.gnuplot"
   ]
 }

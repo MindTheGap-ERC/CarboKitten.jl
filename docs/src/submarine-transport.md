@@ -15,6 +15,7 @@ struct Facies
   saturation_intensity::Float64
 
   grain_size::Float64
+  excess_density::Float64
 end
 ```
 
@@ -28,6 +29,7 @@ The sediment output will be stored in a buffer with fixed spatial resolution, ty
   initial_depth
 
   grid_size::NTuple{2,Int}
+  boundary::Boundary{2}
   phys_scale::Float64
   Δt::Float64
 
@@ -53,6 +55,13 @@ $$U: (S, \Delta) \to S.$$
 
 In the new setup, our state will also contain a layer of history upon which we can erode and transport sediment. Also, each time step will consist of two deltas, one for production and one for transport. (If you want to disperse production before sedimentation, this is still considered production stage).
 
+In fact, we should have one propagator computing the magnitude of transport, an updater removing that sediment, returning also the composition of the transported sediment and then another updater depositing that sediment again.
+
+$$P_{\rm transport}: S \to \Delta_1$$
+$$U_{\rm remove}: (S, \Delta_1) \to (S, \Delta_2),\ {\rm and}\ U_{\rm resettle}: (S, \Delta_2) \to S$$
+
+Then, we can say $$U_{\rm transport} = U_{\rm resettle} \circ U_{\rm remove}$$ and retain our nice structure.
+
 ``` {.julia #cat-frame}
 struct ProductFrame
   production::Array{Float64,3}        # x y f
@@ -60,9 +69,8 @@ end
 ```
 
 ``` {.julia #cat-frame}
-struct TransportFrame
+struct RemoveFrame
   disintegration::Array{Float64,2}   # x y
-  deposition::Array{Float64,3}       # x y f
 end
 ```
 
@@ -71,12 +79,21 @@ There are several choices on how to structure the sediment buffer. We can grow s
 
 Another choice is to keep the sea floor in the same layer of the buffer, and copy down sediment when a layer is full. We may need to implement both to see which is more efficient. 
 
+We define two functions `push_sediment!` and `pop_sediment!`. Given a $s \times n$ matrix, where $n$ is the number of facies types and $s$ is the depth of the stack, we can grow and shrink sediment. These functions are unit-free, setting $\Delta z$ to be equal to 1.
+
 ``` {.julia file=test/SedimentStackSpec.jl}
 @testset "SedimentStack" begin
   stack = zeros(Float64, 10, 3)
   push_sediment!(stack, [5.0, 0, 0])
   @test pop_sediment!(stack, 1.5) == [1.5, 0.0, 0.0]
+  push_sediment!(stack, [0.0, 2.0, 0.0])   # (0 0.5) (0 1) (0.5 0.5) (1 0) ...
+  @test pop_sediment!(stack, 2.0) == [0.25, 1.75, 0.0]
+  @test pop_sediment!(stack, 1.5) == [1.25, 0.25, 0.0]
 end
+```
+
+```@raw html
+<details><summary>SedimentStack impl</summary>
 ```
 
 ``` {.julia file=src/SedimentStack.jl}
@@ -136,6 +153,10 @@ end
 end # module
 ```
 
+```@raw html
+</details>
+```
+
 #### Current choice
 Implementation will be such that depth $z$ is the smallest axis, such that depth transects are contiguous in memory. The sediment buffer will be four dimensional containing fractions for each species, i.e. $\in [0, 1]$, and one additional slice to record the time.
 
@@ -153,30 +174,32 @@ Each time step we compute the production as before, resulting in a $\Delta_{\pro
 ``` {.julia #cat-update}
 function deposit_material(
     grid_size::NTuple{2, Int},
-    Δt::Float64,
     Δz::Float64,
     s::State,
-    facies::T) where T <: AbstractArray{Float64,3}
+    material::AbstractArray{Float64,3})
 
   Threads.@threads for idx in CartesianIndices(grid_size)
-    prod = facies[Tuple(idx)..., :]
-    Δh = sum(prod) .* Δt
-    fractions = prod ./ sum(prod)
-    column = s.sediment[Tuple(idx)..., :, :]
-    bucket = sum(column[1, :])
-    if bucket + Δh / Δz > 1.0
-      column[1, :] .+= fractions .* (1.0 - bucket)
-      column[2:end, :] = column[1:end-1, :]
-      column[1, :] = fractions .* (Δh / Δz - 1.0)
-    else
-      column[1, :] .+= fractions .* (Δh / Δz)
-    end
-
-    s.height[idx] .-= Δh
+    production = material[Tuple(idx)..., :] .* (1.0 / Δz)
+    push_sediment!(s.sediment, production)
+    s.height[idx] .-= sum(material[Tuple(idx)..., :]) * Δt
   end
 end
 
-function production_updater(input::Input)
+function remove_material(
+    grid_size::NTuple{2, Int},
+    n_facies::Int,
+    Δz::Float64,
+    s::State,
+    thickness::AbstractArray{Float64,2})
+
+  material = Array{Float64,3}(undef, grid_size..., n_facies)
+  Threads.@threads for idx in CartesianIndices(grid_size)
+    material[Tuple(idx)..., :] = pop_sediment!(s.sediment, thickness[idx])
+  end
+  return material
+end
+
+function deposit_updater(input::Input)
   function (s::State, Δ::ProductFrame)
     deposit_material(input.grid_size, input.Δz, s, Δ.production)
   end
@@ -184,9 +207,11 @@ end
 ```
 
 ``` {.julia #cat-update}
-function transport_updater(input::Input)
-  function (s::State, Δ::TransportFrame)
-    deposit_material(input.grid_size, input.Δz, s, Δ.deposition)
+function remove_updater(input::Input)
+  function (s::State, Δ::RemoveFrame)
+    loose = remove_material(input.grid_size, length(input.facies), input.Δz, s, Δ.disintegration)
+    # need physics to disperse loose material
+    return ProductFrame(loose)
   end
 end
 ```
@@ -200,14 +225,31 @@ function time_updater(input::Input)
 end
 ```
 
+## Distintegration
+We have two propagators: one to compute production, that goes unchanged, the other to compute **the amount of disintegration**.
+
+We should compute the shear stress from the current state.
+
+$$\tau_{\rm slope} = \Delta_{\rho} g D \sin(\alpha) \hat{G},$$
+
+``` {.julia #cat-propagator}
+
+function shear_stress()
+  gradient_stencil = stencil()
+  return function (s::State)
+  end
+end
+```
+
+
 ``` {.julia file=src/CATP.jl}
 module CATP
 
-using CarboKitten
-using CarboKitten.Stencil: Periodic
-using CarboKitten.Utility
-using CarboKitten.Stencil
-using CarboKitten.Burgess2013.CA
+using ..Stencil: Periodic
+using ..Utility
+using ..Stencil
+using ..Burgess2013.CA
+using ..SedimentStack
 
 using HDF5
 
@@ -217,23 +259,63 @@ using .Iterators: drop, peel, partition, map, take
 <<cat-state>>
 <<cat-frame>>
 <<cat-update>>
+<<cat-propagator>>
 <<ca-prod-propagator>>
 
 end  # CATP
 ```
 
-## Science description
-In this model, sediment is entrained (lifted from the surface and transported) if the shear stress $\tau$ exceeds the critical shear stress $\tau_{e}$.
+## Summary of Carbonate 3D (Warrlich Thesis)
+The Carbonate3D model is a (closed-source) competitor to CarboCAT. We may learn from there how to better implement sediment transport.
+Three main drivers in this model are the same as in CarboKitten:
 
+- Sea level
+- Subsidence
+- Sediment Production
+
+### Production
+Concerning production, Carbonate3D makes some subtly different choices than were made in CarboCAT. A maximum production rate is found between two depths $z_t$ and $z_b$. From sealevel to $z_t$ there is a linear increase from no production to maximum. This choice could help with numeric stability later on. Below $z_b$ there is an exponential decay. At least in this respect, CarboCAT solves the exponential decay more naturally, using the Bosscher-Schlager model.
+
+Additionally, Warrlich introduces some **stress** factors (he uses the word a bit too much for different concepts), all inducing exponential decay on production rates. For open-water species, these stress factors are summarized into carbonate producing species *liking* to be closer to open water. In effect, using a Gaussian filter to measure the distance to open sea, he stimulates growth at the edges of the platform. No doubt to produce ring-like atol formations later on in the thesis, though it can be argued that this morphology is put in by hand like this.
+
+A second stress factor for open-water species is light intensity reduction by the actual sediment that is being produced, making the water more cloudy. This means that (at least for facies with smaller grain size) sediment production is self-limiting. Also, because sediment is more easily transported away from the platform edge, this makes production more efficient at the edge of the plateau.
+
+A second group of factories is introduced that favour more the shallow conditions on the inside of an atol, although production rates are usually much lower there. The same trick with the Gaussian filter is repeated, this time stimulating growth on the inside of the plateau.
+
+A third factory type: **pelagic production** has much lower production rates but also produces in the open ocean. (pelagic means pertaining to ocean environment)
+
+These three factory types kind of match the three types also found in CarboCAT, even though the model implementation is completely different. What I like about CarboCAT is that it doesn't make the same assumptions, whereas in Carbonate3D a lot of the expected behaviour is more or less programmed in by hand. The attempt of Carbonate3D to include more stress factors (and thus a higher degree of realism) actually decreases the explanatory power of the model.
+
+Carbonate3D adds two more facies for coarse- and fine-grained siliciclastics (floating particles). 
+
+### Dispersal
+Sediment dispersal is broken down into:
+
+- Disintegration
+- Entrainment (capture of disintegrated sediment and clastics into the water flow)
+- Transport
+- Redeposition
+
+For each sediment type dispersal is modelled by two parameters: carbonate/siliciclastic ratio and grain/matrix ratio. Here *grain* means coarse particles and *matrix* means fine dust/mud.
+
+Additional sediments are grouped into two classes: clastics from external input (not currently of interest for CarboKitten) and disintegrated older sediments, both parametrized with the same parameters we use for freshly produced facies.
+
+Shallow water platform interior species (algae) are associated with carbonate matrix sediment, same as pelagic production. Products of shallow open water (corals) are mixed size carbonate. Disintegration of older sediments keep these same properties. 
+
+#### Disintegration
+Disintegration rate can be a function of depth only, seeing that wave energy is an important factor. Also, it is argued that the shallow areas of the reef interior produce more fine-grained sediment. The second process is driven by gravity due to steep slopes.
+
+#### Entrainment
+In this model, sediment is entrained (lifted from the surface and transported) if the shear stress $\tau$ exceeds the critical shear stress $\tau_{e}$.
 The shear stress acting on the sediment $\tau_{total}$ can be simplified to a combination of shear stress from currents, waves and slopes:
 
-$\tau_{total} = \tau_{current} + \tau_{wave} + \tau_{slope}$
+$$\tau_{\rm total} = \tau_{\rm current} + \tau_{\rm wave} + \tau_{\rm slope}$$
 
-### Shear stress due to slope
+#### Shear stress due to slope
 
-$\tau_{slope} = \Delta \rho g D \sin( \alpha ) ( \underline{G} )/G$
+$$\tau_{slope} = \Delta \rho g D \sin( \alpha ) ( \underline{G} )/G$$
 
-$\Delta \rho$ is excess density of the sediment, *g* is gravitational acceleration, *D* is grain size and $\alpha$ the max slope angle parallel to the gradient vector $\underline{G}$.
+$\Delta \rho$ is excess density of the sediment, $g$ is gravitational acceleration, $D$ is grain size and $\alpha$ the max slope angle parallel to the gradient vector $\underline{G}$.
 
 ![Eq 17](https://github.com/MindTheGap-ERC/CarboKitten/assets/18270548/47d9ba18-0431-4286-8f94-00210b987e1e)
 

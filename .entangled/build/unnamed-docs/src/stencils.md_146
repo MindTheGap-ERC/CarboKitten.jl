@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/stencils.md#unnamed-docs/src/stencils.md:142>>[init]
+# ~/~ begin <<docs/src/stencils.md#unnamed-docs/src/stencils.md:146>>[init]
 using CarboKitten.Stencil
 using GLMakie
 

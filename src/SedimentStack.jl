@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/submarine-transport.md#src/SedimentStack.jl>>[init]
 module SedimentStack
 
-export push_sediment!, pop_sediment!
+export push_sediment!, pop_sediment!, peek_sediment
 
 function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
   Δ = sum(parcel)
@@ -25,12 +25,48 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
   col[1,:] .= frac .* Δ
 end
 
+function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) where F <: Real
+  _, x, y = size(p)
+  for i in CartesianIndices((x, y))
+    push_sediment!(sediment[:, :, i[1], i[2]], p[:, i[1], i[2]])
+  end
+end
+
 @inline function pop_fraction(col::AbstractMatrix{F}, Δ::F) where F <: Real
   bucket = sum(col[1,:])
   @assert Δ < bucket "pop_fraction can only pop from the top cell"
   parcel = (Δ / bucket) .* col[1,:]
   col[1,:] .-= parcel
   return parcel
+end
+
+function peek_sediment(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
+  bucket = sum(col[1,:])
+  if Δ < bucket
+    parcel = (Δ / bucket) .* col[1,:]
+    return parcel 
+  end
+
+  parcel = copy(col[1,:])
+  Δ -= bucket
+  n = floor(Int64, Δ)
+
+  parcel .+= sum(col[2:n+1,:]; dims=1)'
+  Δ -= n
+
+  last_bit = (Δ / sum(col[n+2,:])) .* col[n+2,:]
+  parcel .+= last_bit
+
+  return parcel
+end
+
+function peek_sediment(sediment::AbstractArray{F,4}, Δ::F) where F <: Real
+  _, f, x, y = size(sediment)
+  out = Array{F, 3}(undef, f, x, y)
+  for i in CartesianIndices((x, y))
+    out[:, i[1], i[2]] = peek_sediment(sediment[:, :, i[1], i[2]], Δ)
+  end
+  return out
 end
 
 function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}

@@ -30,8 +30,8 @@ The sediment output will be stored in a buffer with fixed spatial resolution, ty
 
   grid_size::NTuple{2,Int}
   boundary::Boundary{2}
-  phys_scale::Float64
-  Δt::Float64
+  phys_scale::Float64     # km / pixel
+  Δt::Float64             # Ma / timestep ?
 
   time_steps::Int
   write_interval::Int
@@ -99,7 +99,7 @@ end
 ``` {.julia file=src/SedimentStack.jl}
 module SedimentStack
 
-export push_sediment!, pop_sediment!
+export push_sediment!, pop_sediment!, peek_sediment
 
 function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
   Δ = sum(parcel)
@@ -123,12 +123,48 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
   col[1,:] .= frac .* Δ
 end
 
+function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) where F <: Real
+  _, x, y = size(p)
+  for i in CartesianIndices((x, y))
+    push_sediment!(sediment[:, :, i[1], i[2]], p[:, i[1], i[2]])
+  end
+end
+
 @inline function pop_fraction(col::AbstractMatrix{F}, Δ::F) where F <: Real
   bucket = sum(col[1,:])
   @assert Δ < bucket "pop_fraction can only pop from the top cell"
   parcel = (Δ / bucket) .* col[1,:]
   col[1,:] .-= parcel
   return parcel
+end
+
+function peek_sediment(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
+  bucket = sum(col[1,:])
+  if Δ < bucket
+    parcel = (Δ / bucket) .* col[1,:]
+    return parcel 
+  end
+
+  parcel = copy(col[1,:])
+  Δ -= bucket
+  n = floor(Int64, Δ)
+
+  parcel .+= sum(col[2:n+1,:]; dims=1)'
+  Δ -= n
+
+  last_bit = (Δ / sum(col[n+2,:])) .* col[n+2,:]
+  parcel .+= last_bit
+
+  return parcel
+end
+
+function peek_sediment(sediment::AbstractArray{F,4}, Δ::F) where F <: Real
+  _, f, x, y = size(sediment)
+  out = Array{F, 3}(undef, f, x, y)
+  for i in CartesianIndices((x, y))
+    out[:, i[1], i[2]] = peek_sediment(sediment[:, :, i[1], i[2]], Δ)
+  end
+  return out
 end
 
 function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
@@ -233,10 +269,29 @@ We should compute the shear stress from the current state.
 $$\tau_{\rm slope} = \Delta_{\rho} g D \sin(\alpha) \hat{G},$$
 
 ``` {.julia #cat-propagator}
+Vec2 = @NamedTuple{x::Float64, y::Float64}
+Base.abs2(a::Vec2) = a.x^2 + a.y^2
+Base.abs(a::Vec2) = √(abs2(a))
 
-function shear_stress()
-  gradient_stencil = stencil()
+function shear_stress(input::Input)
+  gradient_stencil = stencil(Float64, Vec2, input.boundary, (3, 3), function (w)
+    kernel = [-1 0 1; -2 0 2; -1 0 1] ./ (8 * phys_scale)
+    ( x = sum(kernel .* w)
+    , y = sum(kernel' .* w) )
+  end)
+
+  ∇ = Matrix{Vec2}(undef, input.grid_size...)
+  D = [f.grain_size for f in input.facies]
+  ΔρD(col) = let parcel = peek_sediment(col, 1.0)
+    sum(parcel .* D) ./ sum(parcel)
+  end
+
   return function (s::State)
+    gradient_stencil(s.height, ∇)
+    α = atan.(abs.(∇))
+    A = ΔρD.(eachslice(s.sediment; dims=4))
+    g = 9.8
+    A .* g .* sin.(α)
   end
 end
 ```

@@ -55,7 +55,7 @@ end
 ``` {.julia file=src/BoundaryTrait.jl}
 module BoundaryTrait
 
-export Boundary, Reflected, Periodic, Constant, offset_index, offset_value
+export Boundary, Reflected, Periodic, Constant, Shelf, offset_index, offset_value
 
 <<boundary-types>>
 <<offset-indexing>>
@@ -76,7 +76,7 @@ function offset_index(::Type{Shelf}, shape::NTuple{2,Int}, i::CartesianIndex, Δ
     j[1] >= 1 | j[1] <= shape[1] ? CartesianIndex(j[1], mod1(j[2], shape[2])) : nothing
 end
 
-function offset_value(::Type{Constant{dim,value}}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex) where {dim,value}
+function offset_value(::Type{Shelf}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex)
     j = i + Δi
     if j[1] < 1
         return z[1, mod1(j[2], shape[2])]
@@ -156,7 +156,11 @@ end
 
 The rest of the script is boring
 
-``` {.julia .build target=docs/src/fig/eca.png}
+``` {.julia .task}
+#| creates: docs/src/fig/eca.png
+#| collect: figures
+
+using CarboKitten.BoundaryTrait
 using CarboKitten.Stencil
 using GLMakie
 
@@ -188,7 +192,11 @@ Even these one-dimensional CA show highly complex behaviour. For instance, it ha
 ### Game of Life
 Perhaps the most famous CA is Conway's Game of Life. This is a two-dimensional two-state (dead/alive) CA, with the following rules: a cell is alive in the next generation if it is alive and has two neighbours or if it has three neighbours; in all other cases the cell is dead.
 
-``` {.julia .build target=docs/src/fig/life.gif}
+``` {.julia .task}
+#| creates: docs/src/fig/life.gif
+#| collect: figures
+
+using CarboKitten.BoundaryTrait
 using CarboKitten.Stencil
 using GLMakie
 using .Iterators: take
@@ -230,9 +238,12 @@ To test the different boundary types, lets try the following setup. We take a 16
 
 Notice, that for the periodic boundaries, the bottom left and top right are neighbouring. So there the two pixels appear as a single peak. In the reflected case we see a clear distinction between the two corners.
 
-``` {.julia .build target=docs/src/fig/boundary_types.png}
+``` {.julia .task}
+#| creates: docs/src/fig/boundary_types.png
+#| collect: figures
 module Script
 
+using CarboKitten.BoundaryTrait
 using CarboKitten.Stencil
 using GLMakie
 

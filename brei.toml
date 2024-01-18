@@ -1,0 +1,13 @@
+include = [".entangled/tasks.json"]
+
+[runner.julia]
+command = "julia"
+args = ["--project=workenv", "${script}"]                                                                       
+# args = [
+#   "--project=workenv",
+#   "--startup-file=no",
+#   "-O0",
+#   "-e",
+#   "using DaemonMode; runargs()",
+#   "${script}",
+# ]

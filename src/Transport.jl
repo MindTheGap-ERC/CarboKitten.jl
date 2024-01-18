@@ -36,7 +36,7 @@ function offset(::Type{Periodic{2}}, box::Box, a::Vec2, Δa::Vec2)
     ,y=(a.y+Δa.y) % box.phys_size.y)
 end
 
-function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2)
+function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2) where Value
     b = a + Δa
     if b.x < 0.0 | b.x > box.phys_size.x | b.y < 0.0 | b.y > box.phys_size.y
         nothing
@@ -73,7 +73,7 @@ function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
     end
 end
 
-function deposit(::Type{BT}, box::Box, output::Array{Float64,3})
+function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
     function (p::Particle{P}) where P
         node = (x=ceil(p.x / box.phys_scale), y=ceil(p.y / box.phys_scale))
         idx = CartesianIndex(Int(node.x), Int(node.y))

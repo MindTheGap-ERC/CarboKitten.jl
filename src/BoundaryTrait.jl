@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/stencils.md#src/BoundaryTrait.jl>>[init]
 module BoundaryTrait
 
-export Boundary, Reflected, Periodic, Constant, offset_index, offset_value
+export Boundary, Reflected, Periodic, Constant, Shelf, offset_index, offset_value
 
 # ~/~ begin <<docs/src/stencils.md#boundary-types>>[init]
 abstract type Boundary{dim} end
@@ -42,7 +42,7 @@ function offset_index(::Type{Shelf}, shape::NTuple{2,Int}, i::CartesianIndex, Δ
     j[1] >= 1 | j[1] <= shape[1] ? CartesianIndex(j[1], mod1(j[2], shape[2])) : nothing
 end
 
-function offset_value(::Type{Constant{dim,value}}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex) where {dim,value}
+function offset_value(::Type{Shelf}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex)
     j = i + Δi
     if j[1] < 1
         return z[1, mod1(j[2], shape[2])]

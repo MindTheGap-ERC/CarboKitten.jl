@@ -1,0 +1,48 @@
+{
+  "task": [
+    {
+      "description": null,
+      "creates": [
+        "docs/src/fig/eca.png"
+      ],
+      "requires": [],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": "#| creates: docs/src/fig/eca.png\n#| collect: figures\n\nusing CarboKitten.BoundaryTrait\nusing CarboKitten.Stencil\nusing GLMakie\n\nrule(i::Int) = function (foo::AbstractVector{T}) where T <: Integer\n    d = foo[1]*4 + foo[2]*2 + foo[3]\n    i & (1 << d) == 0 ? 0 : 1\nend\n\nfunction eca(r::Int, n::Int, iter::Int)\n    y = Array{Int}(undef, n, iter)\n    y[:, 1] = zeros(Int, n)\n    y[div(n, 2), 1] = 1\n    stencil_op = stencil(Int, Periodic{1}, (3,), rule(r))\n    for i in 2:iter\n        stencil_op(view(y, :, i-1), view(y, :, i))\n    end\n    y\nend\n\nfig = Figure(resolution=(1200,400))\nfor (idx, r) in enumerate([18, 30, 110])\n    ax = Axis(fig[1,idx]; title=\"rule $(r)\", yreversed=true, limits=((1, 256), (1, 128)))\n    heatmap!(ax, eca(r, 256, 128); colormap=:Blues)\nend\nsave(\"docs/src/fig/eca.png\", fig)",
+      "path": null
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/fig/life.gif"
+      ],
+      "requires": [],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": "#| creates: docs/src/fig/life.gif\n#| collect: figures\n\nusing CarboKitten.BoundaryTrait\nusing CarboKitten.Stencil\nusing GLMakie\nusing .Iterators: take\n\n\"x is a 3x3 region around the cell at x[2,2].\"\nrules(x) = let c = x[2, 2], s = sum(x) - c\n    c && s == 2 || s == 3\nend\n\nfunction game_of_life(w, h)\n    y1 = rand(Bool, (w, h))\n    y2 = Array{Bool}(undef, w, h)\n\n    op = stencil(Bool, Periodic{2}, (3, 3), rules)\n    Channel() do ch\n        put!(ch, y1)\n        while true\n            op(y1, y2)\n            (y1, y2) = (y2, y1)\n            put!(ch, y1)\n        end\n    end\nend\n\nlife = take(game_of_life(50, 50), 150)\nfig = Figure()\nax = Axis(fig[1,1], aspect=1)\nrecord(fig, \"docs/src/fig/life.gif\", life; framerate=10) do frame\n    heatmap!(ax, frame; colormap=:Blues)\nend",
+      "path": null
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/fig/boundary_types.png"
+      ],
+      "requires": [],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": "#| creates: docs/src/fig/boundary_types.png\n#| collect: figures\nmodule Script\n\nusing CarboKitten.BoundaryTrait\nusing CarboKitten.Stencil\nusing GLMakie\n\nfunction plot_boundary_types()\n    n = 16\n    y0 = zeros(Float64, n, n)\n    y0[1, 1] = 1\n    y0[n, n] = 2\n    x = collect(-2:0.25:2)\n    k = exp.(-(x.^2 .+ x'.^2))\n    k ./= sum(k)\n\n    y_periodic = Array{Float64}(undef, n, n)\n    convolution(Periodic{2}, k)(y0, y_periodic)\n    y_reflected = Array{Float64}(undef, n, n)\n    convolution(Reflected{2}, k)(y0, y_reflected)\n    y_constant = Array{Float64}(undef, n, n)\n    convolution(Constant{2, 0.1}, k)(y0, y_constant)\n\n    fig = Figure(resolution=(900, 300))\n    for (i, y) in enumerate([y_periodic, y_reflected, y_constant])\n        ax = Axis(fig[1,i]; aspect=1)\n        heatmap!(ax, y; colormap=:viridis)\n    end\n    save(\"docs/src/fig/boundary_types.png\", fig)\nend\nend \n\nScript.plot_boundary_types()",
+      "path": null
+    },
+    {
+      "name": "figures",
+      "requires": [
+        "docs/src/fig/eca.png",
+        "docs/src/fig/life.gif",
+        "docs/src/fig/boundary_types.png"
+      ]
+    }
+  ]
+}

@@ -23,6 +23,7 @@ Base.:/(a::Vec2, b::Float64) = (x=a.x/b, y=a.y/b)
 
 struct Particle{P}
     position::Vec2
+    mass::Float64
     critical_stress::Float64
     facies::Int64
     properties::P
@@ -32,6 +33,7 @@ struct Box
     grid_size::NTuple{2,Int}
     phys_size::Vec2
     phys_scale::Float64
+    n_facies::Int
 end
 
 function offset(::Type{Reflected{2}}, box::Box, a::Vec2, Δa::Vec2)
@@ -45,7 +47,7 @@ function offset(::Type{Periodic{2}}, box::Box, a::Vec2, Δa::Vec2)
     ,y=(a.y+Δa.y) % box.phys_size.y)
 end
 
-function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2)
+function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2) where Value
     b = a + Δa
     if b.x < 0.0 | b.x > box.phys_size.x | b.y < 0.0 | b.y > box.phys_size.y
         nothing
@@ -54,21 +56,48 @@ function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2)
     end
 end
 
-function transport(::Type{BT}, box::Box, Δx::Float64, stress, p::Particle{P}) where {BT <: Boundary{2}, P}
-    while true
-        τ = stress(p)
-        if abs(τ) > p.critical_stress
-            return p
-        end
-        Δ = τ * (Δx / abs(τ))
-        p.position = offset(BT, box, p.position, Δ)
-        if p.position === nothing
-            return nothing
+function offset(::Type{Shelf}, box::Box, a::Vec2, Δa::Vec2)
+    b = a + Δa
+    if b.x < 0.0 | b.x > box.phys_size.x
+        return nothing
+    else
+        b.y = b.y % box.phys_size.y
+        return b
+    end
+end
+
+function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
+    function (p::Particle{P}) where P
+        while true
+            τ = stress(p)
+            if abs(τ) > p.critical_stress
+                return p
+            end
+            Δ = τ * (box.phys_scale / abs(τ))
+            next_position = offset(BT, box, p.position, Δ)
+            if next_position === nothing
+                return nothing
+            else
+                p.position = next_position
+            end
         end
     end
 end
 
-function deposit()
+function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
+    function (p::Particle{P}) where P
+        node = (x=ceil(p.x / box.phys_scale), y=ceil(p.y / box.phys_scale))
+        idx = CartesianIndex(Int(node.x), Int(node.y))
+        frac = (x=node.x - p.x / box.phys_scale, y=node.y - p.y / box.phys_scale)
+        slice = @view output[p.facies,:,:]
+        slice[idx] += frac.x * frac.y * p.mass
+        slice[offset_index(BT, box.grid_size, idx, CartesianIndex(0, 1))] +=
+            frac.x * (1.0 - frac.y) * p.mass
+        slice[offset_index(BT, box.grid_size, idx, CartesianIndex(1, 0))] +=
+            (1.0 - frac.x) * frac.y * p.mass
+        slice[offset_index(BT, box.grid_size, idx, CartesianIndex(1, 1))] +=
+            (1.0 - frac.x) * (1.0 - frac.y) * p.mass
+    end
 end
 
 end

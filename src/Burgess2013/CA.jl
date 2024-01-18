@@ -1,6 +1,7 @@
 # ~/~ begin <<docs/src/carbocat-ca.md#src/Burgess2013/CA.jl>>[init]
 module CA
 
+using ...BoundaryTrait
 using ...Stencil
 using ..Config: Facies
 

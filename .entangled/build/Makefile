@@ -3,7 +3,7 @@
 
 .PHONY = all
 
-all: docs/src/fig/tanh.svg docs/src/fig/b13-fig2.svg data/bs92-sealevel-curve.csv docs/src/fig/bs92-fig8.svg docs/src/fig/b13-fig3.png docs/src/fig/b13-long-term.png docs/src/fig/eca.png docs/src/fig/life.gif docs/src/fig/boundary_types.png data/caps-osc.h5 docs/src/fig/b13-capsosc-crosssection.png data/ca-prod-slope.h5 docs/src/fig/b13-crosssection.png
+all: docs/src/fig/tanh.svg docs/src/fig/b13-fig2.svg data/bs92-sealevel-curve.csv docs/src/fig/bs92-fig8.svg docs/src/fig/b13-fig3.png docs/src/fig/b13-long-term.png data/caps-osc.h5 docs/src/fig/b13-capsosc-crosssection.png data/ca-prod-slope.h5 docs/src/fig/b13-crosssection.png docs/src/fig/eca.png docs/src/fig/life.gif docs/src/fig/boundary_types.png
 
 docs/src/fig/tanh.svg: examples/plot-tanh.gnuplot 
 	gnuplot examples/plot-tanh.gnuplot > $@
@@ -23,15 +23,6 @@ docs/src/fig/b13-fig3.png: examples/ca/burgess-2013.jl
 docs/src/fig/b13-long-term.png: examples/ca/long-term.jl 
 	julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/ca/long-term.jl
 
-docs/src/fig/eca.png: .entangled/build/unnamed-docs/src/stencils.md_168 
-	julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_168
-
-docs/src/fig/life.gif: .entangled/build/unnamed-docs/src/stencils.md_208 
-	julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_208
-
-docs/src/fig/boundary_types.png: .entangled/build/unnamed-docs/src/stencils.md_251 
-	julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_251
-
 data/caps-osc.h5: examples/caps-osc.jl 
 	julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/caps-osc.jl
 
@@ -43,3 +34,12 @@ data/ca-prod-slope.h5: examples/cap-slope.jl
 
 docs/src/fig/b13-crosssection.png: examples/plot-cap-slope.jl data/ca-prod-slope.h5
 	julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' examples/plot-cap-slope.jl
+
+docs/src/fig/eca.png: .entangled/build/unnamed-docs/src/stencils.md_182 
+	julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_182
+
+docs/src/fig/life.gif: .entangled/build/unnamed-docs/src/stencils.md_222 
+	julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_222
+
+docs/src/fig/boundary_types.png: .entangled/build/unnamed-docs/src/stencils.md_265 
+	julia --project=. --startup-file=no -e 'using DaemonMode; runargs()' .entangled/build/unnamed-docs/src/stencils.md_265

@@ -1,6 +1,8 @@
 module CarboKitten
 
+include("./BoundaryTrait.jl")
 include("./Stencil.jl")
+include("./Transport.jl")
 include("./Burgess2013.jl")
 include("./Utility.jl")
 # include("./BS92.jl")

@@ -16,6 +16,7 @@ struct Facies
 
   grain_size::Float64
   excess_density::Float64
+  critical_angle::Float64
 end
 ```
 
@@ -41,6 +42,14 @@ The sediment output will be stored in a buffer with fixed spatial resolution, ty
 
   Δz::Float64
   buffer_depth::Int
+  # To estimate the average grain size and overdensity of the sediment (and
+  # thereby the shear stress), we need to peek at the composition of the top
+  # layer, the `top_layer_thickness` parameter controls how deep we sample.
+  top_layer_thickness::Float64
+  # Wave shear stress function, is a function of depth.
+  wave_shear_stress
+  # Gravitational accelleration
+  g::Float64
 end
 ```
 
@@ -90,6 +99,16 @@ We define two functions `push_sediment!` and `pop_sediment!`. Given a $s \times 
   @test pop_sediment!(stack, 2.0) == [0.25, 1.75, 0.0]
   @test pop_sediment!(stack, 1.5) == [1.25, 0.25, 0.0]
 end
+
+@testset "SedimentArray" begin
+  sediment = zeros(Float64, 10, 3, 5, 5)
+  for x in 1:10
+    production = rand(3, 5, 5)
+    push_sediment!(sediment, production)
+  end
+  a = peek_sediment(sediment, 1.0)
+  @test all(sum(a; dims=1) .≈ 1.0)
+end
 ```
 
 ```@raw html
@@ -125,7 +144,7 @@ end
 
 function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) where F <: Real
   _, x, y = size(p)
-  for i in CartesianIndices((x, y))
+  @views for i in CartesianIndices((x, y))
     push_sediment!(sediment[:, :, i[1], i[2]], p[:, i[1], i[2]])
   end
 end
@@ -162,7 +181,7 @@ function peek_sediment(sediment::AbstractArray{F,4}, Δ::F) where F <: Real
   _, f, x, y = size(sediment)
   out = Array{F, 3}(undef, f, x, y)
   for i in CartesianIndices((x, y))
-    out[:, i[1], i[2]] = peek_sediment(sediment[:, :, i[1], i[2]], Δ)
+    out[:, i[1], i[2]] = peek_sediment(@view(sediment[:, :, i[1], i[2]]), Δ)
   end
   return out
 end
@@ -274,6 +293,8 @@ Base.abs2(a::Vec2) = a.x^2 + a.y^2
 Base.abs(a::Vec2) = √(abs2(a))
 
 function shear_stress(input::Input)
+  # To compute critical shear stress, take weighted average of critical angles
+  θ_f = [sin(f.critical_angle) for f in input.facies]
   gradient_stencil = stencil(Float64, Vec2, input.boundary, (3, 3), function (w)
     kernel = [-1 0 1; -2 0 2; -1 0 1] ./ (8 * phys_scale)
     ( x = sum(kernel .* w)
@@ -281,17 +302,19 @@ function shear_stress(input::Input)
   end)
 
   ∇ = Matrix{Vec2}(undef, input.grid_size...)
-  D = [f.grain_size for f in input.facies]
-  ΔρD(col) = let parcel = peek_sediment(col, 1.0)
-    sum(parcel .* D) ./ sum(parcel)
-  end
+  ρD_f = [f.excess_density * f.grain_size for f in input.facies]
 
-  return function (s::State)
+  function stress(s::State)
     gradient_stencil(s.height, ∇)
     α = atan.(abs.(∇))
-    A = ΔρD.(eachslice(s.sediment; dims=4))
-    g = 9.8
-    A .* g .* sin.(α)
+
+    top_sediment = peek_sediment(s.sediment, input.top_layer_thickness)
+    A = sum(top_sediment .* ρD_f .* input.g; dims=3) ./ sum(top_sediment)
+    θ = sum(top_sediment .* θ_f; dims=3) ./ sum(top_sediment) 
+
+    gravitational_stress = A .* sin.(α)
+    wave_stress = input.wave_shear_stress.(s.height)
+    critical_stress = A .* θ
   end
 end
 ```

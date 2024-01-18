@@ -2,7 +2,7 @@
 
 julia_version = "1.10.0"
 manifest_format = "2.0"
-project_hash = "b2746a0bfe753d47dab92ed380611279d4570151"
+project_hash = "4be9ae98be088b1e97dc79b7ea1943c45e2fc515"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -190,9 +190,7 @@ version = "0.5.1"
 
 [[deps.CarboKitten]]
 deps = ["HDF5", "Transducers"]
-git-tree-sha1 = "700c4853f4aa3269a539061fa225ffc6da927343"
-repo-rev = "feature-transport"
-repo-url = ".."
+path = ".."
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 version = "0.1.0"
 

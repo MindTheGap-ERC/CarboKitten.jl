@@ -11,13 +11,14 @@ Note that for larger convolution kernels, it is often more efficient to perform 
 ## Boundary types
 One thing to be mindful of is the treatment of box boundaries. I define three *traits* here. These are types that are defined with the single goal of using the dispatch mechanism in Julia to  select the right methods for us. Boundaries can be *periodic*, *reflective* or *constant* to some value.
 
-``` {.julia #boundary-trait}
+``` {.julia #boundary-types}
 abstract type Boundary{dim} end
 struct Reflected{dim} <: Boundary{dim} end
 struct Periodic{dim} <: Boundary{dim} end
 struct Constant{dim,value} <: Boundary{dim} end
 ```
 
+### Offset indexing
 Now we can use these traits to define three methods for indexing on an offset from some index that is assumed to be within bounds.
 
 ``` {.julia #spec}
@@ -51,6 +52,42 @@ function offset_value(::Type{Constant{dim,value}}, z::AbstractArray, i::Cartesia
 end
 ```
 
+``` {.julia file=src/BoundaryTrait.jl}
+module BoundaryTrait
+
+export Boundary, Reflected, Periodic, Constant, offset_index, offset_value
+
+<<boundary-types>>
+<<offset-indexing>>
+
+end
+```
+
+### Shelf boundary
+The `Shelf` boundary type is specially designed for the simulation of a transect perpendicular to the coast direction. We are periodic in the y-direction and have a Neumannesque constant boundary at the edges of the simulation area.
+
+``` {.julia #boundary-types}
+struct Shelf <: Boundary{2} end
+```
+
+``` {.julia #offset-indexing}
+function offset_index(::Type{Shelf}, shape::NTuple{2,Int}, i::CartesianIndex, Δi::CartesianIndex)
+    j = i + Δi
+    j[1] >= 1 | j[1] <= shape[1] ? CartesianIndex(j[1], mod1(j[2], shape[2])) : nothing
+end
+
+function offset_value(::Type{Constant{dim,value}}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex) where {dim,value}
+    j = i + Δi
+    if j[1] < 1
+        return z[1, mod1(j[2], shape[2])]
+    elseif j[1] > shape[1]
+        return z[shape[1], mod1(j[2], shape[2])]
+    else
+        return z[j[1], mod1(j[2], shape[2])]
+    end
+end
+```
+
 ## Implementation
 Using these helper functions we can now define a *stencil* operation. Given the boundary trait, a stencil size and a response function, we can transform an array to a next generation.
 
@@ -62,7 +99,7 @@ end
 function stencil(::Type{In}, ::Type{Out}, ::Type{BT}, n::NTuple{dim,Int}, f::Function) where {In,Out,dim,BT<:Boundary{dim}}
     m = n .÷ 2
     stencil_shape = range.(.-m, m)
-    stencil = zeros(T, n)
+    stencil = zeros(In, n)
 
     function (z_in::AbstractArray{In,dim}, z_out::AbstractArray{Out,dim}, args...)
         @assert (size(z_in) == size(z_out)) "sizes of arrays need to be equal"
@@ -92,10 +129,9 @@ We will now test this function first on an Elementary CA (ECA), Conway's Game of
 ``` {.julia file=src/Stencil.jl}
 module Stencil
 
-export Boundary, Reflected, Periodic, Constant, stencil, convolution, offset_index, offset_value
+using ..BoundaryTrait
+export stencil, convolution
 
-<<boundary-trait>>
-<<offset-indexing>>
 <<stencil-operation>>
 
 end

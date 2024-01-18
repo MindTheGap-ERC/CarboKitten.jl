@@ -42,7 +42,7 @@ function main()
 
     on(running.active) do activated
         if activated
-            tic(t, 0.01, running.active)
+            tic(t, 0.05, running.active)
         end
     end
 

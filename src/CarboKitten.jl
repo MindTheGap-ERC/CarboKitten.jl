@@ -1,5 +1,6 @@
 module CarboKitten
 
+include("./Vectors.jl")
 include("./BoundaryTrait.jl")
 include("./Stencil.jl")
 include("./Transport.jl")

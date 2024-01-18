@@ -288,10 +288,6 @@ We should compute the shear stress from the current state.
 $$\tau_{\rm slope} = \Delta_{\rho} g D \sin(\alpha) \hat{G},$$
 
 ``` {.julia #cat-propagator}
-Vec2 = @NamedTuple{x::Float64, y::Float64}
-Base.abs2(a::Vec2) = a.x^2 + a.y^2
-Base.abs(a::Vec2) = √(abs2(a))
-
 function shear_stress(input::Input)
   # To compute critical shear stress, take weighted average of critical angles
   θ_f = [sin(f.critical_angle) for f in input.facies]
@@ -323,6 +319,7 @@ end
 ``` {.julia file=src/CATP.jl}
 module CATP
 
+using ..Vectors
 using ..Stencil: Periodic
 using ..Utility
 using ..Stencil

@@ -1,6 +1,7 @@
 # ~/~ begin <<docs/src/submarine-transport.md#src/CATP.jl>>[init]
 module CATP
 
+using ..Vectors
 using ..Stencil: Periodic
 using ..Utility
 using ..Stencil
@@ -122,10 +123,6 @@ function time_updater(input::Input)
 end
 # ~/~ end
 # ~/~ begin <<docs/src/submarine-transport.md#cat-propagator>>[init]
-Vec2 = @NamedTuple{x::Float64, y::Float64}
-Base.abs2(a::Vec2) = a.x^2 + a.y^2
-Base.abs(a::Vec2) = √(abs2(a))
-
 function shear_stress(input::Input)
   # To compute critical shear stress, take weighted average of critical angles
   θ_f = [sin(f.critical_angle) for f in input.facies]

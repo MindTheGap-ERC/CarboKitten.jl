@@ -9,10 +9,10 @@ To compute the transport of material we turn parcels of sediment into particles 
 
 The `grain_size` and `excess_density` are used in computing the direction a particle will travel. The `critical_stress` determines the stopping criterion.
 
-``` {.julia file=src/Transport.jl}
-module Transport
+``` {.julia file=src/Vectors.jl}
+module Vectors
 
-using ..BoundaryTrait
+export Vec2
 
 Vec2 = @NamedTuple{x::Float64, y::Float64}
 Base.:+(a::Vec2, b::Vec2) = (x=a.x+b.x, y=a.y+b.y)
@@ -20,6 +20,15 @@ Base.abs2(a::Vec2) = a.x^2 + a.y^2
 Base.abs(a::Vec2) = √(abs2(a))
 Base.:*(a::Vec2, b::Float64) = (x=a.x*b, y=a.y*b)
 Base.:/(a::Vec2, b::Float64) = (x=a.x/b, y=a.y/b)
+
+end
+```
+
+``` {.julia file=src/Transport.jl}
+module Transport
+
+using ..Vectors
+using ..BoundaryTrait
 
 struct Particle{P}
     position::Vec2

@@ -1,4 +1,4 @@
-#=
+
 ###test chemical dissolution###
 const T = 288
 const P = 1000
@@ -25,13 +25,19 @@ Deq =  P .* inf * 40 * 1000 * ceq ./ density  # in mm/yr or m/kyr
 println(ceq,Deq)
 const precip = 1000
 const inf = 0.5
-const alpha = 2e-6
-const L = 10
+const alpha = 2e-2
+const L = 1000
 const density = 2730
-const z0 = 10
+ z = collect(1:1000)
+ D = zeros(1000)
+ c = zeros(1000)
 lambda = precip .* inf ./ (alpha .* L)
-D = (precip .* inf .* ceq ./density) .* (1 - (lambda./z0).* (1 - exp(-z0./lambda)))
-print(D)=#
+c .= (1 .- exp.(-z./lambda))
+D .= Deq .* (1 .- (lambda./z).* (1 .- exp.(-z./lambda)))
+f = plot(z,D)
+save("docs/src/fig/diss.png",f)
+
+#=
 using CarboKitten.Stencil
 
 function calculate_slope(elevation::Matrix{Float64}, cellsize::Float64) 
@@ -181,3 +187,4 @@ D_result = D_physical(ele, csz, 0.5)
 RS = sediments_redistribution(ele,csz)
 a = calculate_redistribution(ele,csz,0.5)
 println(a)
+=#

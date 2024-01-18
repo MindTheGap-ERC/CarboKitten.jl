@@ -2,11 +2,12 @@
 module CaProd
 
 using CarboKitten
-using ..Stencil: Periodic
+using ..Stencil: Periodic, stencil
 using ..Utility
 #using ..BS92: sealevel_curve
 using ..Stencil
 using ..Burgess2013
+#using ..EmpericalDenudation
 using ..CarbDissolution
 
 using HDF5
@@ -38,7 +39,7 @@ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-frame>>[init]
 struct Frame
     production::Array{Float64,3}
-    erosion::Array{Float64,3}
+    erosion::Array{Float64,2}
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-state>>[init]
@@ -66,26 +67,28 @@ function propagator(input::Input)
     function water_depth(s::State)
         s.height .- input.sea_level(s.time)
     end
+    # prepare functions for erosion
     # ~/~ end
+    slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
     function (s::State)  # -> Frame
         # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[init]
         production = zeros(Float64, input.grid_size..., n_facies)
-        erosion = zeros(Float64, input.grid_size...,n_facies)
-        facies_map, ca = peel(ca)   
+        erosion = zeros(Float64, input.grid_size...)
+        slope =zeros(Float64, input.grid_size...)
+        facies_map, ca = peel(ca)
         w = water_depth(s)
+        slopefn(w,slope,input.phys_scale) # notations for why not using -
         Threads.@threads for idx in CartesianIndices(facies_map)
             f = facies_map[idx]
-
-            if f == 0 
-            continue
-            end
-
-            if w[idx] > 0.0 
+                if f == 0
+                    continue
+                end
+            if w[idx] > 0.0
                 production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
             else
-                erosion[Tuple(idx)...,f] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
+                erosion[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
+                #erosion[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
             end
-
         end
         return Frame(production, erosion)#
         # ~/~ end
@@ -97,7 +100,7 @@ function updater(input::Input)
     n_facies = length(input.facies)
     function (s::State, Δ::Frame)
         s.height .-= sum(Δ.production; dims=3) .* input.Δt
-        s.height .+= sum(Δ.erosion; dims=3) .* input.Δt
+        s.height .+= Δ.erosion .* input.Δt  #number already in kyr
         s.height .+= input.subsidence_rate * input.Δt
         s.time += input.Δt
     end
@@ -145,10 +148,14 @@ function main(input::Input, output::String)
         ds = create_dataset(fid, "sediment", datatype(Float64),
             dataspace(input.grid_size..., n_facies, input.time_steps),
             chunk=(input.grid_size..., n_facies, 1))
+        erosion = create_dataset(fid, "erosion", datatype(Float64),
+            dataspace(input.grid_size..., input.time_steps),
+           chunk=(input.grid_size..., 1))
 
         results = map(stack_frames, partition(run_model(input), input.write_interval))
         for (step, frame) in enumerate(take(results, n_writes))
             ds[:, :, :, step] = frame.production
+            erosion[:,:,step] = frame.erosion
         end
     end
 end

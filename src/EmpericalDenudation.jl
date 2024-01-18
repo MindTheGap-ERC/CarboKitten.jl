@@ -2,16 +2,17 @@
 #module EmpericalDenudation
 
 using CarboKitten.Stencil: Periodic, stencil
-export emperical_denudation
+export emperical_denudation,slope_kernel
 
 #calculate planar slopes based on [ARCGIS apporach](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm)
 
-function st(w::Matrix{Float64},cellsize::Float64)
+function slope_kernel(w::Matrix{Float64},cellsize::Float64)
     dzdx = (-w[1,1] - 2 * w[2,1] -w[3,1] + w[1,3] + 2 * w[2,3] + w[3,3])/(8*cellsize)
     dzdy = (-w[1,1] - 2 * w[1,2] -w[1,3] + w[3,1] + 2 * w[3,2] + w[1,1])/(8*cellsize)
     atan(sqrt(dzdx^2 + dzdy^2))  * (180 / π)
 end
 
+slopefn(w,slope_matrix,cellsize::Float64)
 
 const a = 9.1363
 const b = -0.008519
@@ -21,9 +22,8 @@ const e = -0.1245
 const f = 4.91086
 
 # calculate denudation based on regressed function
-function emperical_denudation(precip::Float64, cellsize::Float64)
-    sloperesult = stencil(Float64,Periodic{2},(3,3), st)
-    (a ./ (1 .+ exp.(b.*(precip .- c)))) .* (d ./ (1 .+ exp.(e.*(sloperesult .- f)))) # using logistic function
+function emperical_denudation(precip::Float64, slope::Float64)
+    (a ./ (1 .+ exp.(b.*(precip .- c)))) .* (d ./ (1 .+ exp.(e.*(slope .- f)))) # using logistic function
 end
 
 

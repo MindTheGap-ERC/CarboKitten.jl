@@ -64,7 +64,7 @@ end
 function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies::Facies)
     p = karst_denudation_parameters(temp)
     eq_c = (pco2 .* (p.K1 * p.KC * p.KH) ./ (4 * p.K2 * p.activity_Ca * (p.activity_Alk)^2)).^(1/3)
-    eq_d = precip .* facies.inf * 40 * 1000 * eq_c ./ facies.density
+    eq_d = 1000 * precip .* facies.inf * 40 * 1000 * eq_c ./ facies.density
     (concentration = eq_c, denudation = eq_d)
 end
 
@@ -77,7 +77,7 @@ function dissolution(temp::Float64,precip::Float64, alpha::Float64, pco2::Float6
         if (1 - exp(-z0./λ)) > 0.8
             eq.denudation 
         else
-            (I .* eq.concentration ./facies.density) .* (1 - (λ./z0).* (1 - exp(-z0./λ)))
+            eq.denudation .* (1 - (λ./z0).* (1 - exp(-z0./λ))) 
         end
 end
 

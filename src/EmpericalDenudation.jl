@@ -1,5 +1,5 @@
 ## this code used the emperical equations with form of D = f(precipitation, slope) to estimate the denudation rates on exposed carbonate platform.
-#module EmpericalDenudation
+module EmpericalDenudation
 
 using CarboKitten.Stencil: Periodic, stencil
 export emperical_denudation,slope_kernel
@@ -12,7 +12,7 @@ function slope_kernel(w::Matrix{Float64},cellsize::Float64)
     atan(sqrt(dzdx^2 + dzdy^2))  * (180 / π)
 end
 
-slopefn(w,slope_matrix,cellsize::Float64)
+#slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
 
 const a = 9.1363
 const b = -0.008519
@@ -25,7 +25,6 @@ const f = 4.91086
 function emperical_denudation(precip::Float64, slope::Float64)
     (a ./ (1 .+ exp.(b.*(precip .- c)))) .* (d ./ (1 .+ exp.(e.*(slope .- f)))) # using logistic function
 end
-
 
 #=
 function emperical_denudation(precip::Float64, cellsize::Float64)
@@ -43,8 +42,15 @@ function emperical_denuadtion(precip::Float64,cellsize::Float64)
     
     (a ./ (1 .+ exp.(b .* (precip .- c)))) .* (d ./ (1 .+ exp.(e .* (stencil_result .- f))))
 end
-=#
-w = rand(50,100)
-result = emperical_denudation(1000.0,1.0)
 
-#end
+w = rand(50,100)
+cellsize = 1.0
+slope = zeros(Float64,50,100)
+#result = zeros(Float64,50,100)
+slopefn(w,slope,cellsize::Float64)
+for idx in CartesianIndices(slope)
+    if w[idx] < 0.0
+    result[Tuple(idx)...]=emperical_denudation(1000.0,slope[idx])
+    end
+end=#
+end

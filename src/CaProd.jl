@@ -7,7 +7,7 @@ using ..Utility
 #using ..BS92: sealevel_curve
 using ..Stencil
 using ..Burgess2013
-#using ..EmpericalDenudation
+using ..EmpericalDenudation
 using ..CarbDissolution
 
 using HDF5
@@ -77,7 +77,7 @@ function propagator(input::Input)
         slope =zeros(Float64, input.grid_size...)
         facies_map, ca = peel(ca)
         w = water_depth(s)
-        slopefn(w,slope,input.phys_scale) # notations for why not using -
+        slopefn(w,slope,input.phys_scale) # slope is calculated with square so no need for -w
         Threads.@threads for idx in CartesianIndices(facies_map)
             f = facies_map[idx]
                 if f == 0
@@ -86,8 +86,8 @@ function propagator(input::Input)
             if w[idx] > 0.0
                 production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
             else
-                erosion[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
-                #erosion[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
+                #erosion[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
+                erosion[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
             end
         end
         return Frame(production, erosion)#

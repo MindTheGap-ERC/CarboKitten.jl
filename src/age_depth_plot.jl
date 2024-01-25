@@ -23,13 +23,13 @@ end
 
 
 
-result = plot_age_depth("data/caps-osc.h5",10)
-result2 = plot_age_depth("data/caps-osc.h5",80)
-f = Figure()
-ax = Axis(f[1,1],title = "Age_depth model (no denudation)", xlabel = "Age (kyr)", ylabel = "Depth (m)")#
-f,ax,l1 = plot!(collect(1:2000),result.age_depth[:],color = :blue)
-l2 = plot!(ax,collect(1:2000),result2.age_depth[:],color = :red)
-f
-save("data/withoutdenudation_osc.png",f)
+result = plot_age_depth("data/caps-test.h5",10)
+result2 = plot_age_depth("data/caps-test.h5",80)
+z = Figure()
+ax = Axis(z[1,1],title = "Age_depth model (no denudation)", xlabel = "Age (kyr)", ylabel = "Depth (m)")#
+z,l1 = plot!(ax,collect(1:1000),result.age_depth[:],color = :blue)
+l2 = plot!(ax,collect(1:1000),result2.age_depth[:],color = :red)
+z
+save("data/withdenudation_miller.png",z)
 df = DataFrame(Depth_shallow = result.age_depth[:],Depth_deep = result2.age_depth[:])
-CSV.write("data/withoutdenudation.csv",df)
+CSV.write("data/withdenudation.csv",df)

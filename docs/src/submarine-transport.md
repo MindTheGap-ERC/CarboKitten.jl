@@ -16,7 +16,10 @@ struct Facies
 
   grain_size::Float64
   excess_density::Float64
-  critical_angle::Float64
+  # critical_angle::Float64
+
+  # magnitude of critical stress, should be ΔρDg sin α where α is the critical angle
+  critical_stress::Float64
 end
 ```
 
@@ -46,10 +49,14 @@ The sediment output will be stored in a buffer with fixed spatial resolution, ty
   # thereby the shear stress), we need to peek at the composition of the top
   # layer, the `top_layer_thickness` parameter controls how deep we sample.
   top_layer_thickness::Float64
-  # Wave shear stress function, is a function of depth.
+  # wave shear stress function, is a function of depth, and should return a Vec2
   wave_shear_stress
   # Gravitational accelleration
   g::Float64
+  # for the transport step, parcels of sediment are converted into particles
+  # by setting this parameter to something >1 you can control how many particles
+  # are created on each axis. So number of particles is grid width * height * transport_subsample^2.
+  transport_subsample::Int
 end
 ```
 
@@ -73,12 +80,19 @@ Then, we can say $$U_{\rm transport} = U_{\rm resettle} \circ U_{\rm remove}$$ a
 
 ``` {.julia #cat-frame}
 struct ProductFrame
-  production::Array{Float64,3}        # x y f
+  production::Array{Float64,3}        # facies x y
 end
+
+# struct Properties
+#   excess_density::Float64
+#   grain_size::Float64
+# end
+
+const Particle = Transport.Particle{Nothing}
 ```
 
 ``` {.julia #cat-frame}
-struct RemoveFrame
+struct ReductionFrame
   disintegration::Array{Float64,2}   # x y
 end
 ```
@@ -263,7 +277,7 @@ end
 
 ``` {.julia #cat-update}
 function remove_updater(input::Input)
-  function (s::State, Δ::RemoveFrame)
+  function (s::State, Δ::ReductionFrame)
     loose = remove_material(input.grid_size, length(input.facies), input.Δz, s, Δ.disintegration)
     # need physics to disperse loose material
     return ProductFrame(loose)
@@ -288,6 +302,48 @@ We should compute the shear stress from the current state.
 $$\tau_{\rm slope} = \Delta_{\rho} g D \sin(\alpha) \hat{G},$$
 
 ``` {.julia #cat-propagator}
+function submarine_transport(input::Input)
+  phys_size = (x = input.grid_size[1] * input.phys_scale,
+               y = input.grid_size[2] * input.phys_scale)
+  box = Transport.Box(input.grid_size, phys_size, input.phys_scale, length(input.facies))
+
+  # This function does not modify the state, rather it transports the
+  # sediments in a given product frame and gives a new product frame
+  # as output.
+  function (s::State, Δ::ProductFrame)  # -> ProductFrame
+    output = Array{Float64}(undef, size(Δ.production))
+    transport = Transport.transport(input.boundary, box, function (p::Particle)
+      z, ∇ = Transport.interpolate(input.boundary, box, s.height, p.position)
+      α = atan(abs(∇))
+      Ĝ = ∇ / abs(∇)
+
+      τ_wave = input.wave_shear_stress(z)
+
+      Δρ = input.facies[p.facies].excess_density
+      D = input.facies[p.facies].grain_size
+      g = input.g
+      τ_grav = (Δρ * D * g * sin(α)) * Ĝ
+
+      return τ_grav + τ_wave
+    end)
+    deposit = Transport.deposit(input.boundary, box, output)
+
+    # iterate all particles, transport them and plot
+    for (i, (idx, mass)) in enumerate(pairs(Δ.production))
+      subgrid_spacing = 1.0 / input.transport_subsample
+      subgrid_axis = 0.0:subgrid_spacing:1.0 - subgrid_spacing
+      subgrid = product(subgrid_axis, subgrid_axis)
+      for (j, dx) in enumerate(subgrid)
+        facies_type = idx[1]
+        p = (x=(idx[2] + dx[1]) * input.phys_scale, y=(idx[3] + dx[2]) * input.phys_scale)
+        θ = input.facies[facies_type].critical_stress
+        particle = Particle(p, mass * subgrid_spacing^2, θ, facies_type, nothing) |> transport |> deposit
+      end
+    end
+    return ProductFrame(output)
+  end
+end
+
 function shear_stress(input::Input)
   # To compute critical shear stress, take weighted average of critical angles
   θ_f = [sin(f.critical_angle) for f in input.facies]
@@ -325,6 +381,7 @@ using ..Utility
 using ..Stencil
 using ..Burgess2013.CA
 using ..SedimentStack
+using ..Transport
 
 using HDF5
 

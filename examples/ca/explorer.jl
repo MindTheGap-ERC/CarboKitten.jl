@@ -2,6 +2,7 @@ module CAExplorer
 
 using CarboKitten
 using CarboKitten.Burgess2013
+using CarboKitten.BoundaryTrait
 using CarboKitten.Stencil
 using CarboKitten.Utility
 using GLMakie

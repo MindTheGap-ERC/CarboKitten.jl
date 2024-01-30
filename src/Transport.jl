@@ -49,6 +49,22 @@ function offset(::Type{Shelf}, box::Box, a::Vec2, Δa::Vec2)
     end
 end
 
+function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where R <: Real
+    node = (x=ceil(p.x / box.phys_scale), y=ceil(p.y / box.phys_scale))
+    idx = CartesianIndex(Int(node.x), Int(node.y))
+    frac = (x=node.x - p.x / box.phys_scale, y=node.y - p.y / box.phys_scale)
+    z00 = f[idx]
+    z10 = offset_value(BT, f, idx, CartesianIndex(1, 0))
+    z01 = offset_value(BT, f, idx, CartesianIndex(0, 1))
+    z11 = offset_value(BT, f, idx, CartesianIndex(1, 1))
+    z = frac.x * frac.y * z00 + (1.0 - frac.x) * frac.y * z10 +
+        frac.x * (1.0 - frac.y) * z01 + (1.0 - frac.x) * (1.0 - frac.y) * z11
+    ∇ = (x = (frac.y * (z10 - z00) + (1.0 - frac.y) * (z11 - z01)) / box.phys_scale,
+         y = (frac.x * (z01 - z00) + (1.0 - frac.x) * (z11 - z10)) / box.phys_scale)
+
+    return (z, ∇)
+end
+
 function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
     function (p::Particle{P}) where P
         while true

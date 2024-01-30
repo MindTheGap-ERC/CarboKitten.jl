@@ -179,32 +179,6 @@ function submarine_transport(input::Input)
     return ProductFrame(output)
   end
 end
-
-function shear_stress(input::Input)
-  # To compute critical shear stress, take weighted average of critical angles
-  θ_f = [sin(f.critical_angle) for f in input.facies]
-  gradient_stencil = stencil(Float64, Vec2, input.boundary, (3, 3), function (w)
-    kernel = [-1 0 1; -2 0 2; -1 0 1] ./ (8 * phys_scale)
-    ( x = sum(kernel .* w)
-    , y = sum(kernel' .* w) )
-  end)
-
-  ∇ = Matrix{Vec2}(undef, input.grid_size...)
-  ρD_f = [f.excess_density * f.grain_size for f in input.facies]
-
-  function stress(s::State)
-    gradient_stencil(s.height, ∇)
-    α = atan.(abs.(∇))
-
-    top_sediment = peek_sediment(s.sediment, input.top_layer_thickness)
-    A = sum(top_sediment .* ρD_f .* input.g; dims=3) ./ sum(top_sediment)
-    θ = sum(top_sediment .* θ_f; dims=3) ./ sum(top_sediment) 
-
-    gravitational_stress = A .* sin.(α)
-    wave_stress = input.wave_shear_stress.(s.height)
-    critical_stress = A .* θ
-  end
-end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagator>>[init]
 function propagator(input::Input)

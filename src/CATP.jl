@@ -138,33 +138,8 @@ function time_updater(input::Input)
 end
 # ~/~ end
 # ~/~ begin <<docs/src/submarine-transport.md#cat-propagator>>[init]
-function submarine_transport(input::Input)
-  phys_size = (x = input.grid_size[1] * input.phys_scale,
-               y = input.grid_size[2] * input.phys_scale)
-  box = Transport.Box(input.grid_size, phys_size, input.phys_scale, length(input.facies))
-
-  # This function does not modify the state, rather it transports the
-  # sediments in a given product frame and gives a new product frame
-  # as output.
-  function (s::State, Δ::ProductFrame)  # -> ProductFrame
-    output = Array{Float64}(undef, size(Δ.production))
-    transport = Transport.transport(input.boundary, box, function (p::Particle)
-      z, ∇ = Transport.interpolate(input.boundary, box, s.height, p.position)
-      α = atan(abs(∇))
-      Ĝ = ∇ / abs(∇)
-
-      τ_wave = input.wave_shear_stress(z)
-
-      Δρ = input.facies[p.facies].excess_density
-      D = input.facies[p.facies].grain_size
-      g = input.g
-      τ_grav = (Δρ * D * g * sin(α)) * Ĝ
-
-      return τ_grav + τ_wave
-    end)
-    deposit = Transport.deposit(input.boundary, box, output)
-
-    # iterate all particles, transport them and plot
+function particles(input::Input, Δ::ProductFrame)
+  Channel{Particle} do ch
     for (i, (idx, mass)) in enumerate(pairs(Δ.production))
       subgrid_spacing = 1.0 / input.transport_subsample
       subgrid_axis = 0.0:subgrid_spacing:1.0 - subgrid_spacing
@@ -173,9 +148,46 @@ function submarine_transport(input::Input)
         facies_type = idx[1]
         p = (x=(idx[2] + dx[1]) * input.phys_scale, y=(idx[3] + dx[2]) * input.phys_scale)
         θ = input.facies[facies_type].critical_stress
-        particle = Particle(p, mass * subgrid_spacing^2, θ, facies_type, nothing) |> transport |> deposit
+        put!(ch, Particle(p, mass * subgrid_spacing^2, θ, facies_type, nothing))
       end
     end
+  end
+end
+
+function stress(input::Input, s::State)
+  phys_size = (x = input.grid_size[1] * input.phys_scale,
+               y = input.grid_size[2] * input.phys_scale)
+  box = Transport.Box(input.grid_size, phys_size, input.phys_scale, length(input.facies))
+
+  function (p::Particle)
+    z, ∇ = Transport.interpolate(input.boundary, box, s.height, p.position)
+    α = atan(abs(∇))
+    Ĝ = ∇ / abs(∇)
+
+    τ_wave = input.wave_shear_stress(z)
+
+    Δρ = input.facies[p.facies].excess_density
+    D = input.facies[p.facies].grain_size
+    g = input.g
+    τ_grav = (Δρ * D * g * sin(α)) * Ĝ
+
+    return τ_grav + τ_wave
+  end
+end
+
+function submarine_transport(input::Input)
+  # This function does not modify the state, rather it transports the
+  # sediments in a given product frame and gives a new product frame
+  # as output.
+  function (s::State, Δ::ProductFrame)  # -> ProductFrame
+    output = Array{Float64}(undef, size(Δ.production))
+    transport = Transport.transport(input.boundary, box, stress(input, s))
+    deposit = Transport.deposit(input.boundary, box, output)
+
+    for p in particles(input, Δ)
+      p |> transport |> deposit
+    end
+
     return ProductFrame(output)
   end
 end

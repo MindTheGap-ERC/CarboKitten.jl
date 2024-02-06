@@ -244,8 +244,8 @@ end
 
 function run_model(input::Input)
   transport = submarine_transport(input)
-  p_prod = production_propagator(input)
-  p_disi = disintegration_propagator(input)
+  p_produce = production_propagator(input)
+  p_disintegrate = disintegration_propagator(input)
   state = initial_state(input)
   u_time = time_updater(input)
   u_remove = remove_updater(input)
@@ -253,8 +253,8 @@ function run_model(input::Input)
 
   Channel{Snapshot}() do ch
     while True
-      Δ_produced = p_prod(state)
-      reduction = p_disi(state)
+      Δ_produced = p_produce(state)
+      reduction = p_disintegrate(state)
       Δ_removed = u_remove(state, reduction)
       Δ_transported = transport(state, Δ_produced + Δ_removed)
       u_deposit(state, Δ_transported)

@@ -9,6 +9,9 @@ To compute the transport of material we turn parcels of sediment into particles 
 
 The `grain_size` and `excess_density` are used in computing the direction a particle will travel. The `critical_stress` determines the stopping criterion.
 
+## Vectors
+To trace the position of particles we define a `NamedTuple` with `x` and `y` members and define common vector operations on those.
+
 ``` {.julia file=src/Vectors.jl}
 module Vectors
 
@@ -24,12 +27,16 @@ Base.:/(a::Vec2, b::Float64) = (x=a.x/b, y=a.y/b)
 end
 ```
 
-``` {.julia file=src/Transport.jl}
-module Transport
+## Particles
+In this section we only deal with those properties of particles that are required to model their transport and (re)deposition. We leave the computation of the stress for later. 
 
-using ..Vectors
-using ..BoundaryTrait
+!!! note "Abstraction and Inheritance"
 
+    We don't know all the properties yet that might be involved in computing that stress, so we'll make the `Particle` type extensible. The classic way to do so in computer science is inheritance, but Julia doesn't support inheritance. Instead, you might define an `abstract type` and define methods for that type, then require derived `struct`s to have the same properties, or overload the methods. However, that is not so nice and actually error prone. Here I chose to make the `Particle` type extensible by using a type argument for the `properties` member. In the simplest case you can define an alias `const Particle = Transport.Particle{Nothing}`.
+
+We need the position of a particle to track its orbit, its mass and facies type to compute the deposition onto a grid and the critical stress to tell when the particle should stop moving.
+
+``` {.julia #particle}
 struct Particle{P}
     position::Vec2
     mass::Float64
@@ -37,12 +44,18 @@ struct Particle{P}
     facies::Int64
     properties::P
 end
+```
 
+The choice is to have the `position` member represent coordinates in logical (pixel based) units. An alternative would be to use logical (pixel based) coordinates, possibly saving a few floating-point operations. The hope is that using physical coordinates saves some mental capacity in remembering whether coordinates were converted or not, but this is not a strong preference. Do notice that a user wanting to tinker with transport is exposed to this API.
+
+## Boundaries
+We need to define how particles move past boundaries. Similar to the grid based `offset_index` method, we define the `offset` method for a `Vec2`.
+
+``` {.julia #vector-offset}
 struct Box
     grid_size::NTuple{2,Int}
     phys_size::Vec2
     phys_scale::Float64
-    n_facies::Int
 end
 
 function offset(::Type{Reflected{2}}, box::Box, a::Vec2, Δa::Vec2)
@@ -74,7 +87,12 @@ function offset(::Type{Shelf}, box::Box, a::Vec2, Δa::Vec2)
         return b
     end
 end
+```
 
+## Interpolation and Deposition
+Bi-linear interpolation and mass deposition are in some ways very similar problems. We deposit a particle as a little square shaped object on the grid. We compute the area of the intersection of the pixel for a group of $2\times 2$ pixels. This is the same weighting scheme used in bi-linear interpolation. This particular interpolation routine also returns the local gradient.
+
+``` {.julia #interpolation}
 function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where {BT <: Boundary{2}, R <: Real}
     node = (x=ceil(p.x / box.phys_scale), y=ceil(p.y / box.phys_scale))
     idx = CartesianIndex(Int(node.x), Int(node.y))
@@ -89,24 +107,6 @@ function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where 
          y = (frac.x * (z01 - z00) + (1.0 - frac.x) * (z11 - z10)) / box.phys_scale)
 
     return (z, ∇)
-end
-
-function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
-    function (p::Particle{P}) where P
-        while true
-            τ = stress(p)
-            if abs(τ) > p.critical_stress
-                return p
-            end
-            Δ = τ * (box.phys_scale / abs(τ))
-            next_position = offset(BT, box, p.position, Δ)
-            if next_position === nothing
-                return nothing
-            else
-                p.position = next_position
-            end
-        end
-    end
 end
 
 function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
@@ -124,6 +124,42 @@ function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
             (1.0 - frac.x) * (1.0 - frac.y) * p.mass
     end
 end
+```
+
+## Transport
+
+``` {.julia #particle-transport}
+function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
+    function (p::Particle{P}) where P
+        while true
+            τ = stress(p)
+            if abs(τ) > p.critical_stress
+                return p
+            end
+            Δ = τ * (box.phys_scale / abs(τ))
+            next_position = offset(BT, box, p.position, Δ)
+            if next_position === nothing
+                return nothing
+            else
+                p.position = next_position
+            end
+        end
+    end
+end
+```
+
+
+
+``` {.julia file=src/Transport.jl}
+module Transport
+
+using ..Vectors
+using ..BoundaryTrait
+
+<<vector-offset>>
+<<particle>>
+<<particle-transport>>
+<<interpolation>>
 
 end
 ```

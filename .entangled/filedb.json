@@ -278,9 +278,9 @@
         "docs/src/ca-with-production.md",
         "docs/src/submarine-transport.md"
       ],
-      "modified": "2024-02-06T09:10:27.775724",
-      "hexdigest": "0c0a3feab46ce3b1135160a3876ee03040fea1937737ae661f370585fc073b36",
-      "size": 9172
+      "modified": "2024-02-06T10:49:25.389911",
+      "hexdigest": "25ec40a2bb1d39d00402c6165b4c0a8c56f59d94698de9fddddd2d2fd41a7fc6",
+      "size": 9194
     },
     {
       "path": "src/SedimentStack.jl",
@@ -303,25 +303,25 @@
     {
       "path": "docs/src/submarine-transport.md",
       "deps": null,
-      "modified": "2024-02-06T09:13:25.730683",
-      "hexdigest": "5c49d04b3230de0c397f904cd813dc4d9657afe04aa81d138340595443ac4826",
-      "size": 24100
+      "modified": "2024-02-06T10:49:27.917920",
+      "hexdigest": "ac15119c7fcad0cd9ab68265b1a7f397fdc540baa786353675cb6803af1c190f",
+      "size": 24122
     },
     {
       "path": "docs/src/transport.md",
       "deps": null,
-      "modified": "2024-02-06T09:13:25.727683",
-      "hexdigest": "7e0255e9dd750ed820a0aeb31543fd4c93f2341a5a91f6c96b7ff2a3defe0534",
-      "size": 4474
+      "modified": "2024-02-06T13:57:41.022661",
+      "hexdigest": "13eef98b15686c13f6a141b26630d4662fbf31225352c638a1823b5c5f171410",
+      "size": 6924
     },
     {
       "path": "src/Transport.jl",
       "deps": [
         "docs/src/transport.md"
       ],
-      "modified": "2024-02-06T09:04:28.903790",
-      "hexdigest": "0bf7f729d4dbd7fd78711f5ddda3c07cb276c61c485e04d45a4f027a9e6bc07d",
-      "size": 3350
+      "modified": "2024-02-06T14:00:03.358100",
+      "hexdigest": "dca600edec54e69c00d990f1d5de6770fb454dbf27628cee613ae41e6b828208",
+      "size": 3601
     },
     {
       "path": "src/BoundaryTrait.jl",
@@ -364,36 +364,36 @@
   ],
   "source": [],
   "target": [
-    "src/Erosion.jl",
+    "src/Transport.jl",
+    "examples/ca-with-prod.jl",
+    "src/Utility.jl",
+    "src/CATP.jl",
+    "examples/plot-tanh.gnuplot",
+    "src/ForwardModel.jl",
+    "src/SedimentStack.jl",
+    "examples/cap-slope.jl",
+    "examples/caps-osc.jl",
+    "src/Burgess2013/CA.jl",
+    "src/Burgess2013/Transport.jl",
+    "src/Vectors.jl",
+    "src/CaProd.jl",
+    "src/BS92/fig8-sealevel.jl",
+    "src/Burgess2013.jl",
+    "src/BS92.jl",
+    "examples/ca/parameter-scan.jl",
+    "src/Burgess2013/Production.jl",
+    "examples/plot-caps-osc.jl",
+    "src/Burgess2013/Config.jl",
+    "examples/ca/burgess-2013.jl",
     "src/Visualization.jl",
     ".entangled/tasks.json",
-    "src/Burgess2013/Production.jl",
-    "examples/caps-osc.jl",
-    "examples/cap-slope.jl",
-    "examples/ca/parameter-scan.jl",
-    "test/SedimentStackSpec.jl",
-    "src/Utility.jl",
-    "src/BoundaryTrait.jl",
-    "examples/plot-caps-osc.jl",
-    "examples/ca/long-term.jl",
     "examples/burgess2013-fig2.gnuplot",
-    "src/SedimentStack.jl",
-    "src/Burgess2013/CA.jl",
-    "examples/plot-tanh.gnuplot",
-    "src/Burgess2013.jl",
-    "examples/ca/burgess-2013.jl",
-    "src/Burgess2013/Transport.jl",
-    "src/Stencil.jl",
-    "src/CATP.jl",
-    "src/Burgess2013/Config.jl",
-    "examples/plot-cap-slope.jl",
     "examples/bosscher-schlager-1992.jl",
-    "src/ForwardModel.jl",
-    "src/CaProd.jl",
-    "src/BS92.jl",
-    "src/Transport.jl",
-    "src/BS92/fig8-sealevel.jl",
-    "src/Vectors.jl",
-    "examples/ca-with-prod.jl"
+    "src/BoundaryTrait.jl",
+    "examples/ca/long-term.jl",
+    "src/Stencil.jl",
+    "test/SedimentStackSpec.jl",
+    "src/Erosion.jl",
+    "examples/plot-cap-slope.jl"
   ]
 }

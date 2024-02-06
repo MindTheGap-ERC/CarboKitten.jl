@@ -4,19 +4,11 @@ module Transport
 using ..Vectors
 using ..BoundaryTrait
 
-struct Particle{P}
-    position::Vec2
-    mass::Float64
-    critical_stress::Float64
-    facies::Int64
-    properties::P
-end
-
+# ~/~ begin <<docs/src/transport.md#vector-offset>>[init]
 struct Box
     grid_size::NTuple{2,Int}
     phys_size::Vec2
     phys_scale::Float64
-    n_facies::Int
 end
 
 function offset(::Type{Reflected{2}}, box::Box, a::Vec2, Δa::Vec2)
@@ -48,23 +40,17 @@ function offset(::Type{Shelf}, box::Box, a::Vec2, Δa::Vec2)
         return b
     end
 end
-
-function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where {BT <: Boundary{2}, R <: Real}
-    node = (x=ceil(p.x / box.phys_scale), y=ceil(p.y / box.phys_scale))
-    idx = CartesianIndex(Int(node.x), Int(node.y))
-    frac = (x=node.x - p.x / box.phys_scale, y=node.y - p.y / box.phys_scale)
-    z00 = f[idx]
-    z10 = offset_value(BT, f, idx, CartesianIndex(1, 0))
-    z01 = offset_value(BT, f, idx, CartesianIndex(0, 1))
-    z11 = offset_value(BT, f, idx, CartesianIndex(1, 1))
-    z = frac.x * frac.y * z00 + (1.0 - frac.x) * frac.y * z10 +
-        frac.x * (1.0 - frac.y) * z01 + (1.0 - frac.x) * (1.0 - frac.y) * z11
-    ∇ = (x = (frac.y * (z10 - z00) + (1.0 - frac.y) * (z11 - z01)) / box.phys_scale,
-         y = (frac.x * (z01 - z00) + (1.0 - frac.x) * (z11 - z10)) / box.phys_scale)
-
-    return (z, ∇)
+# ~/~ end
+# ~/~ begin <<docs/src/transport.md#particle>>[init]
+struct Particle{P}
+    position::Vec2
+    mass::Float64
+    critical_stress::Float64
+    facies::Int64
+    properties::P
 end
-
+# ~/~ end
+# ~/~ begin <<docs/src/transport.md#particle-transport>>[init]
 function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
     function (p::Particle{P}) where P
         while true
@@ -82,6 +68,23 @@ function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
         end
     end
 end
+# ~/~ end
+# ~/~ begin <<docs/src/transport.md#interpolation>>[init]
+function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where {BT <: Boundary{2}, R <: Real}
+    node = (x=ceil(p.x / box.phys_scale), y=ceil(p.y / box.phys_scale))
+    idx = CartesianIndex(Int(node.x), Int(node.y))
+    frac = (x=node.x - p.x / box.phys_scale, y=node.y - p.y / box.phys_scale)
+    z00 = f[idx]
+    z10 = offset_value(BT, f, idx, CartesianIndex(1, 0))
+    z01 = offset_value(BT, f, idx, CartesianIndex(0, 1))
+    z11 = offset_value(BT, f, idx, CartesianIndex(1, 1))
+    z = frac.x * frac.y * z00 + (1.0 - frac.x) * frac.y * z10 +
+        frac.x * (1.0 - frac.y) * z01 + (1.0 - frac.x) * (1.0 - frac.y) * z11
+    ∇ = (x = (frac.y * (z10 - z00) + (1.0 - frac.y) * (z11 - z01)) / box.phys_scale,
+         y = (frac.x * (z01 - z00) + (1.0 - frac.x) * (z11 - z10)) / box.phys_scale)
+
+    return (z, ∇)
+end
 
 function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
     function (p::Particle{P}) where P
@@ -98,6 +101,7 @@ function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
             (1.0 - frac.x) * (1.0 - frac.y) * p.mass
     end
 end
+# ~/~ end
 
 end
 # ~/~ end

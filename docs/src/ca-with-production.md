@@ -112,6 +112,22 @@ $$U: (S, \Delta) \to S.$$
 
 In practice however, the update function changes the state in-place.
 
+``` {.julia file=src/ForwardModel.jl}
+module ForwardModel
+
+function run(state, propagator, updater)
+    Channel{Frame}() do ch
+        while true
+            Δ = p(state)
+            put!(ch, Δ)
+            u(state, Δ)
+        end
+    end
+end
+
+end
+```
+
 ## Init
 
 We fill the height map with the initial depth function. It is assumed that the height only depends on the second index.
@@ -184,17 +200,10 @@ end
 
 ``` {.julia #ca-prod-model}
 function run_model(input::Input)
-    Channel{Frame}() do ch
-        s = initial_state(input)
-        p = propagator(input)
-        u = updater(input)
-
-        while true
-            Δ = p(s)
-            put!(ch, Δ)
-            u(s, Δ)
-        end
-    end
+    s = initial_state(input)
+    p = propagator(input)
+    u = updater(input)
+    ForwardModel.run(s, p, u)
 end
 ```
 
@@ -207,6 +216,7 @@ using CarboKitten.Utility
 # using CarboKitten.BS92: sealevel_curve
 using CarboKitten.Stencil
 using CarboKitten.Burgess2013
+using ..ForwardModel
 
 using HDF5
 using .Iterators: drop, peel, partition, map, take

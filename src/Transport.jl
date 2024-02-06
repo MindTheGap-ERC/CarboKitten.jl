@@ -49,7 +49,7 @@ function offset(::Type{Shelf}, box::Box, a::Vec2, Δa::Vec2)
     end
 end
 
-function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where R <: Real
+function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where {BT <: Boundary{2}, R <: Real}
     node = (x=ceil(p.x / box.phys_scale), y=ceil(p.y / box.phys_scale))
     idx = CartesianIndex(Int(node.x), Int(node.y))
     frac = (x=node.x - p.x / box.phys_scale, y=node.y - p.y / box.phys_scale)

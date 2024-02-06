@@ -189,7 +189,7 @@ uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 version = "0.5.1"
 
 [[deps.CarboKitten]]
-deps = ["HDF5", "Transducers"]
+deps = ["HDF5", "Printf", "Transducers"]
 path = ".."
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 version = "0.1.0"

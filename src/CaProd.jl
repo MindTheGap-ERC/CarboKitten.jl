@@ -7,6 +7,7 @@ using CarboKitten.Utility
 # using CarboKitten.BS92: sealevel_curve
 using CarboKitten.Stencil
 using CarboKitten.Burgess2013
+using ..ForwardModel
 
 using HDF5
 using .Iterators: drop, peel, partition, map, take
@@ -88,17 +89,10 @@ end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[2]
 function run_model(input::Input)
-    Channel{Frame}() do ch
-        s = initial_state(input)
-        p = propagator(input)
-        u = updater(input)
-
-        while true
-            Δ = p(s)
-            put!(ch, Δ)
-            u(s, Δ)
-        end
-    end
+    s = initial_state(input)
+    p = propagator(input)
+    u = updater(input)
+    ForwardModel.run(s, p, u)
 end
 # ~/~ end
 

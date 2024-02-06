@@ -8,8 +8,10 @@ using ..Stencil
 using ..Burgess2013.CA
 using ..SedimentStack
 using ..Transport
+using ..BoundaryTrait
 
 using HDF5
+using Printf
 
 using .Iterators: drop, peel, partition, map, take
 # ~/~ begin <<docs/src/submarine-transport.md#cat-facies>>[init]
@@ -48,10 +50,8 @@ end
 
   Δz::Float64
   buffer_depth::Int
-  # To estimate the average grain size and overdensity of the sediment (and
-  # thereby the shear stress), we need to peek at the composition of the top
-  # layer, the `top_layer_thickness` parameter controls how deep we sample.
-  top_layer_thickness::Float64
+  # Function of depth
+  disintegration_rate
   # wave shear stress function, is a function of depth, and should return a Vec2
   wave_shear_stress
   # Gravitational accelleration
@@ -73,6 +73,8 @@ end
 struct ProductFrame
   production::Array{Float64,3}        # facies x y
 end
+
+Base.:+(a::ProductFrame, b::ProductFrame) = ProductFrame(a.production .+ b.production)
 
 # struct Properties
 #   excess_density::Float64
@@ -139,7 +141,7 @@ end
 # ~/~ end
 # ~/~ begin <<docs/src/submarine-transport.md#cat-propagator>>[init]
 function particles(input::Input, Δ::ProductFrame)
-  Channel{Particle} do ch
+  Channel{Particle}() do ch
     for (i, (idx, mass)) in enumerate(pairs(Δ.production))
       subgrid_spacing = 1.0 / input.transport_subsample
       subgrid_axis = 0.0:subgrid_spacing:1.0 - subgrid_spacing
@@ -192,8 +194,7 @@ function submarine_transport(input::Input)
   end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagator>>[init]
-function propagator(input::Input)
+function production_propagator(input::Input)
     # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-init-propagator>>[init]
     n_facies = length(input.facies)
     ca_init = rand(0:n_facies, input.grid_size...)
@@ -219,7 +220,79 @@ function propagator(input::Input)
         # ~/~ end
     end
 end
-# ~/~ end
+
+function initial_state(input::Input)  # -> State
+    height = zeros(Float64, input.grid_size...)
+    for i in CartesianIndices(height)
+        height[i] = input.initial_depth(i[2] * input.phys_scale)
+    end
+    n_facies = length(input.facies)
+    return State(0.0, height, zeros(Float64, input.grid_size..., input.buffer_depth, n_facies))
+end
+
+function disintegration_propagator(input::Input)
+  function (s::State)
+    return ReductionFrame(input.disintegration_rate.(s.height))
+  end
+end
+
+struct Snapshot
+  state::State
+  removed::Array{Float64,2}
+  deposited::Array{Float64,3}
+end
+
+function run_model(input::Input)
+  transport = submarine_transport(input)
+  p_prod = production_propagator(input)
+  p_disi = disintegration_propagator(input)
+  state = initial_state(input)
+  u_time = time_updater(input)
+  u_remove = remove_updater(input)
+  u_deposit = deposit_updater(input)
+
+  Channel{Snapshot}() do ch
+    while True
+      Δ_produced = p_prod(state)
+      reduction = p_disi(state)
+      Δ_removed = u_remove(state, reduction)
+      Δ_transported = transport(state, Δ_produced + Δ_removed)
+      u_deposit(state, Δ_transported)
+      u_time(state)
+      put!(ch, Snapshot(state, Δ_removed, Δ_transported))
+    end
+  end
+end
+
+function main(input::Input, output::String)
+    x_axis = (0:(input.grid_size[2]-1)) .* input.phys_scale
+    y_axis = (0:(input.grid_size[1]-1)) .* input.phys_scale
+    initial_height = input.initial_depth.(x_axis)
+    n_writes = input.time_steps
+
+    h5open(output, "w") do fid
+        gid = create_group(fid, "input")
+        gid["x"] = collect(x_axis)
+        gid["y"] = collect(y_axis)
+        gid["height"] = collect(initial_height)
+        gid["t"] = collect((0:(n_writes-1)) .* (input.Δt * input.write_interval))
+        attr = attributes(gid)
+        attr["delta_t"] = input.Δt
+        attr["time_steps"] = input.time_steps
+        attr["subsidence_rate"] = input.subsidence_rate
+
+        results = run_model(input)
+        for (step, snapshot) in enumerate(take(results, n_writes))
+          gid = create_group(fid, @sprintf "%010u" step)
+          attr = attributes(gid)
+          attr["time"] = snapshot.state.time
+          gid["height"] = snapshot.state.height
+          gid["buffer"] = snapshot.state.sediment
+          gid["removed"] = snapshot.removed
+          gid["deposited"] = snapshot.deposited
+        end
+    end
+end
 
 end  # CATP
 # ~/~ end

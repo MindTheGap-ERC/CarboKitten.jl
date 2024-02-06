@@ -14,17 +14,22 @@ authors:
     affiliation: Netherlands eScience Center
     orcid: 'https://orcid.org/0000-0002-7550-1796'
   - given-names: Emilia
-    family-names: Jarochawska
+    family-names: Jarochowska
     orcid: 'https://orcid.org/0000-0001-8937-9405'
     affiliation: Utrecht University
     email: e.b.jarochowska@uu.nl
+  - given-names: Xianyi
+    family-names: Liu
+    affiliation: Utrecht University
+  - given-names: Peter
+    family-names: Burgess
+    email: pmb42@liverpool.ac.uk
+    affiliation: University of Liverpool
+    orcid: 'https://orcid.org/0000-0002-3851-116X'
   - given-names: Niklas
     family-names: Hohmann
     affiliation: Utrecht University
     orcid: 'https://orcid.org/0000-0003-1559-1838'
-  - given-names: Xianyi
-    family-names: Liu
-    affiliation: Utrecht University
   - given-names: Hanno
     family-names: Spreeuw
     email: h.spreeuw@esciencecenter.nl

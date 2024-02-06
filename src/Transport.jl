@@ -18,8 +18,8 @@ function offset(::Type{Reflected{2}}, box::Box, a::Vec2, Δa::Vec2)
 end
 
 function offset(::Type{Periodic{2}}, box::Box, a::Vec2, Δa::Vec2)
-    (x=(a.x+Δa.x) % box.phys_size.x
-    ,y=(a.y+Δa.y) % box.phys_size.y)
+    (x=mod(a.x+Δa.x, box.phys_size.x)
+    ,y=mod(a.y+Δa.y, box.phys_size.y))
 end
 
 function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2) where Value
@@ -55,7 +55,7 @@ function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
     function (p::Particle{P}) where P
         while true
             τ = stress(p)
-            if abs(τ) > p.critical_stress
+            if abs(τ) < p.critical_stress
                 return p
             end
             Δ = τ * (box.phys_scale / abs(τ))
@@ -88,9 +88,11 @@ end
 
 function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
     function (p::Particle{P}) where P
-        node = (x=ceil(p.x / box.phys_scale), y=ceil(p.y / box.phys_scale))
+        q = offset(BT, box, p.position, (x=-0.5,y=-0.5)*box.phys_scale)
+        l = q / box.phys_scale
+        node = (x=floor(l.x) + 1.0, y=floor(l.y) + 1.0)
         idx = CartesianIndex(Int(node.x), Int(node.y))
-        frac = (x=node.x - p.x / box.phys_scale, y=node.y - p.y / box.phys_scale)
+        frac = node - l
         slice = @view output[p.facies,:,:]
         slice[idx] += frac.x * frac.y * p.mass
         slice[offset_index(BT, box.grid_size, idx, CartesianIndex(0, 1))] +=

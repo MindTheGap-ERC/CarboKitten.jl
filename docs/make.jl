@@ -73,6 +73,7 @@ makedocs(
         ],
         "Algorithms" => [
             "Stencils" => "stencils.md",
+            "Particle Transport" => "transport.md",
             "Utility" => "utility.md"
         ]
     ])

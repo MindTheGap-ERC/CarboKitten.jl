@@ -8,4 +8,5 @@ end
 @testset "CarboKitten" begin
     using CarboKitten.SedimentStack
     include("SedimentStackSpec.jl")
+    include("TransportSpec.jl")
 end

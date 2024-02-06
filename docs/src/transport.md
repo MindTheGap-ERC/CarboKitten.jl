@@ -23,6 +23,7 @@ Base.abs2(a::Vec2) = a.x^2 + a.y^2
 Base.abs(a::Vec2) = √(abs2(a))
 Base.:*(a::Vec2, b::Float64) = (x=a.x*b, y=a.y*b)
 Base.:/(a::Vec2, b::Float64) = (x=a.x/b, y=a.y/b)
+Base.:-(a::Vec2, b::Vec2) = (x=a.x-b.x, y=a.x-b.x)
 
 end
 ```
@@ -65,8 +66,8 @@ function offset(::Type{Reflected{2}}, box::Box, a::Vec2, Δa::Vec2)
 end
 
 function offset(::Type{Periodic{2}}, box::Box, a::Vec2, Δa::Vec2)
-    (x=(a.x+Δa.x) % box.phys_size.x
-    ,y=(a.y+Δa.y) % box.phys_size.y)
+    (x=mod(a.x+Δa.x, box.phys_size.x)
+    ,y=mod(a.y+Δa.y, box.phys_size.y))
 end
 
 function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2) where Value
@@ -92,6 +93,57 @@ end
 ## Interpolation and Deposition
 Bi-linear interpolation and mass deposition are in some ways very similar problems. We deposit a particle as a little square shaped object on the grid. We compute the area of the intersection of the pixel for a group of $2\times 2$ pixels. This is the same weighting scheme used in bi-linear interpolation. This particular interpolation routine also returns the local gradient.
 
+### Specs
+Deposition should be mass conserving, so we test for a number of particles that the total adds up.
+
+``` {.julia #transport-spec}
+using CarboKitten.Transport: deposit, Box, Particle
+using CarboKitten.BoundaryTrait: Periodic
+
+TestParticle = Particle{Nothing}
+
+box = Box((16, 16), (x=1.0, y=1.0), 1.0/16.0)
+n_particles = 42
+particles = rand(Float64, 2, n_particles) |> eachcol .|> 
+		(p -> TestParticle((x=p[1], y=p[2]), 1.0, 1.0, 1, nothing));
+
+density = let
+	target = zeros(Float64, 1, 16, 16)
+	particles .|> deposit(Periodic{2}, box, target)
+	target
+end
+@test sum(density) ≈ n_particles
+```
+
+Then we test two special cases: one where the particle is exactly at position $0, 0$, and the other at $0.5, 0.5$ (pixel coordinates).
+
+``` {.julia #transport-spec}
+density = let
+    target = zeros(Float64, 1, 16, 16)
+    Particle((x=0.0, y=0.0), 1.0, 1.0, 1, nothing) |> deposit(Periodic{2}, box, target)
+    target
+end
+@test density[1,1,1] ≈ 0.25
+@test density[1,1,end] ≈ 0.25
+@test density[1,end,1] ≈ 0.25
+@test density[1,end,end] ≈ 0.25
+```
+
+``` {.julia #transport-spec}
+density = let
+    target = zeros(Float64, 1, 16, 16)
+    Particle((x=box.phys_scale/2, y=box.phys_scale/2),
+        1.0, 1.0, 1, nothing) |> deposit(Periodic{2}, box, target)
+    target
+end
+@test density[1,1,1] ≈ 1.0
+@test density[1,1,end] ≈ 0
+@test density[1,end,1] ≈ 0
+@test density[1,end,end] ≈ 0
+```
+
+### Implementation
+
 ``` {.julia #interpolation}
 function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where {BT <: Boundary{2}, R <: Real}
     node = (x=ceil(p.x / box.phys_scale), y=ceil(p.y / box.phys_scale))
@@ -111,9 +163,11 @@ end
 
 function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
     function (p::Particle{P}) where P
-        node = (x=ceil(p.x / box.phys_scale), y=ceil(p.y / box.phys_scale))
+        q = offset(BT, box, p.position, (x=-0.5,y=-0.5)*box.phys_scale)
+        l = q / box.phys_scale
+        node = (x=floor(l.x) + 1.0, y=floor(l.y) + 1.0)
         idx = CartesianIndex(Int(node.x), Int(node.y))
-        frac = (x=node.x - p.x / box.phys_scale, y=node.y - p.y / box.phys_scale)
+        frac = node - l
         slice = @view output[p.facies,:,:]
         slice[idx] += frac.x * frac.y * p.mass
         slice[offset_index(BT, box.grid_size, idx, CartesianIndex(0, 1))] +=
@@ -133,7 +187,7 @@ function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
     function (p::Particle{P}) where P
         while true
             τ = stress(p)
-            if abs(τ) > p.critical_stress
+            if abs(τ) < p.critical_stress
                 return p
             end
             Δ = τ * (box.phys_scale / abs(τ))
@@ -161,5 +215,11 @@ using ..BoundaryTrait
 <<particle-transport>>
 <<interpolation>>
 
+end
+```
+
+``` {.julia file=test/TransportSpec.jl}
+@testset "TransportSpec" begin
+    <<transport-spec>>
 end
 ```

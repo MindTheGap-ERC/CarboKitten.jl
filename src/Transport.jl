@@ -73,19 +73,24 @@ function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
 end
 # ~/~ end
 # ~/~ begin <<docs/src/transport.md#interpolation>>[init]
+function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}) where {BT <: Boundary{2}, R <: Real}
+    p -> interpolate(BT, box, f, p)
+end
+
 function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where {BT <: Boundary{2}, R <: Real}
     @assert p ∈ box
-    node = (x=ceil(p.x / box.phys_scale), y=ceil(p.y / box.phys_scale))
+    l = p / box.phys_scale
+    node = (x=floor(l.x) + 1.0, y=floor(l.y) + 1.0)
     idx = CartesianIndex(Int(node.x), Int(node.y))
-    frac = (x=node.x - p.x / box.phys_scale, y=node.y - p.y / box.phys_scale)
+    frac = node - l
     z00 = f[idx]
     z10 = offset_value(BT, f, idx, CartesianIndex(1, 0))
     z01 = offset_value(BT, f, idx, CartesianIndex(0, 1))
     z11 = offset_value(BT, f, idx, CartesianIndex(1, 1))
     z = frac.x * frac.y * z00 + (1.0 - frac.x) * frac.y * z10 +
         frac.x * (1.0 - frac.y) * z01 + (1.0 - frac.x) * (1.0 - frac.y) * z11
-    ∇ = (x = (frac.y * (z10 - z00) + (1.0 - frac.y) * (z11 - z01)) / box.phys_scale,
-         y = (frac.x * (z01 - z00) + (1.0 - frac.x) * (z11 - z10)) / box.phys_scale)
+    ∇ = (x = (frac.y * (z10 - z00) + (1.0 - frac.y) * (z11 - z01)),
+         y = (frac.x * (z01 - z00) + (1.0 - frac.x) * (z11 - z10))) / box.phys_scale
 
     return (z, ∇)
 end

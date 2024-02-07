@@ -11,7 +11,7 @@ using Pkg; Pkg.activate("../workenv")
 using Revise
 
 # ╔═╡ 7f499c8a-e89f-499a-b19c-3ccd97a87ff8
-using CarboKitten.Transport: deposit, Box, Particle
+using CarboKitten.Transport: deposit, Box, Particle, interpolate
 
 # ╔═╡ f168a0f8-0ef3-46aa-bac8-c82e3ebf6116
 using CarboKitten.BoundaryTrait: Periodic
@@ -23,7 +23,7 @@ using GLMakie
 const TestParticle = Particle{Nothing}
 
 # ╔═╡ 14dac041-96e7-4746-b998-344ded3b84da
-box = Box((16, 16), (x=1.0, y=1.0), 1.0/16.0)
+box16 = Box((16, 16), (x=1.0, y=1.0), 1.0/16.0)
 
 # ╔═╡ 1614e9fe-a56f-4094-94e1-8eb296cc8024
 function axes(box::Box)
@@ -31,9 +31,6 @@ function axes(box::Box)
 	y_axis = 0:box.phys_scale:box.phys_size.y
 	(x_axis, y_axis)
 end
-
-# ╔═╡ b011b065-3a36-4b50-9fce-a3faf6bb1f76
-axes(box)
 
 # ╔═╡ 1dabd7fb-4562-49c6-a8fa-980499d0737b
 Periodic{2}
@@ -45,7 +42,7 @@ particles = rand(Float64, 2, 42) |> eachcol .|>
 # ╔═╡ 43130df6-4c32-404a-9675-64ac1d058fad
 density = let
 	target = zeros(Float64, 1, 16, 16);
-	particles .|> deposit(Periodic{2}, box, target)
+	particles .|> deposit(Periodic{2}, box16, target)
 	target
 end;
 
@@ -53,7 +50,7 @@ end;
 let
 	fig = Figure()
 	ax = Axis(fig[1, 1])
-	heatmap!(ax, axes(box)..., density[1,:,:])
+	heatmap!(ax, axes(box16)..., density[1,:,:])
 	scatter!(ax, [(p.position.x, p.position.y) for p in particles]; color=:red)
 	fig
 end
@@ -63,6 +60,24 @@ sum(density)
 
 # ╔═╡ 720a1a2e-20d9-41d7-b680-5f94f876fa69
 mod(1.0, 1.0)
+
+# ╔═╡ c1a68718-1cbf-4abc-ad15-ee533ea51cd1
+h = Float64[0 0; 1 1]
+
+# ╔═╡ 0debe4b0-dcfe-4ec7-bb36-265fbd30bd03
+box = Box((2, 2), (x=1.0, y=1.0), 0.5)
+
+# ╔═╡ b011b065-3a36-4b50-9fce-a3faf6bb1f76
+axes(box)
+
+# ╔═╡ a6ae3820-5808-4e34-a090-f1b14a08f3f7
+f = interpolate(Periodic{2}, box, h)
+
+# ╔═╡ 862c53ce-1600-4348-9174-36949a72e19a
+f((x=0.49, y=0.5))
+
+# ╔═╡ 88421113-33ee-4d36-98ab-0ff2e558d361
+(9, 7) .* 2
 
 # ╔═╡ Cell order:
 # ╠═be3739c1-bbf3-4e48-8ced-f249197c2c98
@@ -80,3 +95,8 @@ mod(1.0, 1.0)
 # ╠═fc2171b8-0ce1-4b99-8bbe-b4097814eb35
 # ╠═0e4dd1a6-6b7e-439e-82ee-55d4e156d846
 # ╠═720a1a2e-20d9-41d7-b680-5f94f876fa69
+# ╠═c1a68718-1cbf-4abc-ad15-ee533ea51cd1
+# ╠═0debe4b0-dcfe-4ec7-bb36-265fbd30bd03
+# ╠═a6ae3820-5808-4e34-a090-f1b14a08f3f7
+# ╠═862c53ce-1600-4348-9174-36949a72e19a
+# ╠═88421113-33ee-4d36-98ab-0ff2e558d361

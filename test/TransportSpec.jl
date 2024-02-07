@@ -41,5 +41,8 @@
     @test density[1,end,1] ≈ 0
     @test density[1,end,end] ≈ 0
     # ~/~ end
+    # ~/~ begin <<docs/src/transport.md#transport-spec>>[3]
+    height = [0.0 0.0; 1.0 1.0]
+    # ~/~ end
 end
 # ~/~ end

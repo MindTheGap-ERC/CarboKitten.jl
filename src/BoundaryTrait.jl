@@ -53,6 +53,18 @@ function offset_value(::Type{Shelf}, z::AbstractArray, i::CartesianIndex, Δi::C
     end
 end
 # ~/~ end
+# ~/~ begin <<docs/src/stencils.md#canonical-coordinates>>[init]
+function canonical(::Type{Periodic{2}}, shape::NTuple{dim,Int}, i::CartesianIndex) where {dim}
+    CartesianIndex(mod1.(Tuple(i), shape)...)
+end
+
+function canonical(::Type{Reflected{2}}, shape::NTuple{dim,Int}, i::CartesianIndex) where {dim}
+    modflip(a, l) = let b = mod1(a, 2l)
+        b > l ? 2l - b : b
+    end
+    CartesianIndex(modflip.(Tuple(i), shape)...) 
+end
+# ~/~ end
 
 end
 # ~/~ end

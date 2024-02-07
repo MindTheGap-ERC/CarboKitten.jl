@@ -59,6 +59,9 @@ struct Box
     phys_scale::Float64
 end
 
+Base.in(a::Vec2, box::Box) =
+    a.x >= 0.0 && a.x < box.phys_size.x && a.y >= 0.0 && a.y < box.phys_size.y
+
 function offset(::Type{Reflected{2}}, box::Box, a::Vec2, Δa::Vec2)
     clip(i, a, b) = (i < a ? a + a - i : (i > b ? b + b - i : i))
     (x=clip(a.x+Δa.x, 0.0, box.phys_size.x)
@@ -72,7 +75,7 @@ end
 
 function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2) where Value
     b = a + Δa
-    if b.x < 0.0 | b.x > box.phys_size.x | b.y < 0.0 | b.y > box.phys_size.y
+    if b ∉ box
         nothing
     else
         b
@@ -146,6 +149,7 @@ end
 
 ``` {.julia #interpolation}
 function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where {BT <: Boundary{2}, R <: Real}
+    @assert p ∈ box
     node = (x=ceil(p.x / box.phys_scale), y=ceil(p.y / box.phys_scale))
     idx = CartesianIndex(Int(node.x), Int(node.y))
     frac = (x=node.x - p.x / box.phys_scale, y=node.y - p.y / box.phys_scale)
@@ -161,21 +165,28 @@ function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where 
     return (z, ∇)
 end
 
+@inline function try_inc(arr, idx, value)
+    if idx !== nothing
+        arr[idx] += value
+    end
+end
+
 function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
     function (p::Particle{P}) where P
+        p.position ∉ box && return
         q = offset(BT, box, p.position, (x=-0.5,y=-0.5)*box.phys_scale)
         l = q / box.phys_scale
         node = (x=floor(l.x) + 1.0, y=floor(l.y) + 1.0)
         idx = CartesianIndex(Int(node.x), Int(node.y))
         frac = node - l
         slice = @view output[p.facies,:,:]
-        slice[idx] += frac.x * frac.y * p.mass
-        slice[offset_index(BT, box.grid_size, idx, CartesianIndex(0, 1))] +=
-            frac.x * (1.0 - frac.y) * p.mass
-        slice[offset_index(BT, box.grid_size, idx, CartesianIndex(1, 0))] +=
-            (1.0 - frac.x) * frac.y * p.mass
-        slice[offset_index(BT, box.grid_size, idx, CartesianIndex(1, 1))] +=
-            (1.0 - frac.x) * (1.0 - frac.y) * p.mass
+        try_inc(slice, idx, frac.x * frac.y * p.mass)
+        try_inc(slice, offset_index(BT, box.grid_size, idx, CartesianIndex(0, 1)),
+            frac.x * (1.0 - frac.y) * p.mass)
+        try_inc(slice, offset_index(BT, box.grid_size, idx, CartesianIndex(1, 0)),
+            (1.0 - frac.x) * frac.y * p.mass)
+        try_inc(slice, offset_index(BT, box.grid_size, idx, CartesianIndex(1, 1)),
+            (1.0 - frac.x) * (1.0 - frac.y) * p.mass)
     end
 end
 ```

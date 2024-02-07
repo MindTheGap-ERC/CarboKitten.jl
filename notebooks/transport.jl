@@ -39,7 +39,7 @@ axes(box)
 Periodic{2}
 
 # ╔═╡ 71d4ab7b-c43c-4427-9ccc-3009c1257f60
-particles = rand(Float64, 2, 10) |> eachcol .|> 
+particles = rand(Float64, 2, 42) |> eachcol .|> 
 		(p -> TestParticle((x=p[1], y=p[2]), 1.0, 1.0, 1, nothing));
 
 # ╔═╡ 43130df6-4c32-404a-9675-64ac1d058fad
@@ -54,7 +54,7 @@ let
 	fig = Figure()
 	ax = Axis(fig[1, 1])
 	heatmap!(ax, axes(box)..., density[1,:,:])
-	scatter!(ax, [(p.position.x, p.position.y) for p in particles])
+	scatter!(ax, [(p.position.x, p.position.y) for p in particles]; color=:red)
 	fig
 end
 

@@ -33,7 +33,7 @@ The sediment output will be stored in a buffer with fixed spatial resolution, ty
   initial_depth
 
   grid_size::NTuple{2,Int}
-  boundary::Boundary{2}
+  boundary::Type
   phys_scale::Float64     # km / pixel
   Δt::Float64             # Ma / timestep ?
 
@@ -310,7 +310,7 @@ function particles(input::Input, Δ::ProductFrame)
       subgrid = product(subgrid_axis, subgrid_axis)
       for (j, dx) in enumerate(subgrid)
         facies_type = idx[1]
-        p = (x=(idx[2] + dx[1]) * input.phys_scale, y=(idx[3] + dx[2]) * input.phys_scale)
+        p = (x=(idx[2]-1 + dx[1]) * input.phys_scale, y=(idx[3]-1 + dx[2]) * input.phys_scale)
         θ = input.facies[facies_type].critical_stress
         put!(ch, Particle(p, mass * subgrid_spacing^2, θ, facies_type, nothing))
       end
@@ -321,12 +321,12 @@ end
 function stress(input::Input, s::State)
   phys_size = (x = input.grid_size[1] * input.phys_scale,
                y = input.grid_size[2] * input.phys_scale)
-  box = Transport.Box(input.grid_size, phys_size, input.phys_scale, length(input.facies))
+  box = Transport.Box(input.grid_size, phys_size, input.phys_scale)
 
   function (p::Particle)
     z, ∇ = Transport.interpolate(input.boundary, box, s.height, p.position)
     α = atan(abs(∇))
-    Ĝ = ∇ / abs(∇)
+    Ĝ = -∇ / abs(∇)
 
     τ_wave = input.wave_shear_stress(z)
 
@@ -343,8 +343,11 @@ function submarine_transport(input::Input)
   # This function does not modify the state, rather it transports the
   # sediments in a given product frame and gives a new product frame
   # as output.
+  box = Transport.Box(input.grid_size, (
+    x=input.grid_size[1] * input.phys_scale,
+    y=input.grid_size[2] * input.phys_scale), input.phys_scale)
   function (s::State, Δ::ProductFrame)  # -> ProductFrame
-    output = Array{Float64}(undef, size(Δ.production))
+    output = zeros(Float64, size(Δ.production)...)
     transport = Transport.transport(input.boundary, box, stress(input, s))
     deposit = Transport.deposit(input.boundary, box, output)
 
@@ -373,7 +376,7 @@ using ..BoundaryTrait
 using HDF5
 using Printf
 
-using .Iterators: drop, peel, partition, map, take
+using .Iterators: drop, peel, partition, map, take, product
 <<cat-facies>>
 <<cat-input>>
 <<cat-state>>

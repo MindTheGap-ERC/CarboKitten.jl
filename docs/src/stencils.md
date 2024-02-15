@@ -28,18 +28,8 @@ end
 ```
 
 ``` {.julia #offset-indexing}
-function offset_index(::Type{Periodic{dim}}, shape::NTuple{dim,Int}, i::CartesianIndex, Δi::CartesianIndex) where {dim}
-    CartesianIndex(mod1.(Tuple(i + Δi), shape)...)
-end
-
-function offset_index(::Type{Reflected{dim}}, shape::NTuple{dim,Int}, i::CartesianIndex, Δi::CartesianIndex) where {dim}
-    clip(i, a, b) = (i < a ? a + a - i : (i > b ? b + b - i : i))
-    CartesianIndex(clip.(Tuple(i + Δi), ones(Int, dim), shape)...)
-end
-
-function offset_index(::Type{Constant{dim,value}}, shape::NTuple{dim,Int}, i::CartesianIndex, Δi::CartesianIndex) where {dim,value}
-    j = i + Δi
-    all(checkindex.(Bool, range.(1, shape), Tuple(j))) ? j : nothing
+function offset_index(::Type{BT}, shape::NTuple{dim,Int}, i::CartesianIndex, Δi::CartesianIndex) where {dim, BT <: Boundary{dim}}
+    canonical(BT, shape, i + Δi)
 end
 
 function offset_value(BT::Type{B}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex) where {dim,B<:Boundary{dim}}
@@ -77,6 +67,10 @@ function canonical(::Type{Reflected{2}}, shape::NTuple{dim,Int}, i::CartesianInd
         b > l ? 2l - b : b
     end
     CartesianIndex(modflip.(Tuple(i), shape)...) 
+end
+
+function canonical(::Type{Constant{dim, value}}, shape::NTuple{dim,Int}, i::CartesianIndex) where {dim, value}
+    all(checkindex.(Bool, range.(1, shape), Tuple(i))) ? i : nothing
 end
 ```
 

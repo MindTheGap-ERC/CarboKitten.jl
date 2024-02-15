@@ -9,7 +9,9 @@ Base.abs2(a::Vec2) = a.x^2 + a.y^2
 Base.abs(a::Vec2) = √(abs2(a))
 Base.:*(a::Vec2, b::Float64) = (x=a.x*b, y=a.y*b)
 Base.:/(a::Vec2, b::Float64) = (x=a.x/b, y=a.y/b)
+Base.:*(a::Float64, b::Vec2) = b*a
 Base.:-(a::Vec2, b::Vec2) = (x=a.x-b.x, y=a.x-b.x)
+Base.:-(a::Vec2) = (x=-a.x, y=-a.y)
 
 end
 # ~/~ end

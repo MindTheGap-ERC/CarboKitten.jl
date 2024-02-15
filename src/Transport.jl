@@ -45,7 +45,7 @@ function offset(::Type{Shelf}, box::Box, a::Vec2, Δa::Vec2)
 end
 # ~/~ end
 # ~/~ begin <<docs/src/transport.md#particle>>[init]
-struct Particle{P}
+mutable struct Particle{P}
     position::Vec2
     mass::Float64
     critical_stress::Float64

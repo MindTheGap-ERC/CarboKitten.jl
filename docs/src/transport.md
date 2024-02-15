@@ -23,7 +23,9 @@ Base.abs2(a::Vec2) = a.x^2 + a.y^2
 Base.abs(a::Vec2) = √(abs2(a))
 Base.:*(a::Vec2, b::Float64) = (x=a.x*b, y=a.y*b)
 Base.:/(a::Vec2, b::Float64) = (x=a.x/b, y=a.y/b)
+Base.:*(a::Float64, b::Vec2) = b*a
 Base.:-(a::Vec2, b::Vec2) = (x=a.x-b.x, y=a.x-b.x)
+Base.:-(a::Vec2) = (x=-a.x, y=-a.y)
 
 end
 ```
@@ -38,7 +40,7 @@ In this section we only deal with those properties of particles that are require
 We need the position of a particle to track its orbit, its mass and facies type to compute the deposition onto a grid and the critical stress to tell when the particle should stop moving.
 
 ``` {.julia #particle}
-struct Particle{P}
+mutable struct Particle{P}
     position::Vec2
     mass::Float64
     critical_stress::Float64

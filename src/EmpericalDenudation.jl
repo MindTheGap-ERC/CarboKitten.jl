@@ -14,15 +14,16 @@ end
 
 #slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
 
-const a = 9.1363
-const b = -0.008519
-const c = 580.51
-const d = 9.0156
-const e = -0.1245
-const f = 4.91086
+
 
 # calculate denudation based on regressed function
 function emperical_denudation(precip::Float64, slope::Float64)
+local a = 9.1363
+local b = -0.008519
+local c = 580.51
+local d = 9.0156
+local e = -0.1245
+local f = 4.91086
     (a ./ (1 .+ exp.(b.*(precip .- c)))) .* (d ./ (1 .+ exp.(e.*(slope .- f)))) # using logistic function
 end
 

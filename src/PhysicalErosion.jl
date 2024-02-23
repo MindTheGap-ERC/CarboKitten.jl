@@ -56,7 +56,6 @@ function mass_erosion(::Type{T},::Type{BT},slope::Matrix{Float64},n::NTuple{dim,
     stencil_shape = range.(.-m, m)
     stencil = zeros(T, n)
 	redis = zeros(Float64,(3,3,size(slope)...))
-	result = zeros(Float64,size(slope))
 	local inf = 0.5
 	for i in CartesianIndices(slope)
 	     #println(i)
@@ -64,7 +63,7 @@ function mass_erosion(::Type{T},::Type{BT},slope::Matrix{Float64},n::NTuple{dim,
 			#println(Δi)
             stencil[k] = offset_value(BT, w, i, Δi)
 			#println(k)
-			redis[:,:,i] .= redistribution_kernel(stencil,csz) .* physical_erosion(slope[i],0.5)
+			redis[:,:,i] .= -1 .* redistribution_kernel(stencil,csz) .* physical_erosion(slope[i],inf)
         end
     end
 	return redis		

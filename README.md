@@ -93,6 +93,19 @@ make figures
 
 To run simulations and plot figures depending on those.
 
+## Documentation
+
+To generate the documentation, run `julia`.
+
+```
+pkg> activate docs
+pkg> instantiate
+julia> using LiveServer
+julia> servedocs()
+```
+
+The figures are generated seperately.
+
 ## References
 
 Code in this repository is based on

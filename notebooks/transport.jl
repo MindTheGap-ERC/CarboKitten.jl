@@ -104,12 +104,12 @@ input = Input(
 	subsidence_rate = 0.0,
 	initial_depth = test_profile,
 	grid_size = (50, 50),
-	boundary = Reflected{2},
+	boundary = Periodic{2},
 	phys_scale = 5.0/50,
 	Δt = 1.0,
 	time_steps = 100,
 	write_interval = 1,
-	facies = [ Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1.0, 1.0, 7.4) ],
+	facies = [ Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1.0, 1.0, 8.1) ],
 	insolation = 2000.0,
 	Δz = 1.0,
 	buffer_depth = 50,
@@ -173,6 +173,9 @@ let
 	Colorbar(fig[1,2], co)
 	fig
 end
+
+# ╔═╡ fd160c7a-3471-4acc-a0ce-30213cd5614b
+td.production |> sum
 
 # ╔═╡ 982c8248-a6e2-4ce4-a20c-88f884dd9ef9
 [(p.position.x, p.position.y) for p in particles(input, production)]
@@ -252,6 +255,7 @@ sum(strength) / length(strength)
 # ╠═e2cffe29-153a-48c5-948a-536a6cbf4894
 # ╠═da298bd9-2f89-4929-bc5d-0c669edcf5b8
 # ╠═ff79db72-5086-45dc-975d-2423a0757049
+# ╠═fd160c7a-3471-4acc-a0ce-30213cd5614b
 # ╠═982c8248-a6e2-4ce4-a20c-88f884dd9ef9
 # ╠═d8a15e90-10d8-47c0-916c-cd4ddf8af2a6
 # ╠═5434f84b-4bc2-4d71-bad0-d66d7ccbd75c

@@ -1,18 +1,18 @@
+# ~/~ begin <<docs\src\erosion.md#src/PhysicalErosion.jl>>[init]
 module PhysicalErosion
 
 using CarboKitten.Burgess2013
 using CarboKitten.Stecil: Periodic, offset_value, offset_index
 using CarboKitten.EmpericalDenudation
-export physical_erosion, total_mass
+export physical_erosion, total_mass_redistribution
 
-
-#calculate how much material could one cell provide to the lower cells
+# ~/~ begin <<docs\src\erosion.md#physical-erosion>>[init]
 function physical_erosion(slope::Float64, Facies::facies)
     local kv = 0.23 #very arguable paramster
     #stencil(Float64,Reflected{2},(3,3),function(w)
     -kv .* (1-Facies.inf).^(1/3) .* slope.^(2/3)
 end
-
+# ~/~ end
 
 # find the redistibution co-efficient for the neighboring 8 cells
 function redistribution_kernel(w::Matrix{Float64},cellsize::Float64)
@@ -70,7 +70,7 @@ function mass_erosion(::Type{T},::Type{BT},slope::Matrix{Float64},n::NTuple{dim,
 				
 end
 	
-function total_mass(redis::Array{Float64},slope::Matrix{Float64})
+function total_mass_redistribution(redis::Array{Float64},slope::Matrix{Float64})
 	result = zeros(Float64,size(slope))
 	for idx in CartesianIndices(redis)
 		for i in CartesianIndices(slope)
@@ -88,3 +88,4 @@ end
 elevation_change = D .+ result
 
 end
+# ~/~ end

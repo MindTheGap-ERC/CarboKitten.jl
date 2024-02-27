@@ -9,6 +9,7 @@ using ..Stencil
 using ..Burgess2013
 using ..EmpericalDenudation
 using ..CarbDissolution
+using PhysicalErosion
 
 using HDF5
 using .Iterators: drop, peel, partition, map, take
@@ -39,7 +40,8 @@ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-frame>>[init]
 struct Frame
     production::Array{Float64,3}
-    erosion::Array{Float64,2}
+    denudation::Array{Float64,2}
+    redistribution::Array{Float64,2}
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-state>>[init]
@@ -73,11 +75,13 @@ function propagator(input::Input)
     function (s::State)  # -> Frame
         # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[init]
         production = zeros(Float64, input.grid_size..., n_facies)
-        erosion = zeros(Float64, input.grid_size...)
-        slope =zeros(Float64, input.grid_size...)
+        denudation = zeros(Float64, input.grid_size...)
+        redistribution = zeros(Float64, input.grid_size...)
+        slope = zeros(Float64, input.grid_size...)
         facies_map, ca = peel(ca)
         w = water_depth(s)
         slopefn(w,slope,input.phys_scale) # slope is calculated with square so no need for -w
+        redis = mass_erosion(Float64,Periodic{2},slope,(3,3))
         Threads.@threads for idx in CartesianIndices(facies_map)
             f = facies_map[idx]
                 if f == 0
@@ -86,11 +90,13 @@ function propagator(input::Input)
             if w[idx] > 0.0
                 production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
             else
-                #erosion[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
-                erosion[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
+                #denudation[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
+                denudation[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
+                denudation[Tuple(idx)...] = physical_erosion(slope[idx],input.facies.inf)
+                redistribution[Tuple(idx)...] = total_mass_redistribution(redis, slope)
             end
         end
-        return Frame(production, erosion)#
+        return Frame(production, denudation, redistribution)#
         # ~/~ end
     end
 end
@@ -100,7 +106,8 @@ function updater(input::Input)
     n_facies = length(input.facies)
     function (s::State, Δ::Frame)
         s.height .-= sum(Δ.production; dims=3) .* input.Δt
-        s.height .+= Δ.erosion .* input.Δt  #number already in kyr
+        s.height .+= Δ.denudation .* input.Δt  #number already in kyr
+        s.height ._= Δ.redistribution .* input.Δt
         s.height .+= input.subsidence_rate * input.Δt
         s.time += input.Δt
     end
@@ -123,7 +130,7 @@ end
 # ~/~ end
 
 function stack_frames(fs::Vector{Frame})  # -> Frame
-    Frame(sum(f.production for f in fs),sum(f.erosion for f in fs))#
+    Frame(sum(f.production for f in fs),sum(f.denudation for f in fs),sum(f.wredistribution for f in fs))#
 end
 
 function main(input::Input, output::String)

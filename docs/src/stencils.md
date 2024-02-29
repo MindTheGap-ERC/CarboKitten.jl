@@ -45,7 +45,7 @@ end
 ``` {.julia file=src/BoundaryTrait.jl}
 module BoundaryTrait
 
-export Boundary, Reflected, Periodic, Constant, Shelf, offset_index, offset_value
+export Boundary, Reflected, Periodic, Constant, Shelf, offset_index, offset_value, canonical
 
 <<boundary-types>>
 <<offset-indexing>>
@@ -82,13 +82,16 @@ struct Shelf <: Boundary{2} end
 ```
 
 ``` {.julia #offset-indexing}
-function offset_index(::Type{Shelf}, shape::NTuple{2,Int}, i::CartesianIndex, Δi::CartesianIndex)
-    j = i + Δi
-    j[1] >= 1 | j[1] <= shape[1] ? CartesianIndex(j[1], mod1(j[2], shape[2])) : nothing
+function canonical(::Type{Shelf}, shape::NTuple{2, Int}, i::CartesianIndex)
+    if i[1] < 1 || i[1] > shape[1]
+        return nothing
+    end
+    return CartesianIndex(i[1], mod1(i[2], shape[2]))
 end
 
 function offset_value(::Type{Shelf}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex)
     j = i + Δi
+    shape = size(z)
     if j[1] < 1
         return z[1, mod1(j[2], shape[2])]
     elseif j[1] > shape[1]

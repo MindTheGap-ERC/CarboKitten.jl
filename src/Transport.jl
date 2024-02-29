@@ -36,11 +36,10 @@ end
 
 function offset(::Type{Shelf}, box::Box, a::Vec2, Δa::Vec2)
     b = a + Δa
-    if b.x < 0.0 | b.x > box.phys_size.x
-        return nothing
+    if b.x < 0.0 || b.x > box.phys_size.x
+        nothing
     else
-        b.y = b.y % box.phys_size.y
-        return b
+        (x=b.x, y=b.y % box.phys_size.y)
     end
 end
 # ~/~ end
@@ -56,12 +55,18 @@ end
 # ~/~ begin <<docs/src/transport.md#particle-transport>>[init]
 function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
     function (p::Particle{P}) where P
+        if p.position ∉ box
+            return nothing
+        end
+
         while true
+            @assert (p.position ∈ box) "$(p) in box"
             τ = stress(p)
             if abs(τ) < p.critical_stress
                 return p
             end
             Δ = τ * (box.phys_scale / abs(τ))
+            @assert (abs(Δ) ≈ box.phys_scale) "pos: $(p.position) stress: $(τ) Delta: $(Δ)"
             next_position = offset(BT, box, p.position, Δ)
             if next_position === nothing
                 return nothing
@@ -96,21 +101,24 @@ function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where 
 end
 
 @inline function try_inc(arr, idx, value)
-    if idx !== nothing
+    if idx !== nothing && checkbounds(Bool, arr, idx)
         arr[idx] += value
     end
 end
 
 function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
-    function (p::Particle{P}) where P
+    function plotter(::Nothing) end
+
+    function plotter(p::Particle{P}) where P
         p.position ∉ box && return
-        q = offset(BT, box, p.position, (x=-0.5,y=-0.5)*box.phys_scale)
+        # we don't want to wrap here. This is done later
+        q = p.position - (x=-0.5,y=-0.5)*box.phys_scale
         l = q / box.phys_scale
         node = (x=floor(l.x) + 1.0, y=floor(l.y) + 1.0)
         idx = CartesianIndex(Int(node.x), Int(node.y))
         frac = node - l
         slice = @view output[p.facies,:,:]
-        try_inc(slice, idx, frac.x * frac.y * p.mass)
+        try_inc(slice, canonical(BT, box.grid_size, idx), frac.x * frac.y * p.mass)
         try_inc(slice, offset_index(BT, box.grid_size, idx, CartesianIndex(0, 1)),
             frac.x * (1.0 - frac.y) * p.mass)
         try_inc(slice, offset_index(BT, box.grid_size, idx, CartesianIndex(1, 0)),
@@ -118,6 +126,8 @@ function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
         try_inc(slice, offset_index(BT, box.grid_size, idx, CartesianIndex(1, 1)),
             (1.0 - frac.x) * (1.0 - frac.y) * p.mass)
     end
+
+    plotter
 end
 # ~/~ end
 

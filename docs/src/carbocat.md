@@ -102,7 +102,7 @@ using ..Config: Facies
 
 <<carbonate-production>>
 
-function production_rate(insolation::Float64, facies::Facies, water_depth::Float64)
+function production_rate(insolation::Float64, facies::F, water_depth::Float64) where {F}
     gₘ = facies.maximum_growth_rate
     I₀ = insolation
     Iₖ = facies.saturation_intensity

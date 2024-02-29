@@ -6,6 +6,7 @@ using ..Stencil: Periodic
 using ..Utility
 using ..Stencil
 using ..Burgess2013.CA
+using ..Burgess2013: production_rate
 using ..SedimentStack
 using ..Transport
 using ..BoundaryTrait
@@ -156,24 +157,29 @@ function particles(input::Input, Δ::ProductFrame)
   end
 end
 
-function stress(input::Input, s::State)
+function stress(input::Input, s)
   phys_size = (x = input.grid_size[1] * input.phys_scale,
                y = input.grid_size[2] * input.phys_scale)
   box = Transport.Box(input.grid_size, phys_size, input.phys_scale)
+  τ_wave = isnothing(input.wave_shear_stress) ?
+    x -> (x=0.0, y=0.0) :
+    input.wave_shear_stress 
 
   function (p::Particle)
+    @assert !isnothing(τ_wave)
     z, ∇ = Transport.interpolate(input.boundary, box, s.height, p.position)
+    abs(∇) ≈ 0.0 && return zero(Vec2)
+
     α = atan(abs(∇))
     Ĝ = -∇ / abs(∇)
-
-    τ_wave = input.wave_shear_stress(z)
 
     Δρ = input.facies[p.facies].excess_density
     D = input.facies[p.facies].grain_size
     g = input.g
     τ_grav = (Δρ * D * g * sin(α)) * Ĝ
+    @assert !isnan(τ_grav.x) "alpha = $(α) | G = $(Ĝ) | z = $(z) | grad = $(∇)"
 
-    return τ_grav + τ_wave
+    return τ_grav # + τ_wave(z)
   end
 end
 
@@ -184,7 +190,7 @@ function submarine_transport(input::Input)
   box = Transport.Box(input.grid_size, (
     x=input.grid_size[1] * input.phys_scale,
     y=input.grid_size[2] * input.phys_scale), input.phys_scale)
-  function (s::State, Δ::ProductFrame)  # -> ProductFrame
+  function (s, Δ::ProductFrame) # -> ProductFrame
     output = zeros(Float64, size(Δ.production)...)
     transport = Transport.transport(input.boundary, box, stress(input, s))
     deposit = Transport.deposit(input.boundary, box, output)
@@ -203,13 +209,13 @@ function production_propagator(input::Input)
     ca_init = rand(0:n_facies, input.grid_size...)
     ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
 
-    function water_depth(s::State)
+    function water_depth(s)
         s.height .- input.sea_level(s.time)
     end
     # ~/~ end
-    function (s::State)  # -> Frame
+    function (s)  # -> Frame
         # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[init]
-        result = zeros(Float64, input.grid_size..., n_facies)
+        result = zeros(Float64, n_facies, input.grid_size...)
         facies_map, ca = peel(ca)
         w = water_depth(s)
         Threads.@threads for idx in CartesianIndices(facies_map)
@@ -217,9 +223,9 @@ function production_propagator(input::Input)
             if f == 0
                 continue
             end
-            result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
+            result[f, Tuple(idx)...] = production_rate(input.insolation, input.facies[f], w[idx])
         end
-        return Frame(result)
+        return ProductFrame(result)
         # ~/~ end
     end
 end

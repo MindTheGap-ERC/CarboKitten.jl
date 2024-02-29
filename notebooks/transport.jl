@@ -17,10 +17,10 @@ using CarboKitten.Transport: deposit, Box, Particle, interpolate
 using CarboKitten.Vectors
 
 # ╔═╡ f168a0f8-0ef3-46aa-bac8-c82e3ebf6116
-using CarboKitten.BoundaryTrait: Periodic, Reflected
+using CarboKitten.BoundaryTrait: Periodic, Reflected, Shelf, Constant
 
 # ╔═╡ a0263acb-8f42-4b72-821f-c279d2042122
-using GLMakie
+using WGLMakie
 
 # ╔═╡ 6dde775c-00e3-4ddb-b1d7-62e40ec3df39
 using CarboKitten.CATP: submarine_transport, State, ProductFrame, Input, Facies, stress, particles
@@ -104,7 +104,7 @@ input = Input(
 	subsidence_rate = 0.0,
 	initial_depth = test_profile,
 	grid_size = (50, 50),
-	boundary = Periodic{2},
+	boundary = Shelf,
 	phys_scale = 5.0/50,
 	Δt = 1.0,
 	time_steps = 100,
@@ -140,30 +140,14 @@ state = State(0.0, height, sediment);
 # ╔═╡ 0e11dbe1-db11-40e9-9dd3-a8faf1161aa7
 production = ProductFrame(ones(Float64, 1, input.grid_size...) .* 0.1)
 
-# ╔═╡ 0ad81d9c-0db5-4994-a5c1-9c72817e96d0
-function submarine_transport_2(input::Input)
-  # This function does not modify the state, rather it transports the
-  # sediments in a given product frame and gives a new product frame
-  # as output.
-  box = Transport.Box(input.grid_size, (x=input.grid_size[1] * input.phys_scale, y=input.grid_size[2] * input.phys_scale), input.phys_scale)
-  function (s::State, Δ::ProductFrame)  # -> ProductFrame
-    output = zeros(Float64, size(Δ.production)...)
-    transport = Transport.transport(input.boundary, box, stress(input, s))
-    deposit = Transport.deposit(input.boundary, box, output)
-
-    for p in particles(input, Δ)
-      p |> transport |> deposit
-    end
-
-    return ProductFrame(output)
-  end
-end
-
 # ╔═╡ e2cffe29-153a-48c5-948a-536a6cbf4894
-tr = submarine_transport_2(input)
+tr = submarine_transport(input)
 
 # ╔═╡ da298bd9-2f89-4929-bc5d-0c669edcf5b8
 td = tr(state, production)
+
+# ╔═╡ a08465e7-68a5-4022-bbb0-127121b11334
+
 
 # ╔═╡ ff79db72-5086-45dc-975d-2423a0757049
 let
@@ -251,9 +235,9 @@ sum(strength) / length(strength)
 # ╠═91fc7690-c9c7-4a93-86d9-7e38e642ac34
 # ╠═50e6c1ba-c380-48b3-a0b5-b08461bf915b
 # ╠═0e11dbe1-db11-40e9-9dd3-a8faf1161aa7
-# ╠═0ad81d9c-0db5-4994-a5c1-9c72817e96d0
 # ╠═e2cffe29-153a-48c5-948a-536a6cbf4894
 # ╠═da298bd9-2f89-4929-bc5d-0c669edcf5b8
+# ╠═a08465e7-68a5-4022-bbb0-127121b11334
 # ╠═ff79db72-5086-45dc-975d-2423a0757049
 # ╠═fd160c7a-3471-4acc-a0ce-30213cd5614b
 # ╠═982c8248-a6e2-4ce4-a20c-88f884dd9ef9

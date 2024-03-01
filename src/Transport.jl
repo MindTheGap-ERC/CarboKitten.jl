@@ -39,7 +39,7 @@ function offset(::Type{Shelf}, box::Box, a::Vec2, Δa::Vec2)
     if b.x < 0.0 || b.x > box.phys_size.x
         nothing
     else
-        (x=b.x, y=b.y % box.phys_size.y)
+        (x=b.x, y=mod(b.y, box.phys_size.y))
     end
 end
 # ~/~ end

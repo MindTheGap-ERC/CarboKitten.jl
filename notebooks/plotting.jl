@@ -34,32 +34,32 @@ end
 
 # ╔═╡ 76e71ad0-863d-4d7a-b0c2-c714c9d249db
 h5open("../data/catp.h5", "r") do fid
-	total_sediment = sum(fid["trans_sediment"][]; dims=3)
+	total_sediment = sum(fid["sediment"][]; dims=1)
 	total_sediment
 end
 
 
 # ╔═╡ 06ca199e-642c-4d4e-a465-85589e268fe0
-x, t, h, p = h5open("../data/caps-osc.h5","r") do fid
+x, t, h, p = h5open("../data/catp.h5","r") do fid
 	attr = HDF5.attributes(fid["input"])
 	Δt = attr["delta_t"][]
 	subsidence_rate = attr["subsidence_rate"][]
 	t_end = fid["input/t"][end-1]
 	total_subsidence = subsidence_rate * t_end
-	total_sediment = sum(fid["sediment"][]; dims=3)
-	initial_height = fid["input/height"][]
-	elevation = cumsum(total_sediment; dims=4)[25,:,1,:] .* Δt .- initial_height .- total_subsidence
+	total_sediment = sum(fid["sediment"][]; dims=1)
+	initial_height = fid["input/height"][:,25]
+	elevation = cumsum(total_sediment; dims=4)[1,:,25,:] .* Δt .- initial_height .- total_subsidence
 	t = fid["input/t"][]
-	return fid["input/x"][], [t; Δt*attr["time_steps"][]], hcat(.- initial_height .- total_subsidence, elevation), fid["sediment"][25,:,:,:]
+	return fid["input/x"][], [t; Δt*attr["time_steps"][]], hcat(.- initial_height .- total_subsidence, elevation), fid["sediment"][:,:,25,:]
 end
 
 # ╔═╡ f8969a09-426c-4670-8756-12802711ed33
-
+p
 
 # ╔═╡ bd05564a-3cf9-4c8d-aec6-84d9c9ad75c4
 let
 	pts = vec(Point{2,Float64}.(x, h[:,2:end]))
-	c = vec(argmax(p; dims=2)[:,1,:] .|> (c -> c[2]))
+	c = vec(argmax(p; dims=1)[1,:,:] .|> (c -> c[1]))
 	rect = Rect2(0.0, 0.0, 1.0, 1.0)
 	m_tmp = GeometryBasics.mesh(Tesselation(rect, (100, 1000)))
 	m = GeometryBasics.Mesh(pts, faces(m_tmp))

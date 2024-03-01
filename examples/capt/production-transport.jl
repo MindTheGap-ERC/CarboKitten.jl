@@ -11,7 +11,7 @@ module Script
   using HDF5
   using Printf
 
-  using .Iterators: partition, take
+  using .Iterators: partition, take, map
 
   const input = Input(
     sea_level = t -> 4 * sin(2π * t / 0.2), 
@@ -21,12 +21,12 @@ module Script
     boundary = Shelf,
     phys_scale = 1.0,
     Δt = 0.0001,
-    time_steps = 100,
-    write_interval = 1,
+    time_steps = 1000,
+    write_interval = 10,
     facies = [
-        Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1.0, 1.0, 10.0),
-        Facies((4, 10), (6, 10), 400.0, 0.1, 300, 1.0, 1.0, 10.0),
-        Facies((4, 10), (6, 10), 100.0, 0.005, 300, 1.0, 1.0, 10.0)
+        Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1.0, 1.0, 8.0),
+        Facies((4, 10), (6, 10), 400.0, 0.1, 300, 1.0, 1.0, 8.0),
+        Facies((4, 10), (6, 10), 100.0, 0.005, 300, 1.0, 1.0, 8.0)
     ],
 
     insolation = 2000.0,
@@ -75,6 +75,7 @@ module Script
           Δ = t(state, x)
           put!(ch, Δ)
           u(state, Δ)
+          print(".")
       end
     end
   end
@@ -87,6 +88,8 @@ module Script
       n_writes = input.time_steps ÷ input.write_interval
       x_axis, y_axis = axes(make_box(input))
       initial_height = initial_depth(input)
+
+      print("Running for $(input.time_steps) time steps and $(n_writes) writes")
 
       h5open(output, "w") do fid
           gid = create_group(fid, "input")

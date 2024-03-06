@@ -5,14 +5,11 @@ using CarboKitten.Stencil: Periodic, stencil
 export emperical_denudation,slope_kernel
 
 #calculate planar slopes based on [ARCGIS apporach](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm)
-
 function slope_kernel(w::Matrix{Float64},cellsize::Float64)
     dzdx = (-w[1,1] - 2 * w[2,1] -w[3,1] + w[1,3] + 2 * w[2,3] + w[3,3])/(8*cellsize)
     dzdy = (-w[1,1] - 2 * w[1,2] -w[1,3] + w[3,1] + 2 * w[3,2] + w[1,1])/(8*cellsize)
     atan(sqrt(dzdx^2 + dzdy^2))  * (180 / π)
 end
-
-#slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
 
 # calculate denudation based on regressed function
 function emperical_denudation(precip::Float64, slope::Float64)
@@ -25,31 +22,4 @@ local f = 4.91086
     (a ./ (1 .+ exp.(b.*(precip .- c)))) .* (d ./ (1 .+ exp.(e.*(slope .- f)))) # using logistic function
 end
 
-#=
-function emperical_denudation(precip::Float64, cellsize::Float64)
-
-    stencil_result = stencil(Float64, Periodic{2}, (3, 3), (w) -> begin
-        dzdx = (-w[1, 1] - 2 * w[2, 1] - w[3, 1] + w[1, 3] + 2 * w[2, 3] + w[3, 3]) / (8 * cellsize)
-        dzdy = (-w[1, 1] - 2 * w[1, 2] - w[1, 3] + w[3, 1] + 2 * w[3, 2] + w[1, 1]) / (8 * cellsize)
-        atan(sqrt(dzdx^2 + dzdy^2)) * (180 / π)
-    end)
-    return stencil_result
-    #(a ./ (1 .+ exp.(b .* (precip .- c)))) .* (d ./ (1 .+ exp.(e .* (stencil_result .- f))))
-end
-
-function emperical_denuadtion(precip::Float64,cellsize::Float64)
-    
-    (a ./ (1 .+ exp.(b .* (precip .- c)))) .* (d ./ (1 .+ exp.(e .* (stencil_result .- f))))
-end
-
-w = rand(50,100)
-cellsize = 1.0
-slope = zeros(Float64,50,100)
-#result = zeros(Float64,50,100)
-slopefn(w,slope,cellsize::Float64)
-for idx in CartesianIndices(slope)
-    if w[idx] < 0.0
-    result[Tuple(idx)...]=emperical_denudation(1000.0,slope[idx])
-    end
-end=#
 end

@@ -9,7 +9,6 @@ export physical_erosion, mass_erosion, total_mass_redistribution
 # ~/~ begin <<docs\src\erosion.md#physical-erosion>>[init]
 function physical_erosion(slope::Float64, facies::Facies)
     local kv = 0.23 #very arguable paramster
-    #stencil(Float64,Reflected{2},(3,3),function(w)
     -1 * -kv .* (1-facies.inf).^(1/3) .* slope.^(2/3)
 end
 # ~/~ end
@@ -45,11 +44,6 @@ end
 
 slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel) #function 
 
-#slope = zeros(size(w)...);#precallocate memory
-
-#for i in CartesianIndices(slope)
-#	D[i] = physical_erosion(slope[i],0.5)
-#end
 
 function mass_erosion(::Type{T},::Type{BT},slope::Matrix{Float64},n::NTuple{dim,Int},w::Matrix{Float64},csz::Float64,facies::Facies) where {T, dim, BT <: Boundary{dim}}
 	m = n .÷ 2
@@ -57,11 +51,8 @@ function mass_erosion(::Type{T},::Type{BT},slope::Matrix{Float64},n::NTuple{dim,
     stencil = zeros(T, n)
 	redis = zeros(Float64,(3,3,size(slope)...))
 	for i in CartesianIndices(slope)
-	     #println(i)
         for (k, Δi) in enumerate(CartesianIndices(stencil_shape))
-			#println(Δi)
             stencil[k] = offset_value(BT, w, i, Δi)
-			#println(k)
 			redis[:,:,i] .= redistribution_kernel(stencil,csz) .* physical_erosion(slope[i],facies.inf)
         end
     end
@@ -73,9 +64,6 @@ function total_mass_redistribution(redis::Array{Float64},slope::Matrix{Float64})
 	result = zeros(Float64,size(slope))
 	for idx in CartesianIndices(redis)
 		for i in CartesianIndices(slope)
-			#println(idx)
-			#println(i)
-			#println(idx[1],idx[2],idx[3],idx[4],i[1],i[2])
 		if idx[1] + idx[3] -1 == i[1] && idx[2] + idx[4] -1 == i[2]
 		result[i] += redis[idx]
 		end
@@ -83,8 +71,6 @@ function total_mass_redistribution(redis::Array{Float64},slope::Matrix{Float64})
 	end
 	return result
 end
-
-#elevation_change = D .+ result
 
 end
 # ~/~ end

@@ -1,0 +1,46 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: CarboKitten.jl
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Johan
+    family-names: Hidding
+    email: j.hidding@esciencecenter.nl
+    affiliation: Netherlands eScience Center
+    orcid: 'https://orcid.org/0000-0002-7550-1796'
+  - given-names: Emilia
+    family-names: Jarochowska
+    orcid: 'https://orcid.org/0000-0001-8937-9405'
+    affiliation: Utrecht University
+    email: e.b.jarochowska@uu.nl
+  - given-names: Xianyi
+    family-names: Liu
+    affiliation: Utrecht University
+  - given-names: Peter
+    family-names: Burgess
+    email: pmb42@liverpool.ac.uk
+    affiliation: University of Liverpool
+    orcid: 'https://orcid.org/0000-0002-3851-116X'
+  - given-names: Niklas
+    family-names: Hohmann
+    affiliation: Utrecht University
+    orcid: 'https://orcid.org/0000-0003-1559-1838'
+  - given-names: Hanno
+    family-names: Spreeuw
+    email: h.spreeuw@esciencecenter.nl
+    affiliation: Netherlands eScience Center
+    orcid: 'https://orcid.org/0000-0002-5057-0322'
+abstract: >-
+  A Julia code for modeling the growth and evolution of
+  carbonate platforms.
+keywords:
+  - stratigraphy
+  - carbonate platforms
+  - earth science
+  - modeling
+license: Apache-2.0

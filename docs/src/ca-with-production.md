@@ -204,7 +204,7 @@ module CaProd
 using CarboKitten
 using CarboKitten.Stencil: Periodic
 using CarboKitten.Utility
-using CarboKitten.BS92: sealevel_curve
+# using CarboKitten.BS92: sealevel_curve
 using CarboKitten.Stencil
 using CarboKitten.Burgess2013
 

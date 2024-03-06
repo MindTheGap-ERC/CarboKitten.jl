@@ -38,17 +38,12 @@ function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies::Faci
     (concentration = eq_c, denudation = eq_d)
 end
 
-# check whether the system reaches equilibrium
 function dissolution(temp::Float64,precip::Float64, alpha::Float64, pco2::Float64,water_depth::Float64, facies::Facies)
         z0 = -water_depth
         I = precip .* facies.inf #assume vertical infiltration
         λ = precip .* facies.inf ./ (alpha .* facies.L)
         eq = equilibrium(temp,pco2,precip,facies) # pass ceq Deq from the last function
-        if (1 - exp(-z0./λ)) > 0.8
-            eq.denudation 
-        else
-            eq.denudation .* (1 - (λ./z0).* (1 - exp(-z0./λ))) 
-        end
+        eq.denudation .* (1 - (λ./z0).* (1 - exp(-z0./λ))) 
 end
 
 end

@@ -5,16 +5,6 @@ export dissolution
 
 using ..Burgess2013
 
-#include("climateconfig.jl") # using or import is not working, so I use include keyword
-#=
-mutable struct climate
-    P::Float64
-    T::Float64
-    pco2::Float64
-end
-=#
-#testclimate = climate(1000,288,10^(-1.5))
-
 # Kaufmann 2002, Table 2
 function karst_denudation_parameters(temp::Float64)
     A = -0.4883+8.074*0.0001*(temp-273)

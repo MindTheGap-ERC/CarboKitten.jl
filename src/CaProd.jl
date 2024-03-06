@@ -33,6 +33,7 @@ using .Iterators: drop, peel, partition, map, take
     precip #precipitation
     pco2 #co2
     alpha #reaction rate
+    erosion_type::Int64
 
 end
 # ~/~ end
@@ -79,10 +80,13 @@ function propagator(input::Input)
         slope = zeros(Float64, input.grid_size...)
         facies_map, ca = peel(ca)
         w = water_depth(s)
-        local inf = 0.5
         slopefn(w,slope,input.phys_scale) # slope is calculated with square so no need for -w
-        redis = mass_erosion(Float64,Periodic{2},slope,(3,3),w,input.phys_scale)
+        if input.erosion_type == 2
+        redis = mass_erosion(Float64,Periodic{2},slope,(3,3),w,input.phys_scale,input.facies.inf)
         redistribution = total_mass_redistribution(redis, slope)
+        else
+        redistribution = redistribution
+        end
         Threads.@threads for idx in CartesianIndices(facies_map)
             f = facies_map[idx]
                 if f == 0
@@ -91,10 +95,16 @@ function propagator(input::Input)
             if w[idx] > 0.0
                 production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
             else
-                #denudation[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
-                #denudation[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
-                denudation[Tuple(idx)...] = physical_erosion(slope[idx],inf)
-                redistribution[Tuple(idx)...] = redistribution[Tuple(idx)...]
+                if input.erosion_type == 1
+                    denudation[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
+                elseif input.erosion_type == 2
+                    denudation[Tuple(idx)...] = physical_erosion(slope[idx],input.facies.inf)
+                    redistribution[Tuple(idx)...] = redistribution[Tuple(idx)...]
+                elseif input.erosion_type == 3
+                    denudation[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
+                elseif nput.erosion_type == 0
+                    denudation[Tuple(idx)...] = denudation[Tuple(idx)...]
+                end
             end
         end
         return Frame(production, denudation, redistribution)#

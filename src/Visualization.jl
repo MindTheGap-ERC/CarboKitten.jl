@@ -1,10 +1,10 @@
-# ~/~ begin <<docs/src/ca-with-production.md#src/Visualization.jl>>[init]
+# ~/~ begin <<docs\src\ca-with-production.md#src/Visualization.jl>>[init]
 module Visualization
 
 export plot_crosssection
 
 using HDF5
-using GLMakie
+using CairoMakie
 using GeometryBasics
 
 function plot_crosssection(pos, datafile)
@@ -20,10 +20,9 @@ function plot_crosssection(pos, datafile)
         t_end = fid["input/t"][end-1]
         total_subsidence = subsidence_rate * t_end
         total_sediment = sum(fid["sediment"][]; dims=3)
-        total_erosion = sum(fid["erosion"][]; dims=3)
         initial_height = fid["input/height"][]
         center = div(size(total_sediment)[1], 2)
-        elevation = cumsum(total_sediment; dims=4)[center,:,1,:] .* Δt .- cumsum(total_erosion; dims=3)[center,:,:].* Δt .- initial_height .- total_subsidence #
+        elevation = cumsum(total_sediment; dims=4)[center,:,1,:] .* Δt .- initial_height .- total_subsidence
         t = fid["input/t"][]
         n_facies = size(fid["sediment"])[3]
 
@@ -48,7 +47,7 @@ function plot_crosssection(pos, datafile)
     #     TriangleFace(k, k+1, k+1+w), TriangleFace(k+1+w, k+w, k)
     # end
 
-	ax = Axis(pos, xlabel="distance from shoal (km)", ylabel="height (m)", limits=((-12,x[end]), nothing))
+	ax = Axis(pos, xlabel="location", ylabel="depth", limits=((-12,x[end]), nothing))
     # for f in 1:n_facies
     #     locs = CartesianIndices((size(x)[1], size(t)[1] - 1))[c .== f]
     #     triangles = collect(Iterators.flatten(face.(locs)))

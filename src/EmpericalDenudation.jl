@@ -14,8 +14,6 @@ end
 
 #slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
 
-
-
 # calculate denudation based on regressed function
 function emperical_denudation(precip::Float64, slope::Float64)
 local a = 9.1363

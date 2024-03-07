@@ -4,8 +4,10 @@ module Transport
 using ..Vectors
 using ..BoundaryTrait
 
-# ~/~ begin <<docs/src/transport.md#vector-offset>>[init]
-struct Box
+# ~/~ begin <<docs/src/boxes.md#vector-offset>>[init]
+abstract type AbstractBox end
+
+struct Box <: AbstractBox
     grid_size::NTuple{2,Int}
     phys_size::Vec2
     phys_scale::Float64

@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/transport.md#src/Vectors.jl>>[init]
+# ~/~ begin <<docs/src/boxes.md#src/Vectors.jl>>[init]
 module Vectors
 
 export Vec2

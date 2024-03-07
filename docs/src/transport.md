@@ -9,28 +9,6 @@ To compute the transport of material we turn parcels of sediment into particles 
 
 The `grain_size` and `excess_density` are used in computing the direction a particle will travel. The `critical_stress` determines the stopping criterion.
 
-## Vectors
-To trace the position of particles we define a `NamedTuple` with `x` and `y` members and define common vector operations on those.
-
-``` {.julia file=src/Vectors.jl}
-module Vectors
-
-export Vec2
-
-Vec2 = @NamedTuple{x::Float64, y::Float64}
-Base.:+(a::Vec2, b::Vec2) = (x=a.x+b.x, y=a.y+b.y)
-Base.abs2(a::Vec2) = a.x^2 + a.y^2
-Base.abs(a::Vec2) = √(abs2(a))
-Base.:*(a::Vec2, b::Float64) = (x=a.x*b, y=a.y*b)
-Base.:/(a::Vec2, b::Float64) = (x=a.x/b, y=a.y/b)
-Base.:*(a::Float64, b::Vec2) = b*a
-Base.:-(a::Vec2, b::Vec2) = (x=a.x-b.x, y=a.y-b.y)
-Base.:-(a::Vec2) = (x=-a.x, y=-a.y)
-Base.zero(::Type{Vec2}) = (x=0.0, y=0.0)
-
-end
-```
-
 ## Particles
 In this section we only deal with those properties of particles that are required to model their transport and (re)deposition. We leave the computation of the stress for later. 
 
@@ -51,49 +29,6 @@ end
 ```
 
 The choice is to have the `position` member represent coordinates in logical (pixel based) units. An alternative would be to use logical (pixel based) coordinates, possibly saving a few floating-point operations. The hope is that using physical coordinates saves some mental capacity in remembering whether coordinates were converted or not, but this is not a strong preference. Do notice that a user wanting to tinker with transport is exposed to this API.
-
-## Boundaries
-We need to define how particles move past boundaries. Similar to the grid based `offset_index` method, we define the `offset` method for a `Vec2`.
-
-``` {.julia #vector-offset}
-struct Box
-    grid_size::NTuple{2,Int}
-    phys_size::Vec2
-    phys_scale::Float64
-end
-
-Base.in(a::Vec2, box::Box) =
-    a.x >= 0.0 && a.x < box.phys_size.x && a.y >= 0.0 && a.y < box.phys_size.y
-
-function offset(::Type{Reflected{2}}, box::Box, a::Vec2, Δa::Vec2)
-    clip(i, a, b) = (i < a ? a + a - i : (i > b ? b + b - i : i))
-    (x=clip(a.x+Δa.x, 0.0, box.phys_size.x)
-    ,y=clip(a.y+Δa.y, 0.0, box.phys_size.y))
-end
-
-function offset(::Type{Periodic{2}}, box::Box, a::Vec2, Δa::Vec2)
-    (x=mod(a.x+Δa.x, box.phys_size.x)
-    ,y=mod(a.y+Δa.y, box.phys_size.y))
-end
-
-function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2) where Value
-    b = a + Δa
-    if b ∉ box
-        nothing
-    else
-        b
-    end
-end
-
-function offset(::Type{Shelf}, box::Box, a::Vec2, Δa::Vec2)
-    b = a + Δa
-    if b.x < 0.0 || b.x > box.phys_size.x
-        nothing
-    else
-        (x=b.x, y=mod(b.y, box.phys_size.y))
-    end
-end
-```
 
 ## Interpolation and Deposition
 Bi-linear interpolation and mass deposition are in some ways very similar problems. We deposit a particle as a little square shaped object on the grid. We compute the area of the intersection of the pixel for a group of $2\times 2$ pixels. This is the same weighting scheme used in bi-linear interpolation. This particular interpolation routine also returns the local gradient.

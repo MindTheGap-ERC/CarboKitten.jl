@@ -1,18 +1,18 @@
-# ~/~ begin <<docs/src/stencils.md#src/BoundaryTrait.jl>>[init]
+# ~/~ begin <<docs/src/boxes.md#src/BoundaryTrait.jl>>[init]
 module BoundaryTrait
 
 export Boundary, Reflected, Periodic, Constant, Shelf, offset_index, offset_value, canonical
 
-# ~/~ begin <<docs/src/stencils.md#boundary-types>>[init]
+# ~/~ begin <<docs/src/boxes.md#boundary-types>>[init]
 abstract type Boundary{dim} end
 struct Reflected{dim} <: Boundary{dim} end
 struct Periodic{dim} <: Boundary{dim} end
 struct Constant{dim,value} <: Boundary{dim} end
 # ~/~ end
-# ~/~ begin <<docs/src/stencils.md#boundary-types>>[1]
+# ~/~ begin <<docs/src/boxes.md#boundary-types>>[1]
 struct Shelf <: Boundary{2} end
 # ~/~ end
-# ~/~ begin <<docs/src/stencils.md#offset-indexing>>[init]
+# ~/~ begin <<docs/src/boxes.md#offset-indexing>>[init]
 function offset_index(::Type{BT}, shape::NTuple{dim,Int}, i::CartesianIndex, Δi::CartesianIndex) where {dim, BT <: Boundary{dim}}
     canonical(BT, shape, i + Δi)
 end
@@ -26,7 +26,7 @@ function offset_value(::Type{Constant{dim,value}}, z::AbstractArray, i::Cartesia
     (checkbounds(Bool, z, j) ? z[j] : value)
 end
 # ~/~ end
-# ~/~ begin <<docs/src/stencils.md#offset-indexing>>[1]
+# ~/~ begin <<docs/src/boxes.md#offset-indexing>>[1]
 function canonical(::Type{Shelf}, shape::NTuple{2, Int}, i::CartesianIndex)
     if i[1] < 1 || i[1] > shape[1]
         return nothing
@@ -46,7 +46,7 @@ function offset_value(::Type{Shelf}, z::AbstractArray, i::CartesianIndex, Δi::C
     end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/stencils.md#canonical-coordinates>>[init]
+# ~/~ begin <<docs/src/boxes.md#canonical-coordinates>>[init]
 function canonical(::Type{Periodic{2}}, shape::NTuple{dim,Int}, i::CartesianIndex) where {dim}
     CartesianIndex(mod1.(Tuple(i), shape)...)
 end

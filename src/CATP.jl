@@ -61,6 +61,10 @@ end
   # by setting this parameter to something >1 you can control how many particles
   # are created on each axis. So number of particles is grid width * height * transport_subsample^2.
   transport_subsample::Int
+  # stop transporting after <transport_max_it> steps
+  transport_max_it::Int
+  # step size in pixel units
+  transport_step_size::Float64
 end
 # ~/~ end
 # ~/~ begin <<docs/src/submarine-transport.md#cat-state>>[init]
@@ -192,10 +196,10 @@ function submarine_transport(input::Input)
     y=input.grid_size[2] * input.phys_scale), input.phys_scale)
   function (s, Δ::ProductFrame) # -> ProductFrame
     output = zeros(Float64, size(Δ.production)...)
-    transport = Transport.transport(input.boundary, box, stress(input, s))
+    transport = Transport.transport(input.boundary, box, stress(input, s), input.transport_max_it, input.transport_step_size)
     deposit = Transport.deposit(input.boundary, box, output)
 
-    for p in particles(input, Δ)
+    Threads.foreach(particles(input, Δ)) do p
       p |> transport |> deposit
     end
 
@@ -204,7 +208,6 @@ function submarine_transport(input::Input)
 end
 # ~/~ end
 function production_propagator(input::Input)
-    # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-init-propagator>>[init]
     n_facies = length(input.facies)
     ca_init = rand(0:n_facies, input.grid_size...)
     ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
@@ -212,9 +215,7 @@ function production_propagator(input::Input)
     function water_depth(s)
         s.height .- input.sea_level(s.time)
     end
-    # ~/~ end
     function (s)  # -> Frame
-        # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[init]
         result = zeros(Float64, n_facies, input.grid_size...)
         facies_map, ca = peel(ca)
         w = water_depth(s)
@@ -226,7 +227,6 @@ function production_propagator(input::Input)
             result[f, Tuple(idx)...] = production_rate(input.insolation, input.facies[f], w[idx])
         end
         return ProductFrame(result)
-        # ~/~ end
     end
 end
 

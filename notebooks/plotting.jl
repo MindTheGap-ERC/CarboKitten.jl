@@ -32,6 +32,9 @@ let
 	f
 end
 
+# ╔═╡ f827abe4-5091-410e-9f4a-894597584bbb
+
+
 # ╔═╡ 76e71ad0-863d-4d7a-b0c2-c714c9d249db
 h5open("../data/catp.h5", "r") do fid
 	total_sediment = sum(fid["sediment"][]; dims=1)
@@ -41,16 +44,17 @@ end
 
 # ╔═╡ 06ca199e-642c-4d4e-a465-85589e268fe0
 x, t, h, p = h5open("../data/catp.h5","r") do fid
+	y = 30
 	attr = HDF5.attributes(fid["input"])
 	Δt = attr["delta_t"][]
 	subsidence_rate = attr["subsidence_rate"][]
 	t_end = fid["input/t"][end-1]
 	total_subsidence = subsidence_rate * t_end
 	total_sediment = sum(fid["sediment"][]; dims=1)
-	initial_height = fid["input/height"][:,25]
-	elevation = cumsum(total_sediment; dims=4)[1,:,25,:] .* Δt .- initial_height .- total_subsidence
+	initial_height = fid["input/height"][:,y]
+	elevation = cumsum(total_sediment; dims=4)[1,:,y,:] .* Δt .- initial_height .- total_subsidence
 	t = fid["input/t"][]
-	return fid["input/x"][], [t; Δt*attr["time_steps"][]], hcat(.- initial_height .- total_subsidence, elevation), fid["sediment"][:,:,25,:]
+	return fid["input/x"][], [t; Δt*attr["time_steps"][]], hcat(.- initial_height .- total_subsidence, elevation), fid["sediment"][:,:,y,:]
 end
 
 # ╔═╡ f8969a09-426c-4670-8756-12802711ed33
@@ -88,6 +92,7 @@ t
 # ╠═4683a8f4-3ca9-4996-81b7-d96af3f53dd2
 # ╠═c1819c71-2c1b-4eab-bf0a-00d3ffbb683c
 # ╠═87dad1f7-b8fb-4e56-95ba-394d511914d3
+# ╠═f827abe4-5091-410e-9f4a-894597584bbb
 # ╠═76e71ad0-863d-4d7a-b0c2-c714c9d249db
 # ╠═06ca199e-642c-4d4e-a465-85589e268fe0
 # ╠═f8969a09-426c-4670-8756-12802711ed33

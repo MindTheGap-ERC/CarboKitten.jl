@@ -10,23 +10,24 @@ module Script
 
   using HDF5
   using Printf
+  using ProgressBars
 
   using .Iterators: partition, take, map
 
   const input = Input(
-    sea_level = t -> 4 * sin(2π * t / 0.2), 
-    subsidence_rate = 50.0,
-    initial_depth = p -> p.x / 2,
+    sea_level = t -> 0.004 * sin(2π * t / 0.2), 
+    subsidence_rate = 0.05,
+    initial_depth = p -> p.x / 2000.0,
     grid_size = (100, 50),
     boundary = Shelf,
     phys_scale = 1.0,
-    Δt = 0.0001,
-    time_steps = 1000,
-    write_interval = 10,
+    Δt = 0.0002,
+    time_steps = 5000,
+    write_interval = 5,
     facies = [
-        Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1.0, 1.0, 8.0),
-        Facies((4, 10), (6, 10), 400.0, 0.1, 300, 1.0, 1.0, 8.0),
-        Facies((4, 10), (6, 10), 100.0, 0.005, 300, 1.0, 1.0, 8.0)
+        Facies((4, 10), (6, 10), 0.500, 800.0, 300, 1.0, 1.0, 1.0),
+        Facies((4, 10), (6, 10), 0.400, 100.0, 300, 1.0, 1.0, 1.0),
+        Facies((4, 10), (6, 10), 0.100, 5.0, 300, 1.0, 1.0, 1.0)
     ],
 
     insolation = 2000.0,
@@ -36,7 +37,9 @@ module Script
     wave_shear_stress = nothing,
 
     g = 9.8,
-    transport_subsample = 1 
+    transport_subsample = 1,
+    transport_max_it = 100,
+    transport_step_size = 0.5
   )
 
   function make_box(input)
@@ -75,7 +78,6 @@ module Script
           Δ = t(state, x)
           put!(ch, Δ)
           u(state, Δ)
-          print(".")
       end
     end
   end
@@ -109,7 +111,7 @@ module Script
               chunk=(n_facies, input.grid_size..., 1))
 
           results = map(stack_frames, partition(run(input), input.write_interval))
-          for (step, f) in enumerate(take(results, n_writes))
+          for (step, f) in ProgressBar(enumerate(take(results, n_writes)), total=n_writes)
               ds[:, :, :, step] = f.production
           end
       end

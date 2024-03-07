@@ -53,20 +53,20 @@ mutable struct Particle{P}
 end
 # ~/~ end
 # ~/~ begin <<docs/src/transport.md#particle-transport>>[init]
-function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
+function transport(::Type{BT}, box::Box, stress, maxit, step) where {BT <: Boundary{2}}
     function (p::Particle{P}) where P
         if p.position ∉ box
             return nothing
         end
 
-        while true
+        for it in 1:maxit
             @assert (p.position ∈ box) "$(p) in box"
             τ = stress(p)
             if abs(τ) < p.critical_stress
                 return p
             end
-            Δ = τ * (box.phys_scale / abs(τ))
-            @assert (abs(Δ) ≈ box.phys_scale) "pos: $(p.position) stress: $(τ) Delta: $(Δ)"
+            Δ = τ * (box.phys_scale * step / abs(τ))
+            @assert (abs(Δ) ≈ box.phys_scale * step) "pos: $(p.position) stress: $(τ) Delta: $(Δ)"
             next_position = offset(BT, box, p.position, Δ)
             if next_position === nothing
                 return nothing
@@ -74,6 +74,8 @@ function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
                 p.position = next_position
             end
         end
+
+        return p
     end
 end
 # ~/~ end

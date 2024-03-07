@@ -46,13 +46,13 @@ function propagator(input::Input)
     ca_init = rand(0:n_facies, input.grid_size...)
     ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
 
-    function water_depth(s::State)
+    function water_depth(s)
         s.height .- input.sea_level(s.time)
     end
     # ~/~ end
     function (s::State)  # -> Frame
         # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[init]
-        result = zeros(Float64, input.grid_size..., n_facies)
+        result = zeros(Float64, n_facies, input.grid_size...)
         facies_map, ca = peel(ca)
         w = water_depth(s)
         Threads.@threads for idx in CartesianIndices(facies_map)
@@ -60,9 +60,9 @@ function propagator(input::Input)
             if f == 0
                 continue
             end
-            result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
+            result[f, Tuple(idx)...] = production_rate(input.insolation, input.facies[f], w[idx])
         end
-        return Frame(result)
+        return ProductFrame(result)
         # ~/~ end
     end
 end

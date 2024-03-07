@@ -116,7 +116,8 @@ input = Input(
 	disintegration_rate = z -> 0.1,
 	wave_shear_stress = z -> (x=0.0, y=0.0),
 	g = 9.8,
-	transport_subsample = 1
+	transport_subsample = 1,
+	transport_max_it = 100
 )
 
 # ╔═╡ b9d09778-ccc6-4124-a027-51c775dc5171

@@ -17,23 +17,24 @@ module Script
 
   using HDF5
   using Printf
+  using ProgressBars
 
-  using .Iterators: partition
+  using .Iterators: partition, take, map
 
   const input = Input(
-    sea_level = t -> 4 * sin(2π * t / 0.2), 
-    subsidence_rate = 50.0,
-    initial_depth = p -> p.x / 2,
+    sea_level = t -> 0.004 * sin(2π * t / 0.2), 
+    subsidence_rate = 0.05,
+    initial_depth = p -> p.x / 2000.0,
     grid_size = (100, 50),
     boundary = Shelf,
     phys_scale = 1.0,
-    Δt = 0.0001,
-    time_steps = 100,
-    write_interval = 1,
+    Δt = 0.0002,
+    time_steps = 5000,
+    write_interval = 5,
     facies = [
-        Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1.0, 1.0, 1.0),
-        Facies((4, 10), (6, 10), 400.0, 0.1, 300, 1.0, 1.0, 1.0),
-        Facies((4, 10), (6, 10), 100.0, 0.005, 300, 1.0, 1.0, 1.0)
+        Facies((4, 10), (6, 10), 0.500, 800.0, 300, 1.0, 1.0, 1.0),
+        Facies((4, 10), (6, 10), 0.400, 100.0, 300, 1.0, 1.0, 1.0),
+        Facies((4, 10), (6, 10), 0.100, 5.0, 300, 1.0, 1.0, 1.0)
     ],
 
     insolation = 2000.0,
@@ -43,7 +44,9 @@ module Script
     wave_shear_stress = nothing,
 
     g = 9.8,
-    transport_subsample = 1 
+    transport_subsample = 1,
+    transport_max_it = 100,
+    transport_step_size = 0.5
   )
 
   function make_box(input)
@@ -64,7 +67,7 @@ module Script
 
   function updater(input::Input)
     function (s, Δ)
-        s.height .+= (input.subsidence_rate .- sum(Δ.production; dims=3)) * input.Δt
+        s.height .+= (input.subsidence_rate .- sum(Δ.production; dims=1)[1,:,:]) * input.Δt
         s.time += input.Δt
     end
   end
@@ -75,25 +78,27 @@ module Script
     t = submarine_transport(input)
     u = updater(input)
 
-    Channel{NTuple{2,ProductFrame}}() do ch
+    Channel{ProductFrame}() do ch
       while true
-          Δ_orig = p(state)
-          Δ_trans = t(state, Δ_orig)
-          # Δ = t(state, p(state))
-          put!(ch, (Δ_orig, Δ_trans))
-          u(state, Δ_trans)
+          x = p(state)
+          @assert size(x.production)[1] == 3  "production size: $(size(x.production))"
+          Δ = t(state, x)
+          put!(ch, Δ)
+          u(state, Δ)
       end
     end
   end
 
   function stack_frames(fs::Vector{ProductFrame})  # -> Frame
-      Frame(sum(f.production for f in fs))
+      ProductFrame(sum(f.production for f in fs))
   end
 
   function main(input::Input, output::String)
       n_writes = input.time_steps ÷ input.write_interval
       x_axis, y_axis = axes(make_box(input))
       initial_height = initial_depth(input)
+
+      print("Running for $(input.time_steps) time steps and $(n_writes) writes")
 
       h5open(output, "w") do fid
           gid = create_group(fid, "input")
@@ -108,17 +113,13 @@ module Script
           attr["subsidence_rate"] = input.subsidence_rate
 
           n_facies = length(input.facies)
-          ds_orig = create_dataset(fid, "orig_sediment", datatype(Float64),
-              dataspace(input.grid_size..., n_facies, input.time_steps),
-              chunk=(input.grid_size..., n_facies, 1))
-          ds_trans = create_dataset(fid, "trans_sediment", datatype(Float64),
-              dataspace(input.grid_size..., n_facies, input.time_steps),
-              chunk=(input.grid_size..., n_facies, 1))
+          ds = create_dataset(fid, "sediment", datatype(Float64),
+              dataspace(n_facies, input.grid_size..., input.time_steps),
+              chunk=(n_facies, input.grid_size..., 1))
 
           results = map(stack_frames, partition(run(input), input.write_interval))
-          for (step, (f1, f2)) in enumerate(take(results, n_writes))
-              ds_orig[:, :, :, step] = f1.production
-              ds_trans[:,:,:, step] = f2.production
+          for (step, f) in ProgressBar(enumerate(take(results, n_writes)), total=n_writes)
+              ds[:, :, :, step] = f.production
           end
       end
   end
@@ -183,6 +184,10 @@ The sediment output will be stored in a buffer with fixed spatial resolution, ty
   # by setting this parameter to something >1 you can control how many particles
   # are created on each axis. So number of particles is grid width * height * transport_subsample^2.
   transport_subsample::Int
+  # stop transporting after <transport_max_it> steps
+  transport_max_it::Int
+  # step size in pixel units
+  transport_step_size::Float64
 end
 ```
 
@@ -457,6 +462,8 @@ function stress(input::Input, s)
   function (p::Particle)
     @assert !isnothing(τ_wave)
     z, ∇ = Transport.interpolate(input.boundary, box, s.height, p.position)
+    abs(∇) ≈ 0.0 && return zero(Vec2)
+
     α = atan(abs(∇))
     Ĝ = -∇ / abs(∇)
 
@@ -464,6 +471,7 @@ function stress(input::Input, s)
     D = input.facies[p.facies].grain_size
     g = input.g
     τ_grav = (Δρ * D * g * sin(α)) * Ĝ
+    @assert !isnan(τ_grav.x) "alpha = $(α) | G = $(Ĝ) | z = $(z) | grad = $(∇)"
 
     return τ_grav # + τ_wave(z)
   end
@@ -478,10 +486,10 @@ function submarine_transport(input::Input)
     y=input.grid_size[2] * input.phys_scale), input.phys_scale)
   function (s, Δ::ProductFrame) # -> ProductFrame
     output = zeros(Float64, size(Δ.production)...)
-    transport = Transport.transport(input.boundary, box, stress(input, s))
+    transport = Transport.transport(input.boundary, box, stress(input, s), input.transport_max_it, input.transport_step_size)
     deposit = Transport.deposit(input.boundary, box, output)
 
-    for p in particles(input, Δ)
+    Threads.foreach(particles(input, Δ)) do p
       p |> transport |> deposit
     end
 
@@ -515,9 +523,25 @@ using .Iterators: drop, peel, partition, map, take, product
 <<cat-update>>
 <<cat-propagator>>
 function production_propagator(input::Input)
-    <<ca-prod-init-propagator>>
+    n_facies = length(input.facies)
+    ca_init = rand(0:n_facies, input.grid_size...)
+    ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
+
+    function water_depth(s)
+        s.height .- input.sea_level(s.time)
+    end
     function (s)  # -> Frame
-        <<ca-prod-propagate>>
+        result = zeros(Float64, n_facies, input.grid_size...)
+        facies_map, ca = peel(ca)
+        w = water_depth(s)
+        Threads.@threads for idx in CartesianIndices(facies_map)
+            f = facies_map[idx]
+            if f == 0
+                continue
+            end
+            result[f, Tuple(idx)...] = production_rate(input.insolation, input.facies[f], w[idx])
+        end
+        return ProductFrame(result)
     end
 end
 

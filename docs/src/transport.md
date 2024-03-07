@@ -26,6 +26,7 @@ Base.:/(a::Vec2, b::Float64) = (x=a.x/b, y=a.y/b)
 Base.:*(a::Float64, b::Vec2) = b*a
 Base.:-(a::Vec2, b::Vec2) = (x=a.x-b.x, y=a.y-b.y)
 Base.:-(a::Vec2) = (x=-a.x, y=-a.y)
+Base.zero(::Type{Vec2}) = (x=0.0, y=0.0)
 
 end
 ```
@@ -89,7 +90,7 @@ function offset(::Type{Shelf}, box::Box, a::Vec2, Δa::Vec2)
     if b.x < 0.0 || b.x > box.phys_size.x
         nothing
     else
-        (x=b.x, y=b.y % box.phys_size.y)
+        (x=b.x, y=mod(b.y, box.phys_size.y))
     end
 end
 ```
@@ -209,20 +210,20 @@ end
 ## Transport
 
 ``` {.julia #particle-transport}
-function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
+function transport(::Type{BT}, box::Box, stress, maxit, step) where {BT <: Boundary{2}}
     function (p::Particle{P}) where P
         if p.position ∉ box
             return nothing
         end
 
-        while true
+        for it in 1:maxit
             @assert (p.position ∈ box) "$(p) in box"
             τ = stress(p)
             if abs(τ) < p.critical_stress
                 return p
             end
-            Δ = τ * (box.phys_scale / abs(τ))
-            @assert (abs(Δ) ≈ box.phys_scale) "pos: $(p.position) stress: $(τ) Delta: $(Δ)"
+            Δ = τ * (box.phys_scale * step / abs(τ))
+            @assert (abs(Δ) ≈ box.phys_scale * step) "pos: $(p.position) stress: $(τ) Delta: $(Δ)"
             next_position = offset(BT, box, p.position, Δ)
             if next_position === nothing
                 return nothing
@@ -230,6 +231,8 @@ function transport(::Type{BT}, box::Box, stress) where {BT <: Boundary{2}}
                 p.position = next_position
             end
         end
+
+        return p
     end
 end
 ```

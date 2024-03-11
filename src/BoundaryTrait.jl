@@ -8,8 +8,6 @@ abstract type Boundary{dim} end
 struct Reflected{dim} <: Boundary{dim} end
 struct Periodic{dim} <: Boundary{dim} end
 struct Constant{dim,value} <: Boundary{dim} end
-# ~/~ end
-# ~/~ begin <<docs/src/boxes.md#boundary-types>>[1]
 struct Shelf <: Boundary{2} end
 # ~/~ end
 # ~/~ begin <<docs/src/boxes.md#offset-indexing>>[init]

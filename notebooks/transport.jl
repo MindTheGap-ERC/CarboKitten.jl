@@ -200,6 +200,9 @@ end
 # ╔═╡ 0d32ed73-52a8-4a3d-a0a4-b262f4ad2022
 make_box(input)
 
+# ╔═╡ d81353d7-7949-49cc-957a-2e0e500e3145
+Optional{Int}
+
 # ╔═╡ ffda1357-bdad-4249-83fa-d0d9c5d5a6e6
 sum(strength) / length(strength)
 
@@ -248,4 +251,5 @@ sum(strength) / length(strength)
 # ╠═29ab45a7-37de-4c71-b2c7-5696ecace703
 # ╠═343b01bf-114b-4371-82eb-e0fe11a6e4ba
 # ╠═0d32ed73-52a8-4a3d-a0a4-b262f4ad2022
+# ╠═d81353d7-7949-49cc-957a-2e0e500e3145
 # ╠═ffda1357-bdad-4249-83fa-d0d9c5d5a6e6

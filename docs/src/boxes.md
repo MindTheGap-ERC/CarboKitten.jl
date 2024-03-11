@@ -1,4 +1,86 @@
-# Spatial Parameters
+# Generic Parameters
+
+``` {.julia file=src/Config.jl}
+module Config
+
+using ..BoundaryTrait
+using ..Vectors
+
+using Unitful
+using Unitful.DefaultSymbols
+
+<<config-types>>
+
+end
+```
+
+Physical parameters of CarboKitten all should have units, see our [refresher on `Unitful.jl`](unitful.md).
+
+## Box topology
+CarboKitten has a 3-dimensional state space, where two dimensions represent cartesian topographic coordinates, and the third dimension is a track record of sedimentation. The cartesian topographic coordinates are always on a regular grid, but depending on the scenario you may choose different map topologies.
+
+- **periodic boundaries** To study sedimentation in a small isolated patch, periodic boundaries seem sufficient. The field is assumed to be infinite in all directions.
+- **Von Neumann boundaries** In the case of an island it is nicer to have boundaries with constant derivatives. Produced sediment that flows out of the box is lost to the seas.
+- **coastal shelf boundaries** Supposing we simulate a narrow cross section of a carbonate shelf, we'll have one periodic boundary (in $y$-direction) and Von Neumann boundaries in the $x$-direction.
+
+We parametrize these boundaries as type-level constants in Julia. This way we can use the multiple dispatch mechanism in Julia to obtain specialized implementations for each boundary case, selected at compile time, resulting in efficient run-times.
+
+``` {.julia #boundary-types}
+abstract type Boundary{dim} end
+struct Reflected{dim} <: Boundary{dim} end
+struct Periodic{dim} <: Boundary{dim} end
+struct Constant{dim,value} <: Boundary{dim} end
+struct Shelf <: Boundary{2} end
+```
+
+The `Boundary` type is part of the generic `Box` dimension specification.
+
+``` {.julia #config-types}
+abstract type AbstractBox end
+
+struct Box <: AbstractBox
+    boundary::Type  # <: Boundary{2}
+    grid_size::NTuple{2,Int}
+    phys_scale::typeof(1.0m)
+    phys_size::Vec2
+
+    function Box(::Type{BT}; grid_size::NTuple{2, Int}, phys_scale::Quantity{Float64, 𝐋, U}) where {BT <: Boundary{2}, U}
+        new(BT, grid_size, phys_scale, phys_size(grid_size, phys_scale))
+    end
+end
+
+phys_size(grid_size, phys_scale) = (
+    x = grid_size[1] * (phys_scale / m |> NoUnits),
+    y = grid_size[2] * (phys_scale / m |> NoUnits))
+```
+
+Now we can specify the box parameters as follows:
+
+``` {.julia file=test/ConfigSpec.jl}
+@testset "Config" begin
+    using CarboKitten.BoundaryTrait
+    using CarboKitten.Config: Box
+    using CarboKitten.Vectors
+
+    box = Box(Shelf,
+        grid_size = (100, 50),
+        phys_scale = 1.0u"km")
+    @test box.phys_size == (x=100000.0, y=50000.0)
+end
+```
+
+## Time properties
+Time stepping is specified in `TimeProperties`. We'll have `time_steps` number of time steps, each of physical time `Δt`. However, only one in `write_interval` steps is written to disk.
+
+``` {.julia #config-types}
+abstract type AbstractTimeProperties end
+
+struct TimeProperties <: AbstractTimeProperties
+    Δt::typeof(1.0u"yr")
+    time_steps::Int
+    write_interval::Int
+end
+```
 
 ## Vectors
 To trace the position of particles we define a `NamedTuple` with `x` and `y` members and define common vector operations on those.
@@ -22,17 +104,7 @@ Base.zero(::Type{Vec2}) = (x=0.0, y=0.0)
 end
 ```
 
-## Boundary topologies
-One thing to be mindful of is the treatment of box boundaries. I define three *traits* here. These are types that are defined with the single goal of using the dispatch mechanism in Julia to  select the right methods for us. Boundaries can be *periodic*, *reflective* or *constant* to some value.
-
-``` {.julia #boundary-types}
-abstract type Boundary{dim} end
-struct Reflected{dim} <: Boundary{dim} end
-struct Periodic{dim} <: Boundary{dim} end
-struct Constant{dim,value} <: Boundary{dim} end
-```
-
-### Offset indexing
+## Offset indexing
 Now we can use these traits to define three methods for indexing on an offset from some index that is assumed to be within bounds.
 
 ``` {.julia #spec}
@@ -90,10 +162,6 @@ end
 
 ### Shelf boundary
 The `Shelf` boundary type is specially designed for the simulation of a transect perpendicular to the coast direction. We are periodic in the y-direction and have a Neumannesque constant boundary at the edges of the simulation area.
-
-``` {.julia #boundary-types}
-struct Shelf <: Boundary{2} end
-```
 
 ``` {.julia #offset-indexing}
 function canonical(::Type{Shelf}, shape::NTuple{2, Int}, i::CartesianIndex)

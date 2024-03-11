@@ -10,6 +10,7 @@ include("Unitful.jl")
 
 @testset "CarboKitten" begin
     using CarboKitten.SedimentStack
+    include("ConfigSpec.jl")
     include("SedimentStackSpec.jl")
     include("TransportSpec.jl")
 end

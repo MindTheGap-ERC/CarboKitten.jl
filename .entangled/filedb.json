@@ -329,9 +329,9 @@
       "deps": [
         "docs/src/boxes.md"
       ],
-      "modified": "2024-03-07T16:00:14.385579",
-      "hexdigest": "4be0056bbd28ab136b7719310a0b9236306debc3caca351ea4777bccd9beb1a7",
-      "size": 2334
+      "modified": "2024-03-11T16:47:48.306219",
+      "hexdigest": "aa52c5ae9d9dbbc5f1ac0e2f540ce0aaebdd9a927b73642ed8538567a984275c",
+      "size": 2272
     },
     {
       "path": ".entangled/tasks.json",
@@ -383,45 +383,82 @@
     {
       "path": "docs/src/boxes.md",
       "deps": null,
-      "modified": "2024-03-07T12:01:21.982451",
-      "hexdigest": "cffbbdb0f3dbf4b3ac545ca475e89058843cc74418d54b282a17dc64da22f778",
-      "size": 5207
+      "modified": "2024-03-11T17:10:29.540355",
+      "hexdigest": "30793fc07845c0c9957c8cf65775e1dfdbfe751d74581307c8211c1b5203f958",
+      "size": 7630
+    },
+    {
+      "path": "src/Config.jl",
+      "deps": [
+        "docs/src/boxes.md"
+      ],
+      "modified": "2024-03-11T17:09:46.207896",
+      "hexdigest": "ea7fe060db0818e3418df98db5f4ad52f300d3d3b9bb08856ffbc6e5dedceef6",
+      "size": 978
+    },
+    {
+      "path": "docs/src/unitful.md",
+      "deps": null,
+      "modified": "2024-03-11T14:31:19.582784",
+      "hexdigest": "f80761d954b67f3ef10a58f566dd3740dd1489d54e377c2230c8d5fed94b7ef3",
+      "size": 1325
+    },
+    {
+      "path": "test/Unitful.jl",
+      "deps": [
+        "docs/src/unitful.md"
+      ],
+      "modified": "2024-03-11T14:31:24.867821",
+      "hexdigest": "8b1854ef6916b658bdd7e75b1b91aef89d5b4b22b2f1f40db2bf95aa99491ca4",
+      "size": 852
+    },
+    {
+      "path": "test/ConfigSpec.jl",
+      "deps": [
+        "docs/src/boxes.md"
+      ],
+      "modified": "2024-03-11T17:10:36.077435",
+      "hexdigest": "2cf96f5b660d36b801a5df233d01ffcec8340d2ab29feca6e6ac831ac0b9e7ac",
+      "size": 331
     }
   ],
   "source": [],
   "target": [
-    "src/BoundaryTrait.jl",
-    "examples/bosscher-schlager-1992.jl",
-    "examples/ca/long-term.jl",
-    "src/Stencil.jl",
-    "src/BS92.jl",
-    "examples/capt/production-transport.jl",
-    "src/Transport.jl",
+    "src/Config.jl",
     "src/SedimentStack.jl",
-    "src/BS92/fig8-sealevel.jl",
-    "examples/ca/burgess-2013.jl",
-    "examples/ca/parameter-scan.jl",
-    "src/CATP.jl",
-    "examples/plot-caps-osc.jl",
-    "examples/ca-with-prod.jl",
-    "src/ForwardModel.jl",
-    "examples/plot-cap-slope.jl",
-    "examples/plot-tanh.gnuplot",
-    ".entangled/tasks.json",
-    "src/CaProd.jl",
-    "src/Utility.jl",
     "examples/cap-slope.jl",
-    "test/TransportSpec.jl",
-    "src/Erosion.jl",
-    "examples/burgess2013-fig2.gnuplot",
+    "examples/plot-tanh.gnuplot",
+    "examples/capt/production-transport.jl",
     "src/Burgess2013/Transport.jl",
-    "src/Visualization.jl",
+    "src/BoundaryTrait.jl",
+    "examples/plot-cap-slope.jl",
+    "test/ConfigSpec.jl",
+    "src/Utility.jl",
+    "examples/plot-caps-osc.jl",
+    "src/CaProd.jl",
+    "examples/burgess2013-fig2.gnuplot",
+    "src/Transport.jl",
+    "src/Burgess2013/Config.jl",
+    "examples/ca/parameter-scan.jl",
+    "src/BS92.jl",
+    "src/BS92/fig8-sealevel.jl",
+    "src/CATP.jl",
     "src/Burgess2013/CA.jl",
-    "test/SedimentStackSpec.jl",
+    "examples/ca/long-term.jl",
+    "test/Unitful.jl",
+    ".entangled/tasks.json",
+    "test/TransportSpec.jl",
+    "src/Stencil.jl",
     "src/Vectors.jl",
+    "examples/ca/burgess-2013.jl",
+    "examples/ca-with-prod.jl",
+    "src/Visualization.jl",
+    "src/ForwardModel.jl",
     "src/Burgess2013/Production.jl",
+    "test/SedimentStackSpec.jl",
+    "src/Erosion.jl",
     "src/Burgess2013.jl",
     "examples/caps-osc.jl",
-    "src/Burgess2013/Config.jl"
+    "examples/bosscher-schlager-1992.jl"
   ]
 }

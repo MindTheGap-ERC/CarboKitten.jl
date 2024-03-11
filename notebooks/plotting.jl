@@ -82,8 +82,17 @@ let
 	f
 end
 
-# ╔═╡ 62bb362a-bd7e-4a4d-b9cf-4ff0dd3ea9f7
-t
+# ╔═╡ 96163e97-df27-466f-b607-db888e9b83fa
+clip(x) = x < 0 ? 0.0 : x
+
+# ╔═╡ 9a07a7e2-242b-4979-904d-91fff447fcc5
+begin
+	q = rand(Float64, 10, 10) .- 0.5
+	q = clip.(q)
+end
+
+# ╔═╡ 8f055c57-e0a8-4f42-bd48-aa8df927b571
+
 
 # ╔═╡ Cell order:
 # ╠═4a12c6f6-425f-4cc7-baf1-bfb87766bcae
@@ -97,4 +106,6 @@ t
 # ╠═06ca199e-642c-4d4e-a465-85589e268fe0
 # ╠═f8969a09-426c-4670-8756-12802711ed33
 # ╠═bd05564a-3cf9-4c8d-aec6-84d9c9ad75c4
-# ╠═62bb362a-bd7e-4a4d-b9cf-4ff0dd3ea9f7
+# ╠═96163e97-df27-466f-b607-db888e9b83fa
+# ╠═9a07a7e2-242b-4979-904d-91fff447fcc5
+# ╠═8f055c57-e0a8-4f42-bd48-aa8df927b571

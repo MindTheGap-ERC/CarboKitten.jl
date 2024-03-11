@@ -2,6 +2,7 @@ module CarboKitten
 
 include("./Vectors.jl")
 include("./BoundaryTrait.jl")
+include("./Config.jl")
 include("./Stencil.jl")
 include("./SedimentStack.jl")
 include("./ForwardModel.jl")

@@ -27,5 +27,18 @@
     @test pendulum.time_step === 0.001s
     @test pendulum.phi0 === (π/6)rad
     # ~/~ end
+    # ~/~ begin <<docs/src/unitful.md#unitful-spec>>[4]
+    let 𝐄 = (𝐋/𝐓)^2 * 𝐌,
+        h = 6.62607015e-34u"J*s",
+        c = 299792458u"m/s"
+        # ~/~ begin <<docs/src/unitful.md#unitful-photon-example>>[init]
+        photon_wave_length(E::Quantity{Float64,𝐄,J}) where {J} =
+            uconvert(u"Å", h * c / E)
+
+        @test photon_wave_length(2.38u"eV") ≈ 5209.4201u"Å"
+        @test_throws MethodError photon_wave_length(1u"m")
+        # ~/~ end
+    end
+    # ~/~ end
 end
 # ~/~ end

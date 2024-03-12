@@ -49,3 +49,25 @@ Units are automatically converted to the types specified in the API.
 @test pendulum.time_step === 0.001s
 @test pendulum.phi0 === (π/6)rad
 ```
+
+## Dimensions
+Unitful has dimensions of length `𝐋`, mass `𝐌` and time `𝐓` as bold upper-case Unicode symbols. These can be entered in Julia with `\bfL`, `\bfM` etc.
+When you define a function that needs, say, an energy, which has SI units of ${\rm J = (m/s)^2\ kg}$, we can construct the dimensions. Defining a few constants:
+
+``` {.julia #unitful-spec}
+let 𝐄 = (𝐋/𝐓)^2 * 𝐌,
+    h = 6.62607015e-34u"J*s",
+    c = 299792458u"m/s"
+    <<unitful-photon-example>>
+end
+```
+
+We can abstract over the specific units by defining a generic method. Now we can compute the wavelength of a photon, given its energy in any unit of energy.
+
+``` {.julia #unitful-photon-example}
+photon_wave_length(E::Quantity{Float64,𝐄,J}) where {J} =
+    uconvert(u"Å", h * c / E)
+
+@test photon_wave_length(2.38u"eV") ≈ 5209.4201u"Å"
+@test_throws MethodError photon_wave_length(1u"m")
+```

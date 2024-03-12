@@ -1,33 +1,27 @@
 # ~/~ begin <<docs/src/transport.md#src/Transport.jl>>[init]
 module Transport
 
+using Unitful
 using ..Vectors
 using ..BoundaryTrait
+using ..Config: Box, AbstractBox
 
 # ~/~ begin <<docs/src/boxes.md#vector-offset>>[init]
-abstract type AbstractBox end
-
-struct Box <: AbstractBox
-    grid_size::NTuple{2,Int}
-    phys_size::Vec2
-    phys_scale::Float64
-end
-
 Base.in(a::Vec2, box::Box) =
     a.x >= 0.0 && a.x < box.phys_size.x && a.y >= 0.0 && a.y < box.phys_size.y
 
-function offset(::Type{Reflected{2}}, box::Box, a::Vec2, Δa::Vec2)
+function offset(box::AbstractBox{Reflected{2}}, a::Vec2, Δa::Vec2)
     clip(i, a, b) = (i < a ? a + a - i : (i > b ? b + b - i : i))
     (x=clip(a.x+Δa.x, 0.0, box.phys_size.x)
     ,y=clip(a.y+Δa.y, 0.0, box.phys_size.y))
 end
 
-function offset(::Type{Periodic{2}}, box::Box, a::Vec2, Δa::Vec2)
+function offset(box::AbstractBox{Periodic{2}}, a::Vec2, Δa::Vec2)
     (x=mod(a.x+Δa.x, box.phys_size.x)
     ,y=mod(a.y+Δa.y, box.phys_size.y))
 end
 
-function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2) where Value
+function offset(box::AbstractBox{Constant{2,Value}}, a::Vec2, Δa::Vec2) where Value
     b = a + Δa
     if b ∉ box
         nothing
@@ -36,7 +30,7 @@ function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2) where V
     end
 end
 
-function offset(::Type{Shelf}, box::Box, a::Vec2, Δa::Vec2)
+function offset(box::AbstractBox{Shelf}, a::Vec2, Δa::Vec2)
     b = a + Δa
     if b.x < 0.0 || b.x > box.phys_size.x
         nothing
@@ -55,7 +49,7 @@ mutable struct Particle{P}
 end
 # ~/~ end
 # ~/~ begin <<docs/src/transport.md#particle-transport>>[init]
-function transport(::Type{BT}, box::Box, stress, maxit, step) where {BT <: Boundary{2}}
+function transport(box::AbstractBox{BT}, stress, maxit, step) where {BT <: Boundary{2}}
     function (p::Particle{P}) where P
         if p.position ∉ box
             return nothing
@@ -67,9 +61,9 @@ function transport(::Type{BT}, box::Box, stress, maxit, step) where {BT <: Bound
             if abs(τ) < p.critical_stress
                 return p
             end
-            Δ = τ * (box.phys_scale * step / abs(τ))
-            @assert (abs(Δ) ≈ box.phys_scale * step) "pos: $(p.position) stress: $(τ) Delta: $(Δ)"
-            next_position = offset(BT, box, p.position, Δ)
+            Δ = τ * ((box.phys_scale / u"m" |> NoUnits) * step / abs(τ))
+            @assert (abs(Δ)*u"m" ≈ box.phys_scale * step) "pos: $(p.position) stress: $(τ) Delta: $(Δ)"
+            next_position = offset(box, p.position, Δ)
             if next_position === nothing
                 return nothing
             else
@@ -82,13 +76,14 @@ function transport(::Type{BT}, box::Box, stress, maxit, step) where {BT <: Bound
 end
 # ~/~ end
 # ~/~ begin <<docs/src/transport.md#interpolation>>[init]
-function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}) where {BT <: Boundary{2}, R <: Real}
-    p -> interpolate(BT, box, f, p)
+function interpolate(box::AbstractBox{BT}, f::AbstractMatrix{R}) where {BT <: Boundary{2}, R <: Real}
+    p -> interpolate(box, f, p)
 end
 
-function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where {BT <: Boundary{2}, R <: Real}
+function interpolate(box::AbstractBox{BT}, f::AbstractMatrix{R}, p::Vec2) where {BT <: Boundary{2}, R <: Real}
     @assert p ∈ box
-    l = p / box.phys_scale
+    phys_scale = box.phys_scale / u"m" |> NoUnits
+    l = p / phys_scale
     node = (x=floor(l.x) + 1.0, y=floor(l.y) + 1.0)
     idx = CartesianIndex(Int(node.x), Int(node.y))
     frac = node - l
@@ -99,7 +94,7 @@ function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where 
     z = frac.x * frac.y * z00 + (1.0 - frac.x) * frac.y * z10 +
         frac.x * (1.0 - frac.y) * z01 + (1.0 - frac.x) * (1.0 - frac.y) * z11
     ∇ = (x = (frac.y * (z10 - z00) + (1.0 - frac.y) * (z11 - z01)),
-         y = (frac.x * (z01 - z00) + (1.0 - frac.x) * (z11 - z10))) / box.phys_scale
+         y = (frac.x * (z01 - z00) + (1.0 - frac.x) * (z11 - z10))) / phys_scale
 
     return (z, ∇)
 end
@@ -110,14 +105,15 @@ end
     end
 end
 
-function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
+function deposit(box::AbstractBox{BT}, output::Array{Float64,3}) where BT
     function plotter(::Nothing) end
 
     function plotter(p::Particle{P}) where P
+        phys_scale = box.phys_scale / u"m" |> NoUnits
         p.position ∉ box && return
         # we don't want to wrap here. This is done later
-        q = p.position - (x=-0.5,y=-0.5)*box.phys_scale
-        l = q / box.phys_scale
+        q = p.position - (x=0.5,y=0.5)*phys_scale
+        l = q / phys_scale
         node = (x=floor(l.x) + 1.0, y=floor(l.y) + 1.0)
         idx = CartesianIndex(Int(node.x), Int(node.y))
         frac = node - l

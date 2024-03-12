@@ -10,6 +10,9 @@ using Pkg; Pkg.activate("../workenv")
 # ╔═╡ ab41cc36-45d2-48eb-b549-edd7f49ece01
 using Revise
 
+# ╔═╡ b9fc7e5e-1059-4591-a171-a105f817905d
+using Unitful
+
 # ╔═╡ 7f499c8a-e89f-499a-b19c-3ccd97a87ff8
 using CarboKitten.Transport: deposit, Box, Particle, interpolate
 
@@ -32,17 +35,18 @@ using CarboKitten.Transport
 const TestParticle = Particle{Nothing}
 
 # ╔═╡ 14dac041-96e7-4746-b998-344ded3b84da
-box16 = Box((16, 16), (x=1.0, y=1.0), 1.0/16.0)
+box16 = Box{Periodic{2}}(grid_size=(16, 16), phys_scale=1.0/16.0 * u"m")
 
 # ╔═╡ 1614e9fe-a56f-4094-94e1-8eb296cc8024
 function axes(box::Box)
-	x_axis = 0:box.phys_scale:box.phys_size.x
-	y_axis = 0:box.phys_scale:box.phys_size.y
+	s = box.phys_scale / u"m" |> NoUnits
+	x_axis = 0:s:box.phys_size.x
+	y_axis = 0:s:box.phys_size.y
 	(x_axis, y_axis)
 end
 
-# ╔═╡ 1dabd7fb-4562-49c6-a8fa-980499d0737b
-Periodic{2}
+# ╔═╡ b011b065-3a36-4b50-9fce-a3faf6bb1f76
+axes(box16)
 
 # ╔═╡ 71d4ab7b-c43c-4427-9ccc-3009c1257f60
 test_particles = rand(Float64, 2, 42) |> eachcol .|> 
@@ -51,7 +55,7 @@ test_particles = rand(Float64, 2, 42) |> eachcol .|>
 # ╔═╡ 43130df6-4c32-404a-9675-64ac1d058fad
 density = let
 	target = zeros(Float64, 1, 16, 16);
-	test_particles .|> deposit(Periodic{2}, box16, target)
+	test_particles .|> deposit(box16, target)
 	target
 end;
 
@@ -74,13 +78,10 @@ mod(1.0, 1.0)
 h = Float64[0 0; 1 1]
 
 # ╔═╡ 0debe4b0-dcfe-4ec7-bb36-265fbd30bd03
-box = Box((2, 2), (x=1.0, y=1.0), 0.5)
-
-# ╔═╡ b011b065-3a36-4b50-9fce-a3faf6bb1f76
-axes(box)
+tiny_box = Box{Periodic{2}}(grid_size=(2, 2), phys_scale=0.5u"m")
 
 # ╔═╡ a6ae3820-5808-4e34-a090-f1b14a08f3f7
-f = interpolate(Periodic{2}, box, h)
+f = interpolate(tiny_box, h)
 
 # ╔═╡ 862c53ce-1600-4348-9174-36949a72e19a
 f((x=0.49, y=0.5))
@@ -117,7 +118,8 @@ input = Input(
 	wave_shear_stress = z -> (x=0.0, y=0.0),
 	g = 9.8,
 	transport_subsample = 1,
-	transport_max_it = 100
+	transport_max_it = 100,
+	transport_step_size = 0.5,
 )
 
 # ╔═╡ b9d09778-ccc6-4124-a027-51c775dc5171
@@ -209,6 +211,7 @@ sum(strength) / length(strength)
 # ╔═╡ Cell order:
 # ╠═be3739c1-bbf3-4e48-8ced-f249197c2c98
 # ╠═ab41cc36-45d2-48eb-b549-edd7f49ece01
+# ╠═b9fc7e5e-1059-4591-a171-a105f817905d
 # ╠═7f499c8a-e89f-499a-b19c-3ccd97a87ff8
 # ╠═bd30f1b8-891f-476b-8635-3f41eee710e3
 # ╠═f168a0f8-0ef3-46aa-bac8-c82e3ebf6116
@@ -216,7 +219,6 @@ sum(strength) / length(strength)
 # ╠═14dac041-96e7-4746-b998-344ded3b84da
 # ╠═1614e9fe-a56f-4094-94e1-8eb296cc8024
 # ╠═b011b065-3a36-4b50-9fce-a3faf6bb1f76
-# ╠═1dabd7fb-4562-49c6-a8fa-980499d0737b
 # ╠═71d4ab7b-c43c-4427-9ccc-3009c1257f60
 # ╠═43130df6-4c32-404a-9675-64ac1d058fad
 # ╠═a0263acb-8f42-4b72-821f-c279d2042122

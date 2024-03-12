@@ -1,6 +1,8 @@
 # ~/~ begin <<docs/src/boxes.md#src/Config.jl>>[init]
 module Config
 
+export AbstractBox, Box
+
 using ..BoundaryTrait
 using ..Vectors
 
@@ -8,16 +10,15 @@ using Unitful
 using Unitful.DefaultSymbols
 
 # ~/~ begin <<docs/src/boxes.md#config-types>>[init]
-abstract type AbstractBox end
+abstract type AbstractBox{BT} end
 
-struct Box <: AbstractBox
-    boundary::Type  # <: Boundary{2}
+struct Box{BT} <: AbstractBox{BT}
     grid_size::NTuple{2,Int}
     phys_scale::typeof(1.0m)
     phys_size::Vec2
 
-    function Box(::Type{BT}; grid_size::NTuple{2, Int}, phys_scale::Quantity{Float64, 𝐋, U}) where {BT <: Boundary{2}, U}
-        new(BT, grid_size, phys_scale, phys_size(grid_size, phys_scale))
+    function Box{BT}(;grid_size::NTuple{2, Int}, phys_scale::Quantity{Float64, 𝐋, U}) where {BT <: Boundary{2}, U}
+        new{BT}(grid_size, phys_scale, phys_size(grid_size, phys_scale))
     end
 end
 

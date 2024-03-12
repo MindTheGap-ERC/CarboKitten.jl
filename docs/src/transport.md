@@ -37,19 +37,21 @@ Bi-linear interpolation and mass deposition are in some ways very similar proble
 Deposition should be mass conserving, so we test for a number of particles that the total adds up.
 
 ``` {.julia #transport-spec}
-using CarboKitten.Transport: deposit, Box, Particle
+using CarboKitten.Config: Box
+using CarboKitten.BoundaryTrait
+using CarboKitten.Transport: deposit, Particle
 using CarboKitten.BoundaryTrait: Periodic
 
 TestParticle = Particle{Nothing}
 
-box = Box((16, 16), (x=1.0, y=1.0), 1.0/16.0)
+box = Box{Periodic{2}}(grid_size = (16, 16), phys_scale = 1.0/16.0*u"m")
 n_particles = 42
 particles = rand(Float64, 2, n_particles) |> eachcol .|> 
 		(p -> TestParticle((x=p[1], y=p[2]), 1.0, 1.0, 1, nothing));
 
 density = let
 	target = zeros(Float64, 1, 16, 16)
-	particles .|> deposit(Periodic{2}, box, target)
+	particles .|> deposit(box, target)
 	target
 end
 @test sum(density) ≈ n_particles
@@ -60,7 +62,7 @@ Then we test two special cases: one where the particle is exactly at position $0
 ``` {.julia #transport-spec}
 density = let
     target = zeros(Float64, 1, 16, 16)
-    Particle((x=0.0, y=0.0), 1.0, 1.0, 1, nothing) |> deposit(Periodic{2}, box, target)
+    Particle((x=0.0, y=0.0), 1.0, 1.0, 1, nothing) |> deposit(box, target)
     target
 end
 @test density[1,1,1] ≈ 0.25
@@ -70,10 +72,10 @@ end
 ```
 
 ``` {.julia #transport-spec}
-density = let
+density = let halfp = (box.phys_scale / 2u"m") |> NoUnits
     target = zeros(Float64, 1, 16, 16)
-    Particle((x=box.phys_scale/2, y=box.phys_scale/2),
-        1.0, 1.0, 1, nothing) |> deposit(Periodic{2}, box, target)
+    Particle((x=halfp, y=halfp),
+        1.0, 1.0, 1, nothing) |> deposit(box, target)
     target
 end
 @test density[1,1,1] ≈ 1.0
@@ -89,13 +91,14 @@ height = [0.0 0.0; 1.0 1.0]
 ### Implementation
 
 ``` {.julia #interpolation}
-function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}) where {BT <: Boundary{2}, R <: Real}
-    p -> interpolate(BT, box, f, p)
+function interpolate(box::AbstractBox{BT}, f::AbstractMatrix{R}) where {BT <: Boundary{2}, R <: Real}
+    p -> interpolate(box, f, p)
 end
 
-function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where {BT <: Boundary{2}, R <: Real}
+function interpolate(box::AbstractBox{BT}, f::AbstractMatrix{R}, p::Vec2) where {BT <: Boundary{2}, R <: Real}
     @assert p ∈ box
-    l = p / box.phys_scale
+    phys_scale = box.phys_scale / u"m" |> NoUnits
+    l = p / phys_scale
     node = (x=floor(l.x) + 1.0, y=floor(l.y) + 1.0)
     idx = CartesianIndex(Int(node.x), Int(node.y))
     frac = node - l
@@ -106,7 +109,7 @@ function interpolate(::Type{BT}, box::Box, f::AbstractMatrix{R}, p::Vec2) where 
     z = frac.x * frac.y * z00 + (1.0 - frac.x) * frac.y * z10 +
         frac.x * (1.0 - frac.y) * z01 + (1.0 - frac.x) * (1.0 - frac.y) * z11
     ∇ = (x = (frac.y * (z10 - z00) + (1.0 - frac.y) * (z11 - z01)),
-         y = (frac.x * (z01 - z00) + (1.0 - frac.x) * (z11 - z10))) / box.phys_scale
+         y = (frac.x * (z01 - z00) + (1.0 - frac.x) * (z11 - z10))) / phys_scale
 
     return (z, ∇)
 end
@@ -117,14 +120,15 @@ end
     end
 end
 
-function deposit(::Type{BT}, box::Box, output::Array{Float64,3}) where BT
+function deposit(box::AbstractBox{BT}, output::Array{Float64,3}) where BT
     function plotter(::Nothing) end
 
     function plotter(p::Particle{P}) where P
+        phys_scale = box.phys_scale / u"m" |> NoUnits
         p.position ∉ box && return
         # we don't want to wrap here. This is done later
-        q = p.position - (x=-0.5,y=-0.5)*box.phys_scale
-        l = q / box.phys_scale
+        q = p.position - (x=0.5,y=0.5)*phys_scale
+        l = q / phys_scale
         node = (x=floor(l.x) + 1.0, y=floor(l.y) + 1.0)
         idx = CartesianIndex(Int(node.x), Int(node.y))
         frac = node - l
@@ -145,7 +149,7 @@ end
 ## Transport
 
 ``` {.julia #particle-transport}
-function transport(::Type{BT}, box::Box, stress, maxit, step) where {BT <: Boundary{2}}
+function transport(box::AbstractBox{BT}, stress, maxit, step) where {BT <: Boundary{2}}
     function (p::Particle{P}) where P
         if p.position ∉ box
             return nothing
@@ -157,9 +161,9 @@ function transport(::Type{BT}, box::Box, stress, maxit, step) where {BT <: Bound
             if abs(τ) < p.critical_stress
                 return p
             end
-            Δ = τ * (box.phys_scale * step / abs(τ))
-            @assert (abs(Δ) ≈ box.phys_scale * step) "pos: $(p.position) stress: $(τ) Delta: $(Δ)"
-            next_position = offset(BT, box, p.position, Δ)
+            Δ = τ * ((box.phys_scale / u"m" |> NoUnits) * step / abs(τ))
+            @assert (abs(Δ)*u"m" ≈ box.phys_scale * step) "pos: $(p.position) stress: $(τ) Delta: $(Δ)"
+            next_position = offset(box, p.position, Δ)
             if next_position === nothing
                 return nothing
             else
@@ -177,8 +181,10 @@ end
 ``` {.julia file=src/Transport.jl}
 module Transport
 
+using Unitful
 using ..Vectors
 using ..BoundaryTrait
+using ..Config: Box, AbstractBox
 
 <<vector-offset>>
 <<particle>>

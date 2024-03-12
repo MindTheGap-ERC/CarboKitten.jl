@@ -3,6 +3,8 @@
 ``` {.julia file=src/Config.jl}
 module Config
 
+export AbstractBox, Box
+
 using ..BoundaryTrait
 using ..Vectors
 
@@ -36,16 +38,15 @@ struct Shelf <: Boundary{2} end
 The `Boundary` type is part of the generic `Box` dimension specification.
 
 ``` {.julia #config-types}
-abstract type AbstractBox end
+abstract type AbstractBox{BT} end
 
-struct Box <: AbstractBox
-    boundary::Type  # <: Boundary{2}
+struct Box{BT} <: AbstractBox{BT}
     grid_size::NTuple{2,Int}
     phys_scale::typeof(1.0m)
     phys_size::Vec2
 
-    function Box(::Type{BT}; grid_size::NTuple{2, Int}, phys_scale::Quantity{Float64, 𝐋, U}) where {BT <: Boundary{2}, U}
-        new(BT, grid_size, phys_scale, phys_size(grid_size, phys_scale))
+    function Box{BT}(;grid_size::NTuple{2, Int}, phys_scale::Quantity{Float64, 𝐋, U}) where {BT <: Boundary{2}, U}
+        new{BT}(grid_size, phys_scale, phys_size(grid_size, phys_scale))
     end
 end
 
@@ -62,7 +63,7 @@ Now we can specify the box parameters as follows:
     using CarboKitten.Config: Box
     using CarboKitten.Vectors
 
-    box = Box(Shelf,
+    box = Box{Shelf}(
         grid_size = (100, 50),
         phys_scale = 1.0u"km")
     @test box.phys_size == (x=100000.0, y=50000.0)
@@ -188,29 +189,21 @@ end
 We need to define how particles move past boundaries. Similar to the grid based `offset_index` method, we define the `offset` method for a `Vec2`.
 
 ``` {.julia #vector-offset}
-abstract type AbstractBox end
-
-struct Box <: AbstractBox
-    grid_size::NTuple{2,Int}
-    phys_size::Vec2
-    phys_scale::Float64
-end
-
 Base.in(a::Vec2, box::Box) =
     a.x >= 0.0 && a.x < box.phys_size.x && a.y >= 0.0 && a.y < box.phys_size.y
 
-function offset(::Type{Reflected{2}}, box::Box, a::Vec2, Δa::Vec2)
+function offset(box::AbstractBox{Reflected{2}}, a::Vec2, Δa::Vec2)
     clip(i, a, b) = (i < a ? a + a - i : (i > b ? b + b - i : i))
     (x=clip(a.x+Δa.x, 0.0, box.phys_size.x)
     ,y=clip(a.y+Δa.y, 0.0, box.phys_size.y))
 end
 
-function offset(::Type{Periodic{2}}, box::Box, a::Vec2, Δa::Vec2)
+function offset(box::AbstractBox{Periodic{2}}, a::Vec2, Δa::Vec2)
     (x=mod(a.x+Δa.x, box.phys_size.x)
     ,y=mod(a.y+Δa.y, box.phys_size.y))
 end
 
-function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2) where Value
+function offset(box::AbstractBox{Constant{2,Value}}, a::Vec2, Δa::Vec2) where Value
     b = a + Δa
     if b ∉ box
         nothing
@@ -219,7 +212,7 @@ function offset(::Type{Constant{2,Value}}, box::Box, a::Vec2, Δa::Vec2) where V
     end
 end
 
-function offset(::Type{Shelf}, box::Box, a::Vec2, Δa::Vec2)
+function offset(box::AbstractBox{Shelf}, a::Vec2, Δa::Vec2)
     b = a + Δa
     if b.x < 0.0 || b.x > box.phys_size.x
         nothing

@@ -1,4 +1,7 @@
 docs/build
 data/*.h5
 .vscode
+data/*.txt
+data/*.csv
+
 docs/transpiled

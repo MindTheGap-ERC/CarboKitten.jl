@@ -2,11 +2,13 @@
 module CaProd
 
 using CarboKitten
-using CarboKitten.Stencil: Periodic
-using CarboKitten.Utility
-# using CarboKitten.BS92: sealevel_curve
-using CarboKitten.Stencil
-using CarboKitten.Burgess2013
+using ..Stencil: Periodic, stencil
+using ..Utility
+#using ..BS92: sealevel_curve
+using ..EmpericalDenudation
+using ..CarbDissolution
+using ..PhysicalErosion
+using ..Burgess2013
 
 using HDF5
 using .Iterators: drop, peel, partition, map, take
@@ -26,11 +28,20 @@ using .Iterators: drop, peel, partition, map, take
 
     facies::Vector{Facies}
     insolation::Float64
+
+    temp #temperature
+    precip #precipitation
+    pco2 #co2
+    alpha #reaction rate
+    erosion_type::Int64
+
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-frame>>[init]
 struct Frame
     production::Array{Float64,3}
+    denudation::Array{Float64,2}
+    redistribution::Array{Float64,2}
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-state>>[init]
@@ -58,20 +69,45 @@ function propagator(input::Input)
     function water_depth(s::State)
         s.height .- input.sea_level(s.time)
     end
+    # prepare functions for erosion
     # ~/~ end
+    slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
     function (s::State)  # -> Frame
         # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[init]
-        result = zeros(Float64, input.grid_size..., n_facies)
+        production = zeros(Float64, input.grid_size..., n_facies)
+        denudation = zeros(Float64, input.grid_size...)
+        redistribution = zeros(Float64, input.grid_size...)
+        slope = zeros(Float64, input.grid_size...)
         facies_map, ca = peel(ca)
         w = water_depth(s)
+        slopefn(w,slope,input.phys_scale) # slope is calculated with square so no need for -w
+        if input.erosion_type == 2
+        redis = mass_erosion(Float64,Periodic{2},slope,(3,3),w,input.phys_scale,input.facies.inf)
+        redistribution = total_mass_redistribution(redis, slope)
+        else
+        redistribution = redistribution
+        end
         Threads.@threads for idx in CartesianIndices(facies_map)
             f = facies_map[idx]
-            if f == 0
-                continue
+                if f == 0
+                    continue
+                end
+            if w[idx] > 0.0
+                production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
+            else
+                if input.erosion_type == 1
+                    denudation[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
+                elseif input.erosion_type == 2
+                    denudation[Tuple(idx)...] = physical_erosion(slope[idx],input.facies.inf)
+                    redistribution[Tuple(idx)...] = redistribution[Tuple(idx)...]
+                elseif input.erosion_type == 3
+                    denudation[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
+                elseif nput.erosion_type == 0
+                    denudation[Tuple(idx)...] = denudation[Tuple(idx)...]
+                end
             end
-            result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
         end
-        return Frame(result)
+        return Frame(production, denudation, redistribution)#
         # ~/~ end
     end
 end
@@ -81,6 +117,8 @@ function updater(input::Input)
     n_facies = length(input.facies)
     function (s::State, Δ::Frame)
         s.height .-= sum(Δ.production; dims=3) .* input.Δt
+        s.height .+= Δ.denudation .* input.Δt  #number already in kyr
+        s.height .-= Δ.redistribution .* input.Δt
         s.height .+= input.subsidence_rate * input.Δt
         s.time += input.Δt
     end
@@ -103,7 +141,7 @@ end
 # ~/~ end
 
 function stack_frames(fs::Vector{Frame})  # -> Frame
-    Frame(sum(f.production for f in fs))
+    Frame(sum(f.production for f in fs),sum(f.denudation for f in fs),sum(f.redistribution for f in fs))#
 end
 
 function main(input::Input, output::String)
@@ -128,10 +166,18 @@ function main(input::Input, output::String)
         ds = create_dataset(fid, "sediment", datatype(Float64),
             dataspace(input.grid_size..., n_facies, input.time_steps),
             chunk=(input.grid_size..., n_facies, 1))
+        denudation = create_dataset(fid, "denudation", datatype(Float64),
+            dataspace(input.grid_size..., input.time_steps),
+           chunk=(input.grid_size..., 1))
+        redistribution = create_dataset(fid, "redistribution", datatype(Float64),
+           dataspace(input.grid_size..., input.time_steps),
+          chunk=(input.grid_size..., 1))
 
         results = map(stack_frames, partition(run_model(input), input.write_interval))
         for (step, frame) in enumerate(take(results, n_writes))
             ds[:, :, :, step] = frame.production
+            denudation[:,:,step] = frame.denudation
+            redistribution[:,:,step] = frame.redistribution
         end
     end
 end

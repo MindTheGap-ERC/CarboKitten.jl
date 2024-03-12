@@ -22,7 +22,8 @@ DEFAULT_INPUT = CarboKitten.CaProd.Input(
     temp = 288.0,
     precip = 1000.0,
     pco2 = 10^(-1.5),
-    alpha = 2e-2
+    alpha = 2e-3,
+    erosion_type = 1
 
 )
 

@@ -32,7 +32,7 @@ end
 
 function offset(box::AbstractBox{Shelf}, a::Vec2, Δa::Vec2)
     b = a + Δa
-    if b.x < 0.0 || b.x > box.phys_size.x
+    if b.x < 0.0 || b.x >= box.phys_size.x
         nothing
     else
         (x=b.x, y=mod(b.y, box.phys_size.y))
@@ -56,7 +56,10 @@ function transport(box::AbstractBox{BT}, stress, maxit, step) where {BT <: Bound
         end
 
         for it in 1:maxit
-            @assert (p.position ∈ box) "$(p) in box"
+            if !(p.position ∈ box)
+                return nothing
+            end
+            # @assert (p.position ∈ box) "$(p) in box"
             τ = stress(p)
             if abs(τ) < p.critical_stress
                 return p

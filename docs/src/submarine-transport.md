@@ -8,7 +8,8 @@ This only adds a transport model to the sediment production.
 ``` {.julia file=examples/capt/production-transport.jl}
 module Script
   using CarboKitten
-  using CarboKitten.BoundaryTrait: Shelf
+  using CarboKitten.Config: Box, TimeProperties
+  using CarboKitten.BoundaryTrait: Shelf, Constant
   using CarboKitten.CaProd: State
   using CarboKitten.CATP: Input, Facies, ProductFrame, submarine_transport, production_propagator
   using CarboKitten.Transport: Box
@@ -18,23 +19,24 @@ module Script
   using HDF5
   using Printf
   using ProgressBars
+  using Unitful
 
   using .Iterators: partition, take, map
 
   const input = Input(
-    sea_level = t -> 0.004 * sin(2π * t / 0.2), 
-    subsidence_rate = 0.05,
+    box = Box{Constant{2,-100}}(grid_size=(100, 50), phys_scale=1.0u"km"),
+    time = TimeProperties(
+      Δt = 1.0u"kyr",
+      steps = 100,
+      write_interval = 1
+    ),
+    sea_level = t -> 4.0u"m" * sin(2π * t / 200.0u"kyr"), 
+    subsidence_rate = 50.0u"m/Myr",
     initial_depth = p -> p.x / 2000.0,
-    grid_size = (100, 50),
-    boundary = Shelf,
-    phys_scale = 1.0,
-    Δt = 0.0002,
-    time_steps = 5000,
-    write_interval = 5,
     facies = [
-        Facies((4, 10), (6, 10), 0.500, 800.0, 300, 1.0, 1.0, 1.0),
-        Facies((4, 10), (6, 10), 0.400, 100.0, 300, 1.0, 1.0, 1.0),
-        Facies((4, 10), (6, 10), 0.100, 5.0, 300, 1.0, 1.0, 1.0)
+        Facies((4, 10), (6, 10), 500.0, 0.800, 300, 1.0, 1.0, 0.05),
+        Facies((4, 10), (6, 10), 400.0, 0.1000, 300, 1.0, 1.0, 0.05),
+        Facies((4, 10), (6, 10), 100.0, 0.005, 300, 1.0, 1.0, 0.05)
     ],
 
     insolation = 2000.0,
@@ -45,30 +47,28 @@ module Script
 
     g = 9.8,
     transport_subsample = 1,
-    transport_max_it = 100,
-    transport_step_size = 0.5
+    transport_max_it = 2000,
+    transport_step_size = 0.1,
   )
 
-  function make_box(input)
-    phys_size = (x = input.grid_size[1] * input.phys_scale,
-                 y = input.grid_size[2] * input.phys_scale)
-    Box(input.grid_size, phys_size, input.phys_scale)
-  end
-
   function axes(box::Box)
-    x = collect((0:box.grid_size[1]-1) .* box.phys_scale)
-	  y = collect((0:box.grid_size[2]-1) .* box.phys_scale)'
+    s = box.phys_scale / u"m" |> NoUnits
+    x = collect((0:box.grid_size[1]-1) .* s)
+	  y = collect((0:box.grid_size[2]-1) .* s)'
     return x, y
   end
 
   make_vec2(x, y) = (x=x, y=y)
   phys_grid(box::Box) = make_vec2.(axes(box)...)
-  initial_depth(input::Input) = input |> make_box |> phys_grid .|> input.initial_depth
+  initial_depth(input::Input) = input.box |> phys_grid .|> input.initial_depth
 
   function updater(input::Input)
     function (s, Δ)
-        s.height .+= (input.subsidence_rate .- sum(Δ.production; dims=1)[1,:,:]) * input.Δt
-        s.time += input.Δt
+        sr = input.subsidence_rate / u"m/Myr" |> NoUnits
+        dt = (input.time.Δt / u"Myr" |> NoUnits)
+        dh = (sr .- sum(Δ.production; dims=1)[1,:,:]) .* dt
+        s.height .+= dh
+        s.time += dt
     end
   end
 
@@ -94,30 +94,31 @@ module Script
   end
 
   function main(input::Input, output::String)
-      n_writes = input.time_steps ÷ input.write_interval
-      x_axis, y_axis = axes(make_box(input))
+      n_writes = input.time.steps ÷ input.time.write_interval
+      x_axis, y_axis = axes(input.box)
       initial_height = initial_depth(input)
 
-      print("Running for $(input.time_steps) time steps and $(n_writes) writes")
+      print("Running for $(input.time.steps) time steps and $(n_writes) writes")
 
       h5open(output, "w") do fid
           gid = create_group(fid, "input")
           gid["x"] = collect(x_axis)
           gid["y"] = collect(y_axis)
           gid["height"] = collect(initial_height)
-          gid["t"] = collect((0:(n_writes-1)) .* (input.Δt * input.write_interval))
+          dt = input.time.Δt / u"Myr" |> NoUnits
+          gid["t"] = collect((0:(n_writes-1)) .* (dt * input.time.write_interval))
           attr = attributes(gid)
-          attr["delta_t"] = input.Δt
-          attr["write_interval"] = input.write_interval
-          attr["time_steps"] = input.time_steps
-          attr["subsidence_rate"] = input.subsidence_rate
+          attr["delta_t"] = input.time.Δt / u"Myr" |> NoUnits
+          attr["write_interval"] = input.time.write_interval
+          attr["time_steps"] = input.time.steps
+          attr["subsidence_rate"] = input.subsidence_rate / u"m/Myr" |> NoUnits
 
           n_facies = length(input.facies)
           ds = create_dataset(fid, "sediment", datatype(Float64),
-              dataspace(n_facies, input.grid_size..., input.time_steps),
-              chunk=(n_facies, input.grid_size..., 1))
+              dataspace(n_facies, input.box.grid_size..., input.time.steps),
+              chunk=(n_facies, input.box.grid_size..., 1))
 
-          results = map(stack_frames, partition(run(input), input.write_interval))
+          results = map(stack_frames, partition(run(input), input.time.write_interval))
           for (step, f) in ProgressBar(enumerate(take(results, n_writes)), total=n_writes)
               ds[:, :, :, step] = f.production
           end
@@ -157,17 +158,12 @@ The sediment output will be stored in a buffer with fixed spatial resolution, ty
 
 ``` {.julia #cat-input}
 @kwdef struct Input
+  box::Box
+  time::TimeProperties
+
   sea_level
   subsidence_rate
   initial_depth
-
-  grid_size::NTuple{2,Int}
-  boundary::Type
-  phys_scale::Float64     # km / pixel
-  Δt::Float64             # Ma / timestep ?
-
-  time_steps::Int
-  write_interval::Int
 
   facies::Vector{Facies}
   insolation::Float64
@@ -436,6 +432,7 @@ $$\tau_{\rm slope} = \Delta_{\rho} g D \sin(\alpha) \hat{G},$$
 
 ``` {.julia #cat-propagator}
 function particles(input::Input, Δ::ProductFrame)
+  phys_scale = input.box.phys_scale / u"m" |> NoUnits
   Channel{Particle}() do ch
     for (i, (idx, mass)) in enumerate(pairs(Δ.production))
       subgrid_spacing = 1.0 / input.transport_subsample
@@ -443,7 +440,7 @@ function particles(input::Input, Δ::ProductFrame)
       subgrid = product(subgrid_axis, subgrid_axis)
       for (j, dx) in enumerate(subgrid)
         facies_type = idx[1]
-        p = (x=(idx[2]-1 + dx[1]) * input.phys_scale, y=(idx[3]-1 + dx[2]) * input.phys_scale)
+        p = (x=(idx[2]-1 + dx[1]) * phys_scale, y=(idx[3]-1 + dx[2]) * phys_scale)
         θ = input.facies[facies_type].critical_stress
         put!(ch, Particle(p, mass * subgrid_spacing^2, θ, facies_type, nothing))
       end
@@ -452,16 +449,13 @@ function particles(input::Input, Δ::ProductFrame)
 end
 
 function stress(input::Input, s)
-  phys_size = (x = input.grid_size[1] * input.phys_scale,
-               y = input.grid_size[2] * input.phys_scale)
-  box = Transport.Box(input.grid_size, phys_size, input.phys_scale)
   τ_wave = isnothing(input.wave_shear_stress) ?
     x -> (x=0.0, y=0.0) :
     input.wave_shear_stress 
 
   function (p::Particle)
     @assert !isnothing(τ_wave)
-    z, ∇ = Transport.interpolate(input.boundary, box, s.height, p.position)
+    z, ∇ = Transport.interpolate(input.box, s.height, p.position)
     abs(∇) ≈ 0.0 && return zero(Vec2)
 
     α = atan(abs(∇))
@@ -481,13 +475,10 @@ function submarine_transport(input::Input)
   # This function does not modify the state, rather it transports the
   # sediments in a given product frame and gives a new product frame
   # as output.
-  box = Transport.Box(input.grid_size, (
-    x=input.grid_size[1] * input.phys_scale,
-    y=input.grid_size[2] * input.phys_scale), input.phys_scale)
   function (s, Δ::ProductFrame) # -> ProductFrame
     output = zeros(Float64, size(Δ.production)...)
-    transport = Transport.transport(input.boundary, box, stress(input, s), input.transport_max_it, input.transport_step_size)
-    deposit = Transport.deposit(input.boundary, box, output)
+    transport = Transport.transport(input.box, stress(input, s), input.transport_max_it, input.transport_step_size)
+    deposit = Transport.deposit(input.box, output)
 
     Threads.foreach(particles(input, Δ)) do p
       p |> transport |> deposit
@@ -502,6 +493,7 @@ end
 ``` {.julia file=src/CATP.jl}
 module CATP
 
+using ..Config: Box, TimeProperties
 using ..Vectors
 using ..Stencil: Periodic
 using ..Utility
@@ -512,6 +504,7 @@ using ..SedimentStack
 using ..Transport
 using ..BoundaryTrait
 
+using Unitful
 using HDF5
 using Printf
 
@@ -524,14 +517,14 @@ using .Iterators: drop, peel, partition, map, take, product
 <<cat-propagator>>
 function production_propagator(input::Input)
     n_facies = length(input.facies)
-    ca_init = rand(0:n_facies, input.grid_size...)
+    ca_init = rand(0:n_facies, input.box.grid_size...)
     ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
 
     function water_depth(s)
-        s.height .- input.sea_level(s.time)
+        s.height .- input.sea_level(s.time * u"Myr") / u"m"
     end
     function (s)  # -> Frame
-        result = zeros(Float64, n_facies, input.grid_size...)
+        result = zeros(Float64, n_facies, input.box.grid_size...)
         facies_map, ca = peel(ca)
         w = water_depth(s)
         Threads.@threads for idx in CartesianIndices(facies_map)
@@ -546,12 +539,12 @@ function production_propagator(input::Input)
 end
 
 function initial_state(input::Input)  # -> State
-    height = zeros(Float64, input.grid_size...)
+    height = zeros(Float64, input.box.grid_size...)
     for i in CartesianIndices(height)
-        height[i] = input.initial_depth(i[2] * input.phys_scale)
+        height[i] = input.initial_depth(i[2] * input.phys_scale) / u"m" |> NoUnits
     end
     n_facies = length(input.facies)
-    return State(0.0, height, zeros(Float64, input.grid_size..., input.buffer_depth, n_facies))
+    return State(0.0, height, zeros(Float64, input.box.grid_size..., input.buffer_depth, n_facies))
 end
 
 function disintegration_propagator(input::Input)

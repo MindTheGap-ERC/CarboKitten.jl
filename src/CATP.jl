@@ -1,6 +1,7 @@
 # ~/~ begin <<docs/src/submarine-transport.md#src/CATP.jl>>[init]
 module CATP
 
+using ..Config: Box, TimeProperties
 using ..Vectors
 using ..Stencil: Periodic
 using ..Utility
@@ -11,6 +12,7 @@ using ..SedimentStack
 using ..Transport
 using ..BoundaryTrait
 
+using Unitful
 using HDF5
 using Printf
 
@@ -34,17 +36,12 @@ end
 # ~/~ end
 # ~/~ begin <<docs/src/submarine-transport.md#cat-input>>[init]
 @kwdef struct Input
+  box::Box
+  time::TimeProperties
+
   sea_level
   subsidence_rate
   initial_depth
-
-  grid_size::NTuple{2,Int}
-  boundary::Type
-  phys_scale::Float64     # km / pixel
-  Δt::Float64             # Ma / timestep ?
-
-  time_steps::Int
-  write_interval::Int
 
   facies::Vector{Facies}
   insolation::Float64
@@ -146,6 +143,7 @@ end
 # ~/~ end
 # ~/~ begin <<docs/src/submarine-transport.md#cat-propagator>>[init]
 function particles(input::Input, Δ::ProductFrame)
+  phys_scale = input.box.phys_scale / u"m" |> NoUnits
   Channel{Particle}() do ch
     for (i, (idx, mass)) in enumerate(pairs(Δ.production))
       subgrid_spacing = 1.0 / input.transport_subsample
@@ -153,7 +151,7 @@ function particles(input::Input, Δ::ProductFrame)
       subgrid = product(subgrid_axis, subgrid_axis)
       for (j, dx) in enumerate(subgrid)
         facies_type = idx[1]
-        p = (x=(idx[2]-1 + dx[1]) * input.phys_scale, y=(idx[3]-1 + dx[2]) * input.phys_scale)
+        p = (x=(idx[2]-1 + dx[1]) * phys_scale, y=(idx[3]-1 + dx[2]) * phys_scale)
         θ = input.facies[facies_type].critical_stress
         put!(ch, Particle(p, mass * subgrid_spacing^2, θ, facies_type, nothing))
       end
@@ -162,16 +160,13 @@ function particles(input::Input, Δ::ProductFrame)
 end
 
 function stress(input::Input, s)
-  phys_size = (x = input.grid_size[1] * input.phys_scale,
-               y = input.grid_size[2] * input.phys_scale)
-  box = Transport.Box(input.grid_size, phys_size, input.phys_scale)
   τ_wave = isnothing(input.wave_shear_stress) ?
     x -> (x=0.0, y=0.0) :
     input.wave_shear_stress 
 
   function (p::Particle)
     @assert !isnothing(τ_wave)
-    z, ∇ = Transport.interpolate(input.boundary, box, s.height, p.position)
+    z, ∇ = Transport.interpolate(input.box, s.height, p.position)
     abs(∇) ≈ 0.0 && return zero(Vec2)
 
     α = atan(abs(∇))
@@ -191,13 +186,10 @@ function submarine_transport(input::Input)
   # This function does not modify the state, rather it transports the
   # sediments in a given product frame and gives a new product frame
   # as output.
-  box = Transport.Box(input.grid_size, (
-    x=input.grid_size[1] * input.phys_scale,
-    y=input.grid_size[2] * input.phys_scale), input.phys_scale)
   function (s, Δ::ProductFrame) # -> ProductFrame
     output = zeros(Float64, size(Δ.production)...)
-    transport = Transport.transport(input.boundary, box, stress(input, s), input.transport_max_it, input.transport_step_size)
-    deposit = Transport.deposit(input.boundary, box, output)
+    transport = Transport.transport(input.box, stress(input, s), input.transport_max_it, input.transport_step_size)
+    deposit = Transport.deposit(input.box, output)
 
     Threads.foreach(particles(input, Δ)) do p
       p |> transport |> deposit
@@ -209,14 +201,14 @@ end
 # ~/~ end
 function production_propagator(input::Input)
     n_facies = length(input.facies)
-    ca_init = rand(0:n_facies, input.grid_size...)
+    ca_init = rand(0:n_facies, input.box.grid_size...)
     ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
 
     function water_depth(s)
-        s.height .- input.sea_level(s.time)
+        s.height .- input.sea_level(s.time * u"Myr") / u"m"
     end
     function (s)  # -> Frame
-        result = zeros(Float64, n_facies, input.grid_size...)
+        result = zeros(Float64, n_facies, input.box.grid_size...)
         facies_map, ca = peel(ca)
         w = water_depth(s)
         Threads.@threads for idx in CartesianIndices(facies_map)
@@ -231,12 +223,12 @@ function production_propagator(input::Input)
 end
 
 function initial_state(input::Input)  # -> State
-    height = zeros(Float64, input.grid_size...)
+    height = zeros(Float64, input.box.grid_size...)
     for i in CartesianIndices(height)
-        height[i] = input.initial_depth(i[2] * input.phys_scale)
+        height[i] = input.initial_depth(i[2] * input.phys_scale) / u"m" |> NoUnits
     end
     n_facies = length(input.facies)
-    return State(0.0, height, zeros(Float64, input.grid_size..., input.buffer_depth, n_facies))
+    return State(0.0, height, zeros(Float64, input.box.grid_size..., input.buffer_depth, n_facies))
 end
 
 function disintegration_propagator(input::Input)

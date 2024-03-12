@@ -156,7 +156,10 @@ function transport(box::AbstractBox{BT}, stress, maxit, step) where {BT <: Bound
         end
 
         for it in 1:maxit
-            @assert (p.position ∈ box) "$(p) in box"
+            if !(p.position ∈ box)
+                return nothing
+            end
+            # @assert (p.position ∈ box) "$(p) in box"
             τ = stress(p)
             if abs(τ) < p.critical_stress
                 return p

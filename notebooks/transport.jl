@@ -14,7 +14,7 @@ using Revise
 using Unitful
 
 # ╔═╡ 7f499c8a-e89f-499a-b19c-3ccd97a87ff8
-using CarboKitten.Transport: deposit, Box, Particle, interpolate
+using CarboKitten.Transport: deposit, Particle, interpolate
 
 # ╔═╡ bd30f1b8-891f-476b-8635-3f41eee710e3
 using CarboKitten.Vectors
@@ -24,6 +24,9 @@ using CarboKitten.BoundaryTrait: Periodic, Reflected, Shelf, Constant
 
 # ╔═╡ a0263acb-8f42-4b72-821f-c279d2042122
 using WGLMakie
+
+# ╔═╡ 1ce3d0e1-352d-489a-a386-c36e0955a515
+using CarboKitten.Config: Box, TimeProperties
 
 # ╔═╡ 6dde775c-00e3-4ddb-b1d7-62e40ec3df39
 using CarboKitten.CATP: submarine_transport, State, ProductFrame, Input, Facies, stress, particles
@@ -97,19 +100,22 @@ To test transport, we set a height map and specify a production.
 """
 
 # ╔═╡ a2b9f2f3-d213-4a42-8ecd-48a0a29d70c9
-test_profile(x, y) = -x + 2.0 * exp(-((y-2.5)^2+(x-2.5)^2)/1.00)
+test_profile(x, y) = -x + 2.0u"m" * exp(-((y-2.5u"m")^2+(x-2.5u"m")^2)/1.00u"m^2")
 
 # ╔═╡ 94dd0ded-69a2-4d13-b5a4-074d496669e1
 input = Input(
+	box = Box{Constant{2,-100}}(
+		grid_size=(50,50),
+		phys_scale=0.1u"m"
+	),
+	time = TimeProperties(
+		Δt = 1.0u"kyr",
+		steps = 100,
+		write_interval = 1
+	),
 	sea_level = t -> 0.0,
 	subsidence_rate = 0.0,
 	initial_depth = test_profile,
-	grid_size = (50, 50),
-	boundary = Shelf,
-	phys_scale = 5.0/50,
-	Δt = 1.0,
-	time_steps = 100,
-	write_interval = 1,
 	facies = [ Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1.0, 1.0, 8.1) ],
 	insolation = 2000.0,
 	Δz = 1.0,
@@ -124,24 +130,24 @@ input = Input(
 
 # ╔═╡ b9d09778-ccc6-4124-a027-51c775dc5171
 begin
-	x = collect(1:input.grid_size[1]) .* input.phys_scale
-	y = collect(1:input.grid_size[2]) .* input.phys_scale
+	x = collect(1:input.box.grid_size[1]) .* input.box.phys_scale
+	y = collect(1:input.box.grid_size[2]) .* input.box.phys_scale
 end
 
 # ╔═╡ 3da02eb7-5eea-468a-bb3a-253c751b001b
 height = test_profile.(x, y')
 
 # ╔═╡ 6b332977-79cd-4d4b-ad00-30c00f2fab39
-surface(x, x, height)
+surface(x/u"m", y/u"m", height/u"m")
 
 # ╔═╡ 91fc7690-c9c7-4a93-86d9-7e38e642ac34
-sediment = zeros(Float64, input.grid_size..., input.buffer_depth, 1);
+sediment = zeros(Float64, input.box.grid_size..., input.buffer_depth, 1);
 
 # ╔═╡ 50e6c1ba-c380-48b3-a0b5-b08461bf915b
-state = State(0.0, height, sediment);
+state = State(0.0, height / u"m", sediment);
 
 # ╔═╡ 0e11dbe1-db11-40e9-9dd3-a8faf1161aa7
-production = ProductFrame(ones(Float64, 1, input.grid_size...) .* 0.1)
+production = ProductFrame(ones(Float64, 1, input.box.grid_size...) .* 0.1)
 
 # ╔═╡ e2cffe29-153a-48c5-948a-536a6cbf4894
 tr = submarine_transport(input)
@@ -177,7 +183,7 @@ points, stresses = let σ = stress(input, state)
 end
 
 # ╔═╡ 5434f84b-4bc2-4d71-bad0-d66d7ccbd75c
-strength = reshape(abs.(stress(input, state).(particles(input, production))), input.grid_size)
+strength = reshape(abs.(stress(input, state).(particles(input, production))), input.box.grid_size)
 
 # ╔═╡ 68063b97-21a3-4413-ba31-26e9786d2739
 arrows(points, stresses; lengthscale=0.01, arrowsize=5)
@@ -186,27 +192,10 @@ arrows(points, stresses; lengthscale=0.01, arrowsize=5)
 let
 	fig = Figure()
 	ax = Axis(fig[1, 1])
-	co = contourf!(ax, x, y, strength; levels=10)
+	co = contourf!(ax, x/u"m", y/u"m", strength; levels=10)
 	Colorbar(fig[1,2], co)
 	fig
 end
-
-# ╔═╡ 343b01bf-114b-4371-82eb-e0fe11a6e4ba
-function make_box(input)
-    phys_size = (x = input.grid_size[1] * input.phys_scale,
-                 y = input.grid_size[2] * input.phys_scale)
-    box = Box(input.grid_size, phys_size, input.phys_scale)
-	box
-end
-
-# ╔═╡ 0d32ed73-52a8-4a3d-a0a4-b262f4ad2022
-make_box(input)
-
-# ╔═╡ d81353d7-7949-49cc-957a-2e0e500e3145
-Optional{Int}
-
-# ╔═╡ ffda1357-bdad-4249-83fa-d0d9c5d5a6e6
-sum(strength) / length(strength)
 
 # ╔═╡ Cell order:
 # ╠═be3739c1-bbf3-4e48-8ced-f249197c2c98
@@ -231,6 +220,7 @@ sum(strength) / length(strength)
 # ╠═862c53ce-1600-4348-9174-36949a72e19a
 # ╠═88421113-33ee-4d36-98ab-0ff2e558d361
 # ╟─4b6950f8-e02f-4149-8892-666e8f380eae
+# ╠═1ce3d0e1-352d-489a-a386-c36e0955a515
 # ╠═6dde775c-00e3-4ddb-b1d7-62e40ec3df39
 # ╠═f802a537-563e-4587-9e13-c3cb557b2947
 # ╠═94dd0ded-69a2-4d13-b5a4-074d496669e1
@@ -251,7 +241,3 @@ sum(strength) / length(strength)
 # ╠═5434f84b-4bc2-4d71-bad0-d66d7ccbd75c
 # ╠═68063b97-21a3-4413-ba31-26e9786d2739
 # ╠═29ab45a7-37de-4c71-b2c7-5696ecace703
-# ╠═343b01bf-114b-4371-82eb-e0fe11a6e4ba
-# ╠═0d32ed73-52a8-4a3d-a0a4-b262f4ad2022
-# ╠═d81353d7-7949-49cc-957a-2e0e500e3145
-# ╠═ffda1357-bdad-4249-83fa-d0d9c5d5a6e6

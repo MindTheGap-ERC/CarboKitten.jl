@@ -76,9 +76,9 @@ Time stepping is specified in `TimeProperties`. We'll have `time_steps` number o
 ``` {.julia #config-types}
 abstract type AbstractTimeProperties end
 
-struct TimeProperties <: AbstractTimeProperties
+@kwdef struct TimeProperties <: AbstractTimeProperties
     Δt::typeof(1.0u"yr")
-    time_steps::Int
+    steps::Int
     write_interval::Int
 end
 ```
@@ -214,7 +214,7 @@ end
 
 function offset(box::AbstractBox{Shelf}, a::Vec2, Δa::Vec2)
     b = a + Δa
-    if b.x < 0.0 || b.x > box.phys_size.x
+    if b.x < 0.0 || b.x >= box.phys_size.x
         nothing
     else
         (x=b.x, y=mod(b.y, box.phys_size.y))

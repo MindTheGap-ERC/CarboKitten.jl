@@ -34,6 +34,15 @@ using CarboKitten.CATP: submarine_transport, State, ProductFrame, Input, Facies,
 # ╔═╡ f802a537-563e-4587-9e13-c3cb557b2947
 using CarboKitten.Transport
 
+# ╔═╡ cee74d4c-2ed1-4b46-8b7d-25fd1fd3d554
+using Unitful.DefaultSymbols
+
+# ╔═╡ 715a7af3-38ee-4217-ba9f-5e998e19478b
+using CarboKitten.Config: centered_axes
+
+# ╔═╡ 20707c5d-c04f-427f-bc2c-67c0f0c8eed8
+using CarboKitten.Transport: grid_sample
+
 # ╔═╡ 9e993f30-cf67-497e-b091-7edbe18bad61
 const TestParticle = Particle{Nothing}
 
@@ -197,6 +206,50 @@ let
 	fig
 end
 
+# ╔═╡ 887284a3-35b5-4b5a-a8d9-71517360f8f3
+md"""
+## Grid sampler
+"""
+
+# ╔═╡ 09628e56-41ed-49ff-b58b-d1a2c3e7d3de
+grid_sample(Box{Periodic{2}}(grid_size=(16, 16), phys_scale=1.0u"m"/16), zeros(Float64, 16, 16), 2) |> collect
+
+# ╔═╡ e5406233-77ed-4428-b666-d78fba883571
+  test_particles2, test_density2 = let TestParticle = Particle{Nothing},
+  	  make_vec(x, y) = (x=x, y=y),
+      make_test_particle(x, y) = TestParticle(make_vec(x, y), 1.0, 1.0, 1, nothing),
+  	  make_test_particle(x, y, m) = TestParticle(make_vec(x, y), m, 1.0, 1, nothing),
+	  box = Box{Periodic{2}}(grid_size=(16, 16), phys_scale=1.0u"m"/16),
+	  profile(x, y) = exp(-((x - 0.5m)^2 + (y - 0.5m)^2) / 0.04m^2),
+      x = ((1:box.grid_size[1]) .- 0.5) .* box.phys_scale |> collect
+    density = profile.(centered_axes(box)...)
+	density ./= (sum(density) / 256)
+    particles = [make_test_particle(p.x, p.y, m) for (p, m) in grid_sample(box, density, 2)]
+
+    target = zeros(Float64, 1, 16, 16)
+    particles .|> deposit(box, target)
+    mean_x = sum(x .* sum(density; dims=3)[1, :, 1]) / 256
+    mean_y = sum(x .* sum(density; dims=2)[1, 1, :]) / 256
+	
+	print(mean_x)
+	print(mean_y)
+	particles, density
+    # @assert abs(mean_x - 0.5u"m") < 0.01u"m"
+    # @assert abs(mean_y - 0.5u"m") < 0.01u"m"
+  end
+
+# ╔═╡ c6e4cb87-6b08-49d2-92bc-d275fa6c8e0c
+scatter(
+	[p.position.x for p in test_particles2],
+	[p.position.y for p in test_particles2],
+	markersize=[p.mass * 10 for p in test_particles2])
+
+# ╔═╡ bbf5cf17-f521-47f1-84cf-4419cc18e770
+heatmap(test_density2)
+
+# ╔═╡ d0eb89cf-6508-4e11-bb42-df49aeb6a4fa
+test_density2[1:8,:] .- test_density2[end:-1:9,:]
+
 # ╔═╡ Cell order:
 # ╠═be3739c1-bbf3-4e48-8ced-f249197c2c98
 # ╠═ab41cc36-45d2-48eb-b549-edd7f49ece01
@@ -241,3 +294,12 @@ end
 # ╠═5434f84b-4bc2-4d71-bad0-d66d7ccbd75c
 # ╠═68063b97-21a3-4413-ba31-26e9786d2739
 # ╠═29ab45a7-37de-4c71-b2c7-5696ecace703
+# ╟─887284a3-35b5-4b5a-a8d9-71517360f8f3
+# ╠═cee74d4c-2ed1-4b46-8b7d-25fd1fd3d554
+# ╠═715a7af3-38ee-4217-ba9f-5e998e19478b
+# ╠═20707c5d-c04f-427f-bc2c-67c0f0c8eed8
+# ╠═09628e56-41ed-49ff-b58b-d1a2c3e7d3de
+# ╠═e5406233-77ed-4428-b666-d78fba883571
+# ╠═c6e4cb87-6b08-49d2-92bc-d275fa6c8e0c
+# ╠═bbf5cf17-f521-47f1-84cf-4419cc18e770
+# ╠═d0eb89cf-6508-4e11-bb42-df49aeb6a4fa

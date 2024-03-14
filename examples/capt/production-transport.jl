@@ -19,9 +19,9 @@ module Script
   const input = Input(
     box = Box{Constant{2,-100}}(grid_size=(100, 50), phys_scale=1.0u"km"),
     time = TimeProperties(
-      Δt = 1.0u"kyr",
-      steps = 100,
-      write_interval = 1
+      Δt = 0.1u"kyr",
+      steps = 10000,
+      write_interval = 10
     ),
     sea_level = t -> 4.0u"m" * sin(2π * t / 200.0u"kyr"), 
     subsidence_rate = 50.0u"m/Myr",
@@ -40,8 +40,8 @@ module Script
 
     g = 9.8,
     transport_subsample = 1,
-    transport_max_it = 2000,
-    transport_step_size = 0.1,
+    transport_max_it = 200,
+    transport_step_size = 0.5,
   )
 
   function axes(box::Box)

@@ -8,7 +8,7 @@ using InteractiveUtils
 using Pkg; Pkg.activate("../workenv")
 
 # ╔═╡ 1b1d9efa-1b42-475d-ad94-7c357521b95b
-using GLMakie
+using CairoMakie
 
 # ╔═╡ 4683a8f4-3ca9-4996-81b7-d96af3f53dd2
 using HDF5
@@ -20,7 +20,7 @@ using GeometryBasics
 
 
 # ╔═╡ 62c10025-e6d0-42b8-83f0-ddf434555b34
-GLMakie.activate!()
+CairoMakie.activate!()
 
 # ╔═╡ 87dad1f7-b8fb-4e56-95ba-394d511914d3
 let
@@ -88,17 +88,17 @@ let
 	pts = vec(Point{2,Float64}.(x, h[:,2:end]))
 	c = vec(argmax(p; dims=1)[1,:,:] .|> (c -> c[1]))
 	rect = Rect2(0.0, 0.0, 1.0, 1.0)
-	m_tmp = GeometryBasics.mesh(Tesselation(rect, (100, 100)))
+	m_tmp = GeometryBasics.mesh(Tesselation(rect, (100, 1000)))
 	m = GeometryBasics.normal_mesh(pts, faces(m_tmp))
 
 	f = Figure()
 	ax = Axis(f[1, 1], xlabel="location", ylabel="depth", limits=((-12,100000), nothing))
 	mesh!(ax, m, color=c, alpha=0.7)
-	for idx in [1,51,101]
+	for idx in [1,501,1001]
 		lines!(ax, x, h[:, idx], color=:black)
 		text!(ax, -2.0, h[1, idx]; text="$(t[idx]) Myr", align=(:right, :center))
 	end
-	for idx in [25,75]
+	for idx in [250,750]
 		lines!(ax, x, h[:, idx], color=:black, linewidth=0.5)
 	end
 	save("crosssection.png", f)

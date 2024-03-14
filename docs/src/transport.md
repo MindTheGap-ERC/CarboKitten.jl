@@ -43,11 +43,12 @@ using CarboKitten.Transport: deposit, Particle
 using CarboKitten.BoundaryTrait: Periodic
 
 TestParticle = Particle{Nothing}
+make_vec(x, y) = (x=x, y=y)
+make_test_particle(x, y) = TestParticle(make_vec(x, y), 1.0, 1.0, 1, nothing)
 
 box = Box{Periodic{2}}(grid_size = (16, 16), phys_scale = 1.0/16.0*u"m")
 n_particles = 42
-particles = rand(Float64, 2, n_particles) |> eachcol .|> 
-		(p -> TestParticle((x=p[1], y=p[2]), 1.0, 1.0, 1, nothing));
+particles = rand(Float64, 2, n_particles) |> eachcol .|> splat(make_test_particle)
 
 density = let
 	target = zeros(Float64, 1, 16, 16)
@@ -57,6 +58,27 @@ end
 @test sum(density) ≈ n_particles
 ```
 
+#### Centricity
+Suppose we have a production with a Gaussian profile (spatial). Then we should be able to turn that production into particles, redeposit, and the resulting distribution should have the same mean position as the original. This should also test for off-by-one errors in our reasoning.
+
+``` {.julia #transport-spec}
+density = let
+	target = zeros(Float64, 1, 16, 16)
+    particles = randn(Float64, (2, 1000)) .* 0.1 .+ 0.5 |>
+        eachcol .|> splat(make_test_particle)
+    particles .|> deposit(box, target)
+    target
+end
+
+let x = ((1:box.grid_size[1]) .- 0.5) .* box.phys_scale
+    mean_x = sum(x .* sum(density; dims=2)[:,1]) ./ sum(density)
+    mean_y = sum(x .* sum(density; dims=1)[1,:]) ./ sum(density)
+    @test abs(mean_x - 8.0) < 0.01
+    @test abs(mean_y - 8.0) < 0.01
+end
+```
+
+#### Special cases
 Then we test two special cases: one where the particle is exactly at position $0, 0$, and the other at $0.5, 0.5$ (pixel coordinates).
 
 ``` {.julia #transport-spec}

@@ -70,6 +70,7 @@ After that, you may edit an example and rerun.
 While developing, you'll need to run the Entangled watch daemon to keep Markdown and Julia code synchronized.
 
 ```shell
+julia --startup-file=no -e 'using DaemonMode; serve()'
 entangled watch
 ```
 

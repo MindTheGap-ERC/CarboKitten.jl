@@ -67,7 +67,7 @@ include("examples/bosscher-schlager-1992.jl")
 After that, you may edit an example and rerun.
 
 ## Development
-While developing, you'll need to run the Entangled watch daemon to keep Markdown and Julia code synchronized.
+While developing, you'll need to run the [Entangled](https://entangled.github.io/) watch daemon to keep Markdown and Julia code synchronized.
 
 ```shell
 julia --startup-file=no -e 'using DaemonMode; serve()'

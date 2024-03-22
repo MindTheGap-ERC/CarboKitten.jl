@@ -37,20 +37,14 @@ If you want to start a REPL with the correct environment already activated, use 
 julia --project=. -t 4
 ```
 
-### Global dependencies
-CarboKitten has some dependencies that are only needed for developing, but not for using the library. You may want to install those in the global environment:
-
-```shell
-julia -e 'using Pkg; Pkg.add.(["DaemonMode", "LiveServer", "Revise"])'
-```
-
 ### Examples
 
-You'll get the best experience by running examples from the Julia REPL. There are however also some example scripts, that should work stand-alone.
+You'll get the best experience by running examples from the Julia REPL. There are however also some example scripts that should work stand-alone.
 
 ```shell
-julia --project=. examples/bosscher-schlager-1992.jl
+julia --project=. examples/ca-with-prod.jl
 ```
+This command will write the output in the HDF5 format into the `data` folder.
 
 However, it is more efficient to run them from the REPL. Either run,
 
@@ -61,13 +55,24 @@ julia --project=.
 or start the REPL from VS Code. In the REPL you can run
 
 ```julia
-include("examples/bosscher-schlager-1992.jl")
+include("examples/ca-with-prod.jl")
 ```
 
 After that, you may edit an example and rerun.
 
 ## Development
-While developing, you'll need to run the Entangled watch daemon to keep Markdown and Julia code synchronized.
+
+### Global dependencies
+
+CarboKitten has some dependencies that are only needed for developing, but not for using the library. You may want to install those in the global environment:
+
+```shell
+julia -e 'using Pkg; Pkg.add.(["DaemonMode", "LiveServer", "Revise"])'
+```
+
+### Entangled
+
+While developing, you'll need to run the [Entangled](https://entangled.github.io/) watch daemon to keep Markdown and Julia code synchronized.
 
 ```shell
 entangled watch
@@ -97,8 +102,8 @@ To run simulations and plot figures depending on those.
 
 Code in this repository is based on
 
-- Burgess 2013
-- Bosscher and Schlager 1992
+- Burgess, P. M. (2013). [CarboCAT: A cellular automata model of heterogeneous carbonate strata](https://www.sciencedirect.com/science/article/pii/S0098300411002949). Computers & geosciences, 53, 129-140.
+- Bosscher, H., & Schlager, W. (1992). [Computer simulation of reef growth](https://doi.org/10.1111/j.1365-3091.1992.tb02130.x). Sedimentology, 39(3), 503-512.
 
 ## Authors
 
@@ -145,7 +150,7 @@ ORCID: [0000-0002-3323-807X](https://orcid.org/0000-0002-3323-807X)
 
 ## Copyright
 
-Copyright 2023 Netherlands eScience Center and Utrecht University
+Copyright 2023-2024 Netherlands eScience Center and Utrecht University
 
 ## License
 

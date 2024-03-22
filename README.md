@@ -44,7 +44,7 @@ You'll get the best experience by running examples from the Julia REPL. There ar
 ```shell
 julia --project=. examples/ca-with-prod.jl
 ```
-This command will write the output in the HDF5 format into the `data` folder.
+This command will write the output in the HDF5 format into the `data` folder. You can check that output is written there after executing this command.
 
 However, it is more efficient to run them from the REPL. Either run,
 
@@ -108,7 +108,7 @@ Code in this repository is based on
 ## Authors
 
 Lead engineer: __Johan Hidding__  
-Netherlands eScience Center  
+The Netherlands eScience Center  
 email: j.hidding [at] esciencecenter.nl   
 Web page: [www.esciencecenter.nl/team/johan-hidding-msc/](https://www.esciencecenter.nl/team/johan-hidding-msc/)  
 ORCID: [0000-0002-7550-1796](https://orcid.org/0000-0002-7550-1796)
@@ -138,7 +138,7 @@ Web page: [www.uu.nl/staff/XLiu6](https://www.uu.nl/staff/XLiu6)
 ORCID: 
 
 __Hanno Spreeuw__  
-Netherlands eScience Center  
+The Netherlands eScience Center  
 email: h.spreeuw [at] esciencecenter.nl  
 Web page: [www.esciencecenter.nl/team/dr-hanno-spreeuw/](https://www.esciencecenter.nl/team/dr-hanno-spreeuw)  
 ORCID: [0000-0002-5057-0322](https://orcid.org/0000-0002-5057-0322)
@@ -150,7 +150,7 @@ ORCID: [0000-0002-3323-807X](https://orcid.org/0000-0002-3323-807X)
 
 ## Copyright
 
-Copyright 2023-2024 Netherlands eScience Center and Utrecht University
+Copyright 2023-2024 The Netherlands eScience Center and Utrecht University
 
 ## License
 

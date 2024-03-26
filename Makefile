@@ -1,7 +1,7 @@
 .PHONY: run-daemon figures serve-docs
 
 figures:
-	make -f .entangled/build/Makefile
+	poetry run brei figures
 
 run-daemon:
 	julia --project=. --startup-file=no -e 'using Revise; using DaemonMode; serve()'

@@ -150,37 +150,47 @@ Even these one-dimensional CA show highly complex behaviour. For instance, it ha
 ### Game of Life
 Perhaps the most famous CA is Conway's Game of Life. This is a two-dimensional two-state (dead/alive) CA, with the following rules: a cell is alive in the next generation if it is alive and has two neighbours or if it has three neighbours; in all other cases the cell is dead.
 
-``` {.julia .build target=docs/src/fig/life.gif}
-using CarboKitten.Stencil
-using GLMakie
-using .Iterators: take
+``` {.julia .task file=examples/ca/life.jl}
+#| creates: docs/src/fig/life.gif
+#| requires: src/Stencil.jl
+#| collect: figures
 
-"x is a 3x3 region around the cell at x[2,2]."
-rules(x) = let c = x[2, 2], s = sum(x) - c
-    c && s == 2 || s == 3
-end
+module Life
+    using CarboKitten.Stencil
+    using GLMakie
+    using .Iterators: take
 
-function game_of_life(w, h)
-    y1 = rand(Bool, (w, h))
-    y2 = Array{Bool}(undef, w, h)
+    "x is a 3x3 region around the cell at x[2,2]."
+    rules(x) = let c = x[2, 2], s = sum(x) - c
+        c && s == 2 || s == 3
+    end
 
-    op = stencil(Bool, Periodic{2}, (3, 3), rules)
-    Channel() do ch
-        put!(ch, y1)
-        while true
-            op(y1, y2)
-            (y1, y2) = (y2, y1)
+    function game_of_life(w, h)
+        y1 = rand(Bool, (w, h))
+        y2 = Array{Bool}(undef, w, h)
+
+        op = stencil(Bool, Periodic{2}, (3, 3), rules)
+        Channel() do ch
             put!(ch, y1)
+            while true
+                op(y1, y2)
+                (y1, y2) = (y2, y1)
+                put!(ch, y1)
+            end
+        end
+    end
+    
+    function plot()
+        life = take(game_of_life(50, 50), 150)
+        fig = Figure()
+        ax = Axis(fig[1,1], aspect=1)
+        record(fig, "docs/src/fig/life.gif", life; framerate=10) do frame
+            heatmap!(ax, frame; colormap=:Blues)
         end
     end
 end
 
-life = take(game_of_life(50, 50), 150)
-fig = Figure()
-ax = Axis(fig[1,1], aspect=1)
-record(fig, "docs/src/fig/life.gif", life; framerate=10) do frame
-    heatmap!(ax, frame; colormap=:Blues)
-end
+Life.plot()
 ```
 
 ![](fig/life.gif)
@@ -192,11 +202,15 @@ To test the different boundary types, lets try the following setup. We take a 16
 
 Notice, that for the periodic boundaries, the bottom left and top right are neighbouring. So there the two pixels appear as a single peak. In the reflected case we see a clear distinction between the two corners.
 
-``` {.julia .build target=docs/src/fig/boundary_types.png}
+``` {.julia .task}
+#| creates: docs/src/fig/boundary_types.png
+#| requires: src/Stencil.jl
+#| collect: figures
+
 module Script
 
 using CarboKitten.Stencil
-using GLMakie
+using CairoMakie
 
 function plot_boundary_types()
     n = 16
@@ -214,7 +228,7 @@ function plot_boundary_types()
     y_constant = Array{Float64}(undef, n, n)
     convolution(Constant{2, 0.1}, k)(y0, y_constant)
 
-    fig = Figure(resolution=(900, 300))
+    fig = Figure(size=(900, 300))
     for (i, y) in enumerate([y_periodic, y_reflected, y_constant])
         ax = Axis(fig[1,i]; aspect=1)
         heatmap!(ax, y; colormap=:viridis)

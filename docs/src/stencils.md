@@ -179,7 +179,7 @@ module Life
             end
         end
     end
-    
+
     function plot()
         life = take(game_of_life(50, 50), 150)
         fig = Figure()

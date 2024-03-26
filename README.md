@@ -29,7 +29,7 @@
 Start the Julia REPL, and get into Pkg mode by pressing `]`. You may activate the package environment using `activate .` and then install the dependencies using `instantiate`. These steps only need to be run once.
 
 ```julia
-pkg> activate .
+pkg> activate workenv
 pkg> instantiate
 ```
 
@@ -44,14 +44,14 @@ julia --project=. -t 4
 You'll get the best experience by running examples from the Julia REPL. There are however also some example scripts that should work stand-alone.
 
 ```shell
-julia --project=. examples/ca-with-prod.jl
+julia --project=workenv examples/ca-with-prod.jl
 ```
 This command will write the output in the HDF5 format into the `data` folder. You can check that output is written there after executing this command.
 
 However, it is more efficient to run them from the REPL. Either run,
 
 ```shell
-julia --project=.
+julia --project=workenv
 ```
 
 or start the REPL from VS Code. In the REPL you can run

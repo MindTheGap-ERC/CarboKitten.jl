@@ -53,16 +53,16 @@
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2024-03-26T10:51:47.531394",
-      "hexdigest": "ba2e1b95c86cde59f3a9f388ec523ca7f17f4c79c80cd2daa67d1ad3f850b604",
-      "size": 12517
+      "modified": "2024-03-26T14:56:41.845959",
+      "hexdigest": "d13c0acb8cca5d1c0226062a7a4a335f48a76a849f1ca7722deb562e8f9a0931",
+      "size": 13113
     },
     {
       "path": "docs/src/stencils.md",
       "deps": null,
-      "modified": "2024-03-26T11:46:45.378150",
-      "hexdigest": "20b7468c943c961828f29d1b7311a6c85b0dcc9b7bfa86f5875d8e8978d9b16a",
-      "size": 8455
+      "modified": "2024-03-26T13:11:26.044055",
+      "hexdigest": "6d0f6d2ccffde1101dc02e880ef48444332160b38a4a19c2b78c266cd2a4d156",
+      "size": 8451
     },
     {
       "path": "examples/ca/burgess-2013.jl",
@@ -78,34 +78,25 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-01-15T16:09:23.618822",
-      "hexdigest": "eb81b5a1d94e6119bb171471fb270d8ccfbb10c3e391137680e097c156c13137",
-      "size": 337
+      "modified": "2024-03-26T14:51:12.332473",
+      "hexdigest": "29aa06ec40013eabc5fc35ba8947605e4b9f6fc6d76a18a491d14c570880bcb8",
+      "size": 494
     },
     {
       "path": "src/Stencil.jl",
       "deps": [
         "docs/src/stencils.md"
       ],
-      "modified": "2024-01-15T16:09:23.619822",
+      "modified": "2024-03-26T10:51:47.549394",
       "hexdigest": "28c4df483d74e690d71de3fe65696da6646843394b27ec2f6faf0f28656fb35b",
       "size": 2402
-    },
-    {
-      "path": "src/Visualization.jl",
-      "deps": [
-        "docs/src/ca-with-production.md"
-      ],
-      "modified": "2024-01-15T16:09:23.620822",
-      "hexdigest": "01ec959008e05f5f1b711c1eca17ed61de7922208276e0d30118251bdcec40f9",
-      "size": 2368
     },
     {
       "path": "src/Burgess2013/CA.jl",
       "deps": [
         "docs/src/carbocat-ca.md"
       ],
-      "modified": "2024-01-15T16:09:23.622822",
+      "modified": "2024-03-26T10:51:47.548394",
       "hexdigest": "0640cd71d6c509421530fe9e2074e0415cd2e6c471f85e46bb0cc0741bc7acb3",
       "size": 1520
     },
@@ -132,7 +123,7 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-01-15T16:09:33.818905",
+      "modified": "2024-03-26T10:51:47.549394",
       "hexdigest": "95a393e4f4c886a9d417dff6290f74a980f88a595e8f9d8e97af367b3d1b9095",
       "size": 4261
     },
@@ -150,16 +141,16 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-01-15T16:09:23.627822",
-      "hexdigest": "e5051ca2816f8847be744ec5ca6ed7f8640661e5c80c39c53aa4b442d1413d6e",
-      "size": 632
+      "modified": "2024-03-26T12:04:39.063453",
+      "hexdigest": "7903c2784a381c841c0f209619ae6483fcffa6c8234b9ab8b73c99503b9cce99",
+      "size": 689
     },
     {
       "path": "src/Burgess2013/Transport.jl",
       "deps": [
         "docs/src/carbocat-transport.md"
       ],
-      "modified": "2024-01-15T16:09:23.628822",
+      "modified": "2024-03-26T10:51:47.548394",
       "hexdigest": "7c1dffe96c435e4f534091f5124b60e6238474700a742456546f544ff1c9e5e2",
       "size": 1965
     },
@@ -180,24 +171,6 @@
       "modified": "2024-01-15T16:09:23.631822",
       "hexdigest": "737fa732bc412e538eadeeaca81ef4c98170bcb600415a1387a723e55adabf1b",
       "size": 468
-    },
-    {
-      "path": "examples/cap-slope.jl",
-      "deps": [
-        "docs/src/ca-with-production.md"
-      ],
-      "modified": "2024-01-15T16:09:23.632822",
-      "hexdigest": "595c5634298f38033d94e27d23f3f59b5c35cb41ed8e1fcb7383fce4fac3079a",
-      "size": 597
-    },
-    {
-      "path": "examples/plot-cap-slope.jl",
-      "deps": [
-        "docs/src/ca-with-production.md"
-      ],
-      "modified": "2024-01-15T16:09:23.633822",
-      "hexdigest": "59c52a8d8a7f8d2e7f18b624ef0b85536aea57131d4afda5626dd2076d0aa123",
-      "size": 311
     },
     {
       "path": "examples/ca-with-prod.jl",
@@ -223,7 +196,7 @@
         "docs/src/carbocat.md",
         "docs/src/bosscher-1992.md"
       ],
-      "modified": "2024-01-15T16:09:23.636822",
+      "modified": "2024-03-26T10:51:47.548394",
       "hexdigest": "a8a68a613cab71d93658bce1f772eb468193f68bb2d66e3dfcebf81c326d89f7",
       "size": 608
     },
@@ -252,11 +225,15 @@
         "docs/src/bosscher-1992.md",
         "docs/src/stencils.md",
         "docs/src/stencils.md",
-        "docs/src/stencils.md"
+        "docs/src/stencils.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-03-26T11:52:53.659443",
-      "hexdigest": "dfce4ec1560d46af3091a609578b486d9e35cc071e5ccdbf674f8d6830b33909",
-      "size": 2639
+      "modified": "2024-03-26T14:55:49.368561",
+      "hexdigest": "a904ad99e81551c79ef4529107c51e5f7b6bd690d98a0e236a92ac93e2d85dfa",
+      "size": 4009
     },
     {
       "path": "examples/ca/eca.jl",
@@ -272,9 +249,9 @@
       "deps": [
         "docs/src/stencils.md"
       ],
-      "modified": "2024-03-26T11:44:31.526762",
-      "hexdigest": "a09d70551fd33b6bc7945e56310850f5d433b78438f2fe0ae2b2022d5be81790",
-      "size": 1031
+      "modified": "2024-03-26T13:11:26.077055",
+      "hexdigest": "b52a20cb79efcd0d58be3788fc5cf795f57433ae33b8de1c51f3f790d1021e74",
+      "size": 1027
     },
     {
       "path": "examples/BS92/fig8-sealevel.jl",
@@ -302,14 +279,53 @@
       "modified": "2024-03-26T12:01:21.326903",
       "hexdigest": "fbf31c8e3f9af9cd2567c65c9540c836dcba75619d1c95b17392d9a4dc67befa",
       "size": 1307
+    },
+    {
+      "path": "ext/VisualizationExt.jl",
+      "deps": [
+        "docs/src/ca-with-production.md"
+      ],
+      "modified": "2024-03-26T14:47:30.490779",
+      "hexdigest": "92ccb985451f08d7bd182fcf3933e38f3c2bbd6ee1ddabb96c003de3d9fd8a51",
+      "size": 2473
+    },
+    {
+      "path": "src/Visualization.jl",
+      "deps": [
+        "docs/src/ca-with-production.md"
+      ],
+      "modified": "2024-03-26T14:45:45.510970",
+      "hexdigest": "3b6fb634a220c934a5839c48a1cf5674e4cea9784b481c46f54d50b2bc3c97b0",
+      "size": 291
+    },
+    {
+      "path": "examples/production-only/cap-slope.jl",
+      "deps": [
+        "docs/src/ca-with-production.md"
+      ],
+      "modified": "2024-03-26T14:55:49.358561",
+      "hexdigest": "a22d300ef04b6d52461351e4caba259c9d4fa55c61d157445529d88fc13e6295",
+      "size": 675
+    },
+    {
+      "path": "examples/production-only/plot-cap-slope.jl",
+      "deps": [
+        "docs/src/ca-with-production.md"
+      ],
+      "modified": "2024-03-26T14:56:45.008983",
+      "hexdigest": "16fff94b322901d0d23a612436c11c58c21e604047a5c9c21757a89dcf896176",
+      "size": 456
     }
   ],
   "source": [],
   "target": [
     "examples/ca/long-term.jl",
+    "examples/production-only/plot-cap-slope.jl",
     "src/Erosion.jl",
     "src/Visualization.jl",
+    "examples/production-only/cap-slope.jl",
     "examples/BS92/BS92.jl",
+    "ext/VisualizationExt.jl",
     "src/Utility.jl",
     "src/Burgess2013/CA.jl",
     "examples/ca/burgess-2013.jl",
@@ -322,14 +338,12 @@
     "examples/ca-with-prod.jl",
     "src/Stencil.jl",
     "examples/ca/parameter-scan.jl",
-    "examples/plot-cap-slope.jl",
     "examples/plot-caps-osc.jl",
     "src/Burgess2013/Transport.jl",
     "examples/ca/eca.jl",
     "src/Burgess2013/Production.jl",
     "examples/burgess2013-fig2.gnuplot",
     "examples/BS92/fig8.jl",
-    "examples/cap-slope.jl",
     "examples/BS92/fig8-sealevel.jl",
     "examples/plot-tanh.gnuplot"
   ]

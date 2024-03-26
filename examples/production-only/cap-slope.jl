@@ -1,4 +1,7 @@
-# ~/~ begin <<docs/src/ca-with-production.md#examples/cap-slope.jl>>[init]
+# ~/~ begin <<docs/src/ca-with-production.md#examples/production-only/cap-slope.jl>>[init]
+#| creates: data/ca-prod-slope.h5
+#| requires: src/CaProd.jl
+
 using CarboKitten.CaProd
 
 DEFAULT_INPUT = CaProd.Input(

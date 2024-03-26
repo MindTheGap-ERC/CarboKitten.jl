@@ -18,8 +18,10 @@
 ├── Makefile            # command-line short hands
 ├── Manifest.toml       #
 ├── Project.toml        # project dependencies
+├── pyproject.toml      # dependencies for running Entangled
 ├── README.md           # 
-└── src                 # tangled library source
+├── src                 # tangled library source
+└── test                # unit tests
 ```
 
 ## Running
@@ -67,31 +69,49 @@ include("examples/bosscher-schlager-1992.jl")
 After that, you may edit an example and rerun.
 
 ## Development
-While developing, you'll need to run the Entangled watch daemon to keep Markdown and Julia code synchronized.
+
+### Global dependencies
+CarboKitten has some dependencies that are only needed for developing and running examples, but not for using the library on its own. Those are specified in the `workenv` package. So make sure `workenv` is activated (`Pkg.activate("./workenv")`)
+
+We have experimented with using `DaemonMode.jl` to run Julia scripts from the command line, but found too many issues with unreproducible errors. So for the moment `DaemonMode` is not used.
+
+### Entangled
+While developing, you'll need to run the [Entangled](https://entangled.github.io/) watch daemon to keep documentation in Markdown and Julia code synchronized. You may install Entangled using `pip install entangled-cli`, or use the provided Poetry environment in `pyproject.toml`.
+
+The first time running, from the project root folder:
 
 ```shell
-entangled watch
+poetry install
 ```
 
-The documentation is generated using `Documenter.jl`. The most efficient way to serve this documentation and have it update upon changes, is to run `LiveServer` from the Julia REPL or
+Then,
 
 ```shell
-make serve-docs
+poetry run entangled watch
 ```
 
-To generate the more expensive figures (actually resulting from simulation etc.), you need to run a `DaemonMode` process in the background.
+To generate the more expensive figures (actually resulting from simulation etc.), you may run,
 
 ```shell
-make run-daemon
+poetry run brei figures
 ```
 
-After that, you can run
+## Documentation
+To generate the documentation, run `julia`.
+
+```
+pkg> activate docs
+pkg> instantiate
+julia> include("docs/make.jl")
+```
+
+The example figures are generated seperately (see previous section), and are included in version control.
+
+The most efficient way to serve this documentation and have it update upon changes, is to run `LiveServer` from the Julia REPL or
 
 ```shell
-make figures
+julia --project=docs -e 'using LiveServer; servedocs()'
 ```
-
-To run simulations and plot figures depending on those.
 
 ## References
 

@@ -82,11 +82,8 @@ The rest of the script is bookkeeping
 #| requires: src/Stencil.jl
 #| collect: figures
 
-using CarboKitten.BoundaryTrait
-using CarboKitten.Stencil
-using GLMakie
-
 module ECA
+    using CarboKitten.BoundaryTrait
     using CarboKitten.Stencil
     using CairoMakie
 
@@ -104,7 +101,7 @@ module ECA
     end
 
     function plot()
-        fig = Figure(resolution=(1200,400))
+        fig = Figure(size=(1200,400))
         for (idx, r) in enumerate([18, 30, 110])
             ax = Axis(fig[1,idx]; title="rule $(r)", yreversed=true, limits=((1, 256), (1, 128)))
             heatmap!(ax, eca(r, 256, 128); colormap=:Blues)

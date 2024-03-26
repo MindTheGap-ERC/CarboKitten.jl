@@ -145,13 +145,13 @@ end
 For both `Periodic` and `Reflected` boundaries it is also possible to write a function that makes any coordinate within bounds. This uses the fact that reflected boundaries are also periodic for a box twice the size.
 
 ``` {.julia #canonical-coordinates}
-function canonical(::Type{Periodic{2}}, shape::NTuple{dim,Int}, i::CartesianIndex) where {dim}
+function canonical(::Type{Periodic{dim}}, shape::NTuple{dim,Int}, i::CartesianIndex) where {dim}
     CartesianIndex(mod1.(Tuple(i), shape)...)
 end
 
-function canonical(::Type{Reflected{2}}, shape::NTuple{dim,Int}, i::CartesianIndex) where {dim}
+function canonical(::Type{Reflected{dim}}, shape::NTuple{dim,Int}, i::CartesianIndex) where {dim}
     modflip(a, l) = let b = mod1(a, 2l)
-        b > l ? 2l - b : b
+        b > l ? 2l - b + 1 : b
     end
     CartesianIndex(modflip.(Tuple(i), shape)...) 
 end

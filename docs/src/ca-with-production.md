@@ -92,7 +92,7 @@ In the case `write_interval` is not one, we will sum production rates over sever
 Each iteration of the model, we produce a `Frame`.
 
 ``` {.julia #ca-prod-frame}
-struct Frame
+struct ProductFrame
     production::Array{Float64,3}
 end
 ```
@@ -120,19 +120,15 @@ $$U: (S, \Delta) \to S.$$
 
 In practice however, the update function changes the state in-place.
 
-``` {.julia file=src/ForwardModel.jl}
-module ForwardModel
-
+``` {.julia #ca-prod-model}
 function run(state, propagator, updater)
-    Channel{Frame}() do ch
+    Channel{ProductFrame}() do ch
         while true
             Δ = p(state)
             put!(ch, Δ)
             u(state, Δ)
         end
     end
-end
-
 end
 ```
 
@@ -196,7 +192,7 @@ Every iteration we update the height variable with the subsidence rate, and add 
 ``` {.julia #ca-prod-model}
 function updater(input::Input)
     n_facies = length(input.facies)
-    function (s::State, Δ::Frame)
+    function (s::State, Δ::ProductFrame)
         s.height .-= sum(Δ.production; dims=3) .* input.Δt
         s.height .+= input.subsidence_rate * input.Δt
         s.time += input.Δt
@@ -211,7 +207,7 @@ function run_model(input::Input)
     s = initial_state(input)
     p = propagator(input)
     u = updater(input)
-    ForwardModel.run(s, p, u)
+    run(s, p, u)
 end
 ```
 
@@ -223,7 +219,6 @@ using ..Utility
 # using CarboKitten.BS92: sealevel_curve
 using ..Stencil
 using ..Burgess2013
-using ..ForwardModel
 
 using HDF5
 using .Iterators: drop, peel, partition, map, take
@@ -234,8 +229,8 @@ using .Iterators: drop, peel, partition, map, take
 <<ca-prod-propagator>>
 <<ca-prod-model>>
 
-function stack_frames(fs::Vector{Frame})  # -> Frame
-    Frame(sum(f.production for f in fs))
+function stack_frames(fs::Vector{ProductFrame})  # -> Frame
+    ProductFrame(sum(f.production for f in fs))
 end
 
 function main(input::Input, output::String)

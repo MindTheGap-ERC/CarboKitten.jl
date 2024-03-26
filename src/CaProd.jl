@@ -6,7 +6,6 @@ using ..Utility
 # using CarboKitten.BS92: sealevel_curve
 using ..Stencil
 using ..Burgess2013
-using ..ForwardModel
 
 using HDF5
 using .Iterators: drop, peel, partition, map, take
@@ -29,7 +28,7 @@ using .Iterators: drop, peel, partition, map, take
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-frame>>[init]
-struct Frame
+struct ProductFrame
     production::Array{Float64,3}
 end
 # ~/~ end
@@ -68,6 +67,17 @@ function propagator(input::Input)
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[init]
+function run(state, propagator, updater)
+    Channel{ProductFrame}() do ch
+        while true
+            Δ = p(state)
+            put!(ch, Δ)
+            u(state, Δ)
+        end
+    end
+end
+# ~/~ end
+# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[1]
 function initial_state(input::Input)  # -> State
     height = zeros(Float64, input.grid_size...)
     for i in CartesianIndices(height)
@@ -76,27 +86,27 @@ function initial_state(input::Input)  # -> State
     return State(0.0, height)
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[1]
+# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[2]
 function updater(input::Input)
     n_facies = length(input.facies)
-    function (s::State, Δ::Frame)
+    function (s::State, Δ::ProductFrame)
         s.height .-= sum(Δ.production; dims=3) .* input.Δt
         s.height .+= input.subsidence_rate * input.Δt
         s.time += input.Δt
     end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[2]
+# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[3]
 function run_model(input::Input)
     s = initial_state(input)
     p = propagator(input)
     u = updater(input)
-    ForwardModel.run(s, p, u)
+    run(s, p, u)
 end
 # ~/~ end
 
-function stack_frames(fs::Vector{Frame})  # -> Frame
-    Frame(sum(f.production for f in fs))
+function stack_frames(fs::Vector{ProductFrame})  # -> Frame
+    ProductFrame(sum(f.production for f in fs))
 end
 
 function main(input::Input, output::String)

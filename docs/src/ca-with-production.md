@@ -4,7 +4,10 @@ This model combines BS92 production with the B13 cellular automaton.
 ## Complete example
 This example is running for 10000 steps to 1Myr on a 100 $\times$ 50 grid, starting with a sloped height down to 50m. The `sea_level`, and `initial_depth` arguments are functions. The `phys_scale` argument translate pixels on the grid into physical metres. The `write_interval` indicates to write output every 10 iterations, summing the production over that range. You may copy paste the following code into your own script or notebook, and play around with input values.
 
-``` {.julia .build file=examples/caps-osc.jl target=data/caps-osc.h5}
+``` {.julia .task file=examples/caps-osc.jl}
+#| creates: data/caps-osc.h5
+#| requires: src/CaProd.jl
+
 using CarboKitten.CaProd
 
 DEFAULT_INPUT = CaProd.Input(
@@ -29,10 +32,15 @@ CaProd.main(DEFAULT_INPUT, "data/caps-osc.h5")
 
 This writes output to an HDF5 file that you may use for further analysis and visualization.
 
-``` {.julia .build file=examples/plot-caps-osc.jl target=docs/src/fig/b13-capsosc-crosssection.png deps=data/caps-osc.h5}
+``` {.julia .task file=examples/plot-caps-osc.jl}
+#| creates: docs/src/fig/b13-capsosc-crosssection.png
+#| requires: data/caps-osc.h5 ext/VisualizationExt.jl
+#| collect: figures
+
 module Script
+    using CairoMakie
+    using GeometryBasics
     using CarboKitten.Visualization
-    using GLMakie
 
     function main()
         f = Figure()
@@ -292,7 +300,10 @@ CaProd.main(DEFAULT_INPUT, "data/ca-prod.h5")
 ## Case 2
 For the second case, we start with a slope.
 
-``` {.julia .build file=examples/cap-slope.jl target=data/ca-prod-slope.h5}
+``` {.julia .task file=examples/production-only/cap-slope.jl}
+#| creates: data/ca-prod-slope.h5
+#| requires: src/CaProd.jl
+
 using CarboKitten.CaProd
 
 DEFAULT_INPUT = CaProd.Input(
@@ -315,10 +326,14 @@ DEFAULT_INPUT = CaProd.Input(
 CaProd.main(DEFAULT_INPUT, "data/ca-prod-slope.h5")
 ```
 
-``` {.julia .build file=examples/plot-cap-slope.jl target=docs/src/fig/b13-crosssection.png deps=data/ca-prod-slope.h5}
+``` {.julia .task file=examples/production-only/plot-cap-slope.jl}
+#| creates: docs/src/fig/b13-crosssection.png
+#| requires: data/ca-prod-slope.h5 ext/VisualizationExt.jl
+#| collect: figures
+
 module Script
 using CarboKitten.Visualization
-using GLMakie
+using CairoMakie
 
 function main()
     f = Figure()
@@ -336,20 +351,31 @@ Script.main()
 
 ``` {.julia file=src/Visualization.jl}
 module Visualization
+    export plot_crosssection
 
-export plot_crosssection
+    function plot_crosssection(args...)
+       print("You'll need to import both CairoMakie and GeometryBasics before using this.\n")
+    end
+end  # module
+```
+
+``` {.julia file=ext/VisualizationExt.jl}
+module VisualizationExt
+
+using CarboKitten
+using CarboKitten.Visualization
 
 using HDF5
-using GLMakie
+using CairoMakie
 using GeometryBasics
 
-function plot_crosssection(pos, datafile)
+function CarboKitten.Visualization.plot_crosssection(pos, datafile)
     # x: 1-d array with x-coordinates
     # t: 1-d array with time-coordinates (n_steps + 1)
     # h[x, t]: height fn, monotonic increasing in time
     # p[x, facies, t]: production rate
     # taken at y = y_max / 2, h[x, 1] is initial height
-    n_facies, x, t, h, p = h5open(datafile,"r") do fid
+    n_facies, x, t, h, p = h5open(datafile, "r") do fid
         attr = HDF5.attributes(fid["input"])
         Δt = attr["delta_t"][]
         subsidence_rate = attr["subsidence_rate"][]
@@ -358,32 +384,32 @@ function plot_crosssection(pos, datafile)
         total_sediment = sum(fid["sediment"][]; dims=3)
         initial_height = fid["input/height"][]
         center = div(size(total_sediment)[1], 2)
-        elevation = cumsum(total_sediment; dims=4)[center,:,1,:] .* Δt .- initial_height .- total_subsidence
+        elevation = cumsum(total_sediment; dims=4)[center, :, 1, :] .* Δt .- initial_height .- total_subsidence
         t = fid["input/t"][]
         n_facies = size(fid["sediment"])[3]
 
         return n_facies,
-               fid["input/x"][],
-               [t; Δt*attr["time_steps"][]],
-               hcat(.- initial_height .- total_subsidence, elevation),
-               fid["sediment"][center,:,:,:]
+        fid["input/x"][],
+        [t; Δt * attr["time_steps"][]],
+        hcat(.-initial_height .- total_subsidence, elevation),
+        fid["sediment"][center, :, :, :]
     end
 
-	pts = vec(Point{2,Float64}.(x, h[:,2:end]))
-	c = vec(argmax(p; dims=2)[:,1,:] .|> (c -> c[2]))
-	rect = Rect2(0.0, 0.0, 1.0, 1.0)
-	m_tmp = GeometryBasics.mesh(Tesselation(rect, (100, 1000)))
-	m = GeometryBasics.Mesh(pts, faces(m_tmp))
+    pts = vec(Point{2,Float64}.(x, h[:, 2:end]))
+    c = vec(argmax(p; dims=2)[:, 1, :] .|> (c -> c[2]))
+    rect = Rect2(0.0, 0.0, 1.0, 1.0)
+    m_tmp = GeometryBasics.mesh(Tesselation(rect, (100, 1000)))
+    m = GeometryBasics.Mesh(pts, faces(m_tmp))
 
-	# pts = vec(Point{2,Float64}.(x, h))
-	# c = argmax(p; dims=2)[:,1,:] .|> (c -> c[2])
+    # pts = vec(Point{2,Float64}.(x, h))
+    # c = argmax(p; dims=2)[:,1,:] .|> (c -> c[2])
     # w = size(x)[1]
 
     # face(idx) = let k = idx[1] + idx[2]*w
     #     TriangleFace(k, k+1, k+1+w), TriangleFace(k+1+w, k+w, k)
     # end
 
-	ax = Axis(pos, xlabel="location", ylabel="depth", limits=((-12,x[end]), nothing))
+    ax = Axis(pos, xlabel="location", ylabel="depth", limits=((-12, x[end]), nothing))
     # for f in 1:n_facies
     #     locs = CartesianIndices((size(x)[1], size(t)[1] - 1))[c .== f]
     #     triangles = collect(Iterators.flatten(face.(locs)))
@@ -391,14 +417,14 @@ function plot_crosssection(pos, datafile)
     #     mesh!(ax, m)
     # end
 
-	mesh!(ax, m, color=c, alpha=0.7)
-	for idx in [1,501,1001]
-		lines!(ax, x, h[:, idx], color=:black)
-		text!(ax, -2.0, h[1, idx]; text="$(t[idx]) Myr", align=(:right, :center))
-	end
-	for idx in [250,750]
-		lines!(ax, x, h[:, idx], color=:black, linewidth=0.5)
-	end
+    mesh!(ax, m, color=c, alpha=0.7)
+    for idx in [1, 501, 1001]
+        lines!(ax, x, h[:, idx], color=:black)
+        text!(ax, -2.0, h[1, idx]; text="$(t[idx]) Myr", align=(:right, :center))
+    end
+    for idx in [250, 750]
+        lines!(ax, x, h[:, idx], color=:black, linewidth=0.5)
+    end
 end
 
 end

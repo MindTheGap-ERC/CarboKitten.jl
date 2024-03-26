@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/bosscher-1992.md#src/BS92.jl>>[init]
+# ~/~ begin <<docs/src/bosscher-1992.md#examples/BS92/BS92.jl>>[init]
 module BS92
 
 using DifferentialEquations
@@ -31,7 +31,7 @@ end
 # ~/~ end
 
 function sealevel_curve()
-     data = DataFrame(CSV.File(pkgdir(BS92, "data", "bs92-sealevel-curve.csv")))
+     data = DataFrame(CSV.File("data/bs92-sealevel-curve.csv"))
      linear_interpolation(data.time, data.depth)
 end
 

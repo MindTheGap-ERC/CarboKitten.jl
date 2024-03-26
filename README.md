@@ -18,8 +18,10 @@
 ├── Makefile            # command-line short hands
 ├── Manifest.toml       #
 ├── Project.toml        # project dependencies
+├── pyproject.toml      # dependencies for running Entangled
 ├── README.md           # 
-└── src                 # tangled library source
+├── src                 # tangled library source
+└── test                # unit tests
 ```
 
 ## Running
@@ -27,7 +29,7 @@
 Start the Julia REPL, and get into Pkg mode by pressing `]`. You may activate the package environment using `activate .` and then install the dependencies using `instantiate`. These steps only need to be run once.
 
 ```julia
-pkg> activate .
+pkg> activate workenv
 pkg> instantiate
 ```
 
@@ -37,73 +39,86 @@ If you want to start a REPL with the correct environment already activated, use 
 julia --project=. -t 4
 ```
 
-### Global dependencies
-CarboKitten has some dependencies that are only needed for developing, but not for using the library. You may want to install those in the global environment:
-
-```shell
-julia -e 'using Pkg; Pkg.add.(["DaemonMode", "LiveServer", "Revise"])'
-```
-
 ### Examples
 
-You'll get the best experience by running examples from the Julia REPL. There are however also some example scripts, that should work stand-alone.
+You'll get the best experience by running examples from the Julia REPL. There are however also some example scripts that should work stand-alone.
 
 ```shell
-julia --project=. examples/bosscher-schlager-1992.jl
+julia --project=workenv examples/ca-with-prod.jl
 ```
+This command will write the output in the HDF5 format into the `data` folder. You can check that output is written there after executing this command.
 
 However, it is more efficient to run them from the REPL. Either run,
 
 ```shell
-julia --project=.
+julia --project=workenv
 ```
 
 or start the REPL from VS Code. In the REPL you can run
 
 ```julia
-include("examples/bosscher-schlager-1992.jl")
+include("examples/ca-with-prod.jl")
 ```
 
 After that, you may edit an example and rerun.
 
 ## Development
-While developing, you'll need to run the Entangled watch daemon to keep Markdown and Julia code synchronized.
+
+### Global dependencies
+CarboKitten has some dependencies that are only needed for developing and running examples, but not for using the library on its own. Those are specified in the `workenv` package. So make sure `workenv` is activated (`Pkg.activate("./workenv")`)
+
+We have experimented with using `DaemonMode.jl` to run Julia scripts from the command line, but found too many issues with unreproducible errors. So for the moment `DaemonMode` is not used.
+
+### Entangled
+While developing, you'll need to run the [Entangled](https://entangled.github.io/) watch daemon to keep documentation in Markdown and Julia code synchronized. You may install Entangled using `pip install entangled-cli`, or use the provided Poetry environment in `pyproject.toml`.
+
+The first time running, from the project root folder:
 
 ```shell
-entangled watch
+poetry install
 ```
 
-The documentation is generated using `Documenter.jl`. The most efficient way to serve this documentation and have it update upon changes, is to run `LiveServer` from the Julia REPL or
+Then,
 
 ```shell
-make serve-docs
+poetry run entangled watch
 ```
 
-To generate the more expensive figures (actually resulting from simulation etc.), you need to run a `DaemonMode` process in the background.
+To generate the more expensive figures (actually resulting from simulation etc.), you may run,
 
 ```shell
-make run-daemon
+poetry run brei figures
 ```
 
-After that, you can run
+## Documentation
+To generate the documentation, run `julia`.
+
+```
+pkg> activate docs
+pkg> instantiate
+julia> include("docs/make.jl")
+```
+
+The example figures are generated seperately (see previous section), and are included in version control.
+
+The most efficient way to serve this documentation and have it update upon changes, is to run `LiveServer` from the Julia REPL or
 
 ```shell
-make figures
+julia --project=docs -e 'using LiveServer; servedocs()'
 ```
 
-To run simulations and plot figures depending on those.
 
 ## References
 
 Code in this repository is based on
 
-- Burgess 2013
-- Bosscher and Schlager 1992
+- Burgess, P. M. (2013). [CarboCAT: A cellular automata model of heterogeneous carbonate strata](https://www.sciencedirect.com/science/article/pii/S0098300411002949). Computers & geosciences, 53, 129-140.
+- Bosscher, H., & Schlager, W. (1992). [Computer simulation of reef growth](https://doi.org/10.1111/j.1365-3091.1992.tb02130.x). Sedimentology, 39(3), 503-512.
 
 ## Authors
 
 Lead engineer: __Johan Hidding__  
-Netherlands eScience Center  
+The Netherlands eScience Center  
 email: j.hidding [at] esciencecenter.nl   
 Web page: [www.esciencecenter.nl/team/johan-hidding-msc/](https://www.esciencecenter.nl/team/johan-hidding-msc/)  
 ORCID: [0000-0002-7550-1796](https://orcid.org/0000-0002-7550-1796)
@@ -133,7 +148,7 @@ Web page: [www.uu.nl/staff/XLiu6](https://www.uu.nl/staff/XLiu6)
 ORCID: 
 
 __Hanno Spreeuw__  
-Netherlands eScience Center  
+The Netherlands eScience Center  
 email: h.spreeuw [at] esciencecenter.nl  
 Web page: [www.esciencecenter.nl/team/dr-hanno-spreeuw/](https://www.esciencecenter.nl/team/dr-hanno-spreeuw)  
 ORCID: [0000-0002-5057-0322](https://orcid.org/0000-0002-5057-0322)
@@ -145,7 +160,7 @@ ORCID: [0000-0002-3323-807X](https://orcid.org/0000-0002-3323-807X)
 
 ## Copyright
 
-Copyright 2023 Netherlands eScience Center and Utrecht University
+Copyright 2023-2024 The Netherlands eScience Center and Utrecht University
 
 ## License
 

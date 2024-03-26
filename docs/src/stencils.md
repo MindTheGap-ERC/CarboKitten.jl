@@ -75,35 +75,45 @@ rule(i::Int) = function (foo::AbstractVector{T}) where T <: Integer
 end
 ```
 
-The rest of the script is boring
+The rest of the script is bookkeeping
 
-``` {.julia .task}
+``` {.julia .task file=examples/ca/eca.jl}
 #| creates: docs/src/fig/eca.png
+#| requires: src/Stencil.jl
 #| collect: figures
 
 using CarboKitten.BoundaryTrait
 using CarboKitten.Stencil
 using GLMakie
 
-<<eca-rule>>
+module ECA
+    using CarboKitten.Stencil
+    using CairoMakie
 
-function eca(r::Int, n::Int, iter::Int)
-    y = Array{Int}(undef, n, iter)
-    y[:, 1] = zeros(Int, n)
-    y[div(n, 2), 1] = 1
-    stencil_op = stencil(Int, Periodic{1}, (3,), rule(r))
-    for i in 2:iter
-        stencil_op(view(y, :, i-1), view(y, :, i))
+    <<eca-rule>>
+
+    function eca(r::Int, n::Int, iter::Int)
+        y = Array{Int}(undef, n, iter)
+        y[:, 1] = zeros(Int, n)
+        y[div(n, 2), 1] = 1
+        stencil_op = stencil(Int, Periodic{1}, (3,), rule(r))
+        for i in 2:iter
+            stencil_op(view(y, :, i-1), view(y, :, i))
+        end
+        y
     end
-    y
+
+    function plot()
+        fig = Figure(resolution=(1200,400))
+        for (idx, r) in enumerate([18, 30, 110])
+            ax = Axis(fig[1,idx]; title="rule $(r)", yreversed=true, limits=((1, 256), (1, 128)))
+            heatmap!(ax, eca(r, 256, 128); colormap=:Blues)
+        end
+        save("docs/src/fig/eca.png", fig)
+    end
 end
 
-fig = Figure(resolution=(1200,400))
-for (idx, r) in enumerate([18, 30, 110])
-    ax = Axis(fig[1,idx]; title="rule $(r)", yreversed=true, limits=((1, 256), (1, 128)))
-    heatmap!(ax, eca(r, 256, 128); colormap=:Blues)
-end
-save("docs/src/fig/eca.png", fig)
+ECA.plot()
 ```
 
 ![](fig/eca.png)
@@ -113,41 +123,48 @@ Even these one-dimensional CA show highly complex behaviour. For instance, it ha
 ### Game of Life
 Perhaps the most famous CA is Conway's Game of Life. This is a two-dimensional two-state (dead/alive) CA, with the following rules: a cell is alive in the next generation if it is alive and has two neighbours or if it has three neighbours; in all other cases the cell is dead.
 
-``` {.julia .task}
+``` {.julia .task file=examples/ca/life.jl}
 #| creates: docs/src/fig/life.gif
+#| requires: src/Stencil.jl
 #| collect: figures
 
-using CarboKitten.BoundaryTrait
-using CarboKitten.Stencil
-using GLMakie
-using .Iterators: take
+module Life
+    using CarboKitten.BoundaryTrait
+    using CarboKitten.Stencil
+    using GLMakie
+    using .Iterators: take
 
-"x is a 3x3 region around the cell at x[2,2]."
-rules(x) = let c = x[2, 2], s = sum(x) - c
-    c && s == 2 || s == 3
-end
+    "x is a 3x3 region around the cell at x[2,2]."
+    rules(x) = let c = x[2, 2], s = sum(x) - c
+        c && s == 2 || s == 3
+    end
 
-function game_of_life(w, h)
-    y1 = rand(Bool, (w, h))
-    y2 = Array{Bool}(undef, w, h)
+    function game_of_life(w, h)
+        y1 = rand(Bool, (w, h))
+        y2 = Array{Bool}(undef, w, h)
 
-    op = stencil(Bool, Periodic{2}, (3, 3), rules)
-    Channel() do ch
-        put!(ch, y1)
-        while true
-            op(y1, y2)
-            (y1, y2) = (y2, y1)
+        op = stencil(Bool, Periodic{2}, (3, 3), rules)
+        Channel() do ch
             put!(ch, y1)
+            while true
+                op(y1, y2)
+                (y1, y2) = (y2, y1)
+                put!(ch, y1)
+            end
+        end
+    end
+
+    function plot()
+        life = take(game_of_life(50, 50), 150)
+        fig = Figure()
+        ax = Axis(fig[1,1], aspect=1)
+        record(fig, "docs/src/fig/life.gif", life; framerate=10) do frame
+            heatmap!(ax, frame; colormap=:Blues)
         end
     end
 end
 
-life = take(game_of_life(50, 50), 150)
-fig = Figure()
-ax = Axis(fig[1,1], aspect=1)
-record(fig, "docs/src/fig/life.gif", life; framerate=10) do frame
-    heatmap!(ax, frame; colormap=:Blues)
-end
+Life.plot()
 ```
 
 ![](fig/life.gif)
@@ -161,12 +178,14 @@ Notice, that for the periodic boundaries, the bottom left and top right are neig
 
 ``` {.julia .task}
 #| creates: docs/src/fig/boundary_types.png
+#| requires: src/Stencil.jl
 #| collect: figures
+
 module Script
 
 using CarboKitten.BoundaryTrait
 using CarboKitten.Stencil
-using GLMakie
+using CairoMakie
 
 function plot_boundary_types()
     n = 16
@@ -184,7 +203,7 @@ function plot_boundary_types()
     y_constant = Array{Float64}(undef, n, n)
     convolution(Constant{2, 0.1}, k)(y0, y_constant)
 
-    fig = Figure(resolution=(900, 300))
+    fig = Figure(size=(900, 300))
     for (i, y) in enumerate([y_periodic, y_reflected, y_constant])
         ax = Axis(fig[1,i]; aspect=1)
         heatmap!(ax, y; colormap=:viridis)

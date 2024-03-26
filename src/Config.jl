@@ -25,12 +25,6 @@ end
 phys_size(grid_size, phys_scale) = (
     x = grid_size[1] * (phys_scale / m |> NoUnits),
     y = grid_size[2] * (phys_scale / m |> NoUnits))
-
-function centered_axes(box::AbstractBox)
-    x = ((0:(box.grid_size[1] - 1)) .+ 0.5) .* box.phys_scale
-    y = ((0:(box.grid_size[2] - 1)) .+ 0.5) .* box.phys_scale
-    return x, y'
-end
 # ~/~ end
 # ~/~ begin <<docs/src/boxes.md#config-types>>[1]
 abstract type AbstractTimeProperties end

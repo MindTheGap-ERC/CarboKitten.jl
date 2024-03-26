@@ -143,12 +143,17 @@ end
 # ~/~ end
 # ~/~ begin <<docs/src/submarine-transport.md#cat-propagator>>[init]
 function particles(input::Input, Δ::ProductFrame)
-  n_facies = length(input.facies)
+  phys_scale = input.box.phys_scale / u"m" |> NoUnits
   Channel{Particle}() do ch
-    for facies in 1:n_facies
-      θ = input.facies[facies].critical_stress
-      for (p, m) in Transport.grid_sample(input.box, Δ.production[facies,:,:], input.transport_subsample)
-        put!(ch, Particle(p, m, θ, facies, nothing))
+    for (i, (idx, mass)) in enumerate(pairs(Δ.production))
+      subgrid_spacing = 1.0 / input.transport_subsample
+      subgrid_axis = 0.0:subgrid_spacing:1.0 - subgrid_spacing
+      subgrid = product(subgrid_axis, subgrid_axis)
+      for (j, dx) in enumerate(subgrid)
+        facies_type = idx[1]
+        p = (x=(idx[2]-1 + dx[1]) * phys_scale, y=(idx[3]-1 + dx[2]) * phys_scale)
+        θ = input.facies[facies_type].critical_stress
+        put!(ch, Particle(p, mass * subgrid_spacing^2, θ, facies_type, nothing))
       end
     end
   end

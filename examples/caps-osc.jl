@@ -1,4 +1,7 @@
 # ~/~ begin <<docs/src/ca-with-production.md#examples/caps-osc.jl>>[init]
+#| creates: data/caps-osc.h5
+#| requires: src/CaProd.jl
+
 using CarboKitten.CaProd
 
 DEFAULT_INPUT = CaProd.Input(

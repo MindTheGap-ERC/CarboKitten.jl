@@ -1,6 +1,10 @@
-# ~/~ begin <<docs/src/bosscher-1992.md#examples/bosscher-schlager-1992.jl>>[init]
+# ~/~ begin <<docs/src/bosscher-1992.md#examples/BS92/fig8.jl>>[init]
+#| creates: docs/src/fig/bs92-fig8.svg
+#| requires: data/bs92-sealevel-curve.csv examples/BS92/BS92.jl
+#| collect: figures
+
 module Script
-     using CarboKitten.BS92
+     include("BS92.jl")
      using CairoMakie
 
      function main()

@@ -25,9 +25,9 @@
     {
       "path": "docs/src/bosscher-1992.md",
       "deps": null,
-      "modified": "2024-01-15T16:07:21.395822",
-      "hexdigest": "dc5d2f05a43e5f48efbdb0d02f5fd7344fdbfa232d24761e155a1711be70da7a",
-      "size": 8500
+      "modified": "2024-03-26T12:01:21.276903",
+      "hexdigest": "92e4ab9d27385850cac5ba8627430e662b5a5459ee9d7c60474a5085a629eb46",
+      "size": 8547
     },
     {
       "path": "docs/src/carbocat-ca.md",
@@ -99,15 +99,6 @@
       "modified": "2024-01-15T16:09:23.620822",
       "hexdigest": "01ec959008e05f5f1b711c1eca17ed61de7922208276e0d30118251bdcec40f9",
       "size": 2368
-    },
-    {
-      "path": "examples/bosscher-schlager-1992.jl",
-      "deps": [
-        "docs/src/bosscher-1992.md"
-      ],
-      "modified": "2024-01-15T16:09:23.621822",
-      "hexdigest": "2be07453b4a16ef909910fa08a93a7827d3a4b201dc12943a662e7d3df855a5d",
-      "size": 829
     },
     {
       "path": "src/Burgess2013/CA.jl",
@@ -209,15 +200,6 @@
       "size": 311
     },
     {
-      "path": "src/BS92.jl",
-      "deps": [
-        "docs/src/bosscher-1992.md"
-      ],
-      "modified": "2024-01-15T16:09:23.634822",
-      "hexdigest": "323ff32878d059439ebc3a805d3cb86d7e7ad8444fc768d88e9d5454883fefb7",
-      "size": 1314
-    },
-    {
       "path": "examples/ca-with-prod.jl",
       "deps": [
         "docs/src/ca-with-production.md"
@@ -255,15 +237,6 @@
       "size": 322
     },
     {
-      "path": "src/BS92/fig8-sealevel.jl",
-      "deps": [
-        "docs/src/bosscher-1992.md"
-      ],
-      "modified": "2024-01-15T16:09:23.637822",
-      "hexdigest": "4aa34253b8561069bba9096666736c2a5ddb70845571cdf4901356813fc181d0",
-      "size": 614
-    },
-    {
       "path": "examples/ca/long-term.jl",
       "deps": [
         "docs/src/carbocat-ca.md"
@@ -275,13 +248,15 @@
     {
       "path": ".entangled/tasks.json",
       "deps": [
+        "docs/src/bosscher-1992.md",
+        "docs/src/bosscher-1992.md",
         "docs/src/stencils.md",
         "docs/src/stencils.md",
         "docs/src/stencils.md"
       ],
-      "modified": "2024-03-26T11:46:45.429151",
-      "hexdigest": "24186a581782b21f97605e03a43e68595fa6ab687a47f67b69723547ec146786",
-      "size": 1955
+      "modified": "2024-03-26T11:52:53.659443",
+      "hexdigest": "dfce4ec1560d46af3091a609578b486d9e35cc071e5ccdbf674f8d6830b33909",
+      "size": 2639
     },
     {
       "path": "examples/ca/eca.jl",
@@ -300,6 +275,33 @@
       "modified": "2024-03-26T11:44:31.526762",
       "hexdigest": "a09d70551fd33b6bc7945e56310850f5d433b78438f2fe0ae2b2022d5be81790",
       "size": 1031
+    },
+    {
+      "path": "examples/BS92/fig8-sealevel.jl",
+      "deps": [
+        "docs/src/bosscher-1992.md"
+      ],
+      "modified": "2024-03-26T11:49:10.082705",
+      "hexdigest": "4c7f64104580344ee4f5d96906140dff14af1a68a9a7530fcf85a74ca99c94a9",
+      "size": 703
+    },
+    {
+      "path": "examples/BS92/fig8.jl",
+      "deps": [
+        "docs/src/bosscher-1992.md"
+      ],
+      "modified": "2024-03-26T11:52:53.658443",
+      "hexdigest": "12e185f9fc89aed599e83c66ce5295802f0b2c36498eeafa1fdc923d7178156d",
+      "size": 936
+    },
+    {
+      "path": "examples/BS92/BS92.jl",
+      "deps": [
+        "docs/src/bosscher-1992.md"
+      ],
+      "modified": "2024-03-26T12:01:21.326903",
+      "hexdigest": "fbf31c8e3f9af9cd2567c65c9540c836dcba75619d1c95b17392d9a4dc67befa",
+      "size": 1307
     }
   ],
   "source": [],
@@ -307,7 +309,7 @@
     "examples/ca/long-term.jl",
     "src/Erosion.jl",
     "src/Visualization.jl",
-    "src/BS92.jl",
+    "examples/BS92/BS92.jl",
     "src/Utility.jl",
     "src/Burgess2013/CA.jl",
     "examples/ca/burgess-2013.jl",
@@ -326,9 +328,9 @@
     "examples/ca/eca.jl",
     "src/Burgess2013/Production.jl",
     "examples/burgess2013-fig2.gnuplot",
-    "examples/bosscher-schlager-1992.jl",
+    "examples/BS92/fig8.jl",
     "examples/cap-slope.jl",
-    "src/BS92/fig8-sealevel.jl",
+    "examples/BS92/fig8-sealevel.jl",
     "examples/plot-tanh.gnuplot"
   ]
 }

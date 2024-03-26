@@ -3,6 +3,35 @@
     {
       "description": null,
       "creates": [
+        "data/bs92-sealevel-curve.csv"
+      ],
+      "requires": [
+        "data/bs92-sealevel-input.png"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/BS92/fig8-sealevel.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/fig/bs92-fig8.svg"
+      ],
+      "requires": [
+        "data/bs92-sealevel-curve.csv",
+        "examples/BS92/BS92.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/BS92/fig8.jl"
+    },
+    {
+      "description": null,
+      "creates": [
         "docs/src/fig/eca.png"
       ],
       "requires": [
@@ -45,6 +74,7 @@
     {
       "name": "figures",
       "requires": [
+        "docs/src/fig/bs92-fig8.svg",
         "docs/src/fig/eca.png",
         "docs/src/fig/life.gif",
         "docs/src/fig/boundary_types.png"

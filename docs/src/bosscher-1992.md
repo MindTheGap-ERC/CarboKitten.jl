@@ -104,7 +104,10 @@ The most impressive result in BS92 is the last figure. They show an input curve 
 <details><summary>Extracting Sealevel Curve from an image</summary>
 ```
 
-``` {.julia .build file=src/BS92/fig8-sealevel.jl target=data/bs92-sealevel-curve.csv deps="data/bs92-sealevel-input.png"}
+``` {.julia .task file=examples/BS92/fig8-sealevel.jl}
+#| creates: data/bs92-sealevel-curve.csv
+#| requires: data/bs92-sealevel-input.png
+
 module Script
     using Images
     using DataFrames
@@ -133,7 +136,7 @@ Script.main()
 
 Using `DifferentialEquations.jl` we can integrate Equation @eq:growth-eqn. Interestingly, the only integrator that gave me noise free results is `Euler`. This may be due to the sudden shut-down of production at $w = 0$.
 
-``` {.julia file=src/BS92.jl}
+``` {.julia file=examples/BS92/BS92.jl}
 module BS92
 
 using DifferentialEquations
@@ -144,7 +147,7 @@ using Interpolations
 <<b92-model>>
 
 function sealevel_curve()
-     data = DataFrame(CSV.File(pkgdir(BS92, "data", "bs92-sealevel-curve.csv")))
+     data = DataFrame(CSV.File("data/bs92-sealevel-curve.csv"))
      linear_interpolation(data.time, data.depth)
 end
 
@@ -174,9 +177,13 @@ Note the simplicity of this result: there is no dependency on space, only on the
 <details><summary>Plotting code</summary>
 ```
 
-``` {.julia .build file=examples/bosscher-schlager-1992.jl target=docs/src/fig/bs92-fig8.svg deps=data/bs92-sealevel-curve.csv}
+``` {.julia .task file=examples/BS92/fig8.jl}
+#| creates: docs/src/fig/bs92-fig8.svg
+#| requires: data/bs92-sealevel-curve.csv examples/BS92/BS92.jl
+#| collect: figures
+
 module Script
-     using CarboKitten.BS92
+     include("BS92.jl")
      using CairoMakie
 
      function main()

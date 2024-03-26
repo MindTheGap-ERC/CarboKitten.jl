@@ -105,32 +105,42 @@ end
 ### Elementary Cellular Automata
 An Elementary Cellular Automata is a one-dimensional CA with two states. Every next generation depends on the direct neighbourhood of three cells. Since there are $2^3 = 8$ patterns and two outcomes for every pattern, there are $2^8 = 256$ possible ECA.
 
-``` {.julia .build target=docs/src/fig/eca.png}
-using CarboKitten.Stencil
-using GLMakie
+``` {.julia .task file=examples/ca/eca.jl}
+#| creates: docs/src/fig/eca.png
+#| requires: src/Stencil.jl
+#| collect: figures
 
-rule(i::Int) = function (foo::AbstractVector{T}) where T <: Integer
-    d = foo[1]*4 + foo[2]*2 + foo[3]
-    i & (1 << d) == 0 ? 0 : 1
-end
+module ECA
+    using CarboKitten.Stencil
+    using CairoMakie
 
-function eca(r::Int, n::Int, iter::Int)
-    y = Array{Int}(undef, n, iter)
-    y[:, 1] = zeros(Int, n)
-    y[div(n, 2), 1] = 1
-    stencil_op = stencil(Int, Periodic{1}, (3,), rule(r))
-    for i in 2:iter
-        stencil_op(view(y, :, i-1), view(y, :, i))
+    rule(i::Int) = function (foo::AbstractVector{T}) where T <: Integer
+        d = foo[1]*4 + foo[2]*2 + foo[3]
+        i & (1 << d) == 0 ? 0 : 1
     end
-    y
+
+    function eca(r::Int, n::Int, iter::Int)
+        y = Array{Int}(undef, n, iter)
+        y[:, 1] = zeros(Int, n)
+        y[div(n, 2), 1] = 1
+        stencil_op = stencil(Int, Periodic{1}, (3,), rule(r))
+        for i in 2:iter
+            stencil_op(view(y, :, i-1), view(y, :, i))
+        end
+        y
+    end
+
+    function plot()
+        fig = Figure(resolution=(1200,400))
+        for (idx, r) in enumerate([18, 30, 110])
+            ax = Axis(fig[1,idx]; title="rule $(r)", yreversed=true, limits=((1, 256), (1, 128)))
+            heatmap!(ax, eca(r, 256, 128); colormap=:Blues)
+        end
+        save("docs/src/fig/eca.png", fig)
+    end
 end
 
-fig = Figure(resolution=(1200,400))
-for (idx, r) in enumerate([18, 30, 110])
-    ax = Axis(fig[1,idx]; title="rule $(r)", yreversed=true, limits=((1, 256), (1, 128)))
-    heatmap!(ax, eca(r, 256, 128); colormap=:Blues)
-end
-save("docs/src/fig/eca.png", fig)
+ECA.plot()
 ```
 
 ![](fig/eca.png)

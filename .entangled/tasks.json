@@ -1,0 +1,24 @@
+{
+  "task": [
+    {
+      "description": null,
+      "creates": [
+        "docs/src/fig/eca.png"
+      ],
+      "requires": [
+        "src/Stencil.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/ca/eca.jl"
+    },
+    {
+      "name": "figures",
+      "requires": [
+        "docs/src/fig/eca.png"
+      ]
+    }
+  ]
+}

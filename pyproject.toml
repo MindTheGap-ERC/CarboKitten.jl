@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "carbokitten"
+version = "0.1.0"
+description = "Development environment for CarboKitten. This is not an actual Python package."
+authors = ["Johan Hidding <j.hidding@esciencecenter.nl>"]
+license = "Apache-2"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+entangled-cli = "^2.0.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

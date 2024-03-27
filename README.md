@@ -106,7 +106,7 @@ The most efficient way to serve this documentation and have it update upon chang
 ```shell
 julia --project=docs -e 'using LiveServer; servedocs()'
 ```
-
+The "Warning: Documenter could not auto-detect the building environment Skipping deployment." warning is expected; local changes should not trigger the building of new GitHub pages.
 
 ## References
 

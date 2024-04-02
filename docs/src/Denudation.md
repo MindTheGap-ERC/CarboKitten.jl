@@ -20,13 +20,17 @@ end
 
 ### Redistribution of sediments
 
-``` {.julia file=src/Erosion2.jl}
-
-<<physical-erosion>>
-
 The redistribution of sediments after physical erosion is based on [van der Wiel et al., 2007](https://www.sciencedirect.com/science/article/pii/S0169555X07001341): the eroded sediments that calculated from the above equation are distributed to the neighboring 8 cells according to the slopes (defined as elevation differences/horizontal differences) towards each direction. The amount of sediments of one cell received is calculated by three functions below: 
 
 - find the kernel to calculate redistibution co-efficient for the neighboring 8 cells depending on slopes
+
+``` {.julia file=src/Erosion2.jl}
+
+<<physical-erosion>>
+<<erosion-transport>>
+```
+
+``` {.julia #erosion-transport}
 function redistribution_kernel(w::Matrix{Float64},cellsize::Float64)
     s = zeros(Float64,(3,3))
 	s[1,1] = -(w[1,1] - w[2,2]) / cellsize
@@ -54,8 +58,11 @@ function redistribution_kernel(w::Matrix{Float64},cellsize::Float64)
 	s./sumslope
 	end
 end
+```
 
 - find how much sediments would distributed to the neighboring 8 cells
+
+``` {.julia #erosion-transport}
 function mass_erosion(::Type{T},::Type{BT},slope::Matrix{Float64},n::NTuple{dim,Int}) where {T, dim, BT <: Boundary{dim}}
 	m = n .÷ 2
     stencil_shape = range.(.-m, m)
@@ -74,8 +81,11 @@ function mass_erosion(::Type{T},::Type{BT},slope::Matrix{Float64},n::NTuple{dim,
 	return redis		
 
 end
+```
 
 - how much sediments would one cell receive in total
+
+``` {.julia #erosion-transport}
 function total_mass_redistribution(redis::Array{Float64},slope::Matrix{Float64})
 	result = zeros(Float64,size(slope))
 	for idx in CartesianIndices(redis)
@@ -92,6 +102,7 @@ function total_mass_redistribution(redis::Array{Float64},slope::Matrix{Float64})
 end
 end
 ```
+
 ## Chemical dissolution
 The details could be found in paper by Kaufman 2002, Terra Nova. 
 [link is here](https://onlinelibrary.wiley.com/doi/full/10.1046/j.1365-3121.2001.00345.x)
@@ -151,10 +162,6 @@ Therefore the $Daverage = (I * ceq/ρ) * (1 – (λ/z0) * (1 – e^{(-z0/λ)}))$
 
 α used in this article is α = 2·10^{−6} or 3.5·10^{−7} cm/s (for temp at 298K). This is indeed a controversial parameter TBH. We can try different values and see what happens.
 
-``` {.julia file=src/CarbDissolution.jl}
-
-```
-
 ## Emperical denudation
 Cl isotopes are an emerging tool to decipher the denudation rates (chemical dissolution + physical erosion) in carbonate-dominated area.
 
@@ -169,10 +176,6 @@ We can see that both the slope and precipitation could increase the denudation r
 In terms of impletementation, I used the function form of D = P * S, where D means denudation rates, P means effects of precipitation while S means effects of Slope. By doing so, we can consider both effects. Such formula structure is similar to RUSLE model, a widely used LEM (e.g., (Thapa et al., 2020)[https://environmentalsystemsresearch.springeropen.com/articles/10.1186/s40068-020-00177-2]).
 
 The codes are attached:
-
-``` {.julia file=src/EmpericalDenudation.jl}
-
-```
 
 ## How to use?
 In CarboKitten, you could choose which type of the three you would like to attempt. To do this you could simply change the 'erosino_type' in the input. 

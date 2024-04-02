@@ -31,7 +31,7 @@
     },
     {
       "path": "docs/src/carbocat.md",
-      "deps": [],
+      "deps": null,
       "modified": "2024-04-02T13:22:41.264519",
       "hexdigest": "f1df8cdce305cb322d5dfab8f820e12db3101a6427b0156ab49458a56a8a41d9",
       "size": 5880
@@ -45,7 +45,7 @@
     },
     {
       "path": "docs/src/ca-with-production.md",
-      "deps": [],
+      "deps": null,
       "modified": "2024-04-02T13:22:41.256519",
       "hexdigest": "533bded61bde0077302947e1df203219f6d5eb72a5b192321b78ec84f4888f28",
       "size": 14952
@@ -266,44 +266,44 @@
     {
       "path": "docs/src/Denudation.md",
       "deps": null,
-      "modified": "2024-04-02T13:04:26.395917",
-      "hexdigest": "b72b8996b2eb1eb022ad95238cb6b7d769b8a319834a03ea72a13cbdfda1e265",
-      "size": 10908
+      "modified": "2024-04-02T13:24:37.961972",
+      "hexdigest": "fa0cd3d1b58f44cf7f0222d36c7dd7d47d0d7662d0de7a74d3ee1ae0ac0dc276",
+      "size": 10934
     },
     {
       "path": "src/Erosion.jl",
       "deps": [
         "docs/src/Denudation.md"
       ],
-      "modified": "2024-04-02T13:04:45.573985",
-      "hexdigest": "9ede728b8bc4b26453262fe89016f97080b979e607cca6290895976f7396670e",
-      "size": 2266
+      "modified": "2024-04-02T13:24:29.921941",
+      "hexdigest": "95d34a87f1991f308bbaedcb7500cb27572fcadb0c2bccd971d1dc9008f1bf2e",
+      "size": 2292
     }
   ],
   "source": [],
   "target": [
-    "src/Burgess2013/CA.jl",
-    "examples/ca/parameter-scan.jl",
-    "src/BS92/fig8-sealevel.jl",
-    "src/CaProd.jl",
-    "examples/cap-slope.jl",
-    "src/Utility.jl",
-    "src/Erosion.jl",
-    "examples/plot-cap-slope.jl",
-    "src/Burgess2013.jl",
     "examples/plot-tanh.gnuplot",
-    "examples/ca-with-prod.jl",
-    "src/Stencil.jl",
-    "examples/ca/burgess-2013.jl",
-    "src/Burgess2013/Config.jl",
+    "examples/ca/long-term.jl",
+    "src/Burgess2013.jl",
+    "examples/ca/parameter-scan.jl",
+    "src/Burgess2013/CA.jl",
     "examples/plot-caps-osc.jl",
+    "examples/cap-slope.jl",
+    "examples/burgess2013-fig2.gnuplot",
     "src/Burgess2013/Production.jl",
     "src/Burgess2013/Transport.jl",
-    "examples/bosscher-schlager-1992.jl",
+    "examples/ca-with-prod.jl",
+    "examples/ca/burgess-2013.jl",
+    "examples/plot-cap-slope.jl",
     "src/Visualization.jl",
-    "examples/burgess2013-fig2.gnuplot",
+    "src/CaProd.jl",
+    "src/BS92/fig8-sealevel.jl",
+    "examples/bosscher-schlager-1992.jl",
+    "src/Stencil.jl",
     "examples/caps-osc.jl",
-    "examples/ca/long-term.jl",
-    "src/BS92.jl"
+    "src/Erosion.jl",
+    "src/Burgess2013/Config.jl",
+    "src/BS92.jl",
+    "src/Utility.jl"
   ]
 }

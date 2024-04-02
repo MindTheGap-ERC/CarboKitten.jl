@@ -1,4 +1,6 @@
 # ~/~ begin <<docs/src/Denudation.md#src/Erosion.jl>>[init]
+module Erosion
+
 # ~/~ begin <<docs/src/Denudation.md#physical-erosion>>[init]
 function physical_erosion(slope::Float64, Facies::facies)
     local kv = 0.23 #very arguable paramster
@@ -70,6 +72,6 @@ function total_mass_redistribution(redis::Array{Float64},slope::Matrix{Float64})
 	end
 	return result
 end
-end
 # ~/~ end
+end  # module
 # ~/~ end

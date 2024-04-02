@@ -25,8 +25,11 @@ The redistribution of sediments after physical erosion is based on [van der Wiel
 - find the kernel to calculate redistibution co-efficient for the neighboring 8 cells depending on slopes
 
 ``` {.julia file=src/Erosion.jl}
+module Erosion
+
 <<physical-erosion>>
 <<erosion-transport>>
+end  # module
 ```
 
 ``` {.julia #erosion-transport}
@@ -98,7 +101,6 @@ function total_mass_redistribution(redis::Array{Float64},slope::Matrix{Float64})
 		end
 	end
 	return result
-end
 end
 ```
 

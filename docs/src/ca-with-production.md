@@ -5,26 +5,35 @@ This model combines BS92 production with the B13 cellular automaton.
 This example is running for 10000 steps to 1Myr on a 100 $\times$ 50 grid, starting with a sloped height down to 50m. The `sea_level`, and `initial_depth` arguments are functions. The `phys_scale` argument translate pixels on the grid into physical metres. The `write_interval` indicates to write output every 10 iterations, summing the production over that range. You may copy paste the following code into your own script or notebook, and play around with input values.
 
 ``` {.julia .build file=examples/caps-osc.jl target=data/caps-osc.h5}
+using CarboKitten
 using CarboKitten.CaProd
+using CarboKitten.Burgess2013
 
-DEFAULT_INPUT = CaProd.Input(
-    sea_level = t -> 4 * sin(2π * t / 0.2), 
+#change sinouid function
+DEFAULT_INPUT = CarboKitten.CaProd.Input(
+    sea_level = t -> 20 * sin(2π * t) + 5 * sin(2π * t / 0.112), 
     subsidence_rate = 50.0,
     initial_depth = x -> x / 2,
     grid_size = (50, 100),
     phys_scale = 1.0,
-    Δt = 0.0001,
-    write_interval = 10,
-    time_steps = 10000,
+    Δt = 0.001,
+    write_interval = 1,
+    time_steps = 2000,
     facies = [
-        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
+        Burgess2013.Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1000, 2730, 0.5),
+        Burgess2013.Facies((4, 10), (6, 10), 400.0, 0.1, 300, 1000, 2730, 0.5),
+        Burgess2013.Facies((4, 10), (6, 10), 100.0, 0.005, 300, 1000, 2730, 0.5)
     ],
-    insolation = 2000.0
+    insolation = 2000.0,
+    temp = 288.0,
+    precip = 1000.0,
+    pco2 = 10^(-1.5),
+    alpha = 2e-3,
+    erosion_type = 1
+
 )
 
-CaProd.main(DEFAULT_INPUT, "data/caps-osc.h5")
+CarboKitten.CaProd.main(DEFAULT_INPUT, "data/caps-osc.h5")
 ```
 
 This writes output to an HDF5 file that you may use for further analysis and visualization.
@@ -74,6 +83,13 @@ Saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation p
 
     facies::Vector{Facies}
     insolation::Float64
+
+    temp #temperature
+    precip #precipitation
+    pco2 #co2
+    alpha #reaction rate
+    erosion_type::Int64
+
 end
 ```
 
@@ -86,6 +102,8 @@ Each iteration of the model, we produce a `Frame`.
 ``` {.julia #ca-prod-frame}
 struct Frame
     production::Array{Float64,3}
+    denudation::Array{Float64,2}
+    redistribution::Array{Float64,2}
 end
 ```
 
@@ -132,6 +150,7 @@ The propagator computes the production rates (and also erosion) given the state 
 ``` {.julia #ca-prod-model}
 function propagator(input::Input)
     <<ca-prod-init-propagator>>
+    slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
     function (s::State)  # -> Frame
         <<ca-prod-propagate>>
     end
@@ -148,22 +167,46 @@ ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
 function water_depth(s::State)
     s.height .- input.sea_level(s.time)
 end
+# prepare functions for erosion
 ```
 
 Now, to generate a production from a given state, we advance the CA by one step and compute the production accordingly.
 
 ``` {.julia #ca-prod-propagate}
-result = zeros(Float64, input.grid_size..., n_facies)
+production = zeros(Float64, input.grid_size..., n_facies)
+denudation = zeros(Float64, input.grid_size...)
+redistribution = zeros(Float64, input.grid_size...)
+slope = zeros(Float64, input.grid_size...)
 facies_map, ca = peel(ca)
 w = water_depth(s)
+slopefn(w,slope,input.phys_scale) # slope is calculated with square so no need for -w
+if input.erosion_type == 2
+redis = mass_erosion(Float64,Periodic{2},slope,(3,3),w,input.phys_scale,input.facies.inf)
+redistribution = total_mass_redistribution(redis, slope)
+else
+redistribution = redistribution
+end
 Threads.@threads for idx in CartesianIndices(facies_map)
     f = facies_map[idx]
-    if f == 0
-        continue
+        if f == 0
+            continue
+        end
+    if w[idx] > 0.0
+        production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
+    else
+        if input.erosion_type == 1
+            denudation[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
+        elseif input.erosion_type == 2
+            denudation[Tuple(idx)...] = physical_erosion(slope[idx],input.facies.inf)
+            redistribution[Tuple(idx)...] = redistribution[Tuple(idx)...]
+        elseif input.erosion_type == 3
+            denudation[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
+        elseif nput.erosion_type == 0
+            denudation[Tuple(idx)...] = denudation[Tuple(idx)...]
+        end
     end
-    result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
 end
-return Frame(result)
+return Frame(production, denudation, redistribution)#
 ```
 
 ## Updater
@@ -174,6 +217,8 @@ function updater(input::Input)
     n_facies = length(input.facies)
     function (s::State, Δ::Frame)
         s.height .-= sum(Δ.production; dims=3) .* input.Δt
+        s.height .+= Δ.denudation .* input.Δt  #number already in kyr
+        s.height .-= Δ.redistribution .* input.Δt
         s.height .+= input.subsidence_rate * input.Δt
         s.time += input.Δt
     end
@@ -202,11 +247,13 @@ end
 module CaProd
 
 using CarboKitten
-using CarboKitten.Stencil: Periodic
-using CarboKitten.Utility
-# using CarboKitten.BS92: sealevel_curve
-using CarboKitten.Stencil
-using CarboKitten.Burgess2013
+using ..Stencil: Periodic, stencil
+using ..Utility
+#using ..BS92: sealevel_curve
+using ..EmpericalDenudation
+using ..CarbDissolution
+using ..PhysicalErosion
+using ..Burgess2013
 
 using HDF5
 using .Iterators: drop, peel, partition, map, take
@@ -217,7 +264,7 @@ using .Iterators: drop, peel, partition, map, take
 <<ca-prod-model>>
 
 function stack_frames(fs::Vector{Frame})  # -> Frame
-    Frame(sum(f.production for f in fs))
+    Frame(sum(f.production for f in fs),sum(f.denudation for f in fs),sum(f.redistribution for f in fs))#
 end
 
 function main(input::Input, output::String)
@@ -242,10 +289,18 @@ function main(input::Input, output::String)
         ds = create_dataset(fid, "sediment", datatype(Float64),
             dataspace(input.grid_size..., n_facies, input.time_steps),
             chunk=(input.grid_size..., n_facies, 1))
+        denudation = create_dataset(fid, "denudation", datatype(Float64),
+            dataspace(input.grid_size..., input.time_steps),
+           chunk=(input.grid_size..., 1))
+        redistribution = create_dataset(fid, "redistribution", datatype(Float64),
+           dataspace(input.grid_size..., input.time_steps),
+          chunk=(input.grid_size..., 1))
 
         results = map(stack_frames, partition(run_model(input), input.write_interval))
         for (step, frame) in enumerate(take(results, n_writes))
             ds[:, :, :, step] = frame.production
+            denudation[:,:,step] = frame.denudation
+            redistribution[:,:,step] = frame.redistribution
         end
     end
 end
@@ -295,9 +350,9 @@ DEFAULT_INPUT = CaProd.Input(
     write_interval=1,
     time_steps=1000,
     facies=[
-        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
+        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1000, 2730, 0.5),
+        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300, 1000, 2730, 0.5),
+        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300, 1000, 2730, 0.5)
     ],
     insolation=2000.0
 )
@@ -330,7 +385,7 @@ module Visualization
 export plot_crosssection
 
 using HDF5
-using GLMakie
+using CairoMakie
 using GeometryBasics
 
 function plot_crosssection(pos, datafile)

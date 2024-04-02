@@ -24,8 +24,7 @@ The redistribution of sediments after physical erosion is based on [van der Wiel
 
 - find the kernel to calculate redistibution co-efficient for the neighboring 8 cells depending on slopes
 
-``` {.julia file=src/Erosion2.jl}
-
+``` {.julia file=src/Erosion.jl}
 <<physical-erosion>>
 <<erosion-transport>>
 ```

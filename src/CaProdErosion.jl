@@ -1,12 +1,14 @@
-# ~/~ begin <<docs/src/ca-with-production.md#src/CaProd.jl>>[init]
-module CaProd
+# ~/~ begin <<docs/src/ca-prod-with-erosion.md#src/CaProdErosion.jl>>[init]
+module CaProdErosion
 
 using CarboKitten
-using CarboKitten.Stencil: Periodic
-using CarboKitten.Utility
-# using CarboKitten.BS92: sealevel_curve
-using CarboKitten.Stencil
-using CarboKitten.Burgess2013
+using ..Stencil: Periodic, stencil
+using ..Utility
+#using ..BS92: sealevel_curve
+using ..EmpericalDenudation
+using ..CarbDissolution
+using ..PhysicalErosion
+using ..Burgess2013
 
 using HDF5
 using .Iterators: drop, peel, partition, map, take
@@ -297,7 +299,7 @@ end
 # ~/~ end
 
 function stack_frames(fs::Vector{Frame})  # -> Frame
-    Frame(sum(f.production for f in fs))
+    Frame(sum(f.production for f in fs),sum(f.denudation for f in fs),sum(f.redistribution for f in fs))#
 end
 
 function main(input::Input, output::String)
@@ -322,10 +324,18 @@ function main(input::Input, output::String)
         ds = create_dataset(fid, "sediment", datatype(Float64),
             dataspace(input.grid_size..., n_facies, input.time_steps),
             chunk=(input.grid_size..., n_facies, 1))
+        denudation = create_dataset(fid, "denudation", datatype(Float64),
+            dataspace(input.grid_size..., input.time_steps),
+           chunk=(input.grid_size..., 1))
+        redistribution = create_dataset(fid, "redistribution", datatype(Float64),
+           dataspace(input.grid_size..., input.time_steps),
+          chunk=(input.grid_size..., 1))
 
         results = map(stack_frames, partition(run_model(input), input.write_interval))
         for (step, frame) in enumerate(take(results, n_writes))
             ds[:, :, :, step] = frame.production
+            denudation[:,:,step] = frame.denudation
+            redistribution[:,:,step] = frame.redistribution
         end
     end
 end

@@ -11,9 +11,9 @@
     {
       "path": "docs/src/utility.md",
       "deps": null,
-      "modified": "2024-04-03T16:23:59.956307",
-      "hexdigest": "a93eb2436428a6d2f5f34e04d179e5881e219d3de9096d20ab22dd461831b833",
-      "size": 1697
+      "modified": "2024-04-03T16:29:53.416783",
+      "hexdigest": "c6615334f9a5d74bd3b7f3410ed6ee783d1c244e1f3b35c5a4e0e66ab1570b74",
+      "size": 1202
     },
     {
       "path": "docs/src/bs92-w-erosion.md",
@@ -148,11 +148,12 @@
     {
       "path": "src/Utility.jl",
       "deps": [
+        "docs/src/unitful.md",
         "docs/src/utility.md"
       ],
-      "modified": "2024-04-03T16:23:59.897306",
-      "hexdigest": "a41182b89aae593337854ba67794013471098a334f03db9b147326503bc05616",
-      "size": 1371
+      "modified": "2024-04-03T16:41:44.513904",
+      "hexdigest": "66c0ca632edeafb2ee20cb3d713daacc57e9ac79ce8a94c3fa3a30af7ffe7769",
+      "size": 1431
     },
     {
       "path": "src/Burgess2013/Config.jl",
@@ -304,16 +305,16 @@
       "deps": [
         "docs/src/unitful.md"
       ],
-      "modified": "2024-04-03T13:49:36.725829",
-      "hexdigest": "ad89a8e67d4c6b0084b04da82aaf6880931d5f2208ee53d6c540d44d99664283",
-      "size": 1352
+      "modified": "2024-04-03T16:41:11.244662",
+      "hexdigest": "10a108805f734cd7ef7d3013a89de2536effc2890630b8ad6bf6632f43f11291",
+      "size": 1673
     },
     {
       "path": "docs/src/unitful.md",
       "deps": null,
-      "modified": "2024-04-03T13:49:36.700829",
-      "hexdigest": "eb1b0055f853a58e9fee80a6665e94e52c380be3fcdc014e381501048b9476e2",
-      "size": 2215
+      "modified": "2024-04-03T16:41:44.457904",
+      "hexdigest": "a678988077b0d38c5e3dd10f6ad5f86e08db583f8f50eca841ebddeeaefa7b39",
+      "size": 3588
     },
     {
       "path": "src/Vectors.jl",

@@ -36,6 +36,7 @@ function Base.iterate(s::Select, state)
     end
 end
 
+# ~/~ begin <<docs/src/unitful.md#utility>>[init]
 function in_units_of(unit)
     function magnitude(a::AbstractArray{Quantity{RT, NoDims, U}, dim}) where {RT <: Real, U, dim}
         return a .|> NoUnits
@@ -57,6 +58,7 @@ function in_units_of(unit)
         x / unit |> magnitude
     end
 end
+# ~/~ end
 
 end
 # ~/~ end

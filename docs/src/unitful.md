@@ -5,6 +5,7 @@ Physical quantities in CarboKitten are always specified using the `Unitful.jl` f
 @testset "Unitful" begin
     using Unitful
     using Unitful.DefaultSymbols
+    using CarboKitten.Utility
 
     <<unitful-spec>>
 end
@@ -70,4 +71,42 @@ photon_wave_length(E::Quantity{Float64,𝐄,J}) where {J} =
 
 @test photon_wave_length(2.38u"eV") ≈ 5209.4201u"Å"
 @test_throws MethodError photon_wave_length(1u"m")
+```
+
+## Negating Units
+There is a handy way of negating units (getting back to raw scalars) using the `NoUnits` function object.
+
+``` {.julia #unitful-spec}
+@test 23u"km" / u"m" |> NoUnits == 23000
+```
+
+Now, suppose we have a `Vector` of which we don't know the exact units, but we want to save values in meters to HDF5. When we get a vector in meters, and divide by `u"m"`, Unitful will simplify and return a plain `Vector{Float64}`. However, if the units were `u"km"`, then we need to convert by multiplying by 1000. We could do `vec .|> NoUnits`, but this will always allocate a new vector, even when it is not needed. We have the short-hand `in_units_of` that solves this issue.
+
+``` {.julia #unitful-spec}
+@test 23u"km" |> in_units_of(u"m") == 23000
+@test [4, 5, 6]u"m" |> in_units_of(u"m") == [4, 5, 6]
+```
+
+``` {.julia #utility}
+function in_units_of(unit)
+    function magnitude(a::AbstractArray{Quantity{RT, NoDims, U}, dim}) where {RT <: Real, U, dim}
+        return a .|> NoUnits
+    end
+
+    function magnitude(a::AbstractArray{RT, dim}) where {RT <: Real, dim}
+        return a
+    end
+
+    function magnitude(a::RT) where {RT <: Real}
+        return a
+    end
+
+    function magnitude(a::Quantity{RT, NoDims, U}) where {RT <: Real, U}
+        return a |> NoUnits
+    end
+
+    function (x)
+        x / unit |> magnitude
+    end
+end
 ```

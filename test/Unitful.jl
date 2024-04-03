@@ -2,6 +2,7 @@
 @testset "Unitful" begin
     using Unitful
     using Unitful.DefaultSymbols
+    using CarboKitten.Utility
 
     # ~/~ begin <<docs/src/unitful.md#unitful-spec>>[init]
     @test 1.0m === 1.0u"m"
@@ -39,6 +40,13 @@
         @test_throws MethodError photon_wave_length(1u"m")
         # ~/~ end
     end
+    # ~/~ end
+    # ~/~ begin <<docs/src/unitful.md#unitful-spec>>[5]
+    @test 23u"km" / u"m" |> NoUnits == 23000
+    # ~/~ end
+    # ~/~ begin <<docs/src/unitful.md#unitful-spec>>[6]
+    @test 23u"km" |> in_units_of(u"m") == 23000
+    @test [4, 5, 6]u"m" |> in_units_of(u"m") == [4, 5, 6]
     # ~/~ end
 end
 # ~/~ end

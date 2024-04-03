@@ -107,6 +107,8 @@ The most efficient way to serve this documentation and have it update upon chang
 julia --project=docs -e 'using LiveServer; servedocs()'
 ```
 
+### Citations
+Bibliography is generated from citations in `docs/src/ref.bib` using `DocumenterCitations.jl`. Citing a paper from there is done like `[Bosscher1992](@cite)`.
 
 ## References
 

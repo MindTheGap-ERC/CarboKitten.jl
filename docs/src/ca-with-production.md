@@ -8,26 +8,35 @@ This example is running for 10000 steps to 1Myr on a 100 $\times$ 50 grid, start
 #| creates: data/caps-osc.h5
 #| requires: src/CaProd.jl
 
+module Script
+using CarboKitten.BoundaryTrait: Shelf
+using CarboKitten.Config: Box, TimeProperties
+using CarboKitten.Burgess2013.Config: MODEL1
 using CarboKitten.CaProd
+using Unitful
 
-DEFAULT_INPUT = CaProd.Input(
-    sea_level = t -> 4 * sin(2π * t / 0.2), 
-    subsidence_rate = 50.0,
-    initial_depth = x -> x / 2,
-    grid_size = (50, 100),
-    phys_scale = 1.0,
-    Δt = 0.0001,
-    write_interval = 10,
-    time_steps = 10000,
-    facies = [
-        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
-    ],
-    insolation = 2000.0
+const PERIOD = 200.0u"kyr"
+const AMPLITUDE = 4.0u"m"
+
+const DEFAULT_INPUT = CaProd.Input(
+  box = Box{Shelf}(
+    grid_size = (100, 50),
+    phys_scale = 1.0u"m"
+  ),
+  time = TimeProperties(
+    Δt = 0.0001u"Myr",
+    steps = 10000,
+    write_interval = 10
+  ),
+  sea_level = t -> AMPLITUDE * sin(2π * t / PERIOD), 
+  subsidence_rate=50.0u"m/Myr",
+  initial_depth=x -> x / 2000.0,
+  facies=MODEL1,
+  insolation=2000.0u"W/m^2"
 )
+end
 
-CaProd.main(DEFAULT_INPUT, "data/caps-osc.h5")
+Script.CaProd.main(Script.DEFAULT_INPUT, "data/caps-osc.h5")
 ```
 
 This writes output to an HDF5 file that you may use for further analysis and visualization.
@@ -263,7 +272,7 @@ end # CaProd
 ## Case 1
 The first case uses the same settings as Burgess 2013: an initial depth of 2m, subsidence rate of 50 m/Myr and constant sea level.
 
-``` {.julia .task file=examples/production-only/uniform.jl}
+``` {.julia .task file=examples/production-only/ca-uniform.jl}
 #| creates: data/ca-prod.h5
 #| requires: src/CaProd.jl
 
@@ -298,30 +307,36 @@ CaProd.main(Script.DEFAULT_INPUT, "data/ca-prod.h5")
 ## Case 2
 For the second case, we start with a slope.
 
-``` {.julia .task file=examples/production-only/cap-slope.jl}
+``` {.julia .task file=examples/production-only/ca-slope.jl}
 #| creates: data/ca-prod-slope.h5
 #| requires: src/CaProd.jl
 
+module Script
+using CarboKitten.BoundaryTrait: Shelf
+using CarboKitten.Config: Box, TimeProperties
+using CarboKitten.Burgess2013.Config: MODEL1
 using CarboKitten.CaProd
+using Unitful
 
-DEFAULT_INPUT = CaProd.Input(
-    sea_level=_ -> 0.0,
-    subsidence_rate=50.0,
-    initial_depth=x -> x / 2.0,
-    grid_size=(50, 100),
-    phys_scale=1.0,
-    Δt=0.001,
-    write_interval=1,
-    time_steps=1000,
-    facies=[
-        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
-    ],
-    insolation=2000.0
+const DEFAULT_INPUT = CaProd.Input(
+  box = Box{Shelf}(
+    grid_size = (100, 50),
+    phys_scale = 1.0u"m"
+  ),
+  time = TimeProperties(
+    Δt = 0.001u"Myr",
+    steps = 1000,
+    write_interval = 1
+  ),
+  sea_level=_ -> 0.0u"m",
+  subsidence_rate=50.0u"m/Myr",
+  initial_depth=x -> x / 2000.0,
+  facies=MODEL1,
+  insolation=2000.0u"W/m^2"
 )
+end
 
-CaProd.main(DEFAULT_INPUT, "data/ca-prod-slope.h5")
+Script.CaProd.main(Script.DEFAULT_INPUT, "data/ca-prod-slope.h5")
 ```
 
 ``` {.julia .task file=examples/production-only/plot-cap-slope.jl}

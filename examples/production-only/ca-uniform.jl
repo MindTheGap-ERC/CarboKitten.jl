@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/ca-with-production.md#examples/production-only/uniform.jl>>[init]
+# ~/~ begin <<docs/src/ca-with-production.md#examples/production-only/ca-uniform.jl>>[init]
 #| creates: data/ca-prod.h5
 #| requires: src/CaProd.jl
 

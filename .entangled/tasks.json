@@ -112,7 +112,7 @@
       "stdout": null,
       "stdin": null,
       "script": null,
-      "path": "examples/production-only/uniform.jl"
+      "path": "examples/production-only/ca-uniform.jl"
     },
     {
       "description": null,
@@ -126,7 +126,7 @@
       "stdout": null,
       "stdin": null,
       "script": null,
-      "path": "examples/production-only/cap-slope.jl"
+      "path": "examples/production-only/ca-slope.jl"
     },
     {
       "description": null,

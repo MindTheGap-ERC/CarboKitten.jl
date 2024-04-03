@@ -53,9 +53,9 @@
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2024-04-03T16:26:33.717367",
-      "hexdigest": "d7763d6cd600d1e7b71a749179256d5e4e89f904791729b90ddb9fc16f747060",
-      "size": 13590
+      "modified": "2024-04-03T18:41:24.726660",
+      "hexdigest": "b0967511d2d43001e82ee6bb8d65ec6b814548d4a89323e9353280e83ecfe310",
+      "size": 13811
     },
     {
       "path": "docs/src/stencils.md",
@@ -215,9 +215,9 @@
         "docs/src/ca-with-production.md",
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-04-03T15:48:00.455356",
-      "hexdigest": "555fcaed509f5b0917b7fec51afcca179d02abf7ef93341d66805e824af95a39",
-      "size": 4314
+      "modified": "2024-04-03T17:47:02.953700",
+      "hexdigest": "cce5b7b13881f9c0de0255894b9e352a84a647d30b52d9583ecd51ddf99032d4",
+      "size": 4316
     },
     {
       "path": "examples/ca/eca.jl",
@@ -281,15 +281,6 @@
       "modified": "2024-04-03T13:49:45.833897",
       "hexdigest": "3b6fb634a220c934a5839c48a1cf5674e4cea9784b481c46f54d50b2bc3c97b0",
       "size": 291
-    },
-    {
-      "path": "examples/production-only/cap-slope.jl",
-      "deps": [
-        "docs/src/ca-with-production.md"
-      ],
-      "modified": "2024-04-02T13:30:33.525698",
-      "hexdigest": "a22d300ef04b6d52461351e4caba259c9d4fa55c61d157445529d88fc13e6295",
-      "size": 675
     },
     {
       "path": "examples/production-only/plot-cap-slope.jl",
@@ -364,18 +355,27 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-04-03T15:41:00.919398",
-      "hexdigest": "d58154b018a1ff509043ad0504e7812d8c41b473b77201e0ced3b26d7eff1ccc",
-      "size": 705
+      "modified": "2024-04-03T18:41:24.522660",
+      "hexdigest": "26c10ca5b91638d1db02da2b0730e24ab061de1836be6929d5e6529b674269cc",
+      "size": 837
     },
     {
-      "path": "examples/production-only/uniform.jl",
+      "path": "examples/production-only/ca-uniform.jl",
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-04-03T16:03:15.760978",
-      "hexdigest": "90dbfbff2ae4ba5cc568f0a7291d2d3490045c0a0a6883977aa03cf0439258a6",
-      "size": 736
+      "modified": "2024-04-03T17:35:51.455136",
+      "hexdigest": "b676061bf3a067ecffee334a0ed1d84b8576df04a719a58084ea937b1b71f435",
+      "size": 739
+    },
+    {
+      "path": "examples/production-only/ca-slope.jl",
+      "deps": [
+        "docs/src/ca-with-production.md"
+      ],
+      "modified": "2024-04-03T18:37:40.355272",
+      "hexdigest": "c9fd79ff159fb6a38eeed63d0331e62fa9f60b00691b7b0cae1664803a3dc731",
+      "size": 761
     }
   ],
   "source": [],
@@ -388,9 +388,11 @@
     "ext/VisualizationExt.jl",
     "examples/ca/burgess-2013.jl",
     "examples/BS92/fig8-sealevel.jl",
+    "examples/production-only/ca-slope.jl",
     "test/Unitful.jl",
     "src/Erosion.jl",
     "src/Config.jl",
+    "src/CaProd.jl",
     "examples/BS92/BS92.jl",
     "src/Burgess2013/Config.jl",
     "src/Burgess2013.jl",
@@ -406,11 +408,9 @@
     "src/BoundaryTrait.jl",
     "examples/ca/life.jl",
     "test/ConfigSpec.jl",
-    "examples/production-only/uniform.jl",
-    "examples/production-only/cap-slope.jl",
     "examples/production-only/plot-cap-slope.jl",
     "src/Vectors.jl",
     "src/Stencil.jl",
-    "src/CaProd.jl"
+    "examples/production-only/ca-uniform.jl"
   ]
 }

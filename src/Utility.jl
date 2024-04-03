@@ -1,7 +1,8 @@
 # ~/~ begin <<docs/src/utility.md#src/Utility.jl>>[init]
 module Utility
 
-export select
+export select, in_units_of
+using Unitful
 
 struct Select
     iter
@@ -32,6 +33,28 @@ function Base.iterate(s::Select, state)
         return (value, (selstate, rest))
     else
         return nothing
+    end
+end
+
+function in_units_of(unit)
+    function magnitude(a::AbstractArray{Quantity{RT, NoDims, U}, dim}) where {RT <: Real, U, dim}
+        return a .|> NoUnits
+    end
+
+    function magnitude(a::AbstractArray{RT, dim}) where {RT <: Real, dim}
+        return a
+    end
+
+    function magnitude(a::RT) where {RT <: Real}
+        return a
+    end
+
+    function magnitude(a::Quantity{RT, NoDims, U}) where {RT <: Real, U}
+        return a |> NoUnits
+    end
+
+    function (x)
+        x / unit |> magnitude
     end
 end
 

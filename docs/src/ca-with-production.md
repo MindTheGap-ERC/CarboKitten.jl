@@ -4,7 +4,7 @@ This model combines BS92 production with the B13 cellular automaton.
 ## Complete example
 This example is running for 10000 steps to 1Myr on a 100 $\times$ 50 grid, starting with a sloped height down to 50m. The `sea_level`, and `initial_depth` arguments are functions. The `phys_scale` argument translate pixels on the grid into physical metres. The `write_interval` indicates to write output every 10 iterations, summing the production over that range. You may copy paste the following code into your own script or notebook, and play around with input values.
 
-``` {.julia .task file=examples/caps-osc.jl}
+``` {.julia .task file=examples/production-only/caps-osc.jl}
 #| creates: data/caps-osc.h5
 #| requires: src/CaProd.jl
 
@@ -69,19 +69,15 @@ Saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation p
 
 ``` {.julia #ca-prod-input}
 @kwdef struct Input
-    sea_level
-    subsidence_rate
-    initial_depth
+    box :: Box
+    time :: TimeProperties
 
-    grid_size::NTuple{2,Int}
-    phys_scale::Float64
-    Δt::Float64
-
-    time_steps::Int
-    write_interval::Int
+    sea_level       # Myr -> m
+    subsidence_rate::typeof(1.0u"m/Myr")
+    initial_depth   # m -> m
 
     facies::Vector{Facies}
-    insolation::Float64
+    insolation::typeof(1.0u"W/m^2")
 end
 ```
 
@@ -93,7 +89,7 @@ Each iteration of the model, we produce a `Frame`.
 
 ``` {.julia #ca-prod-frame}
 struct Frame
-    production::Array{Float64,3}
+    production::Array{typeof(1.0u"m/Myr"),3}
 end
 ```
 
@@ -101,8 +97,8 @@ The frame is used to update a *state* $S$. The frame should be considered a delt
 
 ``` {.julia #ca-prod-state}
 mutable struct State
-    time::Float64
-    height::Array{Float64,2}
+    time::typeof(1.0u"Myr")
+    height::Array{typeof(1.0u"m"),2}
 end
 ```
 
@@ -125,12 +121,12 @@ In practice however, the update function changes the state in-place.
 We fill the height map with the initial depth function. It is assumed that the height only depends on the second index.
 
 ``` {.julia #ca-prod-model}
-function initial_state(input::Input)  # -> State
-    height = zeros(Float64, input.grid_size...)
+function initial_state(input)  # -> State
+    height = zeros(Float64, input.box.grid_size...) * u"m"
     for i in CartesianIndices(height)
-        height[i] = input.initial_depth(i[2] * input.phys_scale)
+        height[i] = input.initial_depth(i[2] * input.box.phys_scale)
     end
-    return State(0.0, height)
+    return State(0.0u"Myr", height)
 end
 ```
 
@@ -138,9 +134,9 @@ end
 The propagator computes the production rates (and also erosion) given the state of the model.
 
 ``` {.julia #ca-prod-model}
-function propagator(input::Input)
+function propagator(input)
     <<ca-prod-init-propagator>>
-    function (s::State)  # -> Frame
+    function (s)  # -> Frame
         <<ca-prod-propagate>>
     end
 end
@@ -150,10 +146,10 @@ The propagator keeps the cellular automaton as an internal state, but this may a
 
 ``` {.julia #ca-prod-init-propagator}
 n_facies = length(input.facies)
-ca_init = rand(0:n_facies, input.grid_size...)
+ca_init = rand(0:n_facies, input.box.grid_size...)
 ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
 
-function water_depth(s::State)
+function water_depth(s)
     s.height .- input.sea_level(s.time)
 end
 ```
@@ -161,10 +157,10 @@ end
 Now, to generate a production from a given state, we advance the CA by one step and compute the production accordingly.
 
 ``` {.julia #ca-prod-propagate}
-result = zeros(Float64, input.grid_size..., n_facies)
+result = zeros(typeof(0.0u"m/Myr"), input.box.grid_size..., n_facies)
 facies_map, ca = peel(ca)
 w = water_depth(s)
-Threads.@threads for idx in CartesianIndices(facies_map)
+for idx in CartesianIndices(facies_map)
     f = facies_map[idx]
     if f == 0
         continue
@@ -181,9 +177,9 @@ Every iteration we update the height variable with the subsidence rate, and add 
 function updater(input::Input)
     n_facies = length(input.facies)
     function (s::State, Δ::Frame)
-        s.height .-= sum(Δ.production; dims=3) .* input.Δt
-        s.height .+= input.subsidence_rate * input.Δt
-        s.time += input.Δt
+        s.height .-= sum(Δ.production; dims=3) .* input.time.Δt
+        s.height .+= input.subsidence_rate * input.time.Δt
+        s.time += input.time.Δt
     end
 end
 ```
@@ -210,13 +206,16 @@ end
 module CaProd
 
 using CarboKitten
-using CarboKitten.Stencil: Periodic
-using CarboKitten.Utility
+using ..Utility
+using ..Config: Box, TimeProperties
+using ..BoundaryTrait: Periodic
+using ..Utility
 # using CarboKitten.BS92: sealevel_curve
-using CarboKitten.Stencil
-using CarboKitten.Burgess2013
+using ..Stencil
+using ..Burgess2013
 
 using HDF5
+using Unitful
 using .Iterators: drop, peel, partition, map, take
 
 <<ca-prod-input>>
@@ -229,31 +228,31 @@ function stack_frames(fs::Vector{Frame})  # -> Frame
 end
 
 function main(input::Input, output::String)
-    x_axis = (0:(input.grid_size[2]-1)) .* input.phys_scale
-    y_axis = (0:(input.grid_size[1]-1)) .* input.phys_scale
+    x_axis = (0:(input.box.grid_size[2]-1)) .* input.box.phys_scale
+    y_axis = (0:(input.box.grid_size[1]-1)) .* input.box.phys_scale
     initial_height = input.initial_depth.(x_axis)
-    n_writes = input.time_steps ÷ input.write_interval
+    n_writes = input.time.steps ÷ input.time.write_interval
 
     h5open(output, "w") do fid
         gid = create_group(fid, "input")
-        gid["x"] = collect(x_axis)
-        gid["y"] = collect(y_axis)
-        gid["height"] = collect(initial_height)
-        gid["t"] = collect((0:(n_writes-1)) .* (input.Δt * input.write_interval))
+        gid["x"] = collect(x_axis) |> in_units_of(u"m")
+        gid["y"] = collect(y_axis) |> in_units_of(u"m")
+        gid["height"] = collect(initial_height) |> in_units_of(u"m")
+        gid["t"] = collect((0:(n_writes-1)) .* (input.time.Δt * input.time.write_interval)) |> in_units_of(u"Myr")
         attr = attributes(gid)
-        attr["delta_t"] = input.Δt
-        attr["write_interval"] = input.write_interval
-        attr["time_steps"] = input.time_steps
-        attr["subsidence_rate"] = input.subsidence_rate
+        attr["delta_t"] = input.time.Δt |> in_units_of(u"Myr")
+        attr["write_interval"] = input.time.write_interval
+        attr["time_steps"] = input.time.steps
+        attr["subsidence_rate"] = input.subsidence_rate |> in_units_of(u"m/Myr")
 
         n_facies = length(input.facies)
         ds = create_dataset(fid, "sediment", datatype(Float64),
-            dataspace(input.grid_size..., n_facies, input.time_steps),
-            chunk=(input.grid_size..., n_facies, 1))
+            dataspace(input.box.grid_size..., n_facies, input.time.steps),
+            chunk=(input.box.grid_size..., n_facies, 1))
 
-        results = map(stack_frames, partition(run_model(input), input.write_interval))
+        results = map(stack_frames, partition(run_model(input), input.time.write_interval))
         for (step, frame) in enumerate(take(results, n_writes))
-            ds[:, :, :, step] = frame.production
+            ds[:, :, :, step] = frame.production |> in_units_of(u"m/Myr")
         end
     end
 end
@@ -264,27 +263,36 @@ end # CaProd
 ## Case 1
 The first case uses the same settings as Burgess 2013: an initial depth of 2m, subsidence rate of 50 m/Myr and constant sea level.
 
-``` {.julia file=examples/ca-with-prod.jl}
+``` {.julia .task file=examples/production-only/uniform.jl}
+#| creates: data/ca-prod.h5
+#| requires: src/CaProd.jl
+
+module Script
 using CarboKitten.CaProd
+using CarboKitten.BoundaryTrait
+using CarboKitten.Config: Box, TimeProperties
+using CarboKitten.Burgess2013.Config: MODEL1
+using Unitful
 
-DEFAULT_INPUT = CaProd.Input(
-  sea_level=_ -> 0.0,
-  subsidence_rate=50.0,
-  initial_depth=_ -> 2.0,
-  grid_size=(50, 50),
-  phys_scale=1.0,
-  Δt=0.001,
-  write_interval=1,
-  time_steps=1000,
-  facies=[
-    CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-    CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-    CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
-  ],
-  insolation=2000.0
+const DEFAULT_INPUT = CaProd.Input(
+  box = Box{Periodic{2}}(
+    grid_size = (50, 50),
+    phys_scale = 1.0u"m"
+  ),
+  time = TimeProperties(
+    Δt = 0.001u"Myr",
+    steps = 1000,
+    write_interval = 1
+  ),
+  sea_level=_ -> 0.0u"m",
+  subsidence_rate=50.0u"m/Myr",
+  initial_depth=_ -> 2.0u"m",
+  facies=MODEL1,
+  insolation=2000.0u"W/m^2"
 )
+end
 
-CaProd.main(DEFAULT_INPUT, "data/ca-prod.h5")
+CaProd.main(Script.DEFAULT_INPUT, "data/ca-prod.h5")
 ```
 
 ## Case 2

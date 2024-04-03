@@ -107,6 +107,8 @@ The most efficient way to serve this documentation and have it update upon chang
 julia --project=docs -e 'using LiveServer; servedocs()'
 ```
 
+The "Documenter could not auto-detect the building environment Skipping deployment." warning is expected; local changes should not trigger the building of new GitHub pages.
+
 ### Citations
 Bibliography is generated from citations in `docs/src/ref.bib` using `DocumenterCitations.jl`. Citing a paper from there is done like `[Bosscher1992](@cite)`.
 

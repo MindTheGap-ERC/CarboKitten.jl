@@ -2,11 +2,11 @@
 module CaProd
 
 using CarboKitten
-using CarboKitten.Stencil: Periodic
-using CarboKitten.Utility
+using ..BoundaryTrait: Periodic
+using ..Utility
 # using CarboKitten.BS92: sealevel_curve
-using CarboKitten.Stencil
-using CarboKitten.Burgess2013
+using ..Stencil
+using ..Burgess2013
 
 using HDF5
 using .Iterators: drop, peel, partition, map, take

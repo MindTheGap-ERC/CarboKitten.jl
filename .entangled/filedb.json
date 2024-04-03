@@ -4,7 +4,7 @@
     {
       "path": "docs/src/carbocat-transport.md",
       "deps": null,
-      "modified": "2024-03-27T13:10:05.997538",
+      "modified": "2024-04-03T11:45:28.075129",
       "hexdigest": "f529bd62248d014aede99e00dcdff4b807b1f4d0bcd26cf26a7cb1412f29365e",
       "size": 2888
     },
@@ -18,51 +18,51 @@
     {
       "path": "docs/src/bs92-w-erosion.md",
       "deps": null,
-      "modified": "2024-01-15T16:07:21.394822",
+      "modified": "2024-04-03T11:12:45.943705",
       "hexdigest": "5dcd54a597f93820adb57acfa3cb365be4346226182f9cfaf9f7bc462faab789",
       "size": 1285
     },
     {
       "path": "docs/src/bosscher-1992.md",
       "deps": null,
-      "modified": "2024-03-26T16:03:20.035295",
+      "modified": "2024-04-03T11:12:45.942705",
       "hexdigest": "92e4ab9d27385850cac5ba8627430e662b5a5459ee9d7c60474a5085a629eb46",
       "size": 8547
     },
     {
       "path": "docs/src/carbocat-ca.md",
       "deps": null,
-      "modified": "2024-03-27T13:10:05.997538",
+      "modified": "2024-04-03T11:45:28.074128",
       "hexdigest": "d9e2a8016f9d0d11436e725a258257bc90eaa0f8a138cc3969b9946075bb80ff",
       "size": 6205
     },
     {
       "path": "docs/src/carbocat.md",
       "deps": null,
-      "modified": "2024-03-27T13:10:05.997538",
+      "modified": "2024-04-03T11:45:28.075129",
       "hexdigest": "36d265dc89795f0e20ad37307b895f623653c73e8b6c2bc71f405ddd8b4920e2",
       "size": 5699
     },
     {
       "path": "docs/src/index.md",
       "deps": null,
-      "modified": "2024-03-26T16:03:20.040294",
+      "modified": "2024-04-03T11:12:45.979704",
       "hexdigest": "71e2dfce110eb3c30078b55f13dba45a308a0fcf4c1d00fcc29a09af1b6cc677",
       "size": 8192
     },
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2024-03-27T13:10:05.997538",
+      "modified": "2024-04-03T11:45:28.074128",
       "hexdigest": "d13c0acb8cca5d1c0226062a7a4a335f48a76a849f1ca7722deb562e8f9a0931",
       "size": 13113
     },
     {
       "path": "docs/src/stencils.md",
       "deps": null,
-      "modified": "2024-03-27T13:10:06.014538",
-      "hexdigest": "6d0f6d2ccffde1101dc02e880ef48444332160b38a4a19c2b78c266cd2a4d156",
-      "size": 8451
+      "modified": "2024-04-03T11:49:43.463983",
+      "hexdigest": "a30677e96266df72885b93313b6e4e7ac319370161ce9fa5b0c09fcdd40fd025",
+      "size": 6496
     },
     {
       "path": "examples/ca/burgess-2013.jl",
@@ -87,9 +87,9 @@
       "deps": [
         "docs/src/stencils.md"
       ],
-      "modified": "2024-03-26T10:51:47.549394",
-      "hexdigest": "28c4df483d74e690d71de3fe65696da6646843394b27ec2f6faf0f28656fb35b",
-      "size": 2402
+      "modified": "2024-04-03T11:50:07.656063",
+      "hexdigest": "4afe7f3f8491c17cac1c9bef3d1f89add722718deecb0616d61ed6323ce6a7ab",
+      "size": 1037
     },
     {
       "path": "src/Burgess2013/CA.jl",
@@ -328,40 +328,87 @@
     {
       "path": "docs/src/unitful.md",
       "deps": null,
-      "modified": "2024-03-27T13:13:21.961000",
+      "modified": "2024-04-03T11:12:45.980704",
       "hexdigest": "eb1b0055f853a58e9fee80a6665e94e52c380be3fcdc014e381501048b9476e2",
       "size": 2215
+    },
+    {
+      "path": "src/Vectors.jl",
+      "deps": [
+        "docs/src/boxes.md"
+      ],
+      "modified": "2024-04-03T11:47:00.948440",
+      "hexdigest": "27c9d7b0545932bfcf079f6bde7a33d034e08bbc8d63893b10e8f6f01a802496",
+      "size": 523
+    },
+    {
+      "path": "src/Config.jl",
+      "deps": [
+        "docs/src/boxes.md"
+      ],
+      "modified": "2024-04-03T11:47:00.952440",
+      "hexdigest": "881fab6bce2d0f53414ce94f44ecdbc65802c5cb2326a475000c655a24d451cd",
+      "size": 973
+    },
+    {
+      "path": "test/ConfigSpec.jl",
+      "deps": [
+        "docs/src/boxes.md"
+      ],
+      "modified": "2024-04-03T11:47:00.954440",
+      "hexdigest": "6ed97f02d2e3f656ffed425dda28aae64db5ab71783ebe5736b8f361a5b148ed",
+      "size": 332
+    },
+    {
+      "path": "src/BoundaryTrait.jl",
+      "deps": [
+        "docs/src/boxes.md"
+      ],
+      "modified": "2024-04-03T11:50:07.664063",
+      "hexdigest": "cf0890f185c0dd96719ae3fa7695a660f821a7b71d79217af8c44eef58c97807",
+      "size": 2280
+    },
+    {
+      "path": "docs/src/boxes.md",
+      "deps": null,
+      "modified": "2024-04-03T11:12:45.943705",
+      "hexdigest": "d916613e0f457b4e0ccbdeafe55637538a4bbf347512025ff319439f54db5faa",
+      "size": 7500
     }
   ],
   "source": [],
   "target": [
-    "src/Burgess2013/CA.jl",
-    "examples/plot-tanh.gnuplot",
-    "src/Utility.jl",
-    "examples/ca/eca.jl",
     "examples/production-only/cap-slope.jl",
-    "examples/ca/long-term.jl",
-    "src/Burgess2013/Config.jl",
-    "examples/caps-osc.jl",
-    "test/Unitful.jl",
-    "examples/plot-caps-osc.jl",
-    "src/CaProd.jl",
-    "src/Stencil.jl",
-    "src/Burgess2013/Production.jl",
-    "src/Burgess2013/Transport.jl",
     "examples/burgess2013-fig2.gnuplot",
-    "src/Visualization.jl",
-    ".entangled/tasks.json",
+    "examples/ca/life.jl",
+    "src/Burgess2013/Production.jl",
+    "examples/ca/parameter-scan.jl",
+    "examples/ca/long-term.jl",
+    "examples/plot-tanh.gnuplot",
+    "src/Config.jl",
+    "src/Stencil.jl",
+    "src/Vectors.jl",
+    "examples/BS92/fig8.jl",
+    "examples/caps-osc.jl",
+    "src/Burgess2013/Transport.jl",
+    "src/Burgess2013/CA.jl",
+    "test/ConfigSpec.jl",
+    "examples/ca/eca.jl",
+    "src/Utility.jl",
+    "examples/ca/burgess-2013.jl",
+    "ext/VisualizationExt.jl",
     "examples/production-only/plot-cap-slope.jl",
+    ".entangled/tasks.json",
+    "src/Erosion.jl",
+    "examples/plot-caps-osc.jl",
+    "src/Burgess2013/Config.jl",
+    "src/Visualization.jl",
+    "test/Unitful.jl",
+    "src/Burgess2013.jl",
     "examples/BS92/BS92.jl",
     "examples/ca-with-prod.jl",
-    "examples/BS92/fig8.jl",
-    "examples/ca/burgess-2013.jl",
     "examples/BS92/fig8-sealevel.jl",
-    "src/Burgess2013.jl",
-    "examples/ca/parameter-scan.jl",
-    "ext/VisualizationExt.jl",
-    "examples/ca/life.jl",
-    "src/Erosion.jl"
+    "src/BoundaryTrait.jl",
+    "src/CaProd.jl"
   ]
 }

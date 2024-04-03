@@ -29,7 +29,7 @@
 Start the Julia REPL, and get into Pkg mode by pressing `]`. You may activate the package environment using `activate .` and then install the dependencies using `instantiate`. These steps only need to be run once.
 
 ```julia
-pkg> activate workenv
+pkg> activate .
 pkg> instantiate
 ```
 
@@ -65,7 +65,12 @@ After that, you may edit an example and rerun.
 ## Development
 
 ### Global dependencies
-CarboKitten has some dependencies that are only needed for developing and running examples, but not for using the library on its own. Those are specified in the `workenv` package. So make sure `workenv` is activated (`Pkg.activate("./workenv")`)
+CarboKitten has some dependencies that are only needed for developing and running examples, but not for using the library on its own. Those are specified in the `workenv` package. So make sure `workenv` is activated (`Pkg.activate("./workenv")`) or
+
+```julia
+pkg> activate workenv
+pkg> instantiate
+```
 
 We have experimented with using `DaemonMode.jl` to run Julia scripts from the command line, but found too many issues with unreproducible errors. So for the moment `DaemonMode` is not used.
 

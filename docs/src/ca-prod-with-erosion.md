@@ -6,11 +6,11 @@ This example is running for 10000 steps to 1Myr on a 100 $\times$ 50 grid, start
 
 ``` {.julia .build file=examples/erosion/caps-osc.jl target=data/capes-osc.h5}
 using CarboKitten
-using CarboKitten.CaProd
+using CarboKitten.CaProdErosion
 using CarboKitten.Burgess2013
 
 #change sinouid function
-DEFAULT_INPUT = CarboKitten.CaProd.Input(
+DEFAULT_INPUT = CarboKitten.CaProdErosion.Input(
     sea_level = t -> 20 * sin(2π * t) + 5 * sin(2π * t / 0.112), 
     subsidence_rate = 50.0,
     initial_depth = x -> x / 2,
@@ -33,7 +33,7 @@ DEFAULT_INPUT = CarboKitten.CaProd.Input(
 
 )
 
-CarboKitten.CaProd.main(DEFAULT_INPUT, "data/capes-osc.h5")
+CarboKitten.CaProdErosion.main(DEFAULT_INPUT, "data/capes-osc.h5")
 ```
 
 This writes output to an HDF5 file that you may use for further analysis and visualization.
@@ -68,7 +68,7 @@ $$T + E = S + W$$
 
 Saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation plus change in Water depth.
 
-``` {.julia #ca-prod-input}
+``` {.julia #cape-input}
 @kwdef struct Input
     sea_level
     subsidence_rate
@@ -99,7 +99,7 @@ In the case `write_interval` is not one, we will sum production rates over sever
 
 Each iteration of the model, we produce a `Frame`.
 
-``` {.julia #ca-prod-frame}
+``` {.julia #cape-frame}
 struct Frame
     production::Array{Float64,3}
     denudation::Array{Float64,2}
@@ -109,7 +109,7 @@ end
 
 The frame is used to update a *state* $S$. The frame should be considered a delta for the state. So, we can reproduce the height at each step from the frames.
 
-``` {.julia #ca-prod-state}
+``` {.julia #cape-state}
 mutable struct State
     time::Float64
     height::Array{Float64,2}
@@ -134,7 +134,7 @@ In practice however, the update function changes the state in-place.
 
 We fill the height map with the initial depth function. It is assumed that the height only depends on the second index.
 
-``` {.julia #ca-prod-model}
+``` {.julia #cape-model}
 function initial_state(input::Input)  # -> State
     height = zeros(Float64, input.grid_size...)
     for i in CartesianIndices(height)
@@ -147,9 +147,9 @@ end
 ## Propagator
 The propagator computes the production rates (and also erosion) given the state of the model.
 
-``` {.julia #ca-prod-model}
+``` {.julia #cape-model}
 function propagator(input::Input)
-    <<ca-prod-init-propagator>>
+    <<cape-init-propagator>>
     slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
     function (s::State)  # -> Frame
         <<ca-prod-propagate>>
@@ -159,7 +159,7 @@ end
 
 The propagator keeps the cellular automaton as an internal state, but this may also be considered to be an input function. This may change when you'd want to influence the CA with environmental factors. Then the CA becomes an integral component of the dynamical model. The CA would then have to keep state in the `State` variable. We burn the first 20 iterations of the CA to start with a realistic pattern.
 
-``` {.julia #ca-prod-init-propagator}
+``` {.julia #cape-init-propagator}
 n_facies = length(input.facies)
 ca_init = rand(0:n_facies, input.grid_size...)
 ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
@@ -172,7 +172,7 @@ end
 
 Now, to generate a production from a given state, we advance the CA by one step and compute the production accordingly.
 
-``` {.julia #ca-prod-propagate}
+``` {.julia #cape-propagate}
 production = zeros(Float64, input.grid_size..., n_facies)
 denudation = zeros(Float64, input.grid_size...)
 redistribution = zeros(Float64, input.grid_size...)
@@ -212,7 +212,7 @@ return Frame(production, denudation, redistribution)#
 ## Updater
 Every iteration we update the height variable with the subsidence rate, and add sediments to the height.
 
-``` {.julia #ca-prod-model}
+``` {.julia #cape-model}
 function updater(input::Input)
     n_facies = length(input.facies)
     function (s::State, Δ::Frame)
@@ -227,7 +227,7 @@ end
 
 ## Loop
 
-``` {.julia #ca-prod-model}
+``` {.julia #cape-model}
 function run_model(input::Input)
     Channel{Frame}() do ch
         s = initial_state(input)
@@ -258,10 +258,10 @@ using ..Burgess2013
 using HDF5
 using .Iterators: drop, peel, partition, map, take
 
-<<ca-prod-input>>
-<<ca-prod-frame>>
-<<ca-prod-state>>
-<<ca-prod-model>>
+<<cape-input>>
+<<cape-frame>>
+<<cape-state>>
+<<cape-model>>
 
 function stack_frames(fs::Vector{Frame})  # -> Frame
     Frame(sum(f.production for f in fs),sum(f.denudation for f in fs),sum(f.redistribution for f in fs))#

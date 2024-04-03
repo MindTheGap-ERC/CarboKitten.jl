@@ -1,10 +1,10 @@
 # ~/~ begin <<docs/src/ca-prod-with-erosion.md#examples/erosion/caps-osc.jl>>[init]
 using CarboKitten
-using CarboKitten.CaProd
+using CarboKitten.CaProdErosion
 using CarboKitten.Burgess2013
 
 #change sinouid function
-DEFAULT_INPUT = CarboKitten.CaProd.Input(
+DEFAULT_INPUT = CarboKitten.CaProdErosion.Input(
     sea_level = t -> 20 * sin(2π * t) + 5 * sin(2π * t / 0.112), 
     subsidence_rate = 50.0,
     initial_depth = x -> x / 2,
@@ -27,5 +27,5 @@ DEFAULT_INPUT = CarboKitten.CaProd.Input(
 
 )
 
-CarboKitten.CaProd.main(DEFAULT_INPUT, "data/capes-osc.h5")
+CarboKitten.CaProdErosion.main(DEFAULT_INPUT, "data/capes-osc.h5")
 # ~/~ end

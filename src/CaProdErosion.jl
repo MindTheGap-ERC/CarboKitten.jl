@@ -13,7 +13,7 @@ using ..Burgess2013
 using HDF5
 using .Iterators: drop, peel, partition, map, take
 
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#ca-prod-input>>[init]
+# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-input>>[init]
 @kwdef struct Input
     sea_level
     subsidence_rate
@@ -37,48 +37,20 @@ using .Iterators: drop, peel, partition, map, take
 
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-input>>[0]
-@kwdef struct Input
-    sea_level
-    subsidence_rate
-    initial_depth
-
-    grid_size::NTuple{2,Int}
-    phys_scale::Float64
-    Δt::Float64
-
-    time_steps::Int
-    write_interval::Int
-
-    facies::Vector{Facies}
-    insolation::Float64
-end
-# ~/~ end
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#ca-prod-frame>>[init]
+# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-frame>>[init]
 struct Frame
     production::Array{Float64,3}
     denudation::Array{Float64,2}
     redistribution::Array{Float64,2}
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-frame>>[0]
-struct Frame
-    production::Array{Float64,3}
-end
-# ~/~ end
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#ca-prod-state>>[init]
+# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-state>>[init]
 mutable struct State
     time::Float64
     height::Array{Float64,2}
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-state>>[0]
-mutable struct State
-    time::Float64
-    height::Array{Float64,2}
-end
-# ~/~ end
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#ca-prod-model>>[init]
+# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-model>>[init]
 function initial_state(input::Input)  # -> State
     height = zeros(Float64, input.grid_size...)
     for i in CartesianIndices(height)
@@ -87,9 +59,9 @@ function initial_state(input::Input)  # -> State
     return State(0.0, height)
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#ca-prod-model>>[1]
+# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-model>>[1]
 function propagator(input::Input)
-    # ~/~ begin <<docs/src/ca-prod-with-erosion.md#ca-prod-init-propagator>>[init]
+    # ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-init-propagator>>[init]
     n_facies = length(input.facies)
     ca_init = rand(0:n_facies, input.grid_size...)
     ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
@@ -99,54 +71,9 @@ function propagator(input::Input)
     end
     # prepare functions for erosion
     # ~/~ end
-    # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-init-propagator>>[0]
-    n_facies = length(input.facies)
-    ca_init = rand(0:n_facies, input.grid_size...)
-    ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
-
-    function water_depth(s::State)
-        s.height .- input.sea_level(s.time)
-    end
-    # ~/~ end
     slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
     function (s::State)  # -> Frame
-        # ~/~ begin <<docs/src/ca-prod-with-erosion.md#ca-prod-propagate>>[init]
-        production = zeros(Float64, input.grid_size..., n_facies)
-        denudation = zeros(Float64, input.grid_size...)
-        redistribution = zeros(Float64, input.grid_size...)
-        slope = zeros(Float64, input.grid_size...)
-        facies_map, ca = peel(ca)
-        w = water_depth(s)
-        slopefn(w,slope,input.phys_scale) # slope is calculated with square so no need for -w
-        if input.erosion_type == 2
-        redis = mass_erosion(Float64,Periodic{2},slope,(3,3),w,input.phys_scale,input.facies.inf)
-        redistribution = total_mass_redistribution(redis, slope)
-        else
-        redistribution = redistribution
-        end
-        Threads.@threads for idx in CartesianIndices(facies_map)
-            f = facies_map[idx]
-                if f == 0
-                    continue
-                end
-            if w[idx] > 0.0
-                production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
-            else
-                if input.erosion_type == 1
-                    denudation[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
-                elseif input.erosion_type == 2
-                    denudation[Tuple(idx)...] = physical_erosion(slope[idx],input.facies.inf)
-                    redistribution[Tuple(idx)...] = redistribution[Tuple(idx)...]
-                elseif input.erosion_type == 3
-                    denudation[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
-                elseif nput.erosion_type == 0
-                    denudation[Tuple(idx)...] = denudation[Tuple(idx)...]
-                end
-            end
-        end
-        return Frame(production, denudation, redistribution)#
-        # ~/~ end
-        # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[0]
+        # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[init]
         result = zeros(Float64, input.grid_size..., n_facies)
         facies_map, ca = peel(ca)
         w = water_depth(s)
@@ -162,7 +89,7 @@ function propagator(input::Input)
     end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#ca-prod-model>>[2]
+# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-model>>[2]
 function updater(input::Input)
     n_facies = length(input.facies)
     function (s::State, Δ::Frame)
@@ -174,115 +101,7 @@ function updater(input::Input)
     end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#ca-prod-model>>[3]
-function run_model(input::Input)
-    Channel{Frame}() do ch
-        s = initial_state(input)
-        p = propagator(input)
-        u = updater(input)
-
-        while true
-            Δ = p(s)
-            put!(ch, Δ)
-            u(s, Δ)
-        end
-    end
-end
-# ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[0]
-function initial_state(input::Input)  # -> State
-    height = zeros(Float64, input.grid_size...)
-    for i in CartesianIndices(height)
-        height[i] = input.initial_depth(i[2] * input.phys_scale)
-    end
-    return State(0.0, height)
-end
-# ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[1]
-function propagator(input::Input)
-    # ~/~ begin <<docs/src/ca-prod-with-erosion.md#ca-prod-init-propagator>>[init]
-    n_facies = length(input.facies)
-    ca_init = rand(0:n_facies, input.grid_size...)
-    ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
-
-    function water_depth(s::State)
-        s.height .- input.sea_level(s.time)
-    end
-    # prepare functions for erosion
-    # ~/~ end
-    # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-init-propagator>>[0]
-    n_facies = length(input.facies)
-    ca_init = rand(0:n_facies, input.grid_size...)
-    ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
-
-    function water_depth(s::State)
-        s.height .- input.sea_level(s.time)
-    end
-    # ~/~ end
-    function (s::State)  # -> Frame
-        # ~/~ begin <<docs/src/ca-prod-with-erosion.md#ca-prod-propagate>>[init]
-        production = zeros(Float64, input.grid_size..., n_facies)
-        denudation = zeros(Float64, input.grid_size...)
-        redistribution = zeros(Float64, input.grid_size...)
-        slope = zeros(Float64, input.grid_size...)
-        facies_map, ca = peel(ca)
-        w = water_depth(s)
-        slopefn(w,slope,input.phys_scale) # slope is calculated with square so no need for -w
-        if input.erosion_type == 2
-        redis = mass_erosion(Float64,Periodic{2},slope,(3,3),w,input.phys_scale,input.facies.inf)
-        redistribution = total_mass_redistribution(redis, slope)
-        else
-        redistribution = redistribution
-        end
-        Threads.@threads for idx in CartesianIndices(facies_map)
-            f = facies_map[idx]
-                if f == 0
-                    continue
-                end
-            if w[idx] > 0.0
-                production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
-            else
-                if input.erosion_type == 1
-                    denudation[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
-                elseif input.erosion_type == 2
-                    denudation[Tuple(idx)...] = physical_erosion(slope[idx],input.facies.inf)
-                    redistribution[Tuple(idx)...] = redistribution[Tuple(idx)...]
-                elseif input.erosion_type == 3
-                    denudation[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
-                elseif nput.erosion_type == 0
-                    denudation[Tuple(idx)...] = denudation[Tuple(idx)...]
-                end
-            end
-        end
-        return Frame(production, denudation, redistribution)#
-        # ~/~ end
-        # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[0]
-        result = zeros(Float64, input.grid_size..., n_facies)
-        facies_map, ca = peel(ca)
-        w = water_depth(s)
-        Threads.@threads for idx in CartesianIndices(facies_map)
-            f = facies_map[idx]
-            if f == 0
-                continue
-            end
-            result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
-        end
-        return Frame(result)
-        # ~/~ end
-    end
-end
-# ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[2]
-function updater(input::Input)
-    n_facies = length(input.facies)
-    function (s::State, Δ::Frame)
-        s.height .-= sum(Δ.production; dims=3) .* input.Δt
-        s.height .+= input.subsidence_rate * input.Δt
-        s.time += input.Δt
-    end
-end
-# ~/~ end
-# ~/~ begin <<docs/src/ca-with-production.md#ca-prod-model>>[3]
+# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-model>>[3]
 function run_model(input::Input)
     Channel{Frame}() do ch
         s = initial_state(input)

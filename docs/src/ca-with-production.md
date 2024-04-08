@@ -21,7 +21,7 @@ const AMPLITUDE = 4.0u"m"
 const DEFAULT_INPUT = CaProd.Input(
   box = Box{Shelf}(
     grid_size = (100, 50),
-    phys_scale = 1.0u"m"
+    phys_scale = 1.0u"km"
   ),
   time = TimeProperties(
     Δt = 0.0001u"Myr",
@@ -133,7 +133,7 @@ We fill the height map with the initial depth function. It is assumed that the h
 function initial_state(input)  # -> State
     height = zeros(Float64, input.box.grid_size...) * u"m"
     for i in CartesianIndices(height)
-        height[i] = input.initial_depth(i[2] * input.box.phys_scale)
+        height[i] = input.initial_depth(i[1] * input.box.phys_scale)
     end
     return State(0.0u"Myr", height)
 end
@@ -321,7 +321,7 @@ using Unitful
 const DEFAULT_INPUT = CaProd.Input(
   box = Box{Shelf}(
     grid_size = (100, 50),
-    phys_scale = 1.0u"m"
+    phys_scale = 1.0u"km"
   ),
   time = TimeProperties(
     Δt = 0.001u"Myr",
@@ -364,10 +364,16 @@ Script.main()
 
 ``` {.julia file=src/Visualization.jl}
 module Visualization
-    export plot_crosssection
+    export plot_crosssection, plot_facies_production
+
+    print_instructions() = print("You'll need to import both Makie and GeometryBasics before using this.\n")
+
+    function plot_facies_production(args...)
+        print_instructions()
+    end
 
     function plot_crosssection(args...)
-       print("You'll need to import both CairoMakie and GeometryBasics before using this.\n")
+        print_instructions()
     end
 end  # module
 ```
@@ -377,10 +383,24 @@ module VisualizationExt
 
 using CarboKitten
 using CarboKitten.Visualization
+using CarboKitten.Burgess2013: production_rate
 
 using HDF5
-using CairoMakie
+using Makie
 using GeometryBasics
+using Unitful
+
+function CarboKitten.Visualization.plot_facies_production(input; loc = nothing)
+	fig, loc = isnothing(loc) ? let fig = Figure(); (fig, fig[1, 1]) end : (nothing, loc)
+	ax = Axis(loc, title="production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))", xlabel="production (m/Myr)", ylabel="depth (m)", yreversed=true)
+	for f in input.facies
+		depth = (0.1:0.1:50.0)u"m"
+		prod = [production_rate(input.insolation, f, d) for d in depth]
+		lines!(ax, prod / u"m/Myr", depth / u"m")
+
+	end
+	fig
+end
 
 function CarboKitten.Visualization.plot_crosssection(pos, datafile)
     # x: 1-d array with x-coordinates

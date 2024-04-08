@@ -53,16 +53,16 @@
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2024-04-03T18:41:24.726660",
-      "hexdigest": "b0967511d2d43001e82ee6bb8d65ec6b814548d4a89323e9353280e83ecfe310",
-      "size": 13811
+      "modified": "2024-04-04T10:11:44.582216",
+      "hexdigest": "3bf2fbc61609b605aee90ab992ae93bf481e6b2987a5a458b8b1c0711a219e4a",
+      "size": 14535
     },
     {
       "path": "docs/src/stencils.md",
       "deps": null,
-      "modified": "2024-04-03T13:49:45.830897",
-      "hexdigest": "a30677e96266df72885b93313b6e4e7ac319370161ce9fa5b0c09fcdd40fd025",
-      "size": 6496
+      "modified": "2024-04-03T18:47:37.712546",
+      "hexdigest": "24c14bc758db680a9beb4ed0cb651e08f71dadf75de5b4ce2240a6be9fe39d6a",
+      "size": 6594
     },
     {
       "path": "examples/ca/burgess-2013.jl",
@@ -123,8 +123,8 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-04-03T16:26:33.656366",
-      "hexdigest": "b6cd3b5ad9e522726812390f8777161c3a40f8c64ff72735cc574c62e7ad7b32",
+      "modified": "2024-04-03T23:50:44.695612",
+      "hexdigest": "4b4d1daaa61df094f1e958b3029cbd1906aea92268fc235bed112ed87c2a3207",
       "size": 4535
     },
     {
@@ -215,27 +215,27 @@
         "docs/src/ca-with-production.md",
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-04-03T17:47:02.953700",
-      "hexdigest": "cce5b7b13881f9c0de0255894b9e352a84a647d30b52d9583ecd51ddf99032d4",
-      "size": 4316
+      "modified": "2024-04-03T18:46:57.139553",
+      "hexdigest": "5bb073f6c892069f36c6f064c3ee2f5ce146c6c53d13f6bb56baefa0f5886841",
+      "size": 4349
     },
     {
       "path": "examples/ca/eca.jl",
       "deps": [
         "docs/src/stencils.md"
       ],
-      "modified": "2024-04-03T13:49:45.830897",
-      "hexdigest": "d0e4d16c7ab9198249426c47342d47c33e55af371ea63bbeb25c1bb5362d1c61",
-      "size": 1036
+      "modified": "2024-04-03T18:47:37.845546",
+      "hexdigest": "683de0b8b7bc1185fe5a88579dd15d05759fdd8af1e94d5a9f51dba71f3af985",
+      "size": 1066
     },
     {
       "path": "examples/ca/life.jl",
       "deps": [
         "docs/src/stencils.md"
       ],
-      "modified": "2024-04-03T13:49:45.831897",
-      "hexdigest": "b52a20cb79efcd0d58be3788fc5cf795f57433ae33b8de1c51f3f790d1021e74",
-      "size": 1027
+      "modified": "2024-04-03T18:46:57.130553",
+      "hexdigest": "05efea5f3024eb636ddb2f282ec9b73e1713082f21fba87af7a899d3b86c99c3",
+      "size": 1063
     },
     {
       "path": "examples/BS92/fig8-sealevel.jl",
@@ -269,18 +269,18 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-04-03T13:49:45.832897",
-      "hexdigest": "92ccb985451f08d7bd182fcf3933e38f3c2bbd6ee1ddabb96c003de3d9fd8a51",
-      "size": 2473
+      "modified": "2024-04-04T10:11:44.514215",
+      "hexdigest": "897323bab716d91a4d74a8b80d0a022b6d763704c9566e13928d9490292ba8f8",
+      "size": 3042
     },
     {
       "path": "src/Visualization.jl",
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-04-03T13:49:45.833897",
-      "hexdigest": "3b6fb634a220c934a5839c48a1cf5674e4cea9784b481c46f54d50b2bc3c97b0",
-      "size": 291
+      "modified": "2024-04-04T09:53:14.468988",
+      "hexdigest": "18387bbaf0cff487784a7942c14ad58021ca2398ec86569ff10ab720000b31a4",
+      "size": 442
     },
     {
       "path": "examples/production-only/plot-cap-slope.jl",
@@ -355,9 +355,9 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-04-03T18:41:24.522660",
-      "hexdigest": "26c10ca5b91638d1db02da2b0730e24ab061de1836be6929d5e6529b674269cc",
-      "size": 837
+      "modified": "2024-04-03T18:51:10.476194",
+      "hexdigest": "41db64530c3af5e158ff2cbfffb4b08defcbae7d1e51cdb36a9a49383c34db3b",
+      "size": 838
     },
     {
       "path": "examples/production-only/ca-uniform.jl",
@@ -373,9 +373,9 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-04-03T18:37:40.355272",
-      "hexdigest": "c9fd79ff159fb6a38eeed63d0331e62fa9f60b00691b7b0cae1664803a3dc731",
-      "size": 761
+      "modified": "2024-04-03T18:52:03.915416",
+      "hexdigest": "eb110d6de2e4f534a5569c10dbdab5965aadc1a5e4e73d8da478f11a71ec9d87",
+      "size": 762
     }
   ],
   "source": [],

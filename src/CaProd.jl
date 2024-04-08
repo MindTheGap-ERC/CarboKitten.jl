@@ -42,7 +42,7 @@ end
 function initial_state(input)  # -> State
     height = zeros(Float64, input.box.grid_size...) * u"m"
     for i in CartesianIndices(height)
-        height[i] = input.initial_depth(i[2] * input.box.phys_scale)
+        height[i] = input.initial_depth(i[1] * input.box.phys_scale)
     end
     return State(0.0u"Myr", height)
 end

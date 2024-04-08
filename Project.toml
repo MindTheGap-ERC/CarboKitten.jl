@@ -9,8 +9,8 @@ Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [weakdeps]
-CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
 
 [extensions]
-VisualizationExt = ["GeometryBasics", "CairoMakie"]
+VisualizationExt = ["GeometryBasics", "Makie"]

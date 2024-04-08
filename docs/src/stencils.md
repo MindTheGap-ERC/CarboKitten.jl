@@ -69,6 +69,7 @@ An Elementary Cellular Automata is a one-dimensional CA with two states. Every n
 #| collect: figures
 
 module ECA
+    using CarboKitten.BoundaryTrait
     using CarboKitten.Stencil
     using CairoMakie
 
@@ -89,7 +90,7 @@ module ECA
     end
 
     function plot()
-        fig = Figure(resolution=(1200,400))
+        fig = Figure(size=(1200,400))
         for (idx, r) in enumerate([18, 30, 110])
             ax = Axis(fig[1,idx]; title="rule $(r)", yreversed=true, limits=((1, 256), (1, 128)))
             heatmap!(ax, eca(r, 256, 128); colormap=:Blues)
@@ -114,6 +115,7 @@ Perhaps the most famous CA is Conway's Game of Life. This is a two-dimensional t
 #| collect: figures
 
 module Life
+    using CarboKitten.BoundaryTrait
     using CarboKitten.Stencil
     using GLMakie
     using .Iterators: take
@@ -167,6 +169,7 @@ Notice, that for the periodic boundaries, the bottom left and top right are neig
 
 module Script
 
+using CarboKitten.BoundaryTrait
 using CarboKitten.Stencil
 using CairoMakie
 

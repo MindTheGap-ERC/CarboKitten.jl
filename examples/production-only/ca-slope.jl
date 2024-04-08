@@ -12,7 +12,7 @@ using Unitful
 const DEFAULT_INPUT = CaProd.Input(
   box = Box{Shelf}(
     grid_size = (100, 50),
-    phys_scale = 1.0u"m"
+    phys_scale = 1.0u"km"
   ),
   time = TimeProperties(
     Δt = 0.001u"Myr",

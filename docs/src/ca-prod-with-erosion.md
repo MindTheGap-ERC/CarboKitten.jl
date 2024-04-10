@@ -152,7 +152,7 @@ function propagator(input::Input)
     <<cape-init-propagator>>
     slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
     function (s::State)  # -> Frame
-        <<ca-prod-propagate>>
+        <<cape-propagate>>
     end
 end
 ```
@@ -198,10 +198,9 @@ Threads.@threads for idx in CartesianIndices(facies_map)
             denudation[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
         elseif input.erosion_type == 2
             denudation[Tuple(idx)...] = physical_erosion(slope[idx],input.facies.inf)
-            redistribution[Tuple(idx)...] = redistribution[Tuple(idx)...]
         elseif input.erosion_type == 3
             denudation[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
-        elseif nput.erosion_type == 0
+        elseif input.erosion_type == 0
             denudation[Tuple(idx)...] = denudation[Tuple(idx)...]
         end
     end

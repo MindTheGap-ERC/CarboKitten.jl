@@ -73,18 +73,40 @@ function propagator(input::Input)
     # ~/~ end
     slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
     function (s::State)  # -> Frame
-        # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-propagate>>[init]
-        result = zeros(Float64, input.grid_size..., n_facies)
+        # ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-propagate>>[init]
+        production = zeros(Float64, input.grid_size..., n_facies)
+        denudation = zeros(Float64, input.grid_size...)
+        redistribution = zeros(Float64, input.grid_size...)
+        slope = zeros(Float64, input.grid_size...)
         facies_map, ca = peel(ca)
         w = water_depth(s)
+        slopefn(w,slope,input.phys_scale) # slope is calculated with square so no need for -w
+        if input.erosion_type == 2
+        redis = mass_erosion(Float64,Periodic{2},slope,(3,3),w,input.phys_scale,input.facies.inf)
+        redistribution = total_mass_redistribution(redis, slope)
+        else
+        redistribution = redistribution
+        end
         Threads.@threads for idx in CartesianIndices(facies_map)
             f = facies_map[idx]
-            if f == 0
-                continue
+                if f == 0
+                    continue
+                end
+            if w[idx] > 0.0
+                production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
+            else
+                if input.erosion_type == 1
+                    denudation[Tuple(idx)...] = dissolution(input.temp,input.precip,input.alpha,input.pco2,w[idx],input.facies[f])
+                elseif input.erosion_type == 2
+                    denudation[Tuple(idx)...] = physical_erosion(slope[idx],input.facies.inf)
+                elseif input.erosion_type == 3
+                    denudation[Tuple(idx)...] = emperical_denudation(input.precip, slope[idx])
+                elseif input.erosion_type == 0
+                    denudation[Tuple(idx)...] = denudation[Tuple(idx)...]
+                end
             end
-            result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
         end
-        return Frame(result)
+        return Frame(production, denudation, redistribution)#
         # ~/~ end
     end
 end

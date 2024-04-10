@@ -1,4 +1,3 @@
-# ~/~ begin <<docs\src\erosion.md#src/PhysicalErosion.jl>>[init]
 module PhysicalErosion
 
 using CarboKitten.Burgess2013: Facies
@@ -6,14 +5,11 @@ using CarboKitten.Stencil: Boundary, Periodic, offset_value, offset_index, stenc
 using CarboKitten.EmpericalDenudation
 export physical_erosion, mass_erosion, total_mass_redistribution
 
-# ~/~ begin <<docs\src\erosion.md#physical-erosion>>[init]
 function physical_erosion(slope::Float64, facies::Facies)
     local kv = 0.23 #very arguable paramster
     -1 * -kv .* (1-facies.inf).^(1/3) .* slope.^(2/3)
 end
-# ~/~ end
 
-# find the redistibution co-efficient for the neighboring 8 cells
 function redistribution_kernel(w::Matrix{Float64},cellsize::Float64)
     s = zeros(Float64,(3,3))
 	s[1,1] = -(w[1,1] - w[2,2]) / cellsize
@@ -73,4 +69,3 @@ function total_mass_redistribution(redis::Array{Float64},slope::Matrix{Float64})
 end
 
 end
-# ~/~ end

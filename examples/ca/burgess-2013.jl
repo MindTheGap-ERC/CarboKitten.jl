@@ -1,4 +1,7 @@
 # ~/~ begin <<docs/src/carbocat-ca.md#examples/ca/burgess-2013.jl>>[init]
+#| creates: docs/src/fig/b13-fig3.png
+#| collect: figures
+
 module Script
     using .Iterators: flatten
     using CarboKitten
@@ -13,8 +16,8 @@ module Script
 
         fig = Figure(resolution=(1000, 500))
         axis_indices = flatten(eachrow(CartesianIndices((2, 4))))
-        for (i, st) in zip(axis_indices, ca)
-            ax = Axis(fig[Tuple(i)...], aspect=AxisAspect(1))
+        for (g, (i, st)) in enumerate(zip(axis_indices, ca))
+            ax = Axis(fig[Tuple(i)...], aspect=AxisAspect(1), title="g = $(g-1)")
             heatmap!(ax, st)
         end
         save("docs/src/fig/b13-fig3.png", fig)

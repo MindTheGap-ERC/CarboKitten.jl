@@ -15,7 +15,8 @@ DEFAULT_INPUT = CaProd.Input(
     CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
     CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
   ],
-  insolation=2000.0
+  insolation=2000.0,
+  occupation = :ca
 )
 
 CaProd.main(DEFAULT_INPUT, "data/ca-prod.h5")

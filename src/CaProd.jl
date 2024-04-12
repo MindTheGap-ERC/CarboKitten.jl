@@ -26,6 +26,7 @@ using .Iterators: drop, peel, partition, map, take
 
     facies::Vector{Facies}
     insolation::Float64
+    occupation::Symbol
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-frame>>[init]
@@ -64,12 +65,20 @@ function propagator(input::Input)
         result = zeros(Float64, input.grid_size..., n_facies)
         facies_map, ca = peel(ca)
         w = water_depth(s)
-        Threads.@threads for idx in CartesianIndices(facies_map)
-            f = facies_map[idx]
-            if f == 0
-                continue
+        for idx in CartesianIndices(facies_map)
+            if input.occupation === :ca
+                f = facies_map[idx]
+                if f == 0
+                    continue
+                end
+                result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
+            elseif input.occupation === :uniform
+                for (f, facies) in enumerate(input.facies)
+                    result[Tuple(idx)..., f] = production_rate(input.insolation, facies, w[idx]) / (n_facies + 1)
+                end
+            else
+                error("Unknown occupation $(input.occupation)")
             end
-            result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
         end
         return Frame(result)
         # ~/~ end

@@ -1,5 +1,5 @@
-# ~/~ begin <<docs/src/ca-with-production.md#examples/caps-osc.jl>>[init]
-#| creates: data/caps-osc.h5
+# ~/~ begin <<docs/src/ca-with-production.md#examples/production-only/no-ca-slope.jl>>[init]
+#| creates: data/no-ca-slope.h5
 #| requires: src/CaProd.jl
 
 using CarboKitten.CaProd
@@ -19,8 +19,8 @@ DEFAULT_INPUT = CaProd.Input(
         CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
     ],
     insolation = 2000.0,
-    occupation = :ca
+    occupation = :uniform
 )
 
-CaProd.main(DEFAULT_INPUT, "data/caps-osc.h5")
+CaProd.main(DEFAULT_INPUT, "data/no-ca-slope.h5")
 # ~/~ end

@@ -48,7 +48,7 @@ function CarboKitten.Visualization.plot_crosssection(pos, datafile)
     #     TriangleFace(k, k+1, k+1+w), TriangleFace(k+1+w, k+w, k)
     # end
 
-    ax = Axis(pos, xlabel="location", ylabel="depth", limits=((-12, x[end]), nothing))
+    ax = Axis(pos, xlabel="location (pixels)", ylabel="depth (m)", limits=((-12, x[end]), nothing))
     # for f in 1:n_facies
     #     locs = CartesianIndices((size(x)[1], size(t)[1] - 1))[c .== f]
     #     triangles = collect(Iterators.flatten(face.(locs)))

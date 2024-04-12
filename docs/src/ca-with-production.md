@@ -24,7 +24,8 @@ DEFAULT_INPUT = CaProd.Input(
         CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
         CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
     ],
-    insolation = 2000.0
+    insolation = 2000.0,
+    occupation = :ca
 )
 
 CaProd.main(DEFAULT_INPUT, "data/caps-osc.h5")
@@ -54,6 +55,57 @@ Script.main()
 
 ![](fig/b13-capsosc-crosssection.png)
 
+## Example without Cellular Automaton
+
+``` {.julia .task file=examples/production-only/no-ca-slope.jl}
+#| creates: data/no-ca-slope.h5
+#| requires: src/CaProd.jl
+
+using CarboKitten.CaProd
+
+DEFAULT_INPUT = CaProd.Input(
+    sea_level = t -> 4 * sin(2π * t / 0.2), 
+    subsidence_rate = 50.0,
+    initial_depth = x -> x / 2,
+    grid_size = (50, 100),
+    phys_scale = 1.0,
+    Δt = 0.0001,
+    write_interval = 10,
+    time_steps = 10000,
+    facies = [
+        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
+        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
+        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
+    ],
+    insolation = 2000.0,
+    occupation = :uniform
+)
+
+CaProd.main(DEFAULT_INPUT, "data/no-ca-slope.h5")
+```
+
+``` {.julia .task file=examples/production-only/plot-no-ca-slope.jl}
+#| creates: docs/src/fig/no-ca-slope.png
+#| requires: data/no-ca-slope.h5 ext/VisualizationExt.jl
+#| collect: figures
+
+module Script
+    using CairoMakie
+    using GeometryBasics
+    using CarboKitten.Visualization
+
+    function main()
+        f = Figure()
+        plot_crosssection(f[1,1], "data/no-ca-slope.h5")
+	    save("docs/src/fig/no-ca-slope.png", f)
+    end
+end
+
+Script.main()
+```
+
+![](fig/no-ca-slope.png)
+
 ## Input
 
 - initial depth (function of space)
@@ -82,6 +134,7 @@ Saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation p
 
     facies::Vector{Facies}
     insolation::Float64
+    occupation::Symbol
 end
 ```
 
@@ -164,12 +217,20 @@ Now, to generate a production from a given state, we advance the CA by one step 
 result = zeros(Float64, input.grid_size..., n_facies)
 facies_map, ca = peel(ca)
 w = water_depth(s)
-Threads.@threads for idx in CartesianIndices(facies_map)
-    f = facies_map[idx]
-    if f == 0
-        continue
+for idx in CartesianIndices(facies_map)
+    if input.occupation === :ca
+        f = facies_map[idx]
+        if f == 0
+            continue
+        end
+        result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
+    elseif input.occupation === :uniform
+        for (f, facies) in enumerate(input.facies)
+            result[Tuple(idx)..., f] = production_rate(input.insolation, facies, w[idx]) / (n_facies + 1)
+        end
+    else
+        error("Unknown occupation $(input.occupation)")
     end
-    result[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
 end
 return Frame(result)
 ```
@@ -281,7 +342,8 @@ DEFAULT_INPUT = CaProd.Input(
     CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
     CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
   ],
-  insolation=2000.0
+  insolation=2000.0,
+  occupation = :ca
 )
 
 CaProd.main(DEFAULT_INPUT, "data/ca-prod.h5")
@@ -310,7 +372,8 @@ DEFAULT_INPUT = CaProd.Input(
         CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
         CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
     ],
-    insolation=2000.0
+    insolation=2000.0,
+    occupation = :ca
 )
 
 CaProd.main(DEFAULT_INPUT, "data/ca-prod-slope.h5")
@@ -399,7 +462,7 @@ function CarboKitten.Visualization.plot_crosssection(pos, datafile)
     #     TriangleFace(k, k+1, k+1+w), TriangleFace(k+1+w, k+w, k)
     # end
 
-    ax = Axis(pos, xlabel="location", ylabel="depth", limits=((-12, x[end]), nothing))
+    ax = Axis(pos, xlabel="location (pixels)", ylabel="depth (m)", limits=((-12, x[end]), nothing))
     # for f in 1:n_facies
     #     locs = CartesianIndices((size(x)[1], size(t)[1] - 1))[c .== f]
     #     triangles = collect(Iterators.flatten(face.(locs)))

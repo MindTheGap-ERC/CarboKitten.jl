@@ -1,4 +1,8 @@
 using Documenter
+using DocumenterCitations
+
+bib = CitationBibliography(joinpath(@__DIR__, "src", "ref.bib"))
+# makedocs(; plugins=[bib], ...)
 
 module Entangled
     using DataStructures: DefaultDict
@@ -68,8 +72,10 @@ makedocs(
         "Algorithms" => [
             "Stencils" => "stencils.md",
             "Utility" => "utility.md"
-        ]
-    ])
+        ],
+        "References" => "references.md"
+    ],
+    plugins = [bib])
 
 deploydocs(
     repo="github.com/MindTheGap-ERC/CarboKitten"

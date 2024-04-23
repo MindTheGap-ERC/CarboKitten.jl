@@ -2,5 +2,5 @@
 title: References
 ---
 
-```bibliography
+```@bibliography
 ```

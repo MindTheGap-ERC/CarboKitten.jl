@@ -189,8 +189,3 @@ Funded by the European Union (ERC, MindTheGap, StG project no 101041077). Views 
 
 ```@contents
 ```
-
-## Bibliography
-
-```@bibliography
-```

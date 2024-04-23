@@ -76,7 +76,8 @@ makedocs(
         "Algorithms" => [
             "Stencils" => "stencils.md",
             "Utility" => "utility.md"
-        ]
+        ],
+        "References" => "references.md"
     ],
     plugins = [bib])
 

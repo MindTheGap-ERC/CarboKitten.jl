@@ -106,8 +106,8 @@ function stack_frames(fs::Vector{Frame})  # -> Frame
 end
 
 function main(input::Input, output::String)
-    x_axis = (0:(input.box.grid_size[2]-1)) .* input.box.phys_scale
-    y_axis = (0:(input.box.grid_size[1]-1)) .* input.box.phys_scale
+    y_axis = (0:(input.box.grid_size[2]-1)) .* input.box.phys_scale
+    x_axis = (0:(input.box.grid_size[1]-1)) .* input.box.phys_scale
     initial_height = input.initial_depth.(x_axis)
     n_writes = input.time.steps ÷ input.time.write_interval
 

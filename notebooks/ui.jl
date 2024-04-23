@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.40
+# v0.19.36
 
 using Markdown
 using InteractiveUtils
@@ -55,7 +55,7 @@ begin
 	const INPUT = CaProd.Input(
 	  box = Box{Shelf}(
 	    grid_size = (100, 50),
-	    phys_scale = 1.0u"km"
+	    phys_scale = 0.15u"km"
 	  ),
 	  time = TimeProperties(
 	    Δt = 0.001u"Myr",
@@ -64,11 +64,14 @@ begin
 	  ),
 	  sea_level = t -> AMPLITUDE * sin(2π * t / PERIOD), 
 	  subsidence_rate=50.0u"m/Myr",
-	  initial_depth=x -> x / 2000.0,
+	  initial_depth=x -> x / 300.0,
 	  facies=FACIES,
 	  insolation=400.0u"W/m^2"
 	)
 end
+
+# ╔═╡ 3d69675d-03b1-420c-9f23-83cf81aca304
+15_000/50
 
 # ╔═╡ 4391904d-29cf-4202-9698-39104c265dd5
 function plot_facies_production(input; loc = nothing)
@@ -89,9 +92,6 @@ plot_facies_production(INPUT)
 # ╔═╡ c5a5a050-4dcb-4cfc-8451-6f78d79f8fb0
 height = Observable{Matrix{Float64}}(zeros(Float64, INPUT.box.grid_size...))
 
-# ╔═╡ 49db8614-ca59-4a8f-b1d8-8fbb844dec2f
-surface(height)
-
 # ╔═╡ 4ca647bb-0b47-4e4e-8871-d8d48c9b20ca
 function run_model(input)
     Channel{CaProd.Frame}() do ch
@@ -103,13 +103,13 @@ function run_model(input)
             Δ = p(s)
             put!(ch, Δ)
             u(s, Δ)
-			height[] = s.height / u"m"
+			# height[] = s.height / u"m"
         end
     end
 end
 
 # ╔═╡ ff34f5c8-88e0-4f54-af66-cda661a77d32
-for f in run_model(INPUT)
+for f in Iterators.take(run_model(INPUT), 1000)
 end
 
 # ╔═╡ 09b87b3a-ad32-49c3-b69f-14d2c8e147ee
@@ -125,10 +125,10 @@ end
 # ╠═2976428b-06f9-4447-9d29-04b0486bec33
 # ╠═884dc010-4c7a-41dc-9939-aaee75d060f0
 # ╠═4db60e9d-62ed-49c5-9bbb-2586cec2d079
+# ╠═3d69675d-03b1-420c-9f23-83cf81aca304
 # ╠═4391904d-29cf-4202-9698-39104c265dd5
 # ╠═e26b52ea-ac60-4486-8171-b5b072850f3c
 # ╠═c5a5a050-4dcb-4cfc-8451-6f78d79f8fb0
-# ╠═49db8614-ca59-4a8f-b1d8-8fbb844dec2f
 # ╠═4ca647bb-0b47-4e4e-8871-d8d48c9b20ca
 # ╠═ff34f5c8-88e0-4f54-af66-cda661a77d32
 # ╠═09b87b3a-ad32-49c3-b69f-14d2c8e147ee

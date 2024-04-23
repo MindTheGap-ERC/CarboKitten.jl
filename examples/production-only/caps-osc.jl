@@ -15,7 +15,7 @@ const AMPLITUDE = 4.0u"m"
 const DEFAULT_INPUT = CaProd.Input(
   box = Box{Shelf}(
     grid_size = (100, 50),
-    phys_scale = 1.0u"km"
+    phys_scale = 0.15u"km"
   ),
   time = TimeProperties(
     Δt = 0.0001u"Myr",
@@ -24,9 +24,9 @@ const DEFAULT_INPUT = CaProd.Input(
   ),
   sea_level = t -> AMPLITUDE * sin(2π * t / PERIOD), 
   subsidence_rate=50.0u"m/Myr",
-  initial_depth=x -> x / 2000.0,
+  initial_depth=x -> x / 300.0,
   facies=MODEL1,
-  insolation=2000.0u"W/m^2"
+  insolation=400.0u"W/m^2"
 )
 end
 

@@ -190,8 +190,3 @@ Example: in file examples, you could find caps_miller. This file use [Miller's c
 - 1 means chemical dissolution
 - 2 means physical erosion and sediments redistribution
 - 3 means total denudation calculated based on emperical relationship by Cl isotope observations.
-
-## Bibliography
-
-```@bibliography
-```

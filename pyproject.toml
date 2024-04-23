@@ -14,3 +14,10 @@ entangled-cli = "^2.0.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.brei]
+include = [".entangled/tasks.json"]
+
+[tool.brei.runner.julia]
+command = "julia"
+args = ["--project=workenv", "${script}"]

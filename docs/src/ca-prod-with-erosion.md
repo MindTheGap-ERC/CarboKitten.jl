@@ -53,8 +53,6 @@ end
 Script.main()
 ```
 
-![](fig/capesosc-crosssection.png)
-
 ## Input
 
 - initial depth (function of space)

@@ -83,38 +83,30 @@ The most used library to do plotting in Julia is called `Plots`. However, this l
 
 A nicer plotting library that also happens to be a bit more versatile is `Makie`. This has three back-ends that are `CairoMakie`, `GLMakie` and `WGLMakie`. These are all written in Julia, but they focus on different kinds of results. `CairoMakie` is usually slow but results in publication quality vector graphics: `SVG` or `PDF`. `GLMakie` is very fast, renders on your graphics card, but only produces raster images, say `PNG`. Then `WGLMakie` does a similar thing, but through the web-browser.
 
-Some plots in the documentation were rendered using Gnuplot. At some point these should be phased out for `CairoMakie` ones.
-
 ## Entangled
-The documentation for CarboKitten is using [Entangled](https://entangled.github.io) for Literate Programming. This means that code blocks in the documentation contribute to the actual functioning code in the library. When you develop the library code, you should have the Entangled daemon running to keep the documentation synchronized.
+If you plan to make a contribution to the core of CarboKitten, you should be aware of Entangled.
+
+The documentation for CarboKitten is using [Entangled](https://entangled.github.io) for Literate Programming. This means that code blocks in the documentation contribute to the actual functioning code in the library. When you develop the library code, you should have the Entangled daemon running to keep the documentation synchronized. Included in the `CarboKitten` repository is a `pyproject.toml` that manages the Entangled installation for you through [Poetry](https://python-poetry.org); alternatively, you may install Entangled through `pip install entangled-cli`.
+
+To install, run `poetry install` in the project root, then:
 
 ```shell
-entangled watch
+poetry run entangled watch
 ```
 
 Entangled is still under development and it may occur that the daemon complains about not knowing wether to `tangle` or `stitch`, for example when you've accidentally written both markdown and source code. If this happens you may manually `entangled tangle` or `entangled stitch` with the `--force` argument to decide the issue. It may be worth saving your work in version control before doing so.
 
-### Building
-The following currently works only on Linux and MacOS, mainly because usually there is no GNU Make installed on Windows. Support for Windows (probably through `nmake`) will happen in the future.
+### Building Documentation
+To recreate the plots in the documentation run
 
-To recreate the plots in the documentation, Entangled creates a `Makefile` in `.entangled/build`. This will run a workflow writing intermediate data in HDF5 format to the `data` folder and final plots end up in `docs/src/fig`. To run this you should first start the Julia `DaemonMode` daemon,
-
-```shell
-make run-daemon
 ```
-
-And then create the figures in a different shell.
-
-```shell
-make figures
+poetry run brei figures
 ```
-
-This may seem like a complication, and it is, but it also significantly speeds up creating all the figures. Once you have all the intermediate data in place, running `make figures` will only do something if some of the scripts involved have changed.
 
 The documentation can be rendered with `Documenter.jl`.
 
 ```shell
-make serve-docs
+julia --workenv=docs docs/make.jl
 ```
 
 ## Project structure
@@ -132,8 +124,10 @@ make serve-docs
 ├── Makefile            # command-line short hands
 ├── Manifest.toml       #
 ├── Project.toml        # project dependencies
+├── pyproject.toml      # dependencies for running Entangled
 ├── README.md           # 
-└── src                 # tangled library source
+├── src                 # tangled library source
+└── test                # unit tests
 ```
 
 ## Authors
@@ -196,3 +190,7 @@ Funded by the European Union (ERC, MindTheGap, StG project no 101041077). Views 
 ```@contents
 ```
 
+## Bibliography
+
+```@bibliography
+```

@@ -12,5 +12,6 @@ include("./CaProdErosion.jl")
 #include("./Visualization.jl")
 
 
+include("./Visualization.jl")
 
 end # module CarboKitten

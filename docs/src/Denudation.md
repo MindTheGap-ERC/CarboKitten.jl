@@ -1,4 +1,5 @@
 # Denudation
+FIXME: run a spell check, fix equations
 
 The denudation could be achieved by three ways: modelling physical erosion, modelling  chemical dissolutionand estimating total denudation rates based on Chlorine (Cl) isotope data.
 
@@ -95,6 +96,7 @@ function total_mass_redistribution(redis::Array{Float64},slope::Matrix{Float64})
 			#println(idx)
 			#println(i)
 			#println(idx[1],idx[2],idx[3],idx[4],i[1],i[2])
+			# what does this do?
 		if idx[1] + idx[3] -1 == i[1] && idx[2] + idx[4] -1 == i[2]
 		result[i] += redis[idx]
 		end
@@ -105,7 +107,9 @@ end
 ```
 
 ## Chemical dissolution
-The details could be found in paper by Kaufman 2002, Terra Nova. 
+FIXME: fix equations, use proper citations (add entries to `ref.bib` and cite using `[GoerzQ2022](@cite)` syntax)
+
+The details could be found in paper by Kaufmann 2001 [Kaufmann2001](@cite), Terra Nova. 
 [link is here](https://onlinelibrary.wiley.com/doi/full/10.1046/j.1365-3121.2001.00345.x)
 
 Limestone is made of CaCO3, easily dissolved. This depends mainly on precipitation (rainfall) and temperature. The paper used equation 1 to quantify this process.
@@ -186,3 +190,8 @@ Example: in file examples, you could find caps_miller. This file use [Miller's c
 - 1 means chemical dissolution
 - 2 means physical erosion and sediments redistribution
 - 3 means total denudation calculated based on emperical relationship by Cl isotope observations.
+
+## Bibliography
+
+```@bibliography
+```

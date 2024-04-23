@@ -209,8 +209,3 @@ Script.main()
 ```@raw html
 </details>
 ```
-
-## Bibliography
-
-```@bibliography
-```

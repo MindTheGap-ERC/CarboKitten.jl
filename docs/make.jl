@@ -71,6 +71,7 @@ makedocs(
         ],
         "Algorithms" => [
             "Unitful" => "unitful.md",
+            "Boxes" => "boxes.md",
             "Stencils" => "stencils.md",
             "Utility" => "utility.md"
         ],

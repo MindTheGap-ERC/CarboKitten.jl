@@ -349,6 +349,7 @@ module Script
 using CairoMakie
 using Unitful
 using HDF5
+using GeometryBasics
 
 @kwdef struct CKData
     Δt::typeof(1.0u"Myr")
@@ -389,7 +390,7 @@ function plot_crosssection(pos, datafile)
         total_sediment = sum(fid["sediment"][]; dims=3)
         initial_height = fid["input/height"][]
         center = div(size(total_sediment)[1], 2)
-        elevation = cumsum(total_sediment; dims=4)[center, :, 1, :] .* Δt .- initial_height .- total_subsidence
+        elevation = cumsum(total_sediment; dims=4)[:, center, 1, :] .* Δt .- initial_height .- total_subsidence
         t = fid["input/t"][]
         n_facies = size(fid["sediment"])[3]
 
@@ -397,7 +398,7 @@ function plot_crosssection(pos, datafile)
         fid["input/x"][],
         [t; Δt * attr["time_steps"][]],
         hcat(.-initial_height .- total_subsidence, elevation),
-        fid["sediment"][center, :, :, :]
+        fid["sediment"][:, center, :, :]
     end
 
     pts = vec(Point{2,Float64}.(x, h[:, 2:end]))
@@ -439,7 +440,7 @@ function main()
 end
 end
 
-# Script.main()
+Script.main()
 ```
 
 ![](fig/b13-crosssection.png)
@@ -501,7 +502,7 @@ function CarboKitten.Visualization.plot_crosssection(pos, datafile)
         total_sediment = sum(fid["sediment"][]; dims=3)
         initial_height = fid["input/height"][]
         center = div(size(total_sediment)[1], 2)
-        elevation = cumsum(total_sediment; dims=4)[center, :, 1, :] .* Δt .- initial_height .- total_subsidence
+        elevation = cumsum(total_sediment; dims=4)[:, center, 1, :] .* Δt .- initial_height .- total_subsidence
         t = fid["input/t"][]
         n_facies = size(fid["sediment"])[3]
 
@@ -509,7 +510,7 @@ function CarboKitten.Visualization.plot_crosssection(pos, datafile)
         fid["input/x"][],
         [t; Δt * attr["time_steps"][]],
         hcat(.-initial_height .- total_subsidence, elevation),
-        fid["sediment"][center, :, :, :]
+        fid["sediment"][:, center, :, :]
     end
 
     pts = vec(Point{2,Float64}.(x, h[:, 2:end]))

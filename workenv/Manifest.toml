@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "15e6ae8f33184307887cdadcb286ec11f26781ee"
+project_hash = "066893575b6d6cebbd62e922d19aab803be81600"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "016833eb52ba2d6bea9fcb50ca295980e728ee24"
@@ -273,7 +273,7 @@ uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 version = "0.5.1"
 
 [[deps.CarboKitten]]
-deps = ["HDF5", "Transducers", "Unitful"]
+deps = ["AxisArrays", "HDF5", "Transducers", "Unitful"]
 path = ".."
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 version = "0.1.0"

@@ -2,6 +2,7 @@ module Denudation
 
 import ..BoundaryTrait
 import ..Stencil
+import ..Config: Box
 
 include("Denudation/CarbDissolution.jl")
 include("Denudation/EmpericalDenudation.jl")
@@ -11,6 +12,11 @@ export denudation
 
 # configuration 
 abstract type DenudationType end
+
+struct DenudationFrame <: Frame
+    denudation::Array{Float64,2}
+    redistribution::Array{Float64,2}
+end
 
 struct Dissolution <: DenudationType
     temp
@@ -72,6 +78,15 @@ function denudation(box::Box{BT}, p::PhysicalErosionParam, state) where {BT <: B
     denudation_amount = physical_erosion.(p.temp, p.precip, p.co2, p.alpha, w, slope, facies)
 
     return (denudation_amount, redistribution)
+end
+
+"""
+state needs height array
+"""
+function propagator(input)
+    function (state)  # -> DenudationFrame
+
+    end
 end
 
 end

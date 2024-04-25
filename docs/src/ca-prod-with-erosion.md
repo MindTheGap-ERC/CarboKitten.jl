@@ -81,26 +81,17 @@ Saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation p
 end
 
 @kwdef struct Input
-    sea_level
-    subsidence_rate
-    initial_depth
+    box :: Box
+    time :: TimeProperties
 
-    grid_size::NTuple{2,Int}
-    phys_scale::Float64
-    Δt::Float64
-
-    time_steps::Int
-    write_interval::Int
+    sea_level       # Myr -> m
+    subsidence_rate::typeof(1.0u"m/Myr")
+    initial_depth   # m -> m
 
     facies::Vector{Facies}
-    insolation::Float64
+    insolation::typeof(1.0u"W/m^2")
 
-    temp #temperature
-    precip #precipitation
-    pco2 #co2
-    alpha #reaction rate
-    erosion_type::Int64
-
+    denudation::DenudationType
 end
 ```
 
@@ -111,7 +102,13 @@ In the case `write_interval` is not one, we will sum production rates over sever
 Each iteration of the model, we produce a `Frame`.
 
 ``` {.julia #cape-frame}
-struct Frame
+
+abstract type Frame end
+struct ProductionFrame <: Frame
+    production::Array{Float64,3}
+end
+
+struct OutputFrame
     production::Array{Float64,3}
     denudation::Array{Float64,2}
     redistribution::Array{Float64,2}
@@ -121,6 +118,7 @@ end
 The frame is used to update a *state* $S$. The frame should be considered a delta for the state. So, we can reproduce the height at each step from the frames.
 
 ``` {.julia #cape-state}
+# FIXME: deduplicate
 mutable struct State
     time::Float64
     height::Array{Float64,2}
@@ -146,6 +144,7 @@ In practice however, the update function changes the state in-place.
 We fill the height map with the initial depth function. It is assumed that the height only depends on the second index.
 
 ``` {.julia #cape-model}
+# FIXME: deduplicate
 function initial_state(input::Input)  # -> State
     height = zeros(Float64, input.grid_size...)
     for i in CartesianIndices(height)
@@ -159,6 +158,7 @@ end
 The propagator computes the production rates (and also erosion) given the state of the model.
 
 ``` {.julia #cape-model}
+# FIXME: deduplicate
 function propagator(input::Input)
     <<cape-init-propagator>>
     slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
@@ -223,15 +223,21 @@ return Frame(production, denudation, redistribution)#
 Every iteration we update the height variable with the subsidence rate, and add sediments to the height.
 
 ``` {.julia #cape-model}
-function updater(input::Input)
+function updater(input)
     n_facies = length(input.facies)
-    function (s::State, Δ::Frame)
-        s.height .-= sum(Δ.production; dims=3) .* input.Δt
-        s.height .+= Δ.denudation .* input.Δt  #number already in kyr
-        s.height .-= Δ.redistribution .* input.Δt
-        s.height .+= input.subsidence_rate * input.Δt
-        s.time += input.Δt
+    function update(state, Δ::ProductionFrame)
+        state.height .-= sum(Δ.production; dims=3) .* input.Δt
+        state.height .+= Δ.denudation .* input.Δt  #number already in kyr
+        state.height .-= Δ.redistribution .* input.Δt
+        state.height .+= input.subsidence_rate * input.Δt
+        state.time += input.Δt
     end
+
+    function update(state, Δ::DenudationFrame)
+        # FIXME: implement
+    end
+
+    update
 end
 ```
 
@@ -239,15 +245,18 @@ end
 
 ``` {.julia #cape-model}
 function run_model(input::Input)
-    Channel{Frame}() do ch
+    Channel{OutputFrame}() do ch
         s = initial_state(input)
-        p = propagator(input)
+        p = Production::propagator(input)
+        d = Denudation::propagator(input)  # FIXME: implement
         u = updater(input)
 
         while true
-            Δ = p(s)
-            put!(ch, Δ)
-            u(s, Δ)
+            Δ_prod = p(s)
+            u(s, Δ_prod)
+            Δ_denu = d(s)
+            u(s, Δ_denu)
+            put!(ch, OutputFrame(Δ_prod.production, Δ_denu.denudation, Δ_denu.redistribution))
         end
     end
 end
@@ -260,9 +269,7 @@ using CarboKitten
 using ..Stencil: Periodic, stencil
 using ..Utility
 #using ..BS92: sealevel_curve
-using ..EmpericalDenudation
-using ..CarbDissolution
-using ..PhysicalErosion
+using ..Denudation: DenudationType, denudation, DenudationFrame
 using ..Burgess2013
 
 using HDF5
@@ -273,8 +280,8 @@ using .Iterators: drop, peel, partition, map, take
 <<cape-state>>
 <<cape-model>>
 
-function stack_frames(fs::Vector{Frame})  # -> Frame
-    Frame(sum(f.production for f in fs),sum(f.denudation for f in fs),sum(f.redistribution for f in fs))#
+function stack_frames(fs::Vector{OutputFrame})  # -> Frame
+    OutputFrame(sum(f.production for f in fs),sum(f.denudation for f in fs),sum(f.redistribution for f in fs))#
 end
 
 function main(input::Input, output::String)

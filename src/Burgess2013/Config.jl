@@ -1,25 +1,36 @@
 # ~/~ begin <<docs/src/carbocat.md#src/Burgess2013/Config.jl>>[init]
 module Config
 
+using Unitful
 export Facies, MODEL1
 
-struct Facies
+@kwdef struct Facies
     viability_range::Tuple{Int, Int}
     activation_range::Tuple{Int, Int}
 
-    maximum_growth_rate::Float64
-    extinction_coefficient::Float64
-    saturation_intensity::Float64
-
-    L::Float64 #reactive surface
-    density::Float64 #density of different carb factory
-    inf::Float64 #infiltration coeff
+    maximum_growth_rate::typeof(1.0u"m/Myr")
+    extinction_coefficient::typeof(1.0u"m^-1")
+    saturation_intensity::typeof(1.0u"W/m^2")
 end
 
 MODEL1 = [
-    Facies((4, 10), (6, 10), 500, 0.8, 300, 1000, 2730, 0.5),#
-    Facies((4, 10), (6, 10), 400, 0.1, 300, 1000, 2730, 0.5),#
-    Facies((4, 10), (6, 10), 100, 0.005, 300, 1000, 2730, 0.5)#
+    Facies(viability_range = (4, 10),
+           activation_range = (6, 10),
+           maximum_growth_rate = 500u"m/Myr",
+           extinction_coefficient = 0.8u"m^-1",
+           saturation_intensity = 60u"W/m^2"),
+
+    Facies(viability_range = (4, 10),
+           activation_range = (6, 10),
+           maximum_growth_rate = 400u"m/Myr",
+           extinction_coefficient = 0.1u"m^-1",
+           saturation_intensity = 60u"W/m^2"),
+
+    Facies(viability_range = (4, 10),
+           activation_range = (6, 10),
+           maximum_growth_rate = 100u"m/Myr",
+           extinction_coefficient = 0.005u"m^-1",
+           saturation_intensity = 60u"W/m^2")
 ]
 
 end

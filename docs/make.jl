@@ -74,6 +74,8 @@ makedocs(
             "Model" => "ca-prod-with-erosion.md"
         ],
         "Algorithms" => [
+            "Unitful" => "unitful.md",
+            "Boxes" => "boxes.md",
             "Stencils" => "stencils.md",
             "Utility" => "utility.md"
         ],

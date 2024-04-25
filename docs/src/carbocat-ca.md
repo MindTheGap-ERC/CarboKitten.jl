@@ -57,6 +57,7 @@ The paper talks about a 50x50 grid initialized with uniform random values.
 ``` {.julia file=src/Burgess2013/CA.jl}
 module CA
 
+using ...BoundaryTrait
 using ...Stencil
 using ..Config: Facies
 

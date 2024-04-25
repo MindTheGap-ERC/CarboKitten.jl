@@ -122,6 +122,7 @@ function main(input::Input, output::String)
         attr["write_interval"] = input.time.write_interval
         attr["time_steps"] = input.time.steps
         attr["subsidence_rate"] = input.subsidence_rate |> in_units_of(u"m/Myr")
+        attr["n_facies"] = length(input.facies)
 
         n_facies = length(input.facies)
         ds = create_dataset(fid, "sediment", datatype(Float64),

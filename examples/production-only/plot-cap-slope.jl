@@ -10,29 +10,40 @@ using Unitful
 using HDF5
 using GeometryBasics
 
+module Data
+
+using Unitful
+using HDF5
+using AxisArrays
+
 @kwdef struct CKData
     Δt::typeof(1.0u"Myr")
     subsidence_rate::typeof(1.0u"m/Myr")
     t_axis::typeof(Float64[]u"Myr")
     x_axis::typeof(Float64[]u"m")
     initial_height::typeof(Float64[]u"m")
-    sediment::typeof(Array{Float64,4}(undef,0,0,0,0)u"m/Myr")
+    sediment::typeof(AxisArray(Array{Float64,4}(undef,0,0,0,0)u"m/Myr", Axis{:x}(), Axis{:y}(), Axis{:facies}(), Axis{:t}()))
 end
 
 
 function read_data(datafile)
     h5open(datafile, "r") do fid
         attr = HDF5.attributes(fid["input"])
+        t_axis = fid["input/t"][]u"Myr"
+        x_axis = fid["input/x"][]u"m"
+        y_axis = fid["input/y"][]u"m"
         CKData(
             Δt = attr["delta_t"][]u"Myr",
             subsidence_rate = attr["subsidence_rate"][]u"m/Myr",
             t_axis = fid["input/t"][]u"Myr",
             x_axis = fid["input/x"][]u"m",
             initial_height = fid["input/height"][]u"m",
-            sediment = fid["sediment"][]u"m/Myr"
+            sediment = AxisArray(fid["sediment"][]u"m/Myr", Axis{:x}(x_axis), Axis{:y}(y_axis), Axis{:facies}(1:n_facies), Axis{:t}(t_axis))
         )
     end
 end
+
+end # module Data
 
 function plot_crosssection(pos, datafile)
     # x: 1-d array with x-coordinates
@@ -99,5 +110,5 @@ function main()
 end
 end
 
-Script.main()
+# Script.main()
 # ~/~ end

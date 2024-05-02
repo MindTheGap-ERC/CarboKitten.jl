@@ -4,7 +4,7 @@ subtitle: a cellular automaton
 ---
 
 ## Cellular Automaton
-The paper talks about cycling the order of preference for occupying an empty cell at each iteration. This means that the rules change slighly every iteration.
+The paper talks about cycling the order of preference for occupying an empty cell at each iteration. This means that the rules change slightly every iteration.
 
 ``` {.julia #cycle-permutation}
 cycle_permutation(n_species::Int) =

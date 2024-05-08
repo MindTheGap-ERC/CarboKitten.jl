@@ -139,11 +139,14 @@ Script.main()
 </details>
 ```
 
-## Howto run
+## How to run
 We start with randomized initial conditions on a 50x50 grid.
 
 ``` {.julia}
+using CarboKitten.Stencil: Reflected
+using CarboKitten.Burgess2013
 init = rand(0:3, 50, 50)
+result = Iterators.take(run_ca(Reflected{2}, MODEL1, init, 3), 8)
 ```
 
 Then we run the cellular automaton for, in this case eight generations. The `CA.run` function returns an iterator of 50x50 maps. That means that in principle we can extract an infinity of iterations, but in this cane we only `take` eight.

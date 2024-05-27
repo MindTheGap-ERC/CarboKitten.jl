@@ -78,5 +78,5 @@ makedocs(
     plugins = [bib])
 
 deploydocs(
-    repo="github.com/MindTheGap-ERC/CarboKitten"
+    repo="github.com/MindTheGap-ERC/CarboKitten.jl"
 )

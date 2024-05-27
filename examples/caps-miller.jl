@@ -1,11 +1,15 @@
 # ~/~ begin <<docs/src/ca-with-production.md#examples/caps-osc.jl>>[init]
 using CarboKitten
-using CarboKitten.CaProd
+using CarboKitten.CaProdErosion
 using CarboKitten.Burgess2013
+using CarboKitten.InputConfig: Input
 using CSV
 using DataFrames
 using Interpolations
-
+using Unitful
+using CarboKitten.Config: Box, Vectors, TimeProperties
+using CarboKitten.BoundaryTrait
+using CarboKitten.Denudation: Dissolution, NoDenudation, PhysicalErosionParam, EmpericalDenudationParam
 
 function sealevel_curve(t,filepath)
     data = DataFrame(CSV.File(filepath))
@@ -14,28 +18,22 @@ function sealevel_curve(t,filepath)
     return x(t)
 end 
 
+const DenudationIstance = Dissolution(273.0,1000.0,10^(-1.5),2e-3)
 
-DEFAULT_INPUT = CaProd.Input(
-    sea_level = t -> sealevel_curve(t,"data/miller.csv"),
-    subsidence_rate = 50.0,
-    initial_depth = x -> x / 2,
-    grid_size = (50, 100),
-    phys_scale = 1.0,
-    Δt = 0.001,
-    write_interval = 1,
-    time_steps = 1000,
-    facies = [
-        Burgess2013.Facies((4, 10), (6, 10), 500.0, 0.8, 300, 1000, 2730, 0.5),
-        Burgess2013.Facies((4, 10), (6, 10), 400.0, 0.1, 300, 1000, 2730, 0.5),
-        Burgess2013.Facies((4, 10), (6, 10), 100.0, 0.005, 300, 1000, 2730, 0.5)
-    ],
-    insolation = 2000.0,
-    temp = 288.0,
-    precip = 1000.0,
-    pco2 = 10^(-1.5),
-    alpha = 2e-3,
-    erosion_type = 1
-)
+const input = Input(
+    Box{Shelf}((100, 50), 1.0u"km"),
+    TimeProperties(
+      1.0u"kyr",
+      100,
+      1
+    ),
+    t -> 4.0u"m" * sin(2π * t / 200.0u"kyr"), 
+    50.0u"m/Myr",
+    p -> x / 300.0,
+    MODEL1,
+    400.0u"W/m^2",
+    DenudationIstance
+  )
 
-CaProd.main(DEFAULT_INPUT, "data/caps-test.h5")
+CaProdErosion.main(input, "data/caps-test.h5")
 # ~/~ end

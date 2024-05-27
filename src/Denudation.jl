@@ -3,26 +3,25 @@ module Denudation
 import ..BoundaryTrait
 import ..Stencil
 import ..Config: Box
+import ..Burgess2013.Config: Facies
+import ..InputConfig: Input, DenudationType
 
-include("Denudation/CarbDissolution.jl")
-include("Denudation/EmpericalDenudation.jl")
-include("Denudation/PhysicalErosion.jl")
+
+include("./Denudation/CarbDissolution.jl")
+include("./Denudation/EmpericalDenudation.jl")
+include("./Denudation/PhysicalErosion.jl")
 
 export denudation
 
 # configuration 
-abstract type DenudationType end
 
-struct DenudationFrame <: Frame
-    denudation::Array{Float64,2}
-    redistribution::Array{Float64,2}
-end
-
+#abstract type DenudationType end
+abstract type State end
 struct Dissolution <: DenudationType
     temp
     precip
     pco2
-    alpha::Float64
+    reactionrate::Float64
 end
 
 struct EmpericalDenudationParam <: DenudationType
@@ -43,50 +42,50 @@ Computes the denudation for a single time-step, given denudation parameters
 `param` and a simulation state `state`. `param` should have a `DenudationType`
 type and `state` should contain the `height` property and `sealevel`.
 """
-function denudation(box::Box{BT}, param::DT, state) where {DT <: DenudationType, BT <: BoundaryType}
+function denudation(input::Input, param::DT, state) where {DT <: DenudationType}
 end
 
-function water_depth(state)
+function water_depth(state::State)
     state.height .- state.sea_level
 end
 #specific functions
 
-function denudation(box::Box{BT}, p::EmpericalDenudationParam, state) where {BT <: BoundaryType}
-    slope = zeros(Float64, box.grid_size...)
-    slopefn = stencil(Float64, box, (3, 3), slope_kernel)
+function denudation(input::Input, p::NoDenudation, state) 
+    return (nothing,nothing)
+end
+
+function denudation(input::Input, p::EmpericalDenudationParam, state::State) 
+    slope = zeros(Float64, input.box.grid_size...)
+    slopefn = stencil(Float64, input.box{BT}, (3, 3), slope_kernel)
     w = water_depth(state)
-    slopefn(w, slope, box.phys_scale) # slope is calculated with square so no need for -w
+    slopefn(w, slope, input.box.phys_scale) # slope is calculated with square so no need for -w
     return (emperical_denudation.(p.precip, slope), nothing)
 end
 
-function denudation(box::Box{BT}, p::Dissolution, state) where {BT <: BoundaryType}
-    dissolution(p.temp, p.precip, p.co2, p.alpha, water_depth, facies)
+function denudation(input::Input, p::Dissolution, state::State) 
+    w = water_depth(state)
+    return(dissolution(p.temp, p.precip, p.co2, p.reactionrate, w, input.facies.infiltration_coefficient),nothing)
 end
 
-function denudation(box::Box{BT}, p::PhysicalErosionParam, state) where {BT <: BoundaryType}
+function denudation(input::Input, p::PhysicalErosionParam, state::State) 
     # This needs transport feature to be merged so that we know the facies type of the
     # top most layer. What follows should still be regarded as pseudo-code.
     # We need to look into this further.
-    slope = zeros(Float64, box.grid_size...)
-    slopefn = stencil(Float64, box, (3, 3), slope_kernel)
+    slope = zeros(Float64, input.box.grid_size...)
+    slopefn = stencil(Float64, input.box{BT}, (3, 3), slope_kernel)
     w = water_depth(state)
-    slopefn(w, slope, box.phys_scale) # slope is calculated with square so no need for -w
-    facies = (infiltration_rate = 1) # temporary place-holder
-    
-    redis = mass_erosion(Float64,Periodic{2},slope,(3,3),w,input.phys_scale,input.facies.inf)
+    slopefn(w, slope, input.box.phys_scale) # slope is calculated with square so no need for -w
+    denudation_amount = physical_erosion.(slope, input.facies.infiltration_coefficient, p.erodability)
+    redis = mass_erosion(Float64,input.box{BT}, slope,(3,3),w,box.phys_scale,input.facies.infiltration_coefficient,input.erodability)
     redistribution = total_mass_redistribution(redis, slope)
-    denudation_amount = physical_erosion.(p.temp, p.precip, p.co2, p.alpha, w, slope, facies)
 
     return (denudation_amount, redistribution)
 end
 
+
 """
 state needs height array
 """
-function propagator(input)
-    function (state)  # -> DenudationFrame
 
-    end
-end
 
 end

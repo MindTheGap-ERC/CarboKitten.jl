@@ -1,9 +1,9 @@
 # based on Kaufman 2002, Geomorphology
 module CarbDissolution
 
+include("../Burgess2013/Config.jl")
+import .Config: Facies
 export dissolution
-
-using ..Burgess2013
 
 # Kaufmann 2002, Table 2
 function karst_denudation_parameters(temp::Float64)
@@ -24,14 +24,14 @@ end
 function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies::Facies)
     p = karst_denudation_parameters(temp)
     eq_c = (pco2 .* (p.K1 * p.KC * p.KH) ./ (4 * p.K2 * p.activity_Ca * (p.activity_Alk)^2)).^(1/3)
-    eq_d = 1000 * precip .* facies.inf * 40 * 1000 * eq_c ./ facies.density
+    eq_d = 1000 * precip .* facies.infiltration_coefficient * 40 * 1000 * eq_c ./ facies.density
     (concentration = eq_c, denudation = eq_d)
 end
 
 function dissolution(temp::Float64,precip::Float64, alpha::Float64, pco2::Float64,water_depth::Float64, facies::Facies)
         z0 = -water_depth
         I = precip .* facies.inf #assume vertical infiltration
-        λ = precip .* facies.inf ./ (alpha .* facies.L)
+        λ = precip .* facies.inf ./ (alpha .* facies.reactive_surface)
         eq = equilibrium(temp,pco2,precip,facies) # pass ceq Deq from the last function
         eq.denudation .* (1 - (λ./z0).* (1 - exp(-z0./λ))) 
 end

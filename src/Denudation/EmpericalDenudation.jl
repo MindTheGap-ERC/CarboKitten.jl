@@ -1,7 +1,6 @@
 ## this code used the emperical equations with form of D = f(precipitation, slope) to estimate the denudation rates on exposed carbonate platform.
 module EmpericalDenudation
 
-using CarboKitten.Stencil: Periodic, stencil
 export emperical_denudation,slope_kernel
 
 #calculate planar slopes based on [ARCGIS apporach](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm)

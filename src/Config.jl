@@ -29,7 +29,7 @@ phys_size(grid_size, phys_scale) = (
 # ~/~ begin <<docs/src/boxes.md#config-types>>[1]
 abstract type AbstractTimeProperties end
 
-@kwdef struct TimeProperties <: AbstractTimeProperties
+struct TimeProperties <: AbstractTimeProperties
     Δt::typeof(1.0u"yr")
     steps::Int
     write_interval::Int

@@ -2,13 +2,15 @@ module PhysicalErosion
 
 using CarboKitten.Burgess2013: Facies
 using CarboKitten.Stencil: Boundary, Periodic, offset_value, offset_index, stencil
-using CarboKitten.EmpericalDenudation
+using CarboKitten.BoundaryTrait
+import CarboKitten.Config: Box
 export physical_erosion, mass_erosion, total_mass_redistribution
 
-function physical_erosion(slope::Float64, facies::Facies)
-    local kv = 0.23 #very arguable paramster
-    -1 * -kv .* (1-facies.inf).^(1/3) .* slope.^(2/3)
+function physical_erosion(slope::Float64, inf::Float64, erodability::Float64)
+    -1 * -erodability .* (1-inf).^(1/3) .* slope.^(2/3)
 end
+
+#erodability = 0.23
 
 function redistribution_kernel(w::Matrix{Float64},cellsize::Float64)
     s = zeros(Float64,(3,3))
@@ -38,10 +40,7 @@ function redistribution_kernel(w::Matrix{Float64},cellsize::Float64)
 	end
 end
 
-slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel) #function 
-
-
-function mass_erosion(::Type{T},::Type{BT},slope::Matrix{Float64},n::NTuple{dim,Int},w::Matrix{Float64},csz::Float64,facies::Facies) where {T, dim, BT <: Boundary{dim}}
+function mass_erosion(::Type{T},::Box{BT},slope::Matrix{Float64},n::NTuple{dim,Int},w::Matrix{Float64},csz::Float64,inf::Float64,erodability::Float64) where {T, dim, BT <: BoundaryTrait.Boundary{dim}}
 	m = n .÷ 2
     stencil_shape = range.(.-m, m)
     stencil = zeros(T, n)
@@ -49,7 +48,7 @@ function mass_erosion(::Type{T},::Type{BT},slope::Matrix{Float64},n::NTuple{dim,
 	for i in CartesianIndices(slope)
         for (k, Δi) in enumerate(CartesianIndices(stencil_shape))
             stencil[k] = offset_value(BT, w, i, Δi)
-			redis[:,:,i] .= redistribution_kernel(stencil,csz) .* physical_erosion(slope[i],facies.inf)
+			redis[:,:,i] .= redistribution_kernel(stencil,csz) .* physical_erosion(slope[i], inf, erodability)
         end
     end
 	return redis		

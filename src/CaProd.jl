@@ -15,7 +15,7 @@ using Unitful
 using .Iterators: drop, peel, partition, map, take
 
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-input>>[init]
-@kwdef struct Input
+ struct Input
     box :: Box
     time :: TimeProperties
 

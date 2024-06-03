@@ -21,3 +21,7 @@ include = [".entangled/tasks.json"]
 [tool.brei.runner.julia]
 command = "julia"
 args = ["--project=workenv", "${script}"]
+
+[[tool.brei.task]]
+runner = "bash"
+script = "mkdir docs/src/_fig; cp -r docs/src/fig/* docs/src/_fig"

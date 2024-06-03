@@ -1,7 +1,9 @@
 # Combining CA with production
+
 This model combines BS92 production with the B13 cellular automaton.
 
 ## Complete example
+
 This example is running for 10000 steps to 1Myr on a 100 $\times$ 50 grid, starting with a sloped height down to 50m. The `sea_level`, and `initial_depth` arguments are functions. The `phys_scale` argument translate pixels on the grid into physical metres. The `write_interval` indicates to write output every 10 iterations, summing the production over that range. You may copy paste the following code into your own script or notebook, and play around with input values.
 
 ``` {.julia .task file=examples/production-only/caps-osc.jl}
@@ -22,9 +24,13 @@ const DEFAULT_INPUT = CaProd.Input(
   box = Box{Shelf}(
     grid_size = (100, 50),
     phys_scale = 0.15u"km"
+    # equivalent:
+    # phys_scale = 150"m"
   ),
   time = TimeProperties(
     Δt = 0.0001u"Myr",
+    # equivalent: 
+    # Δt = 1u"kyr",
     steps = 10000,
     write_interval = 10
   ),
@@ -54,14 +60,14 @@ module Script
     function main()
         f = Figure()
         plot_crosssection(f[1,1], "data/caps-osc.h5")
-	    save("docs/src/fig/b13-capsosc-crosssection.png", f)
+     save("docs/src/fig/b13-capsosc-crosssection.png", f)
     end
 end
 
 Script.main()
 ```
 
-![](fig/b13-capsosc-crosssection.png)
+![Stratigraphy, production and subsidence under oscillating sea level.](fig/b13-capsosc-crosssection.png)
 
 ## Input
 
@@ -140,6 +146,7 @@ end
 ```
 
 ## Propagator
+
 The propagator computes the production rates (and also erosion) given the state of the model.
 
 ``` {.julia #ca-prod-model}
@@ -180,6 +187,7 @@ return Frame(result)
 ```
 
 ## Updater
+
 Every iteration we update the height variable with the subsidence rate, and add sediments to the height.
 
 ``` {.julia #ca-prod-model}
@@ -253,6 +261,7 @@ function main(input::Input, output::String)
         attr["write_interval"] = input.time.write_interval
         attr["time_steps"] = input.time.steps
         attr["subsidence_rate"] = input.subsidence_rate |> in_units_of(u"m/Myr")
+        attr["n_facies"] = length(input.facies)
 
         n_facies = length(input.facies)
         ds = create_dataset(fid, "sediment", datatype(Float64),
@@ -270,6 +279,7 @@ end # CaProd
 ```
 
 ## Case 1
+
 The first case uses the same settings as Burgess 2013: an initial depth of 2m, subsidence rate of 50 m/Myr and constant sea level.
 
 ``` {.julia .task file=examples/production-only/ca-uniform.jl}
@@ -305,6 +315,7 @@ CaProd.main(Script.DEFAULT_INPUT, "data/ca-prod.h5")
 ```
 
 ## Case 2
+
 For the second case, we start with a slope.
 
 ``` {.julia .task file=examples/production-only/ca-slope.jl}
@@ -345,93 +356,8 @@ Script.CaProd.main(Script.DEFAULT_INPUT, "data/ca-prod-slope.h5")
 #| collect: figures
 
 module Script
-# using CarboKitten.Visualization
 using CairoMakie
-using Unitful
-using HDF5
-using GeometryBasics
-
-@kwdef struct CKData
-    Δt::typeof(1.0u"Myr")
-    subsidence_rate::typeof(1.0u"m/Myr")
-    t_axis::typeof(Float64[]u"Myr")
-    x_axis::typeof(Float64[]u"m")
-    initial_height::typeof(Float64[]u"m")
-    sediment::typeof(Array{Float64,4}(undef,0,0,0,0)u"m/Myr")
-end
-
-
-function read_data(datafile)
-    h5open(datafile, "r") do fid
-        attr = HDF5.attributes(fid["input"])
-        CKData(
-            Δt = attr["delta_t"][]u"Myr",
-            subsidence_rate = attr["subsidence_rate"][]u"m/Myr",
-            t_axis = fid["input/t"][]u"Myr",
-            x_axis = fid["input/x"][]u"m",
-            initial_height = fid["input/height"][]u"m",
-            sediment = fid["sediment"][]u"m/Myr"
-        )
-    end
-end
-
-function plot_crosssection(pos, datafile)
-    # x: 1-d array with x-coordinates
-    # t: 1-d array with time-coordinates (n_steps + 1)
-    # h[x, t]: height fn, monotonic increasing in time
-    # p[x, facies, t]: production rate
-    # taken at y = y_max / 2, h[x, 1] is initial height
-    n_facies, x, t, h, p = h5open(datafile, "r") do fid
-        attr = HDF5.attributes(fid["input"])
-        Δt = attr["delta_t"][]
-        subsidence_rate = attr["subsidence_rate"][]
-        t_end = fid["input/t"][end-1]
-        total_subsidence = subsidence_rate * t_end
-        total_sediment = sum(fid["sediment"][]; dims=3)
-        initial_height = fid["input/height"][]
-        center = div(size(total_sediment)[1], 2)
-        elevation = cumsum(total_sediment; dims=4)[:, center, 1, :] .* Δt .- initial_height .- total_subsidence
-        t = fid["input/t"][]
-        n_facies = size(fid["sediment"])[3]
-
-        return n_facies,
-        fid["input/x"][],
-        [t; Δt * attr["time_steps"][]],
-        hcat(.-initial_height .- total_subsidence, elevation),
-        fid["sediment"][:, center, :, :]
-    end
-
-    pts = vec(Point{2,Float64}.(x, h[:, 2:end]))
-    c = vec(argmax(p; dims=2)[:, 1, :] .|> (c -> c[2]))
-    rect = Rect2(0.0, 0.0, 1.0, 1.0)
-    m_tmp = GeometryBasics.mesh(Tesselation(rect, (100, 1000)))
-    m = GeometryBasics.Mesh(pts, faces(m_tmp))
-
-    # pts = vec(Point{2,Float64}.(x, h))
-    # c = argmax(p; dims=2)[:,1,:] .|> (c -> c[2])
-    # w = size(x)[1]
-
-    # face(idx) = let k = idx[1] + idx[2]*w
-    #     TriangleFace(k, k+1, k+1+w), TriangleFace(k+1+w, k+w, k)
-    # end
-
-    ax = Axis(pos, xlabel="location", ylabel="depth", limits=((-12, x[end]), nothing))
-    # for f in 1:n_facies
-    #     locs = CartesianIndices((size(x)[1], size(t)[1] - 1))[c .== f]
-    #     triangles = collect(Iterators.flatten(face.(locs)))
-    #     m = GeometryBasics.Mesh(pts, triangles)
-    #     mesh!(ax, m)
-    # end
-
-    mesh!(ax, m, color=c, alpha=0.7)
-    for idx in [1, 501, 1001]
-        lines!(ax, x, h[:, idx], color=:black)
-        text!(ax, -2.0, h[1, idx]; text="$(t[idx]) Myr", align=(:right, :center))
-    end
-    for idx in [250, 750]
-        lines!(ax, x, h[:, idx], color=:black, linewidth=0.5)
-    end
-end
+using CarboKitten.Visualization
 
 function main()
     f = Figure()
@@ -443,9 +369,9 @@ end
 Script.main()
 ```
 
-![](fig/b13-crosssection.png)
+![Stratigraphy; production and subsidence.](fig/b13-crosssection.png)
 
-# Visualizing output
+## Visualizing output
 
 ``` {.julia file=src/Visualization.jl}
 module Visualization
@@ -476,15 +402,15 @@ using GeometryBasics
 using Unitful
 
 function CarboKitten.Visualization.plot_facies_production(input; loc = nothing)
-	fig, loc = isnothing(loc) ? let fig = Figure(); (fig, fig[1, 1]) end : (nothing, loc)
-	ax = Axis(loc, title="production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))", xlabel="production (m/Myr)", ylabel="depth (m)", yreversed=true)
-	for f in input.facies
-		depth = (0.1:0.1:50.0)u"m"
-		prod = [production_rate(input.insolation, f, d) for d in depth]
-		lines!(ax, prod / u"m/Myr", depth / u"m")
+ fig, loc = isnothing(loc) ? let fig = Figure(); (fig, fig[1, 1]) end : (nothing, loc)
+ ax = Axis(loc, title="production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))", xlabel="production (m/Myr)", ylabel="depth (m)", yreversed=true)
+ for f in input.facies
+  depth = (0.1:0.1:50.0)u"m"
+  prod = [production_rate(input.insolation, f, d) for d in depth]
+  lines!(ax, prod / u"m/Myr", depth / u"m")
 
-	end
-	fig
+ end
+ fig
 end
 
 function CarboKitten.Visualization.plot_crosssection(pos, datafile)

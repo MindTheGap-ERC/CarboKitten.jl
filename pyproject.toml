@@ -23,5 +23,6 @@ command = "julia"
 args = ["--project=workenv", "${script}"]
 
 [[tool.brei.task]]
-runner = "bash"
-script = "mkdir docs/src/_fig; cp -r docs/src/fig/* docs/src/_fig"
+name = "copy_figures"
+requires = ["#figures"]
+script = "rsync -avh docs/src/_fig/ docs/src/fig/ --delete"

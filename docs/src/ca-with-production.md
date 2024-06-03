@@ -33,7 +33,7 @@ CaProd.main(DEFAULT_INPUT, "data/caps-osc.h5")
 This writes output to an HDF5 file that you may use for further analysis and visualization.
 
 ``` {.julia .task file=examples/plot-caps-osc.jl}
-#| creates: docs/src/fig/b13-capsosc-crosssection.png
+#| creates: docs/src/_fig/b13-capsosc-crosssection.png
 #| requires: data/caps-osc.h5 ext/VisualizationExt.jl
 #| collect: figures
 
@@ -45,7 +45,7 @@ module Script
     function main()
         f = Figure()
         plot_crosssection(f[1,1], "data/caps-osc.h5")
-	    save("docs/src/fig/b13-capsosc-crosssection.png", f)
+	    save("docs/src/_fig/b13-capsosc-crosssection.png", f)
     end
 end
 
@@ -317,7 +317,7 @@ CaProd.main(DEFAULT_INPUT, "data/ca-prod-slope.h5")
 ```
 
 ``` {.julia .task file=examples/production-only/plot-cap-slope.jl}
-#| creates: docs/src/fig/b13-crosssection.png
+#| creates: docs/src/_fig/b13-crosssection.png
 #| requires: data/ca-prod-slope.h5 ext/VisualizationExt.jl
 #| collect: figures
 
@@ -328,7 +328,7 @@ using CairoMakie
 function main()
     f = Figure()
     plot_crosssection(f[1, 1], "data/ca-prod-slope.h5")
-    save("docs/src/fig/b13-crosssection.png", f)
+    save("docs/src/_fig/b13-crosssection.png", f)
 end
 end
 

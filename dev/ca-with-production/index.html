@@ -1,27 +1,40 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Model with CA and Production · CarboKitten</title><meta name="title" content="Model with CA and Production · CarboKitten"/><meta property="og:title" content="Model with CA and Production · CarboKitten"/><meta property="twitter:title" content="Model with CA and Production · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li><li><a class="tocitem" href="../carbocat-ca/">Cellular Automaton</a></li><li class="is-active"><a class="tocitem" href>Model with CA and Production</a><ul class="internal"><li><a class="tocitem" href="#Complete-example"><span>Complete example</span></a></li><li><a class="tocitem" href="#Input"><span>Input</span></a></li><li><a class="tocitem" href="#Output"><span>Output</span></a></li><li><a class="tocitem" href="#Logic"><span>Logic</span></a></li><li><a class="tocitem" href="#Init"><span>Init</span></a></li><li><a class="tocitem" href="#Propagator"><span>Propagator</span></a></li><li><a class="tocitem" href="#Updater"><span>Updater</span></a></li><li><a class="tocitem" href="#Loop"><span>Loop</span></a></li><li><a class="tocitem" href="#Case-1"><span>Case 1</span></a></li><li><a class="tocitem" href="#Case-2"><span>Case 2</span></a></li><li class="toplevel"><a class="tocitem" href="#Visualizing-output"><span>Visualizing output</span></a></li></ul></li><li><a class="tocitem" href="../carbocat-transport/">Sediment Transport</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">CarboCAT</a></li><li class="is-active"><a href>Model with CA and Production</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Model with CA and Production</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/ca-with-production.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Combining-CA-with-production"><a class="docs-heading-anchor" href="#Combining-CA-with-production">Combining CA with production</a><a id="Combining-CA-with-production-1"></a><a class="docs-heading-anchor-permalink" href="#Combining-CA-with-production" title="Permalink"></a></h1><p>This model combines BS92 production with the B13 cellular automaton.</p><h2 id="Complete-example"><a class="docs-heading-anchor" href="#Complete-example">Complete example</a><a id="Complete-example-1"></a><a class="docs-heading-anchor-permalink" href="#Complete-example" title="Permalink"></a></h2><p>This example is running for 10000 steps to 1Myr on a 100 <span>$\times$</span> 50 grid, starting with a sloped height down to 50m. The <code>sea_level</code>, and <code>initial_depth</code> arguments are functions. The <code>phys_scale</code> argument translate pixels on the grid into physical metres. The <code>write_interval</code> indicates to write output every 10 iterations, summing the production over that range. You may copy paste the following code into your own script or notebook, and play around with input values.</p><div class="noweb-label">file:<i>examples/caps-osc.jl</i></div><pre><code class="language- julia hljs">#| creates: data/caps-osc.h5
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Model with CA and Production · CarboKitten</title><meta name="title" content="Model with CA and Production · CarboKitten"/><meta property="og:title" content="Model with CA and Production · CarboKitten"/><meta property="twitter:title" content="Model with CA and Production · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li><li><a class="tocitem" href="../carbocat-ca/">Cellular Automaton</a></li><li class="is-active"><a class="tocitem" href>Model with CA and Production</a><ul class="internal"><li><a class="tocitem" href="#Complete-example"><span>Complete example</span></a></li><li><a class="tocitem" href="#Input"><span>Input</span></a></li><li><a class="tocitem" href="#Output"><span>Output</span></a></li><li><a class="tocitem" href="#Logic"><span>Logic</span></a></li><li><a class="tocitem" href="#Init"><span>Init</span></a></li><li><a class="tocitem" href="#Propagator"><span>Propagator</span></a></li><li><a class="tocitem" href="#Updater"><span>Updater</span></a></li><li><a class="tocitem" href="#Loop"><span>Loop</span></a></li><li><a class="tocitem" href="#Case-1"><span>Case 1</span></a></li><li><a class="tocitem" href="#Case-2"><span>Case 2</span></a></li><li><a class="tocitem" href="#Visualizing-output"><span>Visualizing output</span></a></li></ul></li><li><a class="tocitem" href="../carbocat-transport/">Sediment Transport</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">CarboCAT</a></li><li class="is-active"><a href>Model with CA and Production</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Model with CA and Production</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/ca-with-production.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Combining-CA-with-production"><a class="docs-heading-anchor" href="#Combining-CA-with-production">Combining CA with production</a><a id="Combining-CA-with-production-1"></a><a class="docs-heading-anchor-permalink" href="#Combining-CA-with-production" title="Permalink"></a></h1><p>This model combines BS92 production with the B13 cellular automaton.</p><h2 id="Complete-example"><a class="docs-heading-anchor" href="#Complete-example">Complete example</a><a id="Complete-example-1"></a><a class="docs-heading-anchor-permalink" href="#Complete-example" title="Permalink"></a></h2><p>This example is running for 10000 steps to 1Myr on a 100 <span>$\times$</span> 50 grid, starting with a sloped height down to 50m. The <code>sea_level</code>, and <code>initial_depth</code> arguments are functions. The <code>phys_scale</code> argument translate pixels on the grid into physical metres. The <code>write_interval</code> indicates to write output every 10 iterations, summing the production over that range. You may copy paste the following code into your own script or notebook, and play around with input values.</p><div class="noweb-label">file:<i>examples/production-only/caps-osc.jl</i></div><pre><code class="language- julia hljs">#| creates: data/caps-osc.h5
 #| requires: src/CaProd.jl
 
+module Script
+using CarboKitten.BoundaryTrait: Shelf
+using CarboKitten.Config: Box, TimeProperties
+using CarboKitten.Burgess2013.Config: MODEL1
 using CarboKitten.CaProd
+using Unitful
 
-DEFAULT_INPUT = CaProd.Input(
-    sea_level = t -&gt; 4 * sin(2π * t / 0.2), 
-    subsidence_rate = 50.0,
-    initial_depth = x -&gt; x / 2,
-    grid_size = (50, 100),
-    phys_scale = 1.0,
-    Δt = 0.0001,
-    write_interval = 10,
-    time_steps = 10000,
-    facies = [
-        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
-    ],
-    insolation = 2000.0
+const PERIOD = 200.0u&quot;kyr&quot;
+const AMPLITUDE = 4.0u&quot;m&quot;
+
+const DEFAULT_INPUT = CaProd.Input(
+  box = Box{Shelf}(
+    grid_size = (100, 50),
+    phys_scale = 0.15u&quot;km&quot;
+    # equivalent:
+    # phys_scale = 150&quot;m&quot;
+  ),
+  time = TimeProperties(
+    Δt = 0.0001u&quot;Myr&quot;,
+    # equivalent: 
+    # Δt = 1u&quot;kyr&quot;,
+    steps = 10000,
+    write_interval = 10
+  ),
+  sea_level = t -&gt; AMPLITUDE * sin(2π * t / PERIOD), 
+  subsidence_rate=50.0u&quot;m/Myr&quot;,
+  initial_depth=x -&gt; x / 300.0,
+  facies=MODEL1,
+  insolation=400.0u&quot;W/m^2&quot;
 )
+end
 
-CaProd.main(DEFAULT_INPUT, &quot;data/caps-osc.h5&quot;)</code></pre><p>This writes output to an HDF5 file that you may use for further analysis and visualization.</p><div class="noweb-label">file:<i>examples/plot-caps-osc.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/fig/b13-capsosc-crosssection.png
+Script.CaProd.main(Script.DEFAULT_INPUT, &quot;data/caps-osc.h5&quot;)</code></pre><p>This writes output to an HDF5 file that you may use for further analysis and visualization.</p><div class="noweb-label">file:<i>examples/plot-caps-osc.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/fig/b13-capsosc-crosssection.png
 #| requires: data/caps-osc.h5 ext/VisualizationExt.jl
 #| collect: figures
 
@@ -33,50 +46,46 @@ module Script
     function main()
         f = Figure()
         plot_crosssection(f[1,1], &quot;data/caps-osc.h5&quot;)
-	    save(&quot;docs/src/fig/b13-capsosc-crosssection.png&quot;, f)
+     save(&quot;docs/src/fig/b13-capsosc-crosssection.png&quot;, f)
     end
 end
 
-Script.main()</code></pre><p><img src="../fig/b13-capsosc-crosssection.png" alt/></p><h2 id="Input"><a class="docs-heading-anchor" href="#Input">Input</a><a id="Input-1"></a><a class="docs-heading-anchor-permalink" href="#Input" title="Permalink"></a></h2><ul><li>initial depth (function of space)</li><li>sea-level curve (function of time)</li><li>subsidence (function of time)</li><li>facies types</li></ul><p>These should all behave as a functions, but could also be some interpolated data. The signs of these quantities should be such that the following equation holds:</p><p class="math-container">\[T + E = S + W\]</p><p>Saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation plus change in Water depth.</p><div class="noweb-label">⪡ca-prod-input⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Input
-    sea_level
-    subsidence_rate
-    initial_depth
+Script.main()</code></pre><p><img src="../fig/b13-capsosc-crosssection.png" alt="Stratigraphy, production and subsidence under oscillating sea level."/></p><h2 id="Input"><a class="docs-heading-anchor" href="#Input">Input</a><a id="Input-1"></a><a class="docs-heading-anchor-permalink" href="#Input" title="Permalink"></a></h2><ul><li>initial depth (function of space)</li><li>sea-level curve (function of time)</li><li>subsidence (function of time)</li><li>facies types</li></ul><p>These should all behave as a functions, but could also be some interpolated data. The signs of these quantities should be such that the following equation holds:</p><p class="math-container">\[T + E = S + W\]</p><p>Saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation plus change in Water depth.</p><div class="noweb-label">⪡ca-prod-input⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Input
+    box :: Box
+    time :: TimeProperties
 
-    grid_size::NTuple{2,Int}
-    phys_scale::Float64
-    Δt::Float64
-
-    time_steps::Int
-    write_interval::Int
+    sea_level       # Myr -&gt; m
+    subsidence_rate::typeof(1.0u&quot;m/Myr&quot;)
+    initial_depth   # m -&gt; m
 
     facies::Vector{Facies}
-    insolation::Float64
+    insolation::typeof(1.0u&quot;W/m^2&quot;)
 end</code></pre><p>In the case <code>write_interval</code> is not one, we will sum production rates over several iterations of the model before writing to output. In that case sediment production per written frame is no longer limited to a single facies.</p><h2 id="Output"><a class="docs-heading-anchor" href="#Output">Output</a><a id="Output-1"></a><a class="docs-heading-anchor-permalink" href="#Output" title="Permalink"></a></h2><p>Each iteration of the model, we produce a <code>Frame</code>.</p><div class="noweb-label">⪡ca-prod-frame⪢≣</div><pre><code class="language- julia hljs">struct Frame
-    production::Array{Float64,3}
+    production::Array{typeof(1.0u&quot;m/Myr&quot;),3}
 end</code></pre><p>The frame is used to update a <em>state</em> <span>$S$</span>. The frame should be considered a delta for the state. So, we can reproduce the height at each step from the frames.</p><div class="noweb-label">⪡ca-prod-state⪢≣</div><pre><code class="language- julia hljs">mutable struct State
-    time::Float64
-    height::Array{Float64,2}
-end</code></pre><p>The output is principally all frames produced in the simulation, in a 4-dimensional array. The first two dimensions are x, y positions on the grid, the third is the facies and the fourth dimension is time. We store the output in HDF5, having an <code>input</code> group where we store the input data, and a <code>sediment</code> dataset containing the aforementioned 4-dimensional output data. Note that these are <em>production rates</em>, so to reconstruct the sea floor depth at any time, you need to multiply by <span>$\Delta t * n_w$</span>, where <span>$n_w$</span> is the <code>write_interval</code> and take a cumulative sum.</p><h2 id="Logic"><a class="docs-heading-anchor" href="#Logic">Logic</a><a id="Logic-1"></a><a class="docs-heading-anchor-permalink" href="#Logic" title="Permalink"></a></h2><p>From a dynamical modeling point of view, CarboCAT operates analogous to a forward Euler integration scheme, where some components are actually a discrete model. This means we have one function that generates a <code>Frame</code> from a <code>State</code>, called the <em>propagator</em> <span>$P$</span> (this is our own nomenclature),</p><p class="math-container">\[P_i: S \to \Delta.\]</p><p>The suffix <span>$i$</span> here is used to indicate that the propagator depends on the input. We&#39;ll have a second function <span>$U$</span> that <em>updates</em> the state with the given frame,</p><p class="math-container">\[U: (S, \Delta) \to S.\]</p><p>In practice however, the update function changes the state in-place.</p><h2 id="Init"><a class="docs-heading-anchor" href="#Init">Init</a><a id="Init-1"></a><a class="docs-heading-anchor-permalink" href="#Init" title="Permalink"></a></h2><p>We fill the height map with the initial depth function. It is assumed that the height only depends on the second index.</p><div class="noweb-label">⪡ca-prod-model⪢≣</div><pre><code class="language- julia hljs">function initial_state(input::Input)  # -&gt; State
-    height = zeros(Float64, input.grid_size...)
+    time::typeof(1.0u&quot;Myr&quot;)
+    height::Array{typeof(1.0u&quot;m&quot;),2}
+end</code></pre><p>The output is principally all frames produced in the simulation, in a 4-dimensional array. The first two dimensions are x, y positions on the grid, the third is the facies and the fourth dimension is time. We store the output in HDF5, having an <code>input</code> group where we store the input data, and a <code>sediment</code> dataset containing the aforementioned 4-dimensional output data. Note that these are <em>production rates</em>, so to reconstruct the sea floor depth at any time, you need to multiply by <span>$\Delta t * n_w$</span>, where <span>$n_w$</span> is the <code>write_interval</code> and take a cumulative sum.</p><h2 id="Logic"><a class="docs-heading-anchor" href="#Logic">Logic</a><a id="Logic-1"></a><a class="docs-heading-anchor-permalink" href="#Logic" title="Permalink"></a></h2><p>From a dynamical modeling point of view, CarboCAT operates analogous to a forward Euler integration scheme, where some components are actually a discrete model. This means we have one function that generates a <code>Frame</code> from a <code>State</code>, called the <em>propagator</em> <span>$P$</span> (this is our own nomenclature),</p><p class="math-container">\[P_i: S \to \Delta.\]</p><p>The suffix <span>$i$</span> here is used to indicate that the propagator depends on the input. We&#39;ll have a second function <span>$U$</span> that <em>updates</em> the state with the given frame,</p><p class="math-container">\[U: (S, \Delta) \to S.\]</p><p>In practice however, the update function changes the state in-place.</p><h2 id="Init"><a class="docs-heading-anchor" href="#Init">Init</a><a id="Init-1"></a><a class="docs-heading-anchor-permalink" href="#Init" title="Permalink"></a></h2><p>We fill the height map with the initial depth function. It is assumed that the height only depends on the second index.</p><div class="noweb-label">⪡ca-prod-model⪢≣</div><pre><code class="language- julia hljs">function initial_state(input)  # -&gt; State
+    height = zeros(Float64, input.box.grid_size...) * u&quot;m&quot;
     for i in CartesianIndices(height)
-        height[i] = input.initial_depth(i[2] * input.phys_scale)
+        height[i] = input.initial_depth(i[1] * input.box.phys_scale)
     end
-    return State(0.0, height)
-end</code></pre><h2 id="Propagator"><a class="docs-heading-anchor" href="#Propagator">Propagator</a><a id="Propagator-1"></a><a class="docs-heading-anchor-permalink" href="#Propagator" title="Permalink"></a></h2><p>The propagator computes the production rates (and also erosion) given the state of the model.</p><div class="noweb-label">⪡ca-prod-model⪢⊞</div><pre><code class="language- julia hljs">function propagator(input::Input)
+    return State(0.0u&quot;Myr&quot;, height)
+end</code></pre><h2 id="Propagator"><a class="docs-heading-anchor" href="#Propagator">Propagator</a><a id="Propagator-1"></a><a class="docs-heading-anchor-permalink" href="#Propagator" title="Permalink"></a></h2><p>The propagator computes the production rates (and also erosion) given the state of the model.</p><div class="noweb-label">⪡ca-prod-model⪢⊞</div><pre><code class="language- julia hljs">function propagator(input)
     &lt;&lt;ca-prod-init-propagator&gt;&gt;
-    function (s::State)  # -&gt; Frame
+    function (s)  # -&gt; Frame
         &lt;&lt;ca-prod-propagate&gt;&gt;
     end
 end</code></pre><p>The propagator keeps the cellular automaton as an internal state, but this may also be considered to be an input function. This may change when you&#39;d want to influence the CA with environmental factors. Then the CA becomes an integral component of the dynamical model. The CA would then have to keep state in the <code>State</code> variable. We burn the first 20 iterations of the CA to start with a realistic pattern.</p><div class="noweb-label">⪡ca-prod-init-propagator⪢≣</div><pre><code class="language- julia hljs">n_facies = length(input.facies)
-ca_init = rand(0:n_facies, input.grid_size...)
+ca_init = rand(0:n_facies, input.box.grid_size...)
 ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
 
-function water_depth(s::State)
+function water_depth(s)
     s.height .- input.sea_level(s.time)
-end</code></pre><p>Now, to generate a production from a given state, we advance the CA by one step and compute the production accordingly.</p><div class="noweb-label">⪡ca-prod-propagate⪢≣</div><pre><code class="language- julia hljs">result = zeros(Float64, input.grid_size..., n_facies)
+end</code></pre><p>Now, to generate a production from a given state, we advance the CA by one step and compute the production accordingly.</p><div class="noweb-label">⪡ca-prod-propagate⪢≣</div><pre><code class="language- julia hljs">result = zeros(typeof(0.0u&quot;m/Myr&quot;), input.box.grid_size..., n_facies)
 facies_map, ca = peel(ca)
 w = water_depth(s)
-Threads.@threads for idx in CartesianIndices(facies_map)
+for idx in CartesianIndices(facies_map)
     f = facies_map[idx]
     if f == 0
         continue
@@ -86,9 +95,9 @@ end
 return Frame(result)</code></pre><h2 id="Updater"><a class="docs-heading-anchor" href="#Updater">Updater</a><a id="Updater-1"></a><a class="docs-heading-anchor-permalink" href="#Updater" title="Permalink"></a></h2><p>Every iteration we update the height variable with the subsidence rate, and add sediments to the height.</p><div class="noweb-label">⪡ca-prod-model⪢⊞</div><pre><code class="language- julia hljs">function updater(input::Input)
     n_facies = length(input.facies)
     function (s::State, Δ::Frame)
-        s.height .-= sum(Δ.production; dims=3) .* input.Δt
-        s.height .+= input.subsidence_rate * input.Δt
-        s.time += input.Δt
+        s.height .-= sum(Δ.production; dims=3) .* input.time.Δt
+        s.height .+= input.subsidence_rate * input.time.Δt
+        s.time += input.time.Δt
     end
 end</code></pre><h2 id="Loop"><a class="docs-heading-anchor" href="#Loop">Loop</a><a id="Loop-1"></a><a class="docs-heading-anchor-permalink" href="#Loop" title="Permalink"></a></h2><div class="noweb-label">⪡ca-prod-model⪢⊞</div><pre><code class="language- julia hljs">function run_model(input::Input)
     Channel{Frame}() do ch
@@ -105,13 +114,16 @@ end</code></pre><h2 id="Loop"><a class="docs-heading-anchor" href="#Loop">Loop</
 end</code></pre><div class="noweb-label">file:<i>src/CaProd.jl</i></div><pre><code class="language- julia hljs">module CaProd
 
 using CarboKitten
-using CarboKitten.Stencil: Periodic
-using CarboKitten.Utility
+using ..Utility
+using ..Config: Box, TimeProperties
+using ..BoundaryTrait: Periodic
+using ..Utility
 # using CarboKitten.BS92: sealevel_curve
-using CarboKitten.Stencil
-using CarboKitten.Burgess2013
+using ..Stencil
+using ..Burgess2013
 
 using HDF5
+using Unitful
 using .Iterators: drop, peel, partition, map, take
 
 &lt;&lt;ca-prod-input&gt;&gt;
@@ -124,83 +136,99 @@ function stack_frames(fs::Vector{Frame})  # -&gt; Frame
 end
 
 function main(input::Input, output::String)
-    x_axis = (0:(input.grid_size[2]-1)) .* input.phys_scale
-    y_axis = (0:(input.grid_size[1]-1)) .* input.phys_scale
+    y_axis = (0:(input.box.grid_size[2]-1)) .* input.box.phys_scale
+    x_axis = (0:(input.box.grid_size[1]-1)) .* input.box.phys_scale
     initial_height = input.initial_depth.(x_axis)
-    n_writes = input.time_steps ÷ input.write_interval
+    n_writes = input.time.steps ÷ input.time.write_interval
 
     h5open(output, &quot;w&quot;) do fid
         gid = create_group(fid, &quot;input&quot;)
-        gid[&quot;x&quot;] = collect(x_axis)
-        gid[&quot;y&quot;] = collect(y_axis)
-        gid[&quot;height&quot;] = collect(initial_height)
-        gid[&quot;t&quot;] = collect((0:(n_writes-1)) .* (input.Δt * input.write_interval))
+        gid[&quot;x&quot;] = collect(x_axis) |&gt; in_units_of(u&quot;m&quot;)
+        gid[&quot;y&quot;] = collect(y_axis) |&gt; in_units_of(u&quot;m&quot;)
+        gid[&quot;height&quot;] = collect(initial_height) |&gt; in_units_of(u&quot;m&quot;)
+        gid[&quot;t&quot;] = collect((0:(n_writes-1)) .* (input.time.Δt * input.time.write_interval)) |&gt; in_units_of(u&quot;Myr&quot;)
         attr = attributes(gid)
-        attr[&quot;delta_t&quot;] = input.Δt
-        attr[&quot;write_interval&quot;] = input.write_interval
-        attr[&quot;time_steps&quot;] = input.time_steps
-        attr[&quot;subsidence_rate&quot;] = input.subsidence_rate
+        attr[&quot;delta_t&quot;] = input.time.Δt |&gt; in_units_of(u&quot;Myr&quot;)
+        attr[&quot;write_interval&quot;] = input.time.write_interval
+        attr[&quot;time_steps&quot;] = input.time.steps
+        attr[&quot;subsidence_rate&quot;] = input.subsidence_rate |&gt; in_units_of(u&quot;m/Myr&quot;)
+        attr[&quot;n_facies&quot;] = length(input.facies)
 
         n_facies = length(input.facies)
         ds = create_dataset(fid, &quot;sediment&quot;, datatype(Float64),
-            dataspace(input.grid_size..., n_facies, input.time_steps),
-            chunk=(input.grid_size..., n_facies, 1))
+            dataspace(input.box.grid_size..., n_facies, input.time.steps),
+            chunk=(input.box.grid_size..., n_facies, 1))
 
-        results = map(stack_frames, partition(run_model(input), input.write_interval))
+        results = map(stack_frames, partition(run_model(input), input.time.write_interval))
         for (step, frame) in enumerate(take(results, n_writes))
-            ds[:, :, :, step] = frame.production
+            ds[:, :, :, step] = frame.production |&gt; in_units_of(u&quot;m/Myr&quot;)
         end
     end
 end
 
-end # CaProd</code></pre><h2 id="Case-1"><a class="docs-heading-anchor" href="#Case-1">Case 1</a><a id="Case-1-1"></a><a class="docs-heading-anchor-permalink" href="#Case-1" title="Permalink"></a></h2><p>The first case uses the same settings as Burgess 2013: an initial depth of 2m, subsidence rate of 50 m/Myr and constant sea level.</p><div class="noweb-label">file:<i>examples/ca-with-prod.jl</i></div><pre><code class="language- julia hljs">using CarboKitten.CaProd
-
-DEFAULT_INPUT = CaProd.Input(
-  sea_level=_ -&gt; 0.0,
-  subsidence_rate=50.0,
-  initial_depth=_ -&gt; 2.0,
-  grid_size=(50, 50),
-  phys_scale=1.0,
-  Δt=0.001,
-  write_interval=1,
-  time_steps=1000,
-  facies=[
-    CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-    CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-    CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
-  ],
-  insolation=2000.0
-)
-
-CaProd.main(DEFAULT_INPUT, &quot;data/ca-prod.h5&quot;)</code></pre><h2 id="Case-2"><a class="docs-heading-anchor" href="#Case-2">Case 2</a><a id="Case-2-1"></a><a class="docs-heading-anchor-permalink" href="#Case-2" title="Permalink"></a></h2><p>For the second case, we start with a slope.</p><div class="noweb-label">file:<i>examples/production-only/cap-slope.jl</i></div><pre><code class="language- julia hljs">#| creates: data/ca-prod-slope.h5
+end # CaProd</code></pre><h2 id="Case-1"><a class="docs-heading-anchor" href="#Case-1">Case 1</a><a id="Case-1-1"></a><a class="docs-heading-anchor-permalink" href="#Case-1" title="Permalink"></a></h2><p>The first case uses the same settings as Burgess 2013: an initial depth of 2m, subsidence rate of 50 m/Myr and constant sea level.</p><div class="noweb-label">file:<i>examples/production-only/ca-uniform.jl</i></div><pre><code class="language- julia hljs">#| creates: data/ca-prod.h5
 #| requires: src/CaProd.jl
 
+module Script
 using CarboKitten.CaProd
+using CarboKitten.BoundaryTrait
+using CarboKitten.Config: Box, TimeProperties
+using CarboKitten.Burgess2013.Config: MODEL1
+using Unitful
 
-DEFAULT_INPUT = CaProd.Input(
-    sea_level=_ -&gt; 0.0,
-    subsidence_rate=50.0,
-    initial_depth=x -&gt; x / 2.0,
-    grid_size=(50, 100),
-    phys_scale=1.0,
-    Δt=0.001,
-    write_interval=1,
-    time_steps=1000,
-    facies=[
-        CaProd.Facies((4, 10), (6, 10), 500.0, 0.8, 300),
-        CaProd.Facies((4, 10), (6, 10), 400.0, 0.1, 300),
-        CaProd.Facies((4, 10), (6, 10), 100.0, 0.005, 300)
-    ],
-    insolation=2000.0
+const DEFAULT_INPUT = CaProd.Input(
+  box = Box{Periodic{2}}(
+    grid_size = (50, 50),
+    phys_scale = 1.0u&quot;m&quot;
+  ),
+  time = TimeProperties(
+    Δt = 0.001u&quot;Myr&quot;,
+    steps = 1000,
+    write_interval = 1
+  ),
+  sea_level=_ -&gt; 0.0u&quot;m&quot;,
+  subsidence_rate=50.0u&quot;m/Myr&quot;,
+  initial_depth=_ -&gt; 2.0u&quot;m&quot;,
+  facies=MODEL1,
+  insolation=2000.0u&quot;W/m^2&quot;
 )
+end
 
-CaProd.main(DEFAULT_INPUT, &quot;data/ca-prod-slope.h5&quot;)</code></pre><div class="noweb-label">file:<i>examples/production-only/plot-cap-slope.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/fig/b13-crosssection.png
+CaProd.main(Script.DEFAULT_INPUT, &quot;data/ca-prod.h5&quot;)</code></pre><h2 id="Case-2"><a class="docs-heading-anchor" href="#Case-2">Case 2</a><a id="Case-2-1"></a><a class="docs-heading-anchor-permalink" href="#Case-2" title="Permalink"></a></h2><p>For the second case, we start with a slope.</p><div class="noweb-label">file:<i>examples/production-only/ca-slope.jl</i></div><pre><code class="language- julia hljs">#| creates: data/ca-prod-slope.h5
+#| requires: src/CaProd.jl
+
+module Script
+using CarboKitten.BoundaryTrait: Shelf
+using CarboKitten.Config: Box, TimeProperties
+using CarboKitten.Burgess2013.Config: MODEL1
+using CarboKitten.CaProd
+using Unitful
+
+const DEFAULT_INPUT = CaProd.Input(
+  box = Box{Shelf}(
+    grid_size = (100, 50),
+    phys_scale = 0.15u&quot;km&quot;
+  ),
+  time = TimeProperties(
+    Δt = 0.001u&quot;Myr&quot;,
+    steps = 1000,
+    write_interval = 1
+  ),
+  sea_level=_ -&gt; 0.0u&quot;m&quot;,
+  subsidence_rate=50.0u&quot;m/Myr&quot;,
+  initial_depth=x -&gt; x / 300.0,
+  facies=MODEL1,
+  insolation=400.0u&quot;W/m^2&quot;
+)
+end
+
+Script.CaProd.main(Script.DEFAULT_INPUT, &quot;data/ca-prod-slope.h5&quot;)</code></pre><div class="noweb-label">file:<i>examples/production-only/plot-cap-slope.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/fig/b13-crosssection.png
 #| requires: data/ca-prod-slope.h5 ext/VisualizationExt.jl
 #| collect: figures
 
 module Script
-using CarboKitten.Visualization
 using CairoMakie
+using CarboKitten.Visualization
 
 function main()
     f = Figure()
@@ -209,20 +237,40 @@ function main()
 end
 end
 
-Script.main()</code></pre><p><img src="../fig/b13-crosssection.png" alt/></p><h1 id="Visualizing-output"><a class="docs-heading-anchor" href="#Visualizing-output">Visualizing output</a><a id="Visualizing-output-1"></a><a class="docs-heading-anchor-permalink" href="#Visualizing-output" title="Permalink"></a></h1><div class="noweb-label">file:<i>src/Visualization.jl</i></div><pre><code class="language- julia hljs">module Visualization
-    export plot_crosssection
+Script.main()</code></pre><p><img src="../fig/b13-crosssection.png" alt="Stratigraphy; production and subsidence."/></p><h2 id="Visualizing-output"><a class="docs-heading-anchor" href="#Visualizing-output">Visualizing output</a><a id="Visualizing-output-1"></a><a class="docs-heading-anchor-permalink" href="#Visualizing-output" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Visualization.jl</i></div><pre><code class="language- julia hljs">module Visualization
+    export plot_crosssection, plot_facies_production
+
+    print_instructions() = print(&quot;You&#39;ll need to import both Makie and GeometryBasics before using this.\n&quot;)
+
+    function plot_facies_production(args...)
+        print_instructions()
+    end
 
     function plot_crosssection(args...)
-       print(&quot;You&#39;ll need to import both CairoMakie and GeometryBasics before using this.\n&quot;)
+        print_instructions()
     end
 end  # module</code></pre><div class="noweb-label">file:<i>ext/VisualizationExt.jl</i></div><pre><code class="language- julia hljs">module VisualizationExt
 
 using CarboKitten
 using CarboKitten.Visualization
+using CarboKitten.Burgess2013: production_rate
 
 using HDF5
-using CairoMakie
+using Makie
 using GeometryBasics
+using Unitful
+
+function CarboKitten.Visualization.plot_facies_production(input; loc = nothing)
+ fig, loc = isnothing(loc) ? let fig = Figure(); (fig, fig[1, 1]) end : (nothing, loc)
+ ax = Axis(loc, title=&quot;production at $(sprint(show, input.insolation; context=:fancy_exponent=&gt;true))&quot;, xlabel=&quot;production (m/Myr)&quot;, ylabel=&quot;depth (m)&quot;, yreversed=true)
+ for f in input.facies
+  depth = (0.1:0.1:50.0)u&quot;m&quot;
+  prod = [production_rate(input.insolation, f, d) for d in depth]
+  lines!(ax, prod / u&quot;m/Myr&quot;, depth / u&quot;m&quot;)
+
+ end
+ fig
+end
 
 function CarboKitten.Visualization.plot_crosssection(pos, datafile)
     # x: 1-d array with x-coordinates
@@ -239,7 +287,7 @@ function CarboKitten.Visualization.plot_crosssection(pos, datafile)
         total_sediment = sum(fid[&quot;sediment&quot;][]; dims=3)
         initial_height = fid[&quot;input/height&quot;][]
         center = div(size(total_sediment)[1], 2)
-        elevation = cumsum(total_sediment; dims=4)[center, :, 1, :] .* Δt .- initial_height .- total_subsidence
+        elevation = cumsum(total_sediment; dims=4)[:, center, 1, :] .* Δt .- initial_height .- total_subsidence
         t = fid[&quot;input/t&quot;][]
         n_facies = size(fid[&quot;sediment&quot;])[3]
 
@@ -247,7 +295,7 @@ function CarboKitten.Visualization.plot_crosssection(pos, datafile)
         fid[&quot;input/x&quot;][],
         [t; Δt * attr[&quot;time_steps&quot;][]],
         hcat(.-initial_height .- total_subsidence, elevation),
-        fid[&quot;sediment&quot;][center, :, :, :]
+        fid[&quot;sediment&quot;][:, center, :, :]
     end
 
     pts = vec(Point{2,Float64}.(x, h[:, 2:end]))
@@ -282,4 +330,4 @@ function CarboKitten.Visualization.plot_crosssection(pos, datafile)
     end
 end
 
-end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../carbocat-ca/">« Cellular Automaton</a><a class="docs-footer-nextpage" href="../carbocat-transport/">Sediment Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.0 on <span class="colophon-date" title="Monday 27 May 2024 10:03">Monday 27 May 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../carbocat-ca/">« Cellular Automaton</a><a class="docs-footer-nextpage" href="../carbocat-transport/">Sediment Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.0 on <span class="colophon-date" title="Monday 3 June 2024 13:03">Monday 3 June 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

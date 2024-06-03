@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Boxes · CarboKitten</title><meta name="title" content="Boxes · CarboKitten"/><meta property="og:title" content="Boxes · CarboKitten"/><meta property="twitter:title" content="Boxes · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li><li><a class="tocitem" href="../carbocat-ca/">Cellular Automaton</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../carbocat-transport/">Sediment Transport</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li class="is-active"><a class="tocitem" href>Boxes</a><ul class="internal"><li><a class="tocitem" href="#Box-topology"><span>Box topology</span></a></li><li><a class="tocitem" href="#Time-properties"><span>Time properties</span></a></li><li><a class="tocitem" href="#Vectors"><span>Vectors</span></a></li><li><a class="tocitem" href="#Offset-indexing"><span>Offset indexing</span></a></li><li><a class="tocitem" href="#Boxes"><span>Boxes</span></a></li></ul></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Algorithms</a></li><li class="is-active"><a href>Boxes</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Boxes</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/boxes.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Generic-Parameters"><a class="docs-heading-anchor" href="#Generic-Parameters">Generic Parameters</a><a id="Generic-Parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Generic-Parameters" title="Permalink"></a></h1><div class="noweb-label">file:<i>src/Config.jl</i></div><pre><code class="language- julia hljs">module Config
+
+export AbstractBox, Box
+
+using ..BoundaryTrait
+using ..Vectors
+
+using Unitful
+using Unitful.DefaultSymbols
+
+&lt;&lt;config-types&gt;&gt;
+
+end</code></pre><p>Physical parameters of CarboKitten all should have units, see our <a href="../unitful/">refresher on <code>Unitful.jl</code></a>.</p><h2 id="Box-topology"><a class="docs-heading-anchor" href="#Box-topology">Box topology</a><a id="Box-topology-1"></a><a class="docs-heading-anchor-permalink" href="#Box-topology" title="Permalink"></a></h2><p>CarboKitten has a 3-dimensional state space, where two dimensions represent cartesian topographic coordinates, and the third dimension is a track record of sedimentation. The cartesian topographic coordinates are always on a regular grid, but depending on the scenario you may choose different map topologies.</p><ul><li><strong>periodic boundaries</strong> To study sedimentation in a small isolated patch, periodic boundaries seem sufficient. The field is assumed to be infinite in all directions.</li><li><strong>Von Neumann boundaries</strong> In the case of an island it is nicer to have boundaries with constant derivatives. Produced sediment that flows out of the box is lost to the seas.</li><li><strong>coastal shelf boundaries</strong> Supposing we simulate a narrow cross section of a carbonate shelf, we&#39;ll have one periodic boundary (in <span>$y$</span>-direction) and Von Neumann boundaries in the <span>$x$</span>-direction.</li></ul><p>We parametrize these boundaries as type-level constants in Julia. This way we can use the multiple dispatch mechanism in Julia to obtain specialized implementations for each boundary case, selected at compile time, resulting in efficient run-times.</p><div class="noweb-label">⪡boundary-types⪢≣</div><pre><code class="language- julia hljs">abstract type Boundary{dim} end
+struct Reflected{dim} &lt;: Boundary{dim} end
+struct Periodic{dim} &lt;: Boundary{dim} end
+struct Constant{dim,value} &lt;: Boundary{dim} end
+struct Shelf &lt;: Boundary{2} end</code></pre><p>The <code>Boundary</code> type is part of the generic <code>Box</code> dimension specification.</p><div class="noweb-label">⪡config-types⪢≣</div><pre><code class="language- julia hljs">abstract type AbstractBox{BT} end
+
+struct Box{BT} &lt;: AbstractBox{BT}
+    grid_size::NTuple{2,Int}
+    phys_scale::typeof(1.0m)
+    phys_size::Vec2
+
+    function Box{BT}(;grid_size::NTuple{2, Int}, phys_scale::Quantity{Float64, 𝐋, U}) where {BT &lt;: Boundary{2}, U}
+        new{BT}(grid_size, phys_scale, phys_size(grid_size, phys_scale))
+    end
+end
+
+phys_size(grid_size, phys_scale) = (
+    x = grid_size[1] * (phys_scale / m |&gt; NoUnits),
+    y = grid_size[2] * (phys_scale / m |&gt; NoUnits))</code></pre><p>Now we can specify the box parameters as follows:</p><div class="noweb-label">file:<i>test/ConfigSpec.jl</i></div><pre><code class="language- julia hljs">@testset &quot;Config&quot; begin
+    using CarboKitten.BoundaryTrait
+    using CarboKitten.Config: Box
+    using CarboKitten.Vectors
+
+    box = Box{Shelf}(
+        grid_size = (100, 50),
+        phys_scale = 1.0u&quot;km&quot;)
+    @test box.phys_size == (x=100000.0, y=50000.0)
+end</code></pre><h2 id="Time-properties"><a class="docs-heading-anchor" href="#Time-properties">Time properties</a><a id="Time-properties-1"></a><a class="docs-heading-anchor-permalink" href="#Time-properties" title="Permalink"></a></h2><p>Time stepping is specified in <code>TimeProperties</code>. We&#39;ll have <code>time_steps</code> number of time steps, each of physical time <code>Δt</code>. However, only one in <code>write_interval</code> steps is written to disk.</p><div class="noweb-label">⪡config-types⪢⊞</div><pre><code class="language- julia hljs">abstract type AbstractTimeProperties end
+
+@kwdef struct TimeProperties &lt;: AbstractTimeProperties
+    Δt::typeof(1.0u&quot;yr&quot;)
+    steps::Int
+    write_interval::Int
+end</code></pre><h2 id="Vectors"><a class="docs-heading-anchor" href="#Vectors">Vectors</a><a id="Vectors-1"></a><a class="docs-heading-anchor-permalink" href="#Vectors" title="Permalink"></a></h2><p>To trace the position of particles we define a <code>NamedTuple</code> with <code>x</code> and <code>y</code> members and define common vector operations on those.</p><div class="noweb-label">file:<i>src/Vectors.jl</i></div><pre><code class="language- julia hljs">module Vectors
+
+export Vec2
+
+Vec2 = @NamedTuple{x::Float64, y::Float64}
+Base.:+(a::Vec2, b::Vec2) = (x=a.x+b.x, y=a.y+b.y)
+Base.abs2(a::Vec2) = a.x^2 + a.y^2
+Base.abs(a::Vec2) = √(abs2(a))
+Base.:*(a::Vec2, b::Float64) = (x=a.x*b, y=a.y*b)
+Base.:/(a::Vec2, b::Float64) = (x=a.x/b, y=a.y/b)
+Base.:*(a::Float64, b::Vec2) = b*a
+Base.:-(a::Vec2, b::Vec2) = (x=a.x-b.x, y=a.y-b.y)
+Base.:-(a::Vec2) = (x=-a.x, y=-a.y)
+Base.zero(::Type{Vec2}) = (x=0.0, y=0.0)
+
+end</code></pre><h2 id="Offset-indexing"><a class="docs-heading-anchor" href="#Offset-indexing">Offset indexing</a><a id="Offset-indexing-1"></a><a class="docs-heading-anchor-permalink" href="#Offset-indexing" title="Permalink"></a></h2><p>Now we can use these traits to define three methods for indexing on an offset from some index that is assumed to be within bounds.</p><div class="noweb-label">⪡spec⪢≣</div><pre><code class="language- julia hljs">@testset &quot;offset_value&quot; begin
+    @test CartesianIndex(1, 1) == offset_index(Reflected{2}, (3, 3), CartesianIndex(1, 1), CartesianIndex(0, 0))
+end</code></pre><div class="noweb-label">⪡offset-indexing⪢≣</div><pre><code class="language- julia hljs">function offset_index(::Type{BT}, shape::NTuple{dim,Int}, i::CartesianIndex, Δi::CartesianIndex) where {dim, BT &lt;: Boundary{dim}}
+    canonical(BT, shape, i + Δi)
+end
+
+function offset_value(BT::Type{B}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex) where {dim,B&lt;:Boundary{dim}}
+    z[offset_index(BT, size(z), i, Δi)]
+end
+
+function offset_value(::Type{Constant{dim,value}}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex) where {dim,value}
+    j = i + Δi
+    (checkbounds(Bool, z, j) ? z[j] : value)
+end</code></pre><div class="noweb-label">file:<i>src/BoundaryTrait.jl</i></div><pre><code class="language- julia hljs">module BoundaryTrait
+
+export Boundary, Reflected, Periodic, Constant, Shelf, offset_index, offset_value, canonical
+
+&lt;&lt;boundary-types&gt;&gt;
+&lt;&lt;offset-indexing&gt;&gt;
+&lt;&lt;canonical-coordinates&gt;&gt;
+
+end</code></pre><h3 id="Canonical-coordinates"><a class="docs-heading-anchor" href="#Canonical-coordinates">Canonical coordinates</a><a id="Canonical-coordinates-1"></a><a class="docs-heading-anchor-permalink" href="#Canonical-coordinates" title="Permalink"></a></h3><p>For both <code>Periodic</code> and <code>Reflected</code> boundaries it is also possible to write a function that makes any coordinate within bounds. This uses the fact that reflected boundaries are also periodic for a box twice the size.</p><div class="noweb-label">⪡canonical-coordinates⪢≣</div><pre><code class="language- julia hljs">function canonical(::Type{Periodic{dim}}, shape::NTuple{dim,Int}, i::CartesianIndex) where {dim}
+    CartesianIndex(mod1.(Tuple(i), shape)...)
+end
+
+function canonical(::Type{Reflected{dim}}, shape::NTuple{dim,Int}, i::CartesianIndex) where {dim}
+    modflip(a, l) = let b = mod1(a, 2l)
+        b &gt; l ? 2l - b + 1 : b
+    end
+    CartesianIndex(modflip.(Tuple(i), shape)...) 
+end
+
+function canonical(::Type{Constant{dim, value}}, shape::NTuple{dim,Int}, i::CartesianIndex) where {dim, value}
+    all(checkindex.(Bool, range.(1, shape), Tuple(i))) ? i : nothing
+end</code></pre><h3 id="Shelf-boundary"><a class="docs-heading-anchor" href="#Shelf-boundary">Shelf boundary</a><a id="Shelf-boundary-1"></a><a class="docs-heading-anchor-permalink" href="#Shelf-boundary" title="Permalink"></a></h3><p>The <code>Shelf</code> boundary type is specially designed for the simulation of a transect perpendicular to the coast direction. We are periodic in the y-direction and have a Neumannesque constant boundary at the edges of the simulation area.</p><div class="noweb-label">⪡offset-indexing⪢⊞</div><pre><code class="language- julia hljs">function canonical(::Type{Shelf}, shape::NTuple{2, Int}, i::CartesianIndex)
+    if i[1] &lt; 1 || i[1] &gt; shape[1]
+        return nothing
+    end
+    return CartesianIndex(i[1], mod1(i[2], shape[2]))
+end
+
+function offset_value(::Type{Shelf}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex)
+    j = i + Δi
+    shape = size(z)
+    if j[1] &lt; 1
+        return z[1, mod1(j[2], shape[2])]
+    elseif j[1] &gt; shape[1]
+        return z[shape[1], mod1(j[2], shape[2])]
+    else
+        return z[j[1], mod1(j[2], shape[2])]
+    end
+end</code></pre><h2 id="Boxes"><a class="docs-heading-anchor" href="#Boxes">Boxes</a><a id="Boxes-1"></a><a class="docs-heading-anchor-permalink" href="#Boxes" title="Permalink"></a></h2><p>We need to define how particles move past boundaries. Similar to the grid based <code>offset_index</code> method, we define the <code>offset</code> method for a <code>Vec2</code>.</p><div class="noweb-label">⪡vector-offset⪢≣</div><pre><code class="language- julia hljs">Base.in(a::Vec2, box::Box) =
+    a.x &gt;= 0.0 &amp;&amp; a.x &lt; box.phys_size.x &amp;&amp; a.y &gt;= 0.0 &amp;&amp; a.y &lt; box.phys_size.y
+
+function offset(box::AbstractBox{Reflected{2}}, a::Vec2, Δa::Vec2)
+    clip(i, a, b) = (i &lt; a ? a + a - i : (i &gt; b ? b + b - i : i))
+    (x=clip(a.x+Δa.x, 0.0, box.phys_size.x)
+    ,y=clip(a.y+Δa.y, 0.0, box.phys_size.y))
+end
+
+function offset(box::AbstractBox{Periodic{2}}, a::Vec2, Δa::Vec2)
+    (x=mod(a.x+Δa.x, box.phys_size.x)
+    ,y=mod(a.y+Δa.y, box.phys_size.y))
+end
+
+function offset(box::AbstractBox{Constant{2,Value}}, a::Vec2, Δa::Vec2) where Value
+    b = a + Δa
+    if b ∉ box
+        nothing
+    else
+        b
+    end
+end
+
+function offset(box::AbstractBox{Shelf}, a::Vec2, Δa::Vec2)
+    b = a + Δa
+    if b.x &lt; 0.0 || b.x &gt;= box.phys_size.x
+        nothing
+    else
+        (x=b.x, y=mod(b.y, box.phys_size.y))
+    end
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../unitful/">« Unitful</a><a class="docs-footer-nextpage" href="../stencils/">Stencils »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.0 on <span class="colophon-date" title="Monday 3 June 2024 13:03">Monday 3 June 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -3,19 +3,18 @@ module Production
 
 export production_rate
 
+using Unitful
 using ..Config: Facies
 
 # ~/~ begin <<docs/src/bosscher-1992.md#carbonate-production>>[init]
 g(gₘ, I₀, Iₖ, k, w) = gₘ * tanh(I₀/Iₖ * exp(-w * k))
 # ~/~ end
 
-function production_rate(insolation::Float64, facies::Facies, water_depth::Float64)
+function production_rate(insolation, facies, water_depth)
     gₘ = facies.maximum_growth_rate
-    I₀ = insolation
-    Iₖ = facies.saturation_intensity
-    w = water_depth
-    k = facies.extinction_coefficient
-    return w > 0.0 ? gₘ * tanh(I₀/Iₖ * exp(-w * k)) : 0.0
+    I = insolation / facies.saturation_intensity
+    x = water_depth * facies.extinction_coefficient
+    return water_depth > 0.0u"m" ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
 end
 
 end

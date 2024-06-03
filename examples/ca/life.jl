@@ -4,6 +4,7 @@
 #| collect: figures
 
 module Life
+    using CarboKitten.BoundaryTrait
     using CarboKitten.Stencil
     using GLMakie
     using .Iterators: take

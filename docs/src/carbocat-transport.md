@@ -22,6 +22,7 @@ Base.zero(::Type{Deposit{N}}) where {N} =
 ``` {.julia file=src/Burgess2013/Transport.jl}
 module Transport
 
+using ...BoundaryTrait
 using ...Stencil
 using Transducers
 

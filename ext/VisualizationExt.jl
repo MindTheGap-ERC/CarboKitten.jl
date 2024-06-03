@@ -3,10 +3,24 @@ module VisualizationExt
 
 using CarboKitten
 using CarboKitten.Visualization
+using CarboKitten.Burgess2013: production_rate
 
 using HDF5
-using CairoMakie
+using Makie
 using GeometryBasics
+using Unitful
+
+function CarboKitten.Visualization.plot_facies_production(input; loc = nothing)
+ fig, loc = isnothing(loc) ? let fig = Figure(); (fig, fig[1, 1]) end : (nothing, loc)
+ ax = Axis(loc, title="production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))", xlabel="production (m/Myr)", ylabel="depth (m)", yreversed=true)
+ for f in input.facies
+  depth = (0.1:0.1:50.0)u"m"
+  prod = [production_rate(input.insolation, f, d) for d in depth]
+  lines!(ax, prod / u"m/Myr", depth / u"m")
+
+ end
+ fig
+end
 
 function CarboKitten.Visualization.plot_crosssection(pos, datafile)
     # x: 1-d array with x-coordinates
@@ -23,7 +37,7 @@ function CarboKitten.Visualization.plot_crosssection(pos, datafile)
         total_sediment = sum(fid["sediment"][]; dims=3)
         initial_height = fid["input/height"][]
         center = div(size(total_sediment)[1], 2)
-        elevation = cumsum(total_sediment; dims=4)[center, :, 1, :] .* Δt .- initial_height .- total_subsidence
+        elevation = cumsum(total_sediment; dims=4)[:, center, 1, :] .* Δt .- initial_height .- total_subsidence
         t = fid["input/t"][]
         n_facies = size(fid["sediment"])[3]
 
@@ -31,7 +45,7 @@ function CarboKitten.Visualization.plot_crosssection(pos, datafile)
         fid["input/x"][],
         [t; Δt * attr["time_steps"][]],
         hcat(.-initial_height .- total_subsidence, elevation),
-        fid["sediment"][center, :, :, :]
+        fid["sediment"][:, center, :, :]
     end
 
     pts = vec(Point{2,Float64}.(x, h[:, 2:end]))

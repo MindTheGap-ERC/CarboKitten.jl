@@ -4,8 +4,8 @@
 #| collect: figures
 
 module Script
-using CarboKitten.Visualization
 using CairoMakie
+using CarboKitten.Visualization
 
 function main()
     f = Figure()

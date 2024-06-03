@@ -130,6 +130,8 @@ julia --workenv=docs docs/make.jl
 └── test                # unit tests
 ```
 
+The figures from the documentation in "docs/src/fig" are git tracked, but are often regenerated when you change some of their direct dependencies. This makes switching branches harder, it would require issuing "git stash" first. We have now made sure that the regenerated figures appear in "docs/src/\_fig" and are not git tracked. There is a task in pyproject.toml that takes care of copying from "docs/src/\_fig" to "docs/src/fig" when this repo is cloned.
+
 ## Authors
 
 Lead engineer: __Johan Hidding__  

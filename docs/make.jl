@@ -70,6 +70,8 @@ makedocs(
             "Sediment Transport" => "carbocat-transport.md"
         ],
         "Algorithms" => [
+            "Unitful" => "unitful.md",
+            "Boxes" => "boxes.md",
             "Stencils" => "stencils.md",
             "Utility" => "utility.md"
         ],

@@ -6,7 +6,8 @@ In many cases our model is updating some state as an iterator. I want to be able
 ``` {.julia file=src/Utility.jl}
 module Utility
 
-export select
+export select, in_units_of
+using Unitful
 
 struct Select
     iter
@@ -39,6 +40,8 @@ function Base.iterate(s::Select, state)
         return nothing
     end
 end
+
+<<utility>>
 
 end
 ```

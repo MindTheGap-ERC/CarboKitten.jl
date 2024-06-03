@@ -8,49 +8,6 @@ A *stencil* is the common term for computing many-to-one operations on grids. Ex
 
 Note that for larger convolution kernels, it is often more efficient to perform convolutions in the Fourier domain. On the matter of performance: stencil operations are the textbook example for computations that perform really well on GPUs.
 
-## Boundary types
-One thing to be mindful of is the treatment of box boundaries. I define three *traits* here. These are types that are defined with the single goal of using the dispatch mechanism in Julia to  select the right methods for us. Boundaries can be *periodic*, *reflective* or *constant* to some value.
-
-``` {.julia #boundary-trait}
-abstract type Boundary{dim} end
-struct Reflected{dim}       <: Boundary{dim} end
-struct Periodic{dim}        <: Boundary{dim} end
-struct Constant{dim, value} <: Boundary{dim} end
-```
-
-Now we can use these traits to define three methods for indexing on an offset from some index that is assumed to be within bounds.
-
-``` {.julia #spec}
-@testset "offset_value" begin
-    @test CartesianIndex(1, 1) == offset_index(Reflected{2}, (3, 3), CartesianIndex(1, 1), CartesianIndex(0, 0))
-end
-```
-
-``` {.julia #offset-indexing}
-function offset_index(::Type{Periodic{dim}}, shape::NTuple{dim,Int}, i::CartesianIndex, Δi::CartesianIndex) where {dim}
-    CartesianIndex(mod1.(Tuple(i + Δi), shape)...)
-end
-
-function offset_index(::Type{Reflected{dim}}, shape::NTuple{dim, Int}, i::CartesianIndex, Δi::CartesianIndex) where {dim}
-    clip(i, a, b) = (i < a ? a + a - i : (i > b ? b + b - i : i))
-    CartesianIndex(clip.(Tuple(i + Δi), ones(Int, dim), shape)...)
-end
-
-function offset_index(::Type{Constant{dim, value}}, shape::NTuple{dim, Int}, i::CartesianIndex, Δi::CartesianIndex) where {dim, value}
-    j = i + Δi
-    all(checkindex.(Bool, range.(1, shape), Tuple(j))) ? j : nothing
-end
-
-function offset_value(BT::Type{B}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex) where {dim, B <: Boundary{dim}}
-    z[offset_index(BT, size(z), i, Δi)]
-end
-
-function offset_value(::Type{Constant{dim, value}}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex) where {dim, value}
-    j = i + Δi
-    (checkbounds(Bool, z, j) ? z[j] : value)
-end
-```
-
 ## Implementation
 Using these helper functions we can now define a *stencil* operation. Given the boundary trait, a stencil size and a response function, we can transform an array to a next generation.
 
@@ -88,10 +45,11 @@ We will now test this function first on an Elementary CA (ECA), Conway's Game of
 ``` {.julia file=src/Stencil.jl}
 module Stencil
 
-export Boundary, Reflected, Periodic, Constant, stencil, convolution, offset_index, offset_value
+using ..Config: AbstractBox
+using ..BoundaryTrait
 
-<<boundary-trait>>
-<<offset-indexing>>
+export stencil, convolution
+
 <<stencil-operation>>
 
 end
@@ -111,6 +69,7 @@ An Elementary Cellular Automata is a one-dimensional CA with two states. Every n
 #| collect: figures
 
 module ECA
+    using CarboKitten.BoundaryTrait
     using CarboKitten.Stencil
     using CairoMakie
 
@@ -131,7 +90,7 @@ module ECA
     end
 
     function plot()
-        fig = Figure(resolution=(1200,400))
+        fig = Figure(size=(1200,400))
         for (idx, r) in enumerate([18, 30, 110])
             ax = Axis(fig[1,idx]; title="rule $(r)", yreversed=true, limits=((1, 256), (1, 128)))
             heatmap!(ax, eca(r, 256, 128); colormap=:Blues)
@@ -156,6 +115,7 @@ Perhaps the most famous CA is Conway's Game of Life. This is a two-dimensional t
 #| collect: figures
 
 module Life
+    using CarboKitten.BoundaryTrait
     using CarboKitten.Stencil
     using GLMakie
     using .Iterators: take
@@ -209,6 +169,7 @@ Notice, that for the periodic boundaries, the bottom left and top right are neig
 
 module Script
 
+using CarboKitten.BoundaryTrait
 using CarboKitten.Stencil
 using CairoMakie
 

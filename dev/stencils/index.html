@@ -27,7 +27,7 @@ export stencil, convolution
 
 &lt;&lt;stencil-operation&gt;&gt;
 
-end</code></pre></details><h2 id="Examples"><a class="docs-heading-anchor" href="#Examples">Examples</a><a id="Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Examples" title="Permalink"></a></h2><h3 id="Elementary-Cellular-Automata"><a class="docs-heading-anchor" href="#Elementary-Cellular-Automata">Elementary Cellular Automata</a><a id="Elementary-Cellular-Automata-1"></a><a class="docs-heading-anchor-permalink" href="#Elementary-Cellular-Automata" title="Permalink"></a></h3><p>An Elementary Cellular Automata is a one-dimensional CA with two states. Every next generation depends on the direct neighbourhood of three cells. Since there are <span>$2^3 = 8$</span> patterns and two outcomes for every pattern, there are <span>$2^8 = 256$</span> possible ECA.</p><div class="noweb-label">file:<i>examples/ca/eca.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/fig/eca.png
+end</code></pre></details><h2 id="Examples"><a class="docs-heading-anchor" href="#Examples">Examples</a><a id="Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Examples" title="Permalink"></a></h2><h3 id="Elementary-Cellular-Automata"><a class="docs-heading-anchor" href="#Elementary-Cellular-Automata">Elementary Cellular Automata</a><a id="Elementary-Cellular-Automata-1"></a><a class="docs-heading-anchor-permalink" href="#Elementary-Cellular-Automata" title="Permalink"></a></h3><p>An Elementary Cellular Automata is a one-dimensional CA with two states. Every next generation depends on the direct neighbourhood of three cells. Since there are <span>$2^3 = 8$</span> patterns and two outcomes for every pattern, there are <span>$2^8 = 256$</span> possible ECA.</p><div class="noweb-label">file:<i>examples/ca/eca.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/eca.png
 #| requires: src/Stencil.jl
 #| collect: figures
 
@@ -58,11 +58,11 @@ module ECA
             ax = Axis(fig[1,idx]; title=&quot;rule $(r)&quot;, yreversed=true, limits=((1, 256), (1, 128)))
             heatmap!(ax, eca(r, 256, 128); colormap=:Blues)
         end
-        save(&quot;docs/src/fig/eca.png&quot;, fig)
+        save(&quot;docs/src/_fig/eca.png&quot;, fig)
     end
 end
 
-ECA.plot()</code></pre><p><img src="../fig/eca.png" alt/></p><p>Even these one-dimensional CA show highly complex behaviour. For instance, it has been shown that rule 110 is Turing complete.</p><h3 id="Game-of-Life"><a class="docs-heading-anchor" href="#Game-of-Life">Game of Life</a><a id="Game-of-Life-1"></a><a class="docs-heading-anchor-permalink" href="#Game-of-Life" title="Permalink"></a></h3><p>Perhaps the most famous CA is Conway&#39;s Game of Life. This is a two-dimensional two-state (dead/alive) CA, with the following rules: a cell is alive in the next generation if it is alive and has two neighbours or if it has three neighbours; in all other cases the cell is dead.</p><div class="noweb-label">file:<i>examples/ca/life.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/fig/life.gif
+ECA.plot()</code></pre><p><img src="../fig/eca.png" alt/></p><p>Even these one-dimensional CA show highly complex behaviour. For instance, it has been shown that rule 110 is Turing complete.</p><h3 id="Game-of-Life"><a class="docs-heading-anchor" href="#Game-of-Life">Game of Life</a><a id="Game-of-Life-1"></a><a class="docs-heading-anchor-permalink" href="#Game-of-Life" title="Permalink"></a></h3><p>Perhaps the most famous CA is Conway&#39;s Game of Life. This is a two-dimensional two-state (dead/alive) CA, with the following rules: a cell is alive in the next generation if it is alive and has two neighbours or if it has three neighbours; in all other cases the cell is dead.</p><div class="noweb-label">file:<i>examples/ca/life.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/life.gif
 #| requires: src/Stencil.jl
 #| collect: figures
 
@@ -96,13 +96,13 @@ module Life
         life = take(game_of_life(50, 50), 150)
         fig = Figure()
         ax = Axis(fig[1,1], aspect=1)
-        record(fig, &quot;docs/src/fig/life.gif&quot;, life; framerate=10) do frame
+        record(fig, &quot;docs/src/_fig/life.gif&quot;, life; framerate=10) do frame
             heatmap!(ax, frame; colormap=:Blues)
         end
     end
 end
 
-Life.plot()</code></pre><p><img src="../fig/life.gif" alt/></p><h3 id="Testing-boundaries-with-a-convolution"><a class="docs-heading-anchor" href="#Testing-boundaries-with-a-convolution">Testing boundaries with a convolution</a><a id="Testing-boundaries-with-a-convolution-1"></a><a class="docs-heading-anchor-permalink" href="#Testing-boundaries-with-a-convolution" title="Permalink"></a></h3><p>To test the different boundary types, lets try the following setup. We take a 16x16 image with all zeros except the bottom left gets a value of 1 and the top right pixel gets a value of 2. Now convolve with a Gaussian and see what happens. For the constant boundary, I&#39;ve set the value to 0.1, to see the effect.</p><p><img src="../fig/boundary_types.png" alt/></p><p>Notice, that for the periodic boundaries, the bottom left and top right are neighbouring. So there the two pixels appear as a single peak. In the reflected case we see a clear distinction between the two corners.</p><pre><code class="language- julia hljs">#| creates: docs/src/fig/boundary_types.png
+Life.plot()</code></pre><p><img src="../fig/life.gif" alt/></p><h3 id="Testing-boundaries-with-a-convolution"><a class="docs-heading-anchor" href="#Testing-boundaries-with-a-convolution">Testing boundaries with a convolution</a><a id="Testing-boundaries-with-a-convolution-1"></a><a class="docs-heading-anchor-permalink" href="#Testing-boundaries-with-a-convolution" title="Permalink"></a></h3><p>To test the different boundary types, lets try the following setup. We take a 16x16 image with all zeros except the bottom left gets a value of 1 and the top right pixel gets a value of 2. Now convolve with a Gaussian and see what happens. For the constant boundary, I&#39;ve set the value to 0.1, to see the effect.</p><p><img src="../fig/boundary_types.png" alt/></p><p>Notice, that for the periodic boundaries, the bottom left and top right are neighbouring. So there the two pixels appear as a single peak. In the reflected case we see a clear distinction between the two corners.</p><pre><code class="language- julia hljs">#| creates: docs/src/_fig/boundary_types.png
 #| requires: src/Stencil.jl
 #| collect: figures
 
@@ -133,8 +133,8 @@ function plot_boundary_types()
         ax = Axis(fig[1,i]; aspect=1)
         heatmap!(ax, y; colormap=:viridis)
     end
-    save(&quot;docs/src/fig/boundary_types.png&quot;, fig)
+    save(&quot;docs/src/_fig/boundary_types.png&quot;, fig)
 end
 end 
 
-Script.plot_boundary_types()</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../boxes/">« Boxes</a><a class="docs-footer-nextpage" href="../utility/">Utility »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.0 on <span class="colophon-date" title="Monday 3 June 2024 13:03">Monday 3 June 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Script.plot_boundary_types()</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../boxes/">« Boxes</a><a class="docs-footer-nextpage" href="../utility/">Utility »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.0 on <span class="colophon-date" title="Tuesday 4 June 2024 10:19">Tuesday 4 June 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

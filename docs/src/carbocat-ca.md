@@ -85,7 +85,7 @@ On my laptop I can run about 150 iterations per second with current code. When u
 <details><summary>Plotting code</summary>
 ```
 
-``` {.julia .build file=examples/ca/burgess-2013.jl target="docs/src/fig/b13-fig3.png"}
+``` {.julia .build file=examples/ca/burgess-2013.jl target="docs/src/_fig/b13-fig3.png"}
 module Script
     using .Iterators: flatten
     using CarboKitten
@@ -104,7 +104,7 @@ module Script
             ax = Axis(fig[Tuple(i)...], aspect=AxisAspect(1))
             heatmap!(ax, st)
         end
-        save("docs/src/fig/b13-fig3.png", fig)
+        save("docs/src/_fig/b13-fig3.png", fig)
     end
 end
 
@@ -112,7 +112,7 @@ Script.main()
 ```
 
 
-``` {.julia .build file=examples/ca/long-term.jl target="docs/src/fig/b13-long-term.png"}
+``` {.julia .build file=examples/ca/long-term.jl target="docs/src/_fig/b13-long-term.png"}
 module Script
     using CarboKitten
     using CarboKitten.Burgess2013
@@ -129,7 +129,7 @@ module Script
             ax = Axis(fig[1, i], aspect=AxisAspect(1))
             heatmap!(ax, st)
         end
-        save("docs/src/fig/b13-long-term.png", fig)
+        save("docs/src/_fig/b13-long-term.png", fig)
     end
 end
 
@@ -203,7 +203,7 @@ function main()
             end
         end
     end
-    save("docs/src/fig/parameter-scan.png", fig)
+    save("docs/src/_fig/parameter-scan.png", fig)
 end
 
 end  # module Script

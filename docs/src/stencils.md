@@ -64,7 +64,7 @@ end
 An Elementary Cellular Automata is a one-dimensional CA with two states. Every next generation depends on the direct neighbourhood of three cells. Since there are $2^3 = 8$ patterns and two outcomes for every pattern, there are $2^8 = 256$ possible ECA.
 
 ``` {.julia .task file=examples/ca/eca.jl}
-#| creates: docs/src/fig/eca.png
+#| creates: docs/src/_fig/eca.png
 #| requires: src/Stencil.jl
 #| collect: figures
 
@@ -95,7 +95,7 @@ module ECA
             ax = Axis(fig[1,idx]; title="rule $(r)", yreversed=true, limits=((1, 256), (1, 128)))
             heatmap!(ax, eca(r, 256, 128); colormap=:Blues)
         end
-        save("docs/src/fig/eca.png", fig)
+        save("docs/src/_fig/eca.png", fig)
     end
 end
 
@@ -110,7 +110,7 @@ Even these one-dimensional CA show highly complex behaviour. For instance, it ha
 Perhaps the most famous CA is Conway's Game of Life. This is a two-dimensional two-state (dead/alive) CA, with the following rules: a cell is alive in the next generation if it is alive and has two neighbours or if it has three neighbours; in all other cases the cell is dead.
 
 ``` {.julia .task file=examples/ca/life.jl}
-#| creates: docs/src/fig/life.gif
+#| creates: docs/src/_fig/life.gif
 #| requires: src/Stencil.jl
 #| collect: figures
 
@@ -144,7 +144,7 @@ module Life
         life = take(game_of_life(50, 50), 150)
         fig = Figure()
         ax = Axis(fig[1,1], aspect=1)
-        record(fig, "docs/src/fig/life.gif", life; framerate=10) do frame
+        record(fig, "docs/src/_fig/life.gif", life; framerate=10) do frame
             heatmap!(ax, frame; colormap=:Blues)
         end
     end
@@ -163,7 +163,7 @@ To test the different boundary types, lets try the following setup. We take a 16
 Notice, that for the periodic boundaries, the bottom left and top right are neighbouring. So there the two pixels appear as a single peak. In the reflected case we see a clear distinction between the two corners.
 
 ``` {.julia .task}
-#| creates: docs/src/fig/boundary_types.png
+#| creates: docs/src/_fig/boundary_types.png
 #| requires: src/Stencil.jl
 #| collect: figures
 
@@ -194,7 +194,7 @@ function plot_boundary_types()
         ax = Axis(fig[1,i]; aspect=1)
         heatmap!(ax, y; colormap=:viridis)
     end
-    save("docs/src/fig/boundary_types.png", fig)
+    save("docs/src/_fig/boundary_types.png", fig)
 end
 end 
 

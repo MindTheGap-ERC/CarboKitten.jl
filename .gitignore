@@ -2,3 +2,7 @@ docs/build
 data/*.h5
 .vscode
 docs/transpiled
+!docs/src/_fig
+docs/src/_fig/*.png
+docs/src/_fig/*.svg
+docs/src/_fig/*.gif

@@ -1,5 +1,5 @@
 # ~/~ begin <<docs/src/stencils.md#examples/ca/eca.jl>>[init]
-#| creates: docs/src/fig/eca.png
+#| creates: docs/src/_fig/eca.png
 #| requires: src/Stencil.jl
 #| collect: figures
 
@@ -30,7 +30,7 @@ module ECA
             ax = Axis(fig[1,idx]; title="rule $(r)", yreversed=true, limits=((1, 256), (1, 128)))
             heatmap!(ax, eca(r, 256, 128); colormap=:Blues)
         end
-        save("docs/src/fig/eca.png", fig)
+        save("docs/src/_fig/eca.png", fig)
     end
 end
 

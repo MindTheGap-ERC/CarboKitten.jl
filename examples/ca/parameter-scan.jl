@@ -33,7 +33,7 @@ function main()
             end
         end
     end
-    save("docs/src/fig/parameter-scan.png", fig)
+    save("docs/src/_fig/parameter-scan.png", fig)
 end
 
 end  # module Script

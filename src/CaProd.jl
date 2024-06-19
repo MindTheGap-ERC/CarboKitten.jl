@@ -37,7 +37,7 @@ end
 mutable struct State
     time::typeof(1.0u"Myr")
     ca::Array{Int}
-    ca_priority::Int
+    ca_priority::Vector{Int}
     height::Array{typeof(1.0u"m"),2}
 end
 # ~/~ end
@@ -54,7 +54,7 @@ function initial_state(input)  # -> State
 
     step = step_ca(input.box, input.facies)
     for _ = 1:20
-        step_ca(state)
+        step(state)
     end
 
     return state
@@ -106,7 +106,7 @@ function run_model(input::Input)
         while true
             p_ca!(s)
 
-            Δ = p(s)
+            Δ = p_production(s)
             put!(ch, Δ)
             u!(s, Δ)
         end

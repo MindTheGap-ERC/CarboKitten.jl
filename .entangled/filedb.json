@@ -32,9 +32,9 @@
     {
       "path": "docs/src/carbocat-ca.md",
       "deps": null,
-      "modified": "2024-06-19T15:16:52.742888",
-      "hexdigest": "b80ddd8375ad147a2dd25d477f6e1e00af5c1bd1525213f6cb6d1d6a062c563c",
-      "size": 8085
+      "modified": "2024-06-19T15:29:26.101232",
+      "hexdigest": "0b9f4633ce0219505ba9db37c83ed4ea4c0260d13da1806a83f966e4235a5082",
+      "size": 6840
     },
     {
       "path": "docs/src/carbocat.md",
@@ -53,9 +53,9 @@
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2024-06-19T15:17:10.545015",
-      "hexdigest": "001b0fad5b22ca9edafd958a3b7a6aead0e389fa3a9f50393d8334941560d291",
-      "size": 15003
+      "modified": "2024-06-19T15:23:25.621675",
+      "hexdigest": "cb0dad95af601b7cc3dec0e40b945291145dad5cdc9611baed82e0e503d136ea",
+      "size": 15019
     },
     {
       "path": "docs/src/stencils.md",
@@ -123,9 +123,9 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-06-19T15:17:10.460014",
-      "hexdigest": "2957f4ef22e095aecb156dd29c7540b42e228a491ffd2cc07cdaece01e9346ca",
-      "size": 4785
+      "modified": "2024-06-19T15:23:25.533674",
+      "hexdigest": "7a131e587c6a6c812c8546f3f57f4a56b0841eaa9ac40215f79ea7b978cf38f9",
+      "size": 4801
     },
     {
       "path": "examples/plot-tanh.gnuplot",
@@ -163,15 +163,6 @@
       "modified": "2024-06-10T14:56:12.714671",
       "hexdigest": "6ea925b44934c121501bb68eabf5eddaa3293a0ac4546636ef6d7df754dca8c5",
       "size": 1045
-    },
-    {
-      "path": "examples/ca/parameter-scan.jl",
-      "deps": [
-        "docs/src/carbocat-ca.md"
-      ],
-      "modified": "2024-06-19T14:07:14.748489",
-      "hexdigest": "bdc6a60c264ca13924a83afd91941655147b5703eb5492dbcd10c8f7d6e03bd6",
-      "size": 1258
     },
     {
       "path": "src/Burgess2013/Production.jl",
@@ -420,7 +411,6 @@
     "ext/VisualizationExt.jl",
     "examples/plot-tanh.gnuplot",
     "src/CaProd.jl",
-    "examples/ca/parameter-scan.jl",
     "examples/ca/long-term.jl",
     "src/Burgess2013/Transport.jl",
     "examples/burgess2013-fig2.gnuplot",

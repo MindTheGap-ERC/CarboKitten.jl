@@ -51,8 +51,8 @@ module Script
 end
 
 Script.main()</code></pre><p><img src="../fig/b13-capsosc-crosssection.png" alt="Stratigraphy, production and subsidence under oscillating sea level."/></p><h2 id="Input"><a class="docs-heading-anchor" href="#Input">Input</a><a id="Input-1"></a><a class="docs-heading-anchor-permalink" href="#Input" title="Permalink"></a></h2><ul><li>initial depth (function of space)</li><li>sea-level curve (function of time)</li><li>subsidence (function of time)</li><li>facies types</li></ul><p>These should all behave as a functions, but could also be some interpolated data. The signs of these quantities should be such that the following equation holds:</p><p class="math-container">\[T + E = S + W\]</p><p>Saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation plus change in Water depth.</p><div class="noweb-label">⪡ca-prod-input⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Input
-    box :: Box
-    time :: TimeProperties
+    box::Box
+    time::TimeProperties
 
     sea_level       # Myr -&gt; m
     subsidence_rate::typeof(1.0u&quot;m/Myr&quot;)
@@ -64,29 +64,38 @@ end</code></pre><p>In the case <code>write_interval</code> is not one, we will s
     production::Array{typeof(1.0u&quot;m/Myr&quot;),3}
 end</code></pre><p>The frame is used to update a <em>state</em> <span>$S$</span>. The frame should be considered a delta for the state. So, we can reproduce the height at each step from the frames.</p><div class="noweb-label">⪡ca-prod-state⪢≣</div><pre><code class="language- julia hljs">mutable struct State
     time::typeof(1.0u&quot;Myr&quot;)
+    ca::Array{Int}
+    ca_priority::Vector{Int}
     height::Array{typeof(1.0u&quot;m&quot;),2}
 end</code></pre><p>The output is principally all frames produced in the simulation, in a 4-dimensional array. The first two dimensions are x, y positions on the grid, the third is the facies and the fourth dimension is time. We store the output in HDF5, having an <code>input</code> group where we store the input data, and a <code>sediment</code> dataset containing the aforementioned 4-dimensional output data. Note that these are <em>production rates</em>, so to reconstruct the sea floor depth at any time, you need to multiply by <span>$\Delta t * n_w$</span>, where <span>$n_w$</span> is the <code>write_interval</code> and take a cumulative sum.</p><h2 id="Logic"><a class="docs-heading-anchor" href="#Logic">Logic</a><a id="Logic-1"></a><a class="docs-heading-anchor-permalink" href="#Logic" title="Permalink"></a></h2><p>From a dynamical modeling point of view, CarboCAT operates analogous to a forward Euler integration scheme, where some components are actually a discrete model. This means we have one function that generates a <code>Frame</code> from a <code>State</code>, called the <em>propagator</em> <span>$P$</span> (this is our own nomenclature),</p><p class="math-container">\[P_i: S \to \Delta.\]</p><p>The suffix <span>$i$</span> here is used to indicate that the propagator depends on the input. We&#39;ll have a second function <span>$U$</span> that <em>updates</em> the state with the given frame,</p><p class="math-container">\[U: (S, \Delta) \to S.\]</p><p>In practice however, the update function changes the state in-place.</p><h2 id="Init"><a class="docs-heading-anchor" href="#Init">Init</a><a id="Init-1"></a><a class="docs-heading-anchor-permalink" href="#Init" title="Permalink"></a></h2><p>We fill the height map with the initial depth function. It is assumed that the height only depends on the second index.</p><div class="noweb-label">⪡ca-prod-model⪢≣</div><pre><code class="language- julia hljs">function initial_state(input)  # -&gt; State
     height = zeros(Float64, input.box.grid_size...) * u&quot;m&quot;
     for i in CartesianIndices(height)
         height[i] = input.initial_depth(i[1] * input.box.phys_scale)
     end
-    return State(0.0u&quot;Myr&quot;, height)
+
+    n_facies = length(input.facies)
+    ca = rand(0:n_facies, input.box.grid_size...)
+    state = State(0.0u&quot;Myr&quot;, ca, 1:n_facies, height)
+
+    step = step_ca(input.box, input.facies)
+    for _ = 1:20
+        step(state)
+    end
+
+    return state
 end</code></pre><h2 id="Propagator"><a class="docs-heading-anchor" href="#Propagator">Propagator</a><a id="Propagator-1"></a><a class="docs-heading-anchor-permalink" href="#Propagator" title="Permalink"></a></h2><p>The propagator computes the production rates (and also erosion) given the state of the model.</p><div class="noweb-label">⪡ca-prod-model⪢⊞</div><pre><code class="language- julia hljs">function propagator(input)
     &lt;&lt;ca-prod-init-propagator&gt;&gt;
     function (s)  # -&gt; Frame
         &lt;&lt;ca-prod-propagate&gt;&gt;
     end
 end</code></pre><p>The propagator keeps the cellular automaton as an internal state, but this may also be considered to be an input function. This may change when you&#39;d want to influence the CA with environmental factors. Then the CA becomes an integral component of the dynamical model. The CA would then have to keep state in the <code>State</code> variable. We burn the first 20 iterations of the CA to start with a realistic pattern.</p><div class="noweb-label">⪡ca-prod-init-propagator⪢≣</div><pre><code class="language- julia hljs">n_facies = length(input.facies)
-ca_init = rand(0:n_facies, input.box.grid_size...)
-ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
 
 function water_depth(s)
     s.height .- input.sea_level(s.time)
 end</code></pre><p>Now, to generate a production from a given state, we advance the CA by one step and compute the production accordingly.</p><div class="noweb-label">⪡ca-prod-propagate⪢≣</div><pre><code class="language- julia hljs">result = zeros(typeof(0.0u&quot;m/Myr&quot;), input.box.grid_size..., n_facies)
-facies_map, ca = peel(ca)
 w = water_depth(s)
-for idx in CartesianIndices(facies_map)
-    f = facies_map[idx]
+for idx in CartesianIndices(s.ca)
+    f = s.ca[idx]
     if f == 0
         continue
     end
@@ -102,13 +111,16 @@ return Frame(result)</code></pre><h2 id="Updater"><a class="docs-heading-anchor"
 end</code></pre><h2 id="Loop"><a class="docs-heading-anchor" href="#Loop">Loop</a><a id="Loop-1"></a><a class="docs-heading-anchor-permalink" href="#Loop" title="Permalink"></a></h2><div class="noweb-label">⪡ca-prod-model⪢⊞</div><pre><code class="language- julia hljs">function run_model(input::Input)
     Channel{Frame}() do ch
         s = initial_state(input)
-        p = propagator(input)
-        u = updater(input)
+        p_production = propagator(input)
+        p_ca! = step_ca(input.box, input.facies)
+        u! = updater(input)
 
         while true
-            Δ = p(s)
+            p_ca!(s)
+
+            Δ = p_production(s)
             put!(ch, Δ)
-            u(s, Δ)
+            u!(s, Δ)
         end
     end
 end</code></pre><div class="noweb-label">file:<i>src/CaProd.jl</i></div><pre><code class="language- julia hljs">module CaProd
@@ -121,6 +133,7 @@ using ..Utility
 # using CarboKitten.BS92: sealevel_curve
 using ..Stencil
 using ..Burgess2013
+using ..Burgess2013.CA: step_ca
 
 using HDF5
 using Unitful
@@ -330,4 +343,4 @@ function CarboKitten.Visualization.plot_crosssection(pos, datafile)
     end
 end
 
-end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../carbocat-ca/">« Cellular Automaton</a><a class="docs-footer-nextpage" href="../carbocat-transport/">Sediment Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.0 on <span class="colophon-date" title="Tuesday 4 June 2024 10:19">Tuesday 4 June 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../carbocat-ca/">« Cellular Automaton</a><a class="docs-footer-nextpage" href="../carbocat-transport/">Sediment Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.0 on <span class="colophon-date" title="Wednesday 19 June 2024 13:52">Wednesday 19 June 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

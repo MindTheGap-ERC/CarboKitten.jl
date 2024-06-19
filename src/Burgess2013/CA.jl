@@ -4,6 +4,7 @@ module CA
 using ...BoundaryTrait
 using ...Stencil
 using ..Config: Facies
+using ...Config: Box
 
 export run_ca
 
@@ -30,10 +31,28 @@ function rules(facies::Vector{Facies})
             (a, b) = facies[cell_facies].viability_range
             (a <= n && n <= b ? cell_facies : 0)
         end
-    end    
+    end
 end
 
-function run_ca(::Type{B}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {B <: Boundary{2}}
+# ~/~ begin <<docs/src/carbocat-ca.md#ca-stateful>>[init]
+function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
+    """Creates a propagator for the state, updating the celullar automaton in place.
+
+    Contract: the `state` should have `ca::Matrix{Int}` and `ca_priority::Vector{Int}`
+    members."""
+    r = rules(facies)
+    tmp = Matrix{Int}(undef, box.grid_size)
+    stencil_op = stencil(Int, BT, (5, 5), r)
+
+    function (state)
+        stencil_op(state.ca, tmp, state.ca_priority)
+        state.ca, tmp = tmp, state.ca
+        state.ca_priority = circshift(state.ca_priority, 1)
+    end
+end
+# ~/~ end
+
+function run_ca(::Type{B}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {B<:Boundary{2}}
     r = rules(facies)
     Channel{Matrix{Int}}() do ch
         target = Matrix{Int}(undef, size(init))

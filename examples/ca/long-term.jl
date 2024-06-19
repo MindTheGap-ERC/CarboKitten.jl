@@ -15,7 +15,7 @@ module Script
             ax = Axis(fig[1, i], aspect=AxisAspect(1))
             heatmap!(ax, st)
         end
-        save("docs/src/fig/b13-long-term.png", fig)
+        save("docs/src/_fig/b13-long-term.png", fig)
     end
 end
 

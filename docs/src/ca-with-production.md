@@ -84,8 +84,8 @@ Saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation p
 
 ``` {.julia #ca-prod-input}
 @kwdef struct Input
-    box :: Box
-    time :: TimeProperties
+    box::Box
+    time::TimeProperties
 
     sea_level       # Myr -> m
     subsidence_rate::typeof(1.0u"m/Myr")
@@ -113,6 +113,8 @@ The frame is used to update a *state* $S$. The frame should be considered a delt
 ``` {.julia #ca-prod-state}
 mutable struct State
     time::typeof(1.0u"Myr")
+    ca::Array{Int}
+    ca_priority::Vector{Int}
     height::Array{typeof(1.0u"m"),2}
 end
 ```
@@ -141,7 +143,17 @@ function initial_state(input)  # -> State
     for i in CartesianIndices(height)
         height[i] = input.initial_depth(i[1] * input.box.phys_scale)
     end
-    return State(0.0u"Myr", height)
+
+    n_facies = length(input.facies)
+    ca = rand(0:n_facies, input.box.grid_size...)
+    state = State(0.0u"Myr", ca, 1:n_facies, height)
+
+    step = step_ca(input.box, input.facies)
+    for _ = 1:20
+        step(state)
+    end
+
+    return state
 end
 ```
 
@@ -162,8 +174,6 @@ The propagator keeps the cellular automaton as an internal state, but this may a
 
 ``` {.julia #ca-prod-init-propagator}
 n_facies = length(input.facies)
-ca_init = rand(0:n_facies, input.box.grid_size...)
-ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
 
 function water_depth(s)
     s.height .- input.sea_level(s.time)
@@ -174,10 +184,9 @@ Now, to generate a production from a given state, we advance the CA by one step 
 
 ``` {.julia #ca-prod-propagate}
 result = zeros(typeof(0.0u"m/Myr"), input.box.grid_size..., n_facies)
-facies_map, ca = peel(ca)
 w = water_depth(s)
-for idx in CartesianIndices(facies_map)
-    f = facies_map[idx]
+for idx in CartesianIndices(s.ca)
+    f = s.ca[idx]
     if f == 0
         continue
     end
@@ -207,13 +216,16 @@ end
 function run_model(input::Input)
     Channel{Frame}() do ch
         s = initial_state(input)
-        p = propagator(input)
-        u = updater(input)
+        p_production = propagator(input)
+        p_ca! = step_ca(input.box, input.facies)
+        u! = updater(input)
 
         while true
-            Δ = p(s)
+            p_ca!(s)
+
+            Δ = p_production(s)
             put!(ch, Δ)
-            u(s, Δ)
+            u!(s, Δ)
         end
     end
 end
@@ -230,6 +242,7 @@ using ..Utility
 # using CarboKitten.BS92: sealevel_curve
 using ..Stencil
 using ..Burgess2013
+using ..Burgess2013.CA: step_ca
 
 using HDF5
 using Unitful

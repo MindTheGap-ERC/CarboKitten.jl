@@ -32,9 +32,9 @@
     {
       "path": "docs/src/carbocat-ca.md",
       "deps": null,
-      "modified": "2024-06-10T14:56:12.701671",
-      "hexdigest": "5c8aa202856850f5b8f30d44cb66ed287ea95da2ce8b982563d5b89049690410",
-      "size": 6368
+      "modified": "2024-06-19T15:16:52.742888",
+      "hexdigest": "b80ddd8375ad147a2dd25d477f6e1e00af5c1bd1525213f6cb6d1d6a062c563c",
+      "size": 8085
     },
     {
       "path": "docs/src/carbocat.md",
@@ -53,9 +53,9 @@
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2024-06-19T14:09:56.233353",
-      "hexdigest": "7a2b18f2321842cb3ca2b2f6547296c013fe4ba6b3c2292b768094360bed2981",
-      "size": 14786
+      "modified": "2024-06-19T15:17:10.545015",
+      "hexdigest": "001b0fad5b22ca9edafd958a3b7a6aead0e389fa3a9f50393d8334941560d291",
+      "size": 15003
     },
     {
       "path": "docs/src/stencils.md",
@@ -96,9 +96,9 @@
       "deps": [
         "docs/src/carbocat-ca.md"
       ],
-      "modified": "2024-06-10T14:56:12.714671",
-      "hexdigest": "3f138118596181ee0fa83b683f4e78e2923572276bc6528b0837c1aff0d4832c",
-      "size": 1543
+      "modified": "2024-06-19T15:15:38.415359",
+      "hexdigest": "b77c8e83791874975f6930f8bd9c5bfc3d80fb10b3ca9d092a1344589c2ded1f",
+      "size": 2176
     },
     {
       "path": "examples/burgess2013-fig2.gnuplot",
@@ -123,9 +123,9 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-06-10T14:56:12.714671",
-      "hexdigest": "4a04564521c96f3d4c75ade068a19f1c9e08390a034c7f9d98bc369e65cba88c",
-      "size": 4583
+      "modified": "2024-06-19T15:17:10.460014",
+      "hexdigest": "2957f4ef22e095aecb156dd29c7540b42e228a491ffd2cc07cdaece01e9346ca",
+      "size": 4785
     },
     {
       "path": "examples/plot-tanh.gnuplot",
@@ -383,41 +383,51 @@
       "modified": "2024-06-10T14:56:12.711671",
       "hexdigest": "47883ba8dba38a7dfc70deeb0d892a4bc200bee00ef7fca9922e6232156d002f",
       "size": 48
+    },
+    {
+      "path": "test/CASpec.jl",
+      "deps": [
+        "docs/src/carbocat-ca.md"
+      ],
+      "modified": "2024-06-19T15:16:52.674888",
+      "hexdigest": "fbf04148b59a10285c34e285365cce69b39fdbd4b46976f6149c5cfd8624b292",
+      "size": 827
     }
   ],
   "source": [],
   "target": [
-    "src/Erosion.jl",
-    "examples/ca/eca.jl",
     "examples/production-only/ca-slope.jl",
-    "src/BoundaryTrait.jl",
-    "examples/plot-tanh.gnuplot",
-    "src/Burgess2013/Production.jl",
-    "src/Vectors.jl",
-    "src/Visualization.jl",
-    "examples/ca/long-term.jl",
-    "ext/VisualizationExt.jl",
-    "examples/ca/parameter-scan.jl",
-    "src/Burgess2013/CA.jl",
-    "src/Burgess2013/Transport.jl",
-    "examples/plot-caps-osc.jl",
-    "examples/BS92/fig8-sealevel.jl",
-    "src/Burgess2013.jl",
-    "examples/ca/life.jl",
-    "src/Config.jl",
-    "src/CaProd.jl",
-    ".entangled/tasks.json",
-    "src/Stencil.jl",
-    "examples/BS92/fig8.jl",
-    "examples/burgess2013-fig2.gnuplot",
     "examples/production-only/ca-uniform.jl",
+    "examples/BS92/fig8.jl",
+    "examples/ca/eca.jl",
+    "src/Burgess2013/CA.jl",
     "test/ConfigSpec.jl",
-    "examples/ca/burgess-2013.jl",
-    "examples/BS92/BS92.jl",
+    "src/Vectors.jl",
+    "src/BoundaryTrait.jl",
+    "test/CASpec.jl",
+    "examples/plot-caps-osc.jl",
     "src/Burgess2013/Config.jl",
+    "src/Config.jl",
+    ".entangled/tasks.json",
+    "src/Visualization.jl",
+    "src/Erosion.jl",
+    "examples/ca/life.jl",
+    "examples/BS92/fig8-sealevel.jl",
+    "src/Stencil.jl",
     "test/Unitful.jl",
+    "src/Utility.jl",
+    "src/Burgess2013/Production.jl",
+    "ext/VisualizationExt.jl",
+    "examples/plot-tanh.gnuplot",
+    "src/CaProd.jl",
+    "examples/ca/parameter-scan.jl",
+    "examples/ca/long-term.jl",
+    "src/Burgess2013/Transport.jl",
+    "examples/burgess2013-fig2.gnuplot",
+    "examples/ca/burgess-2013.jl",
+    "src/Burgess2013.jl",
+    "examples/BS92/BS92.jl",
     "examples/production-only/plot-cap-slope.jl",
-    "examples/production-only/caps-osc.jl",
-    "src/Utility.jl"
+    "examples/production-only/caps-osc.jl"
   ]
 }

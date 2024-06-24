@@ -32,7 +32,7 @@
     {
       "path": "docs/src/carbocat-ca.md",
       "deps": null,
-      "modified": "2024-06-19T15:29:26.101232",
+      "modified": "2024-06-24T11:13:30.504880",
       "hexdigest": "0b9f4633ce0219505ba9db37c83ed4ea4c0260d13da1806a83f966e4235a5082",
       "size": 6840
     },
@@ -53,7 +53,7 @@
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2024-06-19T15:23:25.621675",
+      "modified": "2024-06-24T11:13:30.504880",
       "hexdigest": "cb0dad95af601b7cc3dec0e40b945291145dad5cdc9611baed82e0e503d136ea",
       "size": 15019
     },
@@ -69,7 +69,7 @@
       "deps": [
         "docs/src/carbocat-ca.md"
       ],
-      "modified": "2024-06-19T14:07:14.746489",
+      "modified": "2024-06-24T11:13:30.531880",
       "hexdigest": "7cfb9c4866381e1421f95c9a265021a2e77b438aed730121c7dc5b39abc0b49a",
       "size": 712
     },
@@ -78,7 +78,7 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-06-19T14:10:02.899402",
+      "modified": "2024-06-24T11:13:30.531880",
       "hexdigest": "ac5f80b26d44813a93cb952e21808efd5c1fa7cc6384b308c07dd8d9f844b79f",
       "size": 498
     },
@@ -96,7 +96,7 @@
       "deps": [
         "docs/src/carbocat-ca.md"
       ],
-      "modified": "2024-06-19T15:15:38.415359",
+      "modified": "2024-06-24T11:13:30.532880",
       "hexdigest": "b77c8e83791874975f6930f8bd9c5bfc3d80fb10b3ca9d092a1344589c2ded1f",
       "size": 2176
     },
@@ -123,7 +123,7 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-06-19T15:23:25.533674",
+      "modified": "2024-06-24T11:13:30.532880",
       "hexdigest": "7a131e587c6a6c812c8546f3f57f4a56b0841eaa9ac40215f79ea7b978cf38f9",
       "size": 4801
     },
@@ -188,7 +188,7 @@
       "deps": [
         "docs/src/carbocat-ca.md"
       ],
-      "modified": "2024-06-19T14:07:14.735489",
+      "modified": "2024-06-24T11:13:30.531880",
       "hexdigest": "99695af1eafd3ac280ca4cce284a885da4f4fabbea9dbf23ba845b2c2b450d7b",
       "size": 625
     },
@@ -206,7 +206,7 @@
         "docs/src/ca-with-production.md",
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-06-19T14:10:02.901402",
+      "modified": "2024-06-24T11:13:30.503880",
       "hexdigest": "b5ca0d8518f04ad7d34577a7d649f4cb71813437c398d527f7c52ed14d043e28",
       "size": 4363
     },
@@ -215,7 +215,7 @@
       "deps": [
         "docs/src/stencils.md"
       ],
-      "modified": "2024-06-19T14:07:14.746489",
+      "modified": "2024-06-24T11:13:30.531880",
       "hexdigest": "26eca3754676e5c71838153bf41473927dc69819c4263a2f8f7209d6bce86ca2",
       "size": 1068
     },
@@ -224,7 +224,7 @@
       "deps": [
         "docs/src/stencils.md"
       ],
-      "modified": "2024-06-19T14:07:14.744489",
+      "modified": "2024-06-24T11:13:30.531880",
       "hexdigest": "5799534c1a30c5806305d9139567d07ceb80d04e25c14925de3ff5bec6a02dd5",
       "size": 1065
     },
@@ -242,7 +242,7 @@
       "deps": [
         "docs/src/bosscher-1992.md"
       ],
-      "modified": "2024-06-19T14:07:14.745489",
+      "modified": "2024-06-24T11:13:30.531880",
       "hexdigest": "843d96790862dca8e920bb0b70de18d2fa7c84ec13f231ed6ca5e12a7cb2971c",
       "size": 938
     },
@@ -278,7 +278,7 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-06-19T14:10:02.891402",
+      "modified": "2024-06-24T11:13:30.531880",
       "hexdigest": "dd216984e3afdf1928986e68db5a65e19d7f331347ffc03a53a04e27fcf715c4",
       "size": 458
     },
@@ -380,44 +380,71 @@
       "deps": [
         "docs/src/carbocat-ca.md"
       ],
-      "modified": "2024-06-19T15:16:52.674888",
+      "modified": "2024-06-24T11:13:30.532880",
       "hexdigest": "fbf04148b59a10285c34e285365cce69b39fdbd4b46976f6149c5cfd8624b292",
       "size": 827
+    },
+    {
+      "path": "docs/src/sediment-buffer.md",
+      "deps": null,
+      "modified": "2024-06-24T11:55:16.275358",
+      "hexdigest": "0f6a92bafb158ff70c4a76f8b4c44aa4510999f88f7cbdf014eeab6832f5d9f5",
+      "size": 4442
+    },
+    {
+      "path": "src/SedimentStack.jl",
+      "deps": [
+        "docs/src/sediment-buffer.md"
+      ],
+      "modified": "2024-06-24T11:50:10.991265",
+      "hexdigest": "5e9609775d68d5865e871565931c2bc6a0319a3a0dca1e9319916ed51b8fb393",
+      "size": 2180
+    },
+    {
+      "path": "test/SedimentStackSpec.jl",
+      "deps": [
+        "docs/src/sediment-buffer.md"
+      ],
+      "modified": "2024-06-24T11:55:16.055357",
+      "hexdigest": "a2b51edcadd094fce4edd2477ced1d3905d0a97314d031f913501fdc261f9172",
+      "size": 805
     }
   ],
   "source": [],
   "target": [
-    "examples/production-only/ca-slope.jl",
-    "examples/production-only/ca-uniform.jl",
-    "examples/BS92/fig8.jl",
-    "examples/ca/eca.jl",
-    "src/Burgess2013/CA.jl",
-    "test/ConfigSpec.jl",
-    "src/Vectors.jl",
-    "src/BoundaryTrait.jl",
-    "test/CASpec.jl",
-    "examples/plot-caps-osc.jl",
-    "src/Burgess2013/Config.jl",
-    "src/Config.jl",
-    ".entangled/tasks.json",
-    "src/Visualization.jl",
-    "src/Erosion.jl",
     "examples/ca/life.jl",
-    "examples/BS92/fig8-sealevel.jl",
+    "src/SedimentStack.jl",
     "src/Stencil.jl",
-    "test/Unitful.jl",
-    "src/Utility.jl",
-    "src/Burgess2013/Production.jl",
-    "ext/VisualizationExt.jl",
-    "examples/plot-tanh.gnuplot",
-    "src/CaProd.jl",
-    "examples/ca/long-term.jl",
-    "src/Burgess2013/Transport.jl",
-    "examples/burgess2013-fig2.gnuplot",
-    "examples/ca/burgess-2013.jl",
-    "src/Burgess2013.jl",
+    "src/Vectors.jl",
+    "examples/ca/eca.jl",
+    "src/Visualization.jl",
+    "examples/plot-caps-osc.jl",
     "examples/BS92/BS92.jl",
-    "examples/production-only/plot-cap-slope.jl",
-    "examples/production-only/caps-osc.jl"
+    "src/Erosion.jl",
+    ".entangled/tasks.json",
+    "src/Burgess2013.jl",
+    "src/Utility.jl",
+    "src/BoundaryTrait.jl",
+    "test/Unitful.jl",
+    "test/SedimentStackSpec.jl",
+    "src/Config.jl",
+    "test/ConfigSpec.jl",
+    "examples/production-only/caps-osc.jl",
+    "examples/plot-tanh.gnuplot",
+    "src/Burgess2013/CA.jl",
+    "examples/ca/burgess-2013.jl",
+    "src/Burgess2013/Production.jl",
+    "examples/production-only/ca-uniform.jl",
+    "src/Burgess2013/Transport.jl",
+    "examples/production-only/ca-slope.jl",
+    "ext/VisualizationExt.jl",
+    "src/Burgess2013/Config.jl",
+    "examples/ca/long-term.jl",
+    "examples/burgess2013-fig2.gnuplot",
+    "examples/BS92/fig8-sealevel.jl",
+    "examples/BS92/fig8.jl",
+    "test/CASpec.jl",
+    "src/CaProd.jl",
+    "examples/production-only/plot-cap-slope.jl"
   ]
 }

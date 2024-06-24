@@ -17,7 +17,7 @@ module Script
             ax = Axis(fig[Tuple(i)...], aspect=AxisAspect(1))
             heatmap!(ax, st)
         end
-        save("docs/src/fig/b13-fig3.png", fig)
+        save("docs/src/_fig/b13-fig3.png", fig)
     end
 end
 

@@ -4,7 +4,7 @@ subtitle: a cellular automaton
 ---
 
 ## Cellular Automaton
-The paper talks about cycling the order of preference for occupying an empty cell at each iteration. This means that the rules change slighly every iteration.
+The paper talks about cycling the order of preference for occupying an empty cell at each iteration. This means that the rules change slightly every iteration.
 
 ``` {.julia #cycle-permutation}
 cycle_permutation(n_species::Int) =
@@ -32,10 +32,12 @@ function rules(facies::Vector{Facies})
             (a, b) = facies[cell_facies].viability_range
             (a <= n && n <= b ? cell_facies : 0)
         end
-    end    
+    end
 end
 
-function run_ca(::Type{B}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {B <: Boundary{2}}
+<<ca-stateful>>
+
+function run_ca(::Type{B}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {B<:Boundary{2}}
     r = rules(facies)
     Channel{Matrix{Int}}() do ch
         target = Matrix{Int}(undef, size(init))
@@ -50,7 +52,7 @@ function run_ca(::Type{B}, facies::Vector{Facies}, init::Matrix{Int}, n_species:
 end
 ```
 
-This function is not yet adaptible to the given rule set. Such a modification is not so hard to make. 
+This function is not yet adaptible to the given rule set. Such a modification is not so hard to make.
 
 The paper talks about a 50x50 grid initialized with uniform random values.
 
@@ -60,6 +62,7 @@ module CA
 using ...BoundaryTrait
 using ...Stencil
 using ..Config: Facies
+using ...Config: Box
 
 export run_ca
 
@@ -85,7 +88,7 @@ On my laptop I can run about 150 iterations per second with current code. When u
 <details><summary>Plotting code</summary>
 ```
 
-``` {.julia .build file=examples/ca/burgess-2013.jl target="docs/src/fig/b13-fig3.png"}
+``` {.julia .build file=examples/ca/burgess-2013.jl target="docs/src/_fig/b13-fig3.png"}
 module Script
     using .Iterators: flatten
     using CarboKitten
@@ -104,7 +107,7 @@ module Script
             ax = Axis(fig[Tuple(i)...], aspect=AxisAspect(1))
             heatmap!(ax, st)
         end
-        save("docs/src/fig/b13-fig3.png", fig)
+        save("docs/src/_fig/b13-fig3.png", fig)
     end
 end
 
@@ -112,7 +115,7 @@ Script.main()
 ```
 
 
-``` {.julia .build file=examples/ca/long-term.jl target="docs/src/fig/b13-long-term.png"}
+``` {.julia .build file=examples/ca/long-term.jl target="docs/src/_fig/b13-long-term.png"}
 module Script
     using CarboKitten
     using CarboKitten.Burgess2013
@@ -129,7 +132,7 @@ module Script
             ax = Axis(fig[1, i], aspect=AxisAspect(1))
             heatmap!(ax, st)
         end
-        save("docs/src/fig/b13-long-term.png", fig)
+        save("docs/src/_fig/b13-long-term.png", fig)
     end
 end
 
@@ -140,11 +143,14 @@ Script.main()
 </details>
 ```
 
-## Howto run
+## How to run
 We start with randomized initial conditions on a 50x50 grid.
 
 ``` {.julia}
+using CarboKitten.Stencil: Reflected
+using CarboKitten.Burgess2013
 init = rand(0:3, 50, 50)
+result = Iterators.take(run_ca(Reflected{2}, MODEL1, init, 3), 8)
 ```
 
 Then we run the cellular automaton for, in this case eight generations. The `CA.run` function returns an iterator of 50x50 maps. That means that in principle we can extract an infinity of iterations, but in this cane we only `take` eight.
@@ -163,47 +169,54 @@ plot((heatmap(r, colorbar=:none) for r in result)..., layout=(2, 4))
 
 What this says is: create a `heatmap` for each of our eight results, then expand those into a function call to `plot` (as in `plot(hm1, hm2, ..., hm8, layout=(2, 4))`).
 
-## Parameter scan
+## Statuful API
+For most applications in CarboKitten it is most useful to have a CA that updates some `state` struct in-place. This way any module that needs access to the CA state can do so.
 
-``` {.julia file=examples/ca/parameter-scan.jl}
-module Script
+``` {.julia #ca-stateful}
+function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
+    """Creates a propagator for the state, updating the celullar automaton in place.
 
-using CarboKitten
-using CarboKitten.Burgess2013
-using CarboKitten.Stencil
-using CarboKitten.Utility
-using GLMakie
-using .Iterators: peel, drop
+    Contract: the `state` should have `ca::Matrix{Int}` and `ca_priority::Vector{Int}`
+    members."""
+    r = rules(facies)
+    tmp = Matrix{Int}(undef, box.grid_size)
+    stencil_op = stencil(Int, BT, (5, 5), r)
 
-function main()
-    fig = Figure(resolution=(2000, 2000))
-    for i in 4:12
-        for j in (i+1):12
-            print(".")
-            gl = fig[i, j] = GridLayout()
-            for k in i:j
-                # for l in k:j
-                let l = j
-                    init = rand(0:3, 50, 50)
-                    facies = [
-                        Facies((i, j), (k, l), 0, 0, 0),
-                        Facies((i, j), (k, l), 0, 0, 0),
-                        Facies((i, j), (k, l), 0, 0, 0),
-                    ]
-                    (result, _) = peel(drop(run_ca(Periodic{2}, facies, init, 3), 10))
-
-                    ax = Axis(gl[k-i, l-k], aspect=AxisAspect(1),
-                              xticksvisible=false, xticklabelsvisible=false,
-                              yticksvisible=false, yticklabelsvisible=false)
-                    heatmap!(ax, result)
-                end
-            end
-        end
+    function (state)
+        stencil_op(state.ca, tmp, state.ca_priority)
+        state.ca, tmp = tmp, state.ca
+        state.ca_priority = circshift(state.ca_priority, 1)
     end
-    save("docs/src/fig/parameter-scan.png", fig)
 end
+```
 
-end  # module Script
+We may test that running the above function ten times gives the same result as the tenth result from the iterator API.
 
-Script.main()
+``` {.julia file=test/CASpec.jl}
+@testset "CA" begin
+    using CarboKitten.BoundaryTrait: Periodic
+    using CarboKitten.Config: Box
+    using CarboKitten.Burgess2013.Config: MODEL1
+    using CarboKitten.Burgess2013.CA: step_ca, run_ca
+    using Unitful
+
+    mutable struct State
+        ca::Matrix{Int}
+        ca_priority::Vector{Int}
+    end
+
+    n_facies = length(MODEL1)
+    box = Box{Periodic{2}}(grid_size=(50, 50), phys_scale=100.0u"m")
+    ca_init = rand(0:n_facies, box.grid_size...)
+    ca_channel = run_ca(Periodic{2}, MODEL1, copy(ca_init), n_facies)
+    item1, _ = Iterators.peel(Iterators.drop(ca_channel, 20))
+
+    ca_step = step_ca(box, MODEL1)
+    state = State(copy(ca_init), 1:n_facies)
+    for _ in 1:20
+        ca_step(state)
+    end
+
+    @test item1 == state.ca
+end
 ```

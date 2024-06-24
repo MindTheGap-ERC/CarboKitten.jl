@@ -169,3 +169,6 @@ We need to keep a state with the following components:
 Every cycle we may export a layer of sediment to archive.
 
 # References
+
+```@bibliography
+```

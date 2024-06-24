@@ -1,4 +1,5 @@
 # Unitful
+
 Physical quantities in CarboKitten are always specified using the `Unitful.jl` framework.
 
 ``` {.julia file=test/Unitful.jl}
@@ -12,6 +13,7 @@ end
 ```
 
 ## Variables vs. string macros
+
 `Unitful` package offers two basic ways to enter quantities: either using predefined symbols (polluting your namespace with one-letter variables), or using special string macros.
 
 ``` {.julia #unitful-spec}
@@ -22,6 +24,7 @@ end
 In many cases, your CarboKitten scripts will contain little else than the input specification. In such a case `using Unitful.DefaultSymbols` gives a bit cleaner, more readable look.
 
 ## Reading specs
+
 Suppose we simulate a pendulum. We would have an input spec defined as follows:
 
 ``` {.julia #unitful-spec}
@@ -52,6 +55,7 @@ Units are automatically converted to the types specified in the API.
 ```
 
 ## Dimensions
+
 Unitful has dimensions of length `𝐋`, mass `𝐌` and time `𝐓` as bold upper-case Unicode symbols. These can be entered in Julia with `\bfL`, `\bfM` etc.
 When you define a function that needs, say, an energy, which has SI units of ${\rm J = (m/s)^2\ kg}$, we can construct the dimensions. Defining a few constants:
 
@@ -74,6 +78,7 @@ photon_wave_length(E::Quantity{Float64,𝐄,J}) where {J} =
 ```
 
 ## Negating Units
+
 There is a handy way of negating units (getting back to raw scalars) using the `NoUnits` function object.
 
 ``` {.julia #unitful-spec}

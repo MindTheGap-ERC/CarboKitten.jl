@@ -1,5 +1,6 @@
 # Carbonate Production
-**reproducing Bosscher & Schlager 1992**
+
+## reproducing Bosscher & Schlager 1992
 
 The paper by [Bosscher1992](@cite) is an early computer model for simulating reef growth. This paper contains some of the essential ingredients that we find back in CarboCAT. Here we will try to reproduce their results.
 
@@ -12,6 +13,7 @@ The paper by [Bosscher1992](@cite) is an early computer model for simulating ree
 *from BS92*
 
 ## Growth Rate
+
 The growth rate is
 
 $$g(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right),$$
@@ -37,19 +39,19 @@ where $w$ is the water depth in meters, $g_m$ is the maximum growth rate in ${\r
 
 The shape of $\tanh \circ \exp$ look like this:
 
-![](fig/tanh.svg)
+![Tangens hyperbolicus](fig/tanh.svg)
 
 Notice that the numbers inside the exponential need to be unit-free, so does the output. The value of $\tanh \circ \exp$ at a depth of 0 is $0.7615\dots$. This does not make much sense, as I believe we should start at a value of 1 at the surface. By setting $I_0 / I_k$ to some value $>1$ this can be alleviated, but it changes the interpretation of the constants a little. The idea is that above a certain insolation, light is not the limiting factor to the rate of photosynthesis.
 
 To reproduce Figure 2 in B13, I had to change the values for $g_m$ to 500, 250, and 125 respectively, the other values from Table 2 remained the same. I guess this was done for illustration purposes.
 
-![](fig/b13-fig2.svg)
+![Production curves](fig/b13-fig2.svg)
 
 ```@raw html
 <details><summary>Plotting code</summary>
 ```
 
-``` {.gnuplot .build file=examples/plot-tanh.gnuplot target=docs/src/fig/tanh.svg}
+``` {.gnuplot .build file=examples/plot-tanh.gnuplot target=docs/src/_fig/tanh.svg}
 set term svg size 700, 300 font "sans serif, 14" linewidth 1.5
 set xrange [-5:10]
 set yrange [-0.1:1.1]
@@ -60,7 +62,7 @@ set ylabel "y"
 plot tanh(exp(-x)) lc rgb 'black', tanh(exp(4)*exp(-x)), tanh(exp(-0.5*x))
 ```
 
-``` {.gnuplot .build file=examples/burgess2013-fig2.gnuplot target=docs/src/fig/b13-fig2.svg}
+``` {.gnuplot .build file=examples/burgess2013-fig2.gnuplot target=docs/src/_fig/b13-fig2.svg}
 set term svg size 500, 600 font "sans serif,14" linewidth 1.5
 set trange [0:100]
 set yrange [100:0]
@@ -98,6 +100,7 @@ end
 It seems Eq. 5 in BS92 (the most important equation in the paper mind you!) is missing both a minus sign and a set of parentheses. Also, we should remark that at negative depth (subareal exposure) we should halt all growth.
 
 ## Crosssection
+
 The most impressive result in BS92 is the last figure. They show an input curve for $s(t)$ but give no functional description. The curve starts with a linear drop from 0 to 120m depth over a time of 20000 years, then slowly rises with $s(t) = a +  bt + A \sin(2\pi t / P)$, with a period $P = \sim 15-20 {\rm kyr}$, amplitude $A = \sim 40 {\rm m}$. It might be easiest to take a screenshot of the PDF and convert the graph into a table.
 
 ```@raw html
@@ -169,7 +172,7 @@ end
 
 Finally, we can try to reproduce figure 8 in BS92.
 
-![](fig/bs92-fig8.svg)
+![stratigraphy following fig. 8 in BS92](fig/bs92-fig8.svg)
 
 Note the simplicity of this result: there is no dependency on space, only on the initial depth $h_0$.
 
@@ -178,7 +181,7 @@ Note the simplicity of this result: there is no dependency on space, only on the
 ```
 
 ``` {.julia .task file=examples/BS92/fig8.jl}
-#| creates: docs/src/fig/bs92-fig8.svg
+#| creates: docs/src/_fig/bs92-fig8.svg
 #| requires: data/bs92-sealevel-curve.csv examples/BS92/BS92.jl
 #| collect: figures
 
@@ -199,7 +202,7 @@ module Script
           ax = Axis(fig[2,1], xlabel="time (years)", ylabel="depth (m)", yreversed=true)
           lines!(ax, t, BS92.SCENARIO_A.sealevel(t); color=:steelblue4)
 
-          save("docs/src/fig/bs92-fig8.svg", fig)
+          save("docs/src/_fig/bs92-fig8.svg", fig)
      end
 end
 

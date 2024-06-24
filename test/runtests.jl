@@ -10,4 +10,5 @@ include("Unitful.jl")
 
 @testset "CarboKitten" begin
     include("ConfigSpec.jl")
+    include("CASpec.jl")
 end

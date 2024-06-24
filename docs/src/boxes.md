@@ -19,6 +19,7 @@ end
 Physical parameters of CarboKitten all should have units, see our [refresher on `Unitful.jl`](unitful.md).
 
 ## Box topology
+
 CarboKitten has a 3-dimensional state space, where two dimensions represent cartesian topographic coordinates, and the third dimension is a track record of sedimentation. The cartesian topographic coordinates are always on a regular grid, but depending on the scenario you may choose different map topologies.
 
 - **periodic boundaries** To study sedimentation in a small isolated patch, periodic boundaries seem sufficient. The field is assumed to be infinite in all directions.
@@ -71,6 +72,7 @@ end
 ```
 
 ## Time properties
+
 Time stepping is specified in `TimeProperties`. We'll have `time_steps` number of time steps, each of physical time `Δt`. However, only one in `write_interval` steps is written to disk.
 
 ``` {.julia #config-types}
@@ -84,6 +86,7 @@ end
 ```
 
 ## Vectors
+
 To trace the position of particles we define a `NamedTuple` with `x` and `y` members and define common vector operations on those.
 
 ``` {.julia file=src/Vectors.jl}
@@ -106,6 +109,7 @@ end
 ```
 
 ## Offset indexing
+
 Now we can use these traits to define three methods for indexing on an offset from some index that is assumed to be within bounds.
 
 ``` {.julia #spec}
@@ -142,6 +146,7 @@ end
 ```
 
 ### Canonical coordinates
+
 For both `Periodic` and `Reflected` boundaries it is also possible to write a function that makes any coordinate within bounds. This uses the fact that reflected boundaries are also periodic for a box twice the size.
 
 ``` {.julia #canonical-coordinates}
@@ -162,6 +167,7 @@ end
 ```
 
 ### Shelf boundary
+
 The `Shelf` boundary type is specially designed for the simulation of a transect perpendicular to the coast direction. We are periodic in the y-direction and have a Neumannesque constant boundary at the edges of the simulation area.
 
 ``` {.julia #offset-indexing}
@@ -186,6 +192,7 @@ end
 ```
 
 ## Boxes
+
 We need to define how particles move past boundaries. Similar to the grid based `offset_index` method, we define the `offset` method for a `Vec2`.
 
 ``` {.julia #vector-offset}

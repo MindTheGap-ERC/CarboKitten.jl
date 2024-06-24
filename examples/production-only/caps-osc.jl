@@ -16,9 +16,13 @@ const DEFAULT_INPUT = CaProd.Input(
   box = Box{Shelf}(
     grid_size = (100, 50),
     phys_scale = 0.15u"km"
+    # equivalent:
+    # phys_scale = 150"m"
   ),
   time = TimeProperties(
     Δt = 0.0001u"Myr",
+    # equivalent: 
+    # Δt = 1u"kyr",
     steps = 10000,
     write_interval = 10
   ),

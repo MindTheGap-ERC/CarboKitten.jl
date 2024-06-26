@@ -7,7 +7,7 @@ using ..BoundaryTrait
 export stencil, convolution
 
 # ~/~ begin <<docs/src/stencils.md#stencil-operation>>[init]
-function stencil(::Type{T}, ::Box{BT}, n::NTuple{dim,Int}, f::Function) where {T, dim, BT <: BoundaryTrait.Boundary{dim}}
+function stencil(::Type{T}, ::Type{BT}, n::NTuple{dim,Int}, f::Function) where {T, dim, BT <: BoundaryTrait.Boundary{dim}}
     m = n .÷ 2
     stencil_shape = range.(.-m, m)
     stencil = zeros(T, n)

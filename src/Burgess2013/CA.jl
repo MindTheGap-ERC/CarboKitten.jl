@@ -5,8 +5,7 @@ using ...BoundaryTrait
 using ...Stencil
 using ..Config: Facies
 using ...Config: Box
-
-export run_ca
+export run_ca, step_ca
 
 # ~/~ begin <<docs/src/carbocat-ca.md#cycle-permutation>>[init]
 cycle_permutation(n_species::Int) =
@@ -34,7 +33,7 @@ function rules(facies::Vector{Facies})
     end
 end
 
-# ~/~ begin <<docs/src/carbocat-ca.md#ca-stateful>>[init]
+
 function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
     """Creates a propagator for the state, updating the celullar automaton in place.
 
@@ -50,14 +49,13 @@ function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
         state.ca_priority = circshift(state.ca_priority, 1)
     end
 end
-# ~/~ end
 
-function run_ca(::Type{B}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {B<:Boundary{2}}
+function run_ca(::Box{BT}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {BT <: Boundary{2}}
     r = rules(facies)
     Channel{Matrix{Int}}() do ch
         target = Matrix{Int}(undef, size(init))
         put!(ch, init)
-        stencil_op = stencil(Int, B, (5, 5), r)
+        stencil_op = stencil(Int, BT, (5, 5), r)
         for perm in cycle_permutation(n_species)
             stencil_op(init, target, perm)
             init, target = target, init

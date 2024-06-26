@@ -4,111 +4,136 @@ module CaProdErosion
 using CarboKitten
 using ..Stencil: Periodic, stencil
 using ..Utility
+using ..BoundaryTrait: Boundary
 #using ..BS92: sealevel_curve
-using ..Denudation: denudation
+using ..Denudation: denudation, calculate_redistribution
+using ..Denudation.EmpericalDenudation: slope_kernel
 using ..Burgess2013
+using ..Burgess2013.CA: step_ca, run_ca
 using ..InputConfig: Input, DenudationType
+using ..Config: Box
 using Unitful
 using HDF5
 using .Iterators: drop, peel, partition, map, take
 # ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-input>>[init]
-struct Facies
-    viability_range::Tuple{Int, Int}
-    activation_range::Tuple{Int, Int}
-
-    maximum_growth_rate::typeof(1.0u"m/Myr")
-    extinction_coefficient::typeof(1.0u"m^-1")
-    saturation_intensity::typeof(1.0u"W/m^2")
-
-    reactive_surface::Float64 #reactive surface
-    mass_density::Float64 #density of different carb factory
-    infiltration_coefficient::Float64 #infiltration coeff
-end
-
 # ~/~ end
 # ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-frame>>[init]
 
 abstract type Frame end
 struct ProductionFrame <: Frame
-    production::Array{Float64,3}
+    production::Array{typeof(1.0u"m/Myr"),3}
 end
 
 struct DenudationFrame <: Frame
-    denudation::Array{Float64,2}
-    redistribution::Array{Float64,2}
+    denudation::Array{typeof(1.0u"m/Myr"),2}
+    redistribution::Array{typeof(1.0u"m/Myr"),2}
 end
 
 struct OutputFrame 
-    production::Array{Float64,3}
-    denudation::Array{Float64,2}
-    redistribution::Array{Float64,2}
+    production::Array{typeof(1.0u"m/Myr"),3}
+    denudation::Array{typeof(1.0u"m/Myr"),2}
+    redistribution::Array{typeof(1.0u"m/Myr"),2}
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-state>>[init]
 # FIXME: deduplicate
 mutable struct State
-    time::Float64
-    height::Array{Float64,2}
+    time::typeof(1.0u"Myr")
+    ca::Array{Int}
+    ca_priority::Vector{Int}
+    height::Array{typeof(1.0u"m"),2}
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-model>>[init]
 # FIXME: deduplicate
 function initial_state(input::Input)  # -> State
-    height = zeros(Float64, input.grid_size...)
+    height = zeros(Float64, input.box.grid_size...) * u"m"
     for i in CartesianIndices(height)
-        height[i] = input.initial_depth(i[2] * input.phys_scale)
+        height[i] = input.initial_depth(i[2] * input.box.phys_scale) 
     end
-    return State(0.0, height)
+    n_facies = length(input.facies)
+    ca = rand(0:n_facies, input.box.grid_size...)
+    state = State(0.0u"Myr", ca, 1:n_facies, height)
+
+    step = step_ca(input.box, input.facies)
+    for _ = 1:20
+        step(state)
+    end
+    return state
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-model>>[1]
 
 # propagator for production
-function prod_propagator(input::Input)
+function prod_propagator(input::Input,box::Box{BT}) where {BT<:Boundary}
     n_facies = length(input.facies)
-    ca_init = rand(0:n_facies, input.grid_size...)
-    ca = drop(run_ca(Periodic{2}, input.facies, ca_init, 3), 20)
 
     function water_depth(s::State)
-        s.height .- input.sea_level(s.time)
+        sea_level = input.sea_level(s.time) .* u"m"
+        s.height .- sea_level
     end
 
     function(s::State)
-    production = zeros(typeof(0.0u"m/Myr"), input.box.grid_size..., n_facies)
-    facies_map, ca = peel(ca)
+    production = zeros(typeof(0.0u"m/Myr"), box.grid_size..., n_facies)
     w = water_depth(s)
-    for idx in CartesianIndices(facies_map)
-        f = facies_map[idx]
+    for idx in CartesianIndices(s.ca)
+        f = s.ca[idx]
         if f == 0
             continue
         end
         production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
     end
+    return ProductionFrame(production)
     end
 
-    return ProductionFrame(production)
+    
 end
 
 
-function denu_propagator(input::Input)
+function denu_propagator(input::Input, box::Box{BT}) where {BT <: Boundary}
 
-    function water_depth(state)
-        state.height .- state.sea_level
+    function water_depth(s::State)
+        sea_level = input.sea_level(s.time) .* u"m"
+        s.height .- sea_level
     end
 
-    w = water_depth(s)
+    function get_inf_map(s::State,input::Input)
+        w = water_depth(s) ./ u"m"
+        inf_map = zeros(size(w)...)
+        for idx in CartesianIndices(s.ca)
+            f = s.ca[idx]
+            if f == 0
+                continue
+            end
+            inf_map[idx] = input.facies[f].infiltration_coefficient
+        end
+        return inf_map
+    end
 
     function (s::State)
-        denudation = zeros(input.box.grid_size...)
-        redistribution = zeros(input.box.grid_size...)
-    for idx in CartesianIndices(w)
-        if w[idx] < 0.0
-            (denudation[Tuple(idx)],redistribution[Tuple(idx)]) = denudation(input,input.denu_param,s)
-        end
-    end
+        w = water_depth(s) ./ u"m"
+        slope = zeros(Float64, box.grid_size...)
+        slopefn = stencil(Float64, BT, (3, 3), slope_kernel)
+        slopefn(w, slope, box.phys_scale ./u"m")
+        denudation_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
+        w = water_depth(s) ./ u"m"
 
+        for idx in CartesianIndices(s.ca)
+            f = s.ca[idx]
+            if f == 0
+                continue
+            end
+        (denudation_mass[idx]) = denudation(input, box, input.denudationparam, w[idx], slope[idx],input.facies[f])
+        end
+    
+        inf_map = get_inf_map(s,input)
+        redistribution_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
+        (redistribution_mass) = calculate_redistribution(input,box,input.denudationparam,w,slope,inf_map)
+    
+    return DenudationFrame(denudation_mass,redistribution_mass)
+    
     end
-    return DenudationFrame(denudation,redistribution)
+    
 end
 
 # ~/~ end
@@ -116,27 +141,26 @@ end
 function updater(input)
     n_facies = length(input.facies)
     function update(state, Δ::ProductionFrame)
-        state.height .-= sum(Δ.production; dims=3) .* input.Δt
-        state.height .+= Δ.denudation .* input.Δt  #number already in kyr
-        state.time += input.Δt
+        state.height .-= sum(Δ.production; dims=3) .* input.time.Δt
+        state.time += input.time.Δt
     end
 
     function update(state, Δ::DenudationFrame)
         # FIXME: implement
-        state.hieght .+= Δ.denudation .* input.Δt
-        state.height .-= Δ.redistribution .* input.Δt
-        state.time += input.Δt
+        state.height .+= Δ.denudation .* input.time.Δt
+        state.height .-= Δ.redistribution .* input.time.Δt
+        state.time += input.time.Δt
     end
 
     update
 end
 # ~/~ end
 # ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-model>>[3]
-function run_model(input::Input)
+function run_model(input::Input,box::Box{BT}) where {BT <:Boundary}
     Channel{OutputFrame}() do ch
         s = initial_state(input)
-        p = prod_propagator(input)
-        d = denu_propagator(input)  # FIXME: implement
+        p = prod_propagator(input,box)
+        d = denu_propagator(input,box)  # FIXME: implement
         u = updater(input)
 
         while true
@@ -155,39 +179,40 @@ function stack_frames(fs::Vector{OutputFrame})  # -> Frame
 end
 
 function main(input::Input, output::String)
-    x_axis = (0:(input.grid_size[2]-1)) .* input.phys_scale
-    y_axis = (0:(input.grid_size[1]-1)) .* input.phys_scale
+    x_axis = (0:(input.box.grid_size[2]-1)) .* input.box.phys_scale
+    y_axis = (0:(input.box.grid_size[1]-1)) .* input.box.phys_scale
     initial_height = input.initial_depth.(x_axis)
-    n_writes = input.time_steps ÷ input.write_interval
+    n_writes = input.time.steps ÷ input.time.write_interval
 
     h5open(output, "w") do fid
         gid = create_group(fid, "input")
-        gid["x"] = collect(x_axis)
-        gid["y"] = collect(y_axis)
-        gid["height"] = collect(initial_height)
-        gid["t"] = collect((0:(n_writes-1)) .* (input.Δt * input.write_interval))
+        gid["x"] = collect(x_axis) |> in_units_of(u"m")
+        gid["y"] = collect(y_axis) |> in_units_of(u"m")
+        gid["height"] = collect(initial_height) |> in_units_of(u"m")
+        gid["t"] = collect((0:(n_writes-1)) .* (input.time.Δt * input.time.write_interval)) |> in_units_of(u"Myr")
         attr = attributes(gid)
-        attr["delta_t"] = input.Δt
-        attr["write_interval"] = input.write_interval
-        attr["time_steps"] = input.time_steps
-        attr["subsidence_rate"] = input.subsidence_rate
+        attr["delta_t"] = input.time.Δt |> in_units_of(u"Myr")
+        attr["write_interval"] = input.time.write_interval
+        attr["time_steps"] = input.time.steps
+        attr["subsidence_rate"] = input.subsidence_rate |> in_units_of(u"m/Myr")
 
         n_facies = length(input.facies)
         ds = create_dataset(fid, "sediment", datatype(Float64),
-            dataspace(input.grid_size..., n_facies, input.time_steps),
-            chunk=(input.grid_size..., n_facies, 1))
+            dataspace(input.box.grid_size..., n_facies, input.time.steps),
+            chunk=(input.box.grid_size..., n_facies, 1))
         denudation = create_dataset(fid, "denudation", datatype(Float64),
-            dataspace(input.grid_size..., input.time_steps),
-           chunk=(input.grid_size..., 1))
+            dataspace(input.box.grid_size..., input.time.steps),
+           chunk=(input.box.grid_size..., 1))
         redistribution = create_dataset(fid, "redistribution", datatype(Float64),
-           dataspace(input.grid_size..., input.time_steps),
-          chunk=(input.grid_size..., 1))
+           dataspace(input.box.grid_size..., input.time.steps),
+          chunk=(input.box.grid_size..., 1))
+        box = input.box
 
-        results = map(stack_frames, partition(run_model(input), input.write_interval))
+        results = map(stack_frames, partition(run_model(input,box), input.time.write_interval))
         for (step, frame) in enumerate(take(results, n_writes))
-            ds[:, :, :, step] = OutputFrame.production
-            denudation[:,:,step] = OutputFrame.denudation
-            redistribution[:,:,step] = OutputFrame.redistribution
+            ds[:, :, :, step] = frame.production |> in_units_of(u"m/Myr")  
+            denudation[:,:,step] = frame.denudation |> in_units_of(u"m/kyr")
+            redistribution[:,:,step] = frame.redistribution |> in_units_of(u"m/kyr")
         end
     end
 end

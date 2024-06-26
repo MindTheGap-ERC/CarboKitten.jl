@@ -18,22 +18,51 @@ function sealevel_curve(t,filepath)
     return x(t)
 end 
 
-const DenudationIstance = Dissolution(273.0,1000.0,10^(-1.5),2e-3)
+const MODEL1 = [
+    Burgess2013.Facies(viability_range = (4, 10),
+    activation_range = (6, 10),
+    maximum_growth_rate = 500u"m/Myr",
+    extinction_coefficient = 0.8u"m^-1",
+    saturation_intensity = 60u"W/m^2",
+    reactive_surface = 1000,
+    mass_density = 2730,
+    infiltration_coefficient= 0.5),
 
-const input = Input(
-    Box{Shelf}((100, 50), 1.0u"km"),
-    TimeProperties(
-      1.0u"kyr",
-      100,
-      1
+    Burgess2013.Facies(viability_range = (4, 10),
+    activation_range = (6, 10),
+    maximum_growth_rate = 400u"m/Myr",
+    extinction_coefficient = 0.1u"m^-1",
+    saturation_intensity = 60u"W/m^2",
+    reactive_surface = 1000,
+    mass_density = 2730,
+    infiltration_coefficient= 0.5),
+
+    Burgess2013.Facies(viability_range = (4, 10),
+    activation_range = (6, 10),
+    maximum_growth_rate = 100u"m/Myr",
+    extinction_coefficient = 0.005u"m^-1",
+    saturation_intensity = 60u"W/m^2",
+    reactive_surface = 1000,
+    mass_density = 2730,
+    infiltration_coefficient= 0.5)
+]
+
+const DENUDATION = Dissolution(273.0,1000.0,10^(-1.5),2e-3)#PhysicalErosionParam(1e-3)EmpericalDenudationParam(1.0)
+
+const INPUT = Input(
+    box=Box{Shelf}(grid_size = (100, 50), phys_scale = 1.0u"km"),
+    time=TimeProperties(
+      Δt = 1.0u"kyr",
+      steps = 100,
+      write_interval = 1
     ),
-    t -> 4.0u"m" * sin(2π * t / 200.0u"kyr"), 
-    50.0u"m/Myr",
-    p -> x / 300.0,
-    MODEL1,
-    400.0u"W/m^2",
-    DenudationIstance
+    sea_level = t -> 0.0, 
+    subsidence_rate = 50.0u"m/Myr",
+    initial_depth = x -> x/300.0,
+    facies = MODEL1,
+    insolation = 400.0u"W/m^2",
+    denudationparam = DENUDATION
   )
 
-CaProdErosion.main(input, "data/caps-test.h5")
+CaProdErosion.main(INPUT, "data/caps-test.h5")
 # ~/~ end

@@ -3,9 +3,9 @@ module Config
 
 using Unitful
 using Parameters
-export Facies, MODEL1
+export Facies
 
- struct Facies
+@kwdef struct Facies
     viability_range::Tuple{Int, Int}
     activation_range::Tuple{Int, Int}
 
@@ -17,35 +17,6 @@ export Facies, MODEL1
     mass_density::Float64 #density of different carb factory
     infiltration_coefficient::Float64 #infiltration coeff
 end
-
-const MODEL1 = [
-    Facies((4, 10),
-           (6, 10),
-           500u"m/Myr",
-           0.8u"m^-1",
-           60u"W/m^2",
-           1000,
-           2730,
-           0.5),
-
-    Facies((4, 10),
-           (6, 10),
-           400u"m/Myr",
-           0.1u"m^-1",
-           60u"W/m^2",
-           1000,
-           2730,
-           0.5),
-
-    Facies((4, 10),
-           (6, 10),
-           100u"m/Myr",
-           0.005u"m^-1",
-           60u"W/m^2",
-           1000,
-           2730,
-           0.5)
-]
 
 end
 # ~/~ end

@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/ca-with-production.md#examples/plot-caps-osc.jl>>[init]
 module Script
     using CarboKitten.Visualization
-    using GLMakie
+    using CairoMakie
 
     function main()
         f = Figure()

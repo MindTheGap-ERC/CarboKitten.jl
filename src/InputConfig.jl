@@ -9,13 +9,13 @@ export Input, DenudationType
 
 abstract type DenudationType end
 
-struct Input
+@kwdef struct Input
     box :: Box
     time :: TimeProperties
 
     sea_level       # Myr -> m
     subsidence_rate::typeof(1.0u"m/Myr")
-    initial_depth   # m -> m
+    initial_depth  # m -> m
 
     facies::Vector{Facies}
     insolation::typeof(1.0u"W/m^2")

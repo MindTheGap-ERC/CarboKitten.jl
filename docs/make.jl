@@ -69,6 +69,10 @@ makedocs(
             "Model with CA and Production" => "ca-with-production.md",
             "Sediment Transport" => "carbocat-transport.md"
         ],
+        "Denudation" => [
+            "Denudation" => "Denudation.md",
+            "Model" => "ca-prod-with-erosion.md"
+        ],
         "Algorithms" => [
             "Unitful" => "unitful.md",
             "Boxes" => "boxes.md",

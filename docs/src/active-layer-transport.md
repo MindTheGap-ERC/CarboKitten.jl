@@ -1,6 +1,6 @@
 # Active Layer Transport
 
-The following is inspired on well-known **active layer** approaches in river bed sediment transport. All quantities with subscript $f$ are facies dependent. Sediment is measured in meters of deposited material. $P_f$ is the production of sediment per facies in $m/s$. Further unit calculations would be more readable if we consider the unit of sediment as separate, so for instance it doesn't cancel against $m^2$ in the units of sediment flux. TBD
+The following is inspired on well-known **active layer** approaches in river bed sediment transport. All quantities with subscript $f$ are facies dependent. Sediment is measured in meters of deposited material. $P_f$ is the production of sediment per facies in $m/s$. Further unit calculations would be more readable if we consider the unit of sediment as separate, so for instance it doesn't cancel against $m^2$ in the units of sediment flux. In the implementation, $\nu$ has the units of ${\rm m}$ which is totaly weird. TBC
 
 In a model without transport, we could write
 
@@ -25,3 +25,245 @@ Combining these equations, and ignoring subsidence for the moment (which is a gl
 $${{\partial \eta_f(x)}\over{\partial t}} = {\bf \nabla_x} \cdot \big[ \nu_f \alpha_f\ P_f(x)\ {\bf \nabla_x} \eta_{*}(x) \big] + P_f(x),$$
 
 In our model we need to solve this equation one time-step each iteration. If we solve this using forward methods, we should be reminded of the CFL limit for diffusion equations (depending on the diffusion constants and grid size we shouldn't pick the time steps too large). Alternatively, for these two-dimensional situations, an implicit approach is feasible. Also we should take care that somehow $\nabla(\nu\alpha P \nabla \eta) + P > 0$. The interpretation being that we can't transport more than we produce, even if there is capacity to do so.
+
+To solve this equation, it is nicer to expand the transport-diffusion term using the product rule, in short notation:
+
+$$\partial_t \eta_f = \nu' \nabla P_f(x) \cdot \nabla \eta(x) + \nu' P_f(x) \nabla^2 \eta(x) + P_f(x),$$
+
+where $\nu' = \nu_f \alpha_f$
+
+So we have a advection component with velocity $\nu' \nabla P_f$ and a diffusion component with a coefficient $\nu' P_f$.
+
+## Test 1
+
+Suppose we have an incline in one direction, as per usual on a coastal shelf. Production is happening in a circular patch in our box, with constant rate. In addition, we'll release the top 1m of sediment for further transport.
+
+``` {.julia file=examples/transport/active-layer.jl}
+module ActiveLayer
+
+using CarboKitten.Stencil: convolution, stencil
+using CarboKitten.Config: Box, axes
+using CarboKitten.BoundaryTrait: Shelf
+using CarboKitten.Utility: in_units_of
+using Unitful
+
+<<example-active-layer>>
+
+end
+```
+
+``` {.julia #example-active-layer}
+using CarboKitten.Stencil: convolution, stencil
+using CarboKitten.Config: Box, axes
+using CarboKitten.BoundaryTrait: Shelf
+using CarboKitten.Utility: in_units_of
+using Unitful
+```
+
+``` {.julia #example-active-layer}
+@kwdef struct Input
+	box
+	Δt::typeof(1.0u"Myr")
+	t_end::typeof(1.0u"Myr")
+	bedrock_elevation   # function (x::u"m", y::u"m") -> u"m"
+	production          # function (x::u"m", y::u"m") -> u"m/s"
+	disintegration_rate::typeof(1.0u"m/Myr")
+	subsidence_rate::typeof(1.0u"m/Myr")
+	diffusion_coefficient::typeof(1.0u"m")
+end
+```
+
+### Production patch
+Establish a grid of 100x50, 15km on each side, dropping from 0 to 50m depth.
+
+``` {.julia #example-active-layer}
+production_patch(center, radius, rate) = function(x, y)
+	(pcx, pcy) = center
+	(x - pcx)^2 + (y - pcy)^2 < radius^2 ?
+		rate :
+		0.0u"m/Myr"
+end
+
+const input = Input(
+	box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0u"m"),
+	Δt=0.001u"Myr",
+	t_end=1.0u"Myr",
+
+	bedrock_elevation = (x, y) -> -x / 300.0,
+
+	production = production_patch(
+		(5000.0u"m", 3750.0u"m"),
+		2.0u"km",
+		50.0u"m/Myr"),
+
+	disintegration_rate = 50.0u"m/Myr",
+	subsidence_rate = 50.0u"m/Myr",
+
+	diffusion_coefficient = 10000.0u"m"
+)
+```
+
+``` {.julia .task file=examples/transport/active-layer-plot-production.jl}
+#| requires: examples/transport/active-layer.jl
+#| creates: docs/src/_fig/active-layer-production-patch.png
+#| collect: figures
+
+include("active-layer.jl")
+using Unitful
+using CarboKitten.Config: axes
+using CarboKitten.Utility: in_units_of
+using CairoMakie
+using .ActiveLayer: input
+
+function main()
+  (x, y) = axes(input.box)
+  η = input.bedrock_elevation.(x, y')
+  p = input.production.(x, y')
+
+  fig = Figure()
+  ax = Axis3(fig[1,1], xlabel="x (km)", ylabel="y (km)", zlabel="η (m)", azimuth=5π/3)
+  surface!(ax, x |> in_units_of(u"km"), y |> in_units_of(u"km"), η |> in_units_of(u"m"), color = p |> in_units_of(u"m/Myr"))
+  save("docs/src/_fig/active-layer-production-patch.png", fig)
+end
+
+main()
+```
+
+![Production patch on an inclining bedrock](fig/active-layer-production-patch.png)
+
+### Solving the PDE
+
+Just as a reminder:
+
+$$\partial_t \eta_f = \nu' \nabla P_f(x) \cdot \nabla \eta(x) + \nu' P_f(x) \nabla^2 \eta(x) + P_f(x)$$
+
+Below is the kernel encoding a central differencing scheme i.e. `[-1, 0, 1]/(2Δx)` for first derivative and `[0 -1 0; -1 4 -1; 0 -1 0]/Δx^2` for the laplacian.
+
+``` {.julia #example-active-layer}
+const DeltaT = typeof(1.0u"m/Myr")
+const SedT = typeof(1.0u"m")
+
+function pde_stencil(box::Box{BT}, ν) where {BT}
+	# ν = input.diffusion_coefficient
+	Δx = box.phys_scale
+
+	function kernel(x)
+		adv = ν * ((x[3, 2][1] - x[1, 2][1]) * (x[3, 2][2] - x[1, 2][2]) +
+				   (x[2, 3][1] - x[2, 1][1]) * (x[2, 3][2] - x[2, 1][2])) /
+				  (2Δx)^2
+
+		dif = ν * x[2, 2][2] * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
+								x[2, 1][1] - 4*x[2, 2][1]) / (Δx)^2
+
+		prd = x[2, 2][2]
+
+		# return adv + dif + prd
+		return max(0.0u"m/Myr", adv + dif + prd)
+		# return prd
+	end
+
+	stencil(Tuple{SedT, DeltaT}, DeltaT, BT, (3, 3), kernel)
+end
+```
+
+### Model loop
+
+``` {.julia #example-active-layer}
+mutable struct State
+	time::typeof(1.0u"Myr")
+	sediment::Matrix{typeof(1.0u"m")}
+end
+
+function initial_state(input)
+	State(0.0u"Myr", fill(0.0u"m", input.box.grid_size...))
+end
+
+struct Frame
+	t::typeof(1.0u"Myr")
+	δ::Matrix{typeof(1.0u"m/Myr")}
+end
+
+function propagator(input)
+	δ = Matrix{DeltaT}(undef, input.box.grid_size...)
+	x, y = axes(input.box)
+	μ0 = input.bedrock_elevation.(x, y')
+
+	function active_layer(state)
+		max_erosion = input.disintegration_rate * input.Δt
+		erosion = min.(max_erosion, state.sediment)
+		state.sediment .-= erosion
+
+		# convert erosion back into a rate
+		input.production.(x, y') .+ erosion ./ input.Δt
+	end
+
+	stc = pde_stencil(input.box, input.diffusion_coefficient)
+	apply_pde(μ::Matrix{SedT}, p::Matrix{DeltaT}) = stc(tuple.(μ, p), δ)
+
+	function (state)
+		p = active_layer(state)
+		apply_pde(state.sediment .+ μ0, p)
+		return Frame(state.time, δ)
+	end
+end
+
+function run_model(input)
+	state = initial_state(input)
+	prop = propagator(input)
+
+	Channel{State}() do ch
+		while state.time < input.t_end
+			Δ = prop(state)
+			state.sediment .+= Δ.δ .* input.Δt
+			state.time += input.Δt
+			put!(ch, state)
+		end
+	end
+end
+```
+
+### Running the model
+
+We run the model with 1000 time steps but only inspect one in every 100.
+
+``` {.julia .task file=examples/transport/active-layer-plot-result.jl}
+#| requires: examples/transport/active-layer.jl
+#| creates: docs/src/_fig/active-layer-test.png
+#| collect: figures
+
+include("active-layer.jl")
+using CairoMakie
+using Unitful
+using CarboKitten.Config: axes
+using CarboKitten.Utility: in_units_of
+using .ActiveLayer: input, run_model
+
+function main()
+  result = Iterators.map(deepcopy,
+  	Iterators.filter(x -> mod(x[1], 100) == 0, enumerate(run_model(input)))) |> collect
+
+	(x, y) = axes(input.box)
+	η = input.bedrock_elevation.(x, y') .+ result[10][2].sediment .- input.subsidence_rate * result[10][2].time
+	# p = input.production.(x, y')
+
+	fig = Figure(size=(800, 1000))
+	ax = Axis3(fig[1:2,1], xlabel="x (km)", ylabel="y (km)", zlabel="η (m)", azimuth=5π/3)
+	surface!(ax, x |> in_units_of(u"km"), y |> in_units_of(u"km"), η |> in_units_of(u"m"))
+
+	ax2 = Axis(fig[3,1], xlabel="x (km)", ylabel="η (m)")
+
+	for i in 1:10
+		η = input.bedrock_elevation.(x, y') .+ result[i][2].sediment .- input.subsidence_rate * result[i][2].time
+
+		lines!(ax2, x |> in_units_of(u"km"), η[:, 25] |> in_units_of(u"m"))
+	end
+
+	save("docs/src/_fig/active-layer-test.png", fig)
+end
+
+main()
+```
+
+![Active layer test](fig/active-layer-test.png)
+
+Note in the bottom figure, due to sedimentation not keeping up with subsidence, the lines go down in time. We see the sediment transport being favoured to downslope areas, which is what we want. This effect could be made more extreme by increasing the erosion rate.

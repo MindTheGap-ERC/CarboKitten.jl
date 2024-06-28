@@ -444,11 +444,28 @@
       "modified": "2024-06-27T17:09:47.198653",
       "hexdigest": "b10711b150d4cb43c7ab5de6453e8768f91522da929a1b1cef909dc6ef0d7d2d",
       "size": 822
+    },
+    {
+      "path": "docs/src/model-alcap.md",
+      "deps": null,
+      "modified": "2024-06-28T11:41:07.532248",
+      "hexdigest": "88f233675f32f26358f6e6402284252f2ec689141e61d623dd5199697e63d40c",
+      "size": 3444
+    },
+    {
+      "path": "src/Model/ALCAPS.jl",
+      "deps": [
+        "docs/src/model-alcap.md"
+      ],
+      "modified": "2024-06-28T11:41:07.328252",
+      "hexdigest": "cbdc4648bc3beb896535a178062a8e67582ad472cee5b433dcd9d425a4e88873",
+      "size": 3074
     }
   ],
   "source": [],
   "target": [
     "src/Utility.jl",
+    "src/Model/ALCAPS.jl",
     "src/Burgess2013.jl",
     "examples/plot-tanh.gnuplot",
     "src/Config.jl",

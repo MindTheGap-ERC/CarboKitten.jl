@@ -11,4 +11,8 @@ include("./Utility.jl")
 include("./CaProd.jl")
 include("./Visualization.jl")
 
+module Model
+include("./Model/ALCAPS.jl")
+end
+
 end # module CarboKitten

@@ -12,15 +12,15 @@ Note that for larger convolution kernels, it is often more efficient to perform 
 Using these helper functions we can now define a *stencil* operation. Given the boundary trait, a stencil size and a response function, we can transform an array to a next generation.
 
 ``` {.julia #stencil-operation}
-function stencil(::Type{T}, ::Type{BT}, n::NTuple{dim,Int}, f::Function) where {T, dim, BT <: Boundary{dim}}
+function stencil(::Type{TIn}, ::Type{TOut}, ::Type{BT}, n::NTuple{dim,Int}, f::Function) where {TIn, TOut, dim, BT <: Boundary{dim}}
     m = n .÷ 2
     stencil_shape = range.(.-m, m)
-    stencil = zeros(T, n)
+    stencil = Array{TIn, dim}(undef, n...)
 
-    function(z_in::AbstractArray{T, dim}, z_out::AbstractArray{T, dim}, args...)
+    function(z_in::AbstractArray{TIn, dim}, z_out::AbstractArray{TOut, dim}, args...)
         @assert (size(z_in) == size(z_out)) "sizes of arrays need to be equal"
         shape = size(z_in)
-        Threads.@threads for i in CartesianIndices(shape)
+        for i in CartesianIndices(shape)
             for (k, Δi) in enumerate(CartesianIndices(stencil_shape))
                 stencil[k] = offset_value(BT, z_in, i, Δi)
             end
@@ -29,9 +29,14 @@ function stencil(::Type{T}, ::Type{BT}, n::NTuple{dim,Int}, f::Function) where {
     end
 end
 
-function convolution(::Type{B}, kernel::Array{T, dim}) where { dim, T, B <: Boundary{dim} }
-    stencil(T, B, size(kernel), s -> sum(s .* kernel))
-end
+stencil(::Type{T}, ::Type{BT}, n::NTuple{dim, Int}, f::Function) where {T, dim, BT <: Boundary{dim}} =
+    stencil(T, T, BT, n, f)
+
+convolution(::Type{TIn}, ::Type{TOut}, ::Type{B}, kernel::AbstractArray{U, dim}) where { dim, TIn, TOut, U, B <: Boundary{dim} } =
+    stencil(TIn, TOut, B, size(kernel), s -> sum(s .* kernel))
+
+convolution(::Type{B}, kernel::AbstractArray{T, dim}) where {dim, T, B <: Boundary{dim}} =
+    stencil(T, T, B, size(kernel), s -> sum(s .* kernel))
 ```
 
 More efficient implementations are imaginable. For instance we could use normal unchecked indexing for most of the array, and only use the `offset_value` function when we really need it. Another optimisation could be to generate parts of the inner loop, and/or do the outer loop in parallel.

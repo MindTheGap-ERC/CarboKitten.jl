@@ -1,4 +1,4 @@
-.PHONY: run-daemon figures serve-docs
+.PHONY: run-daemon figures serve-docs docs
 
 figures:
 	poetry run brei figures
@@ -9,3 +9,5 @@ run-daemon:
 serve-docs:
 	julia --project=docs -e 'using LiveServer; servedocs()'
 
+docs:
+	julia --project=docs -e 'include("docs/make.jl")'

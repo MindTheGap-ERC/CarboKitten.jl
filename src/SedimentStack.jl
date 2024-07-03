@@ -88,5 +88,11 @@ function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vect
   return parcel
 end
 
+function pop_sediment!(cols::AbstractArray{F, 4}, amount::AbstractArray{F, 2}, out::AbstractArray{F, 3}) where F <: Real
+  @views for i in CartesianIndices(amount)
+      out[:, i[1], i[2]] = pop_sediment!(cols[:, :, i[1], i[2]], amount[i[1], i[2]])
+  end
+end
+
 end # module
 # ~/~ end

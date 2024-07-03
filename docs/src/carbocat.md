@@ -83,7 +83,7 @@ export Facies, MODEL1
     saturation_intensity::typeof(1.0u"W/m^2")
 end
 
-MODEL1 = [
+const MODEL1 = [
     Facies(viability_range = (4, 10),
            activation_range = (6, 10),
            maximum_growth_rate = 500u"m/Myr",

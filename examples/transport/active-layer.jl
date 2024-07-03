@@ -1,20 +1,14 @@
 # ~/~ begin <<docs/src/active-layer-transport.md#examples/transport/active-layer.jl>>[init]
 module ActiveLayer
 
+using Unitful
 using CarboKitten.Stencil: convolution, stencil
 using CarboKitten.Config: Box, axes
 using CarboKitten.BoundaryTrait: Shelf
 using CarboKitten.Utility: in_units_of
-using Unitful
+using CarboKitten.Transport.ActiveLayer: pde_stencil, Amount, Rate
 
 # ~/~ begin <<docs/src/active-layer-transport.md#example-active-layer>>[init]
-using CarboKitten.Stencil: convolution, stencil
-using CarboKitten.Config: Box, axes
-using CarboKitten.BoundaryTrait: Shelf
-using CarboKitten.Utility: in_units_of
-using Unitful
-# ~/~ end
-# ~/~ begin <<docs/src/active-layer-transport.md#example-active-layer>>[1]
 @kwdef struct Input
 	box
 	Δt::typeof(1.0u"Myr")
@@ -26,7 +20,7 @@ using Unitful
 	diffusion_coefficient::typeof(1.0u"m")
 end
 # ~/~ end
-# ~/~ begin <<docs/src/active-layer-transport.md#example-active-layer>>[2]
+# ~/~ begin <<docs/src/active-layer-transport.md#example-active-layer>>[1]
 production_patch(center, radius, rate) = function(x, y)
 	(pcx, pcy) = center
 	(x - pcx)^2 + (y - pcy)^2 < radius^2 ?
@@ -52,33 +46,7 @@ const input = Input(
 	diffusion_coefficient = 10000.0u"m"
 )
 # ~/~ end
-# ~/~ begin <<docs/src/active-layer-transport.md#example-active-layer>>[3]
-const DeltaT = typeof(1.0u"m/Myr")
-const SedT = typeof(1.0u"m")
-
-function pde_stencil(box::Box{BT}, ν) where {BT}
-	# ν = input.diffusion_coefficient
-	Δx = box.phys_scale
-
-	function kernel(x)
-		adv = ν * ((x[3, 2][1] - x[1, 2][1]) * (x[3, 2][2] - x[1, 2][2]) +
-				   (x[2, 3][1] - x[2, 1][1]) * (x[2, 3][2] - x[2, 1][2])) /
-				  (2Δx)^2
-
-		dif = ν * x[2, 2][2] * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
-								x[2, 1][1] - 4*x[2, 2][1]) / (Δx)^2
-
-		prd = x[2, 2][2]
-
-		# return adv + dif + prd
-		return max(0.0u"m/Myr", adv + dif + prd)
-		# return prd
-	end
-
-	stencil(Tuple{SedT, DeltaT}, DeltaT, BT, (3, 3), kernel)
-end
-# ~/~ end
-# ~/~ begin <<docs/src/active-layer-transport.md#example-active-layer>>[4]
+# ~/~ begin <<docs/src/active-layer-transport.md#example-active-layer>>[2]
 mutable struct State
 	time::typeof(1.0u"Myr")
 	sediment::Matrix{typeof(1.0u"m")}
@@ -90,11 +58,11 @@ end
 
 struct Frame
 	t::typeof(1.0u"Myr")
-	δ::Matrix{typeof(1.0u"m/Myr")}
+	δ::Matrix{Amount}
 end
 
 function propagator(input)
-	δ = Matrix{DeltaT}(undef, input.box.grid_size...)
+	δ = Matrix{Amount}(undef, input.box.grid_size...)
 	x, y = axes(input.box)
 	μ0 = input.bedrock_elevation.(x, y')
 
@@ -103,12 +71,11 @@ function propagator(input)
 		erosion = min.(max_erosion, state.sediment)
 		state.sediment .-= erosion
 
-		# convert erosion back into a rate
-		input.production.(x, y') .+ erosion ./ input.Δt
+		input.production.(x, y') * input.Δt .+ erosion
 	end
 
 	stc = pde_stencil(input.box, input.diffusion_coefficient)
-	apply_pde(μ::Matrix{SedT}, p::Matrix{DeltaT}) = stc(tuple.(μ, p), δ)
+	apply_pde(μ::Matrix{Amount}, p::Matrix{Amount}) = stc(tuple.(μ, p), δ)
 
 	function (state)
 		p = active_layer(state)
@@ -124,7 +91,7 @@ function run_model(input)
 	Channel{State}() do ch
 		while state.time < input.t_end
 			Δ = prop(state)
-			state.sediment .+= Δ.δ .* input.Δt
+			state.sediment .+= Δ.δ
 			state.time += input.Δt
 			put!(ch, state)
 		end

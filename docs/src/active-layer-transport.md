@@ -41,23 +41,16 @@ Suppose we have an incline in one direction, as per usual on a coastal shelf. Pr
 ``` {.julia file=examples/transport/active-layer.jl}
 module ActiveLayer
 
+using Unitful
 using CarboKitten.Stencil: convolution, stencil
 using CarboKitten.Config: Box, axes
 using CarboKitten.BoundaryTrait: Shelf
 using CarboKitten.Utility: in_units_of
-using Unitful
+using CarboKitten.Transport.ActiveLayer: pde_stencil, Amount, Rate
 
 <<example-active-layer>>
 
 end
-```
-
-``` {.julia #example-active-layer}
-using CarboKitten.Stencil: convolution, stencil
-using CarboKitten.Config: Box, axes
-using CarboKitten.BoundaryTrait: Shelf
-using CarboKitten.Utility: in_units_of
-using Unitful
 ```
 
 ``` {.julia #example-active-layer}
@@ -139,30 +132,36 @@ $$\partial_t \eta_f = \nu' \nabla P_f(x) \cdot \nabla \eta(x) + \nu' P_f(x) \nab
 
 Below is the kernel encoding a central differencing scheme i.e. `[-1, 0, 1]/(2Δx)` for first derivative and `[0 -1 0; -1 4 -1; 0 -1 0]/Δx^2` for the laplacian.
 
-``` {.julia #example-active-layer}
-const DeltaT = typeof(1.0u"m/Myr")
-const SedT = typeof(1.0u"m")
+``` {.julia file=src/Transport/ActiveLayer.jl}
+module ActiveLayer
 
-function pde_stencil(box::Box{BT}, ν) where {BT}
-	# ν = input.diffusion_coefficient
+using Unitful
+using ...BoundaryTrait
+using ...Config: Box
+using ...Stencil: stencil
+
+const Rate = typeof(1.0u"m/Myr")
+const Amount = typeof(1.0u"m")
+
+function pde_stencil(box::Box{BT}, ν) where {BT <: Boundary{2}}
 	Δx = box.phys_scale
 
 	function kernel(x)
 		adv = ν * ((x[3, 2][1] - x[1, 2][1]) * (x[3, 2][2] - x[1, 2][2]) +
-				   (x[2, 3][1] - x[2, 1][1]) * (x[2, 3][2] - x[2, 1][2])) /
-				  (2Δx)^2
+     			   (x[2, 3][1] - x[2, 1][1]) * (x[2, 3][2] - x[2, 1][2])) /
+			      (2Δx)^2
 
 		dif = ν * x[2, 2][2] * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
-								x[2, 1][1] - 4*x[2, 2][1]) / (Δx)^2
+				  x[2, 1][1] - 4*x[2, 2][1]) / (Δx)^2
 
 		prd = x[2, 2][2]
 
-		# return adv + dif + prd
-		return max(0.0u"m/Myr", adv + dif + prd)
-		# return prd
+		return max(0.0u"m", adv + dif + prd)
 	end
 
-	stencil(Tuple{SedT, DeltaT}, DeltaT, BT, (3, 3), kernel)
+	stencil(Tuple{Amount, Amount}, Amount, BT, (3, 3), kernel)
+end
+
 end
 ```
 
@@ -180,11 +179,11 @@ end
 
 struct Frame
 	t::typeof(1.0u"Myr")
-	δ::Matrix{typeof(1.0u"m/Myr")}
+	δ::Matrix{Amount}
 end
 
 function propagator(input)
-	δ = Matrix{DeltaT}(undef, input.box.grid_size...)
+	δ = Matrix{Amount}(undef, input.box.grid_size...)
 	x, y = axes(input.box)
 	μ0 = input.bedrock_elevation.(x, y')
 
@@ -193,12 +192,11 @@ function propagator(input)
 		erosion = min.(max_erosion, state.sediment)
 		state.sediment .-= erosion
 
-		# convert erosion back into a rate
-		input.production.(x, y') .+ erosion ./ input.Δt
+		input.production.(x, y') * input.Δt .+ erosion
 	end
 
 	stc = pde_stencil(input.box, input.diffusion_coefficient)
-	apply_pde(μ::Matrix{SedT}, p::Matrix{DeltaT}) = stc(tuple.(μ, p), δ)
+	apply_pde(μ::Matrix{Amount}, p::Matrix{Amount}) = stc(tuple.(μ, p), δ)
 
 	function (state)
 		p = active_layer(state)
@@ -214,7 +212,7 @@ function run_model(input)
 	Channel{State}() do ch
 		while state.time < input.t_end
 			Δ = prop(state)
-			state.sediment .+= Δ.δ .* input.Δt
+			state.sediment .+= Δ.δ
 			state.time += input.Δt
 			put!(ch, state)
 		end

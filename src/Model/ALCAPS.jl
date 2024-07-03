@@ -62,7 +62,7 @@ const STD_TIME_PROPS = TimeProperties(Δt=0.001Myr, steps=1000, write_interval=1
 @kwdef struct Input
     box::Box              = Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m)
     time::TimeProperties  = STD_TIME_PROPS
-    ca_interval::Int      = 10
+    ca_interval::Int      = 1
 
     bedrock_elevation     = (x, y) -> -x / 300.0  # (m, m) -> m
     sea_level             = t -> AMPLITUDE * sin(2π * t / PERIOD)

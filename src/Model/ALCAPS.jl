@@ -3,6 +3,7 @@ module ALCAPS
 
 using Unitful
 using HDF5
+using ProgressBars
 
 using ...BoundaryTrait: Shelf
 using ...Config: Box, TimeProperties, axes
@@ -62,7 +63,7 @@ const MODEL1 = [
     ca_interval::Int      = 10
 
     bedrock_elevation     = (x, y) -> -x / 300.0  # (m, m) -> m
-    sea_level             = t -> AMPLITUDE * sin(2π * t / PERIOD),
+    sea_level             = t -> AMPLITUDE * sin(2π * t / PERIOD)
     subsidence_rate::Rate = 50.0m/Myr
 
     facies::Vector{Facies}    = MODEL1
@@ -70,7 +71,7 @@ const MODEL1 = [
     insolation::typeof(1.0u"W/m^2") = 400.0u"W/m^2"
 
     sediment_buffer_size::Int     = 50
-    sediment_buffer_grain::Amount = 0.5m
+    sediment_buffer_grain::Amount = 0.5m    # depositional resolution
 end
 # ~/~ end
 # ~/~ begin <<docs/src/model-alcap.md#alcaps>>[1]
@@ -160,7 +161,7 @@ function run_model(input)
     transport = transportation(input)
 
     Channel{ModelFrame}() do ch
-        for i in 1:input.time.steps
+        for i in ProgressBar(1:input.time.steps)
             if mod(i, input.ca_interval) == 0
                 step_ca!(state)
             end

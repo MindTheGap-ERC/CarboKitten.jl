@@ -36,7 +36,7 @@ phys_size(grid_size, phys_scale) = (
 abstract type AbstractTimeProperties end
 
 @kwdef struct TimeProperties <: AbstractTimeProperties
-    Δt::typeof(1.0u"yr")
+    Δt::typeof(1.0u"Myr")
     steps::Int
     write_interval::Int
 end

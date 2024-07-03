@@ -57,9 +57,11 @@ const MODEL1 = [
            diffusion_coefficient = 10000u"m")
 ]
 
+const STD_TIME_PROPS = TimeProperties(Δt=0.001Myr, steps=1000, write_interval=1)
+
 @kwdef struct Input
-    box::Box              = Box{Shelf}(grid_size=(100, 50), phys_scale=150m)
-    time::TimeProperties  = TimeProperties(𝚫t=0.001Myr, steps=1000, write_interval=1)
+    box::Box              = Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m)
+    time::TimeProperties  = STD_TIME_PROPS
     ca_interval::Int      = 10
 
     bedrock_elevation     = (x, y) -> -x / 300.0  # (m, m) -> m
@@ -71,7 +73,7 @@ const MODEL1 = [
     insolation::typeof(1.0u"W/m^2") = 400.0u"W/m^2"
 
     sediment_buffer_size::Int     = 50
-    sediment_buffer_grain::Amount = 0.5m    # depositional resolution
+    depositional_resolution::Amount = 0.5m
 end
 # ~/~ end
 # ~/~ begin <<docs/src/model-alcap.md#alcaps>>[1]
@@ -92,13 +94,13 @@ mutable struct State
 
     sediment_height::Array{Amount,2}   # x, y
     # sediment_buffer stores fractions, so no units
-    sediment_buffer::Array{Float64,4}  # facies, x, y, z
+    sediment_buffer::Array{Float64,4}  # z, facies, x, y
 end
 
 function initial_state(input)
     sediment_height = zeros(Float64, input.box.grid_size...) * u"m"
     n_facies = length(input.facies)
-    sediment_buffer = zeros(Float64, n_facies, input.box.grid_size..., input.sediment_buffer_size)
+    sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies, input.box.grid_size...)
 
     ca = rand(0:n_facies, input.box.grid_size...)
     state = State(0.0u"Myr", ca, 1:n_facies, sediment_height, sediment_buffer)
@@ -111,24 +113,33 @@ function initial_state(input)
 end
 
 function disintegration(input)
-    max_h = input.disintegration_rate * input.Δt
+    n_facies = length(input.facies)
+    max_h = input.disintegration_rate * input.time.Δt
+    output = Array{Float64, 3}(undef, n_facies, input.box.grid_size...)
 
     return function(state)
         h = min.(max_h, state.sediment_height)
         state.sediment_height .-= h
-        return pop_sediment!(state.sediment_buffer, h)
+        pop_sediment!(state.sediment_buffer, h ./ input.depositional_resolution .|> NoUnits, output)
+        return output .* input.depositional_resolution
     end
 end
 
 function production(input)
-    p(f, w) = production_rate(input.insolation, input.facies[f], w)
+    n_facies = length(input.facies)
     x, y = axes(input.box)
-    w0 = .- input.bedrock_elevation(x, y')
+    p(f, w) = production_rate(input.insolation, input.facies[f], w) .* input.time.Δt
+
+    w0 = .- input.bedrock_elevation.(x, y')
+    output = Array{Amount, 3}(undef, n_facies, input.box.grid_size...)
 
     return function(state)
         water_depth = w0 .+ input.sea_level(state.time) .-
             state.sediment_height .+ input.subsidence_rate * state.time
-        return p.(state.ca, water_depth)
+        for f = 1:n_facies
+            output[f, :, :] = ifelse.(state.ca .== f, p.(f, water_depth), 0.0m)
+        end
+        return output
     end
 end
 
@@ -169,14 +180,14 @@ function run_model(input)
             p = produce(state)
             d = disintegrate!(state)
 
-            active_layer = p.production .+ d.disintegration
+            active_layer = p .+ d
             sediment = transport(state, active_layer)
 
             put!(ch, ModelFrame(d, p, sediment))
 
-            push_sediment!(state.sediment_buffer, sediment ./ input.sediment_buffer_grain |> NoUnits)
-            state.sediment_height .+= sum(sediment; dims=1)
-            state.time += input.time.𝚫t
+            push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|> NoUnits)
+            state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
+            state.time += input.time.Δt
         end
     end
 end
@@ -189,7 +200,7 @@ function main(input::Input, output::String)
         gid["x"] = collect(x) |> in_units_of(u"m")
         gid["y"] = collect(y) |> in_units_of(u"m")
         gid["bedrock_elevation"] = input.bedrock_elevation.(x, y') |> in_units_of(u"m")
-        gid["t"] = collect(0:(input.time.steps-1) .* input.time.Δt) |> in_units_of(u"Myr")
+        gid["t"] = collect((0:(input.time.steps-1)) .* input.time.Δt) |> in_units_of(u"Myr")
 
         attr = attributes(gid)
         attr["delta_t"] = input.time.Δt |> in_units_of(u"Myr")
@@ -200,20 +211,20 @@ function main(input::Input, output::String)
 
         n_facies = length(input.facies)
         ds_prod = create_dataset(fid, "production", datatype(Float64),
-            dataspace(input.box.grid_size..., n_facies, input.time.steps),
-            chunk=(input.box.grid_size..., n_facies, 1))
+            dataspace(n_facies, input.box.grid_size..., input.time.steps),
+            chunk=(n_facies, input.box.grid_size..., 1))
         ds_disint = create_dataset(fid, "disintegration", datatype(Float64),
-            dataspace(input.box.grid_size..., n_facies, input.time.steps),
-            chunk=(input.box.grid_size..., n_facies, 1))
-        ds_sedim = create_dataset(fid, "sedim", datatype(Float64),
-            dataspace(input.box.grid_size..., n_facies, input.time.steps),
-            chunk=(input.box.grid_size..., n_facies, 1))
+            dataspace(n_facies, input.box.grid_size..., input.time.steps),
+            chunk=(n_facies, input.box.grid_size..., 1))
+        ds_sedim = create_dataset(fid, "deposition", datatype(Float64),
+            dataspace(n_facies, input.box.grid_size..., input.time.steps),
+            chunk=(n_facies, input.box.grid_size..., 1))
 
         results = run_model(input)
         for (step, frame) in enumerate(results)
             ds_prod[:, :, :, step] = frame.production |> in_units_of(u"m")
             ds_disint[:, :, :, step] = frame.disintegration |> in_units_of(u"m")
-            ds_sedim[:, :, :, step] = frame.sedimentation |> in_units_of(u"m")
+            ds_sedim[:, :, :, step] = frame.deposition |> in_units_of(u"m")
         end
     end
 end

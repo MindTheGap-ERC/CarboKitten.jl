@@ -32,9 +32,9 @@
     {
       "path": "docs/src/carbocat-ca.md",
       "deps": null,
-      "modified": "2024-06-24T11:13:30.504880",
-      "hexdigest": "0b9f4633ce0219505ba9db37c83ed4ea4c0260d13da1806a83f966e4235a5082",
-      "size": 6840
+      "modified": "2024-07-03T12:56:49.831782",
+      "hexdigest": "6e0cbab01f8497cc4a2dfbd5f056d3694712ab8bb778ba918c15376170b60631",
+      "size": 6843
     },
     {
       "path": "docs/src/carbocat.md",
@@ -96,9 +96,9 @@
       "deps": [
         "docs/src/carbocat-ca.md"
       ],
-      "modified": "2024-06-24T11:13:30.532880",
-      "hexdigest": "b77c8e83791874975f6930f8bd9c5bfc3d80fb10b3ca9d092a1344589c2ded1f",
-      "size": 2176
+      "modified": "2024-07-03T12:56:49.754781",
+      "hexdigest": "e9fb7d809753f98f78759994bde47cc677d94a65690ff5937c3b9ef3e6ae81e0",
+      "size": 2179
     },
     {
       "path": "examples/burgess2013-fig2.gnuplot",
@@ -314,9 +314,9 @@
       "deps": [
         "docs/src/boxes.md"
       ],
-      "modified": "2024-06-27T13:33:51.687150",
-      "hexdigest": "a4300cd87d342bda99d6f941e4290c1a3a9e3f7206f3e6475a5d713a6834285a",
-      "size": 1136
+      "modified": "2024-07-03T12:52:29.007607",
+      "hexdigest": "ef9d04f78e7b4909a52c206c8bbd2a8216c493a0ff6f427ec2e9f3c0606ebb26",
+      "size": 1137
     },
     {
       "path": "test/ConfigSpec.jl",
@@ -339,9 +339,9 @@
     {
       "path": "docs/src/boxes.md",
       "deps": null,
-      "modified": "2024-06-27T13:33:51.876150",
-      "hexdigest": "2706cbd0f68887f88688198396e06ccb500f2a5dba09f86a79c65f7661a8e6b2",
-      "size": 7669
+      "modified": "2024-07-03T12:52:29.083607",
+      "hexdigest": "42df4051a38aac753fead1bc1c5eb7cc6daf6fa796a7b48d4a0fce1056302437",
+      "size": 7670
     },
     {
       "path": "examples/production-only/caps-osc.jl",
@@ -389,27 +389,27 @@
     {
       "path": "docs/src/sediment-buffer.md",
       "deps": null,
-      "modified": "2024-07-02T14:03:57.248130",
-      "hexdigest": "375f523ae2fef9dd95e67007d0e3cc7a077d27caa22ce653d7f85018306a45a0",
-      "size": 4702
+      "modified": "2024-07-03T14:06:51.377963",
+      "hexdigest": "8e832b0cf0101085fa72f6f3f75ad72a33d2fd6fa2c1634a074fcb19b9fab067",
+      "size": 4948
     },
     {
       "path": "src/SedimentStack.jl",
       "deps": [
         "docs/src/sediment-buffer.md"
       ],
-      "modified": "2024-07-02T14:03:57.147130",
-      "hexdigest": "7dadcb79fe5f74a591620afcee8fee16f2873c2dbfc2c422f1e688daac0af0b4",
-      "size": 2441
+      "modified": "2024-07-03T14:06:51.314962",
+      "hexdigest": "ce48ceb2c56a93c4c4db23ec053af2e24208e898325eac57ef07bd423539f237",
+      "size": 2581
     },
     {
       "path": "test/SedimentStackSpec.jl",
       "deps": [
         "docs/src/sediment-buffer.md"
       ],
-      "modified": "2024-07-02T21:19:33.701282",
-      "hexdigest": "a2b51edcadd094fce4edd2477ced1d3905d0a97314d031f913501fdc261f9172",
-      "size": 805
+      "modified": "2024-07-03T13:39:21.202394",
+      "hexdigest": "30ab51054f97dfbfc51bb6f103c1a9442cd25d02122ae2bf13e46f9ab16574db",
+      "size": 911
     },
     {
       "path": "docs/src/active-layer-transport.md",
@@ -448,18 +448,18 @@
     {
       "path": "docs/src/model-alcap.md",
       "deps": null,
-      "modified": "2024-07-03T11:54:44.322971",
-      "hexdigest": "146d9a07d3b170d6e700f7ed538c0a8718359bfbead48a16758e61cfedf20a04",
-      "size": 7859
+      "modified": "2024-07-03T14:01:16.002390",
+      "hexdigest": "494b96e4270dabcd51ad9889ed76bf8bc42911ec9962fd2e616aead7ca74dd96",
+      "size": 8298
     },
     {
       "path": "src/Model/ALCAPS.jl",
       "deps": [
         "docs/src/model-alcap.md"
       ],
-      "modified": "2024-07-03T11:54:44.132969",
-      "hexdigest": "cf7b24d21f7acfb0071aaa476ff2b0d74b7cebe8cbe3c7dc4ecc070c92ffea33",
-      "size": 7489
+      "modified": "2024-07-03T14:01:15.936390",
+      "hexdigest": "6db5b079c17c6f6cccaa149c0004e9ee04b34b3ad0c3d42572f4b04ecfb0722e",
+      "size": 7928
     },
     {
       "path": "src/Transport/ActiveLayer.jl",

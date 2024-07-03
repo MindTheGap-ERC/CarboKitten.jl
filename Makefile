@@ -1,4 +1,4 @@
-.PHONY: run-daemon figures serve-docs docs
+.PHONY: run-daemon figures serve-docs docs test
 
 figures:
 	poetry run brei figures
@@ -11,3 +11,7 @@ serve-docs:
 
 docs:
 	julia --project=docs -e 'include("docs/make.jl")'
+
+test:
+	julia --project=. -e 'using Pkg; Pkg.test()'
+

@@ -16,11 +16,13 @@ We define two functions `push_sediment!` and `pop_sediment!`. Given a $s \times 
 @testset "SedimentStack" begin
   using CarboKitten.SedimentStack: push_sediment!, pop_sediment!
   stack = zeros(Float64, 10, 3)
+  @test pop_sediment!(stack, 0.0) == [0.0, 0.0, 0.0]
   push_sediment!(stack, [5.0, 0, 0])
   @test pop_sediment!(stack, 1.5) == [1.5, 0.0, 0.0]
   push_sediment!(stack, [0.0, 2.0, 0.0])   # (0 0.5) (0 1) (0.5 0.5) (1 0) ...
   @test pop_sediment!(stack, 2.0) == [0.25, 1.75, 0.0]
   @test pop_sediment!(stack, 1.5) == [1.25, 0.25, 0.0]
+  @test pop_sediment!(stack, 0.0) == [0.0, 0.0, 0.0]
 end
 
 @testset "SedimentArray" begin
@@ -75,13 +77,21 @@ end
 
 @inline function pop_fraction(col::AbstractMatrix{F}, Δ::F) where F <: Real
   bucket = sum(col[1,:])
-  @assert Δ < bucket "pop_fraction can only pop from the top cell"
+  if Δ == 0 || bucket == 0
+    return zeros(F, size(col)[2])
+  end
+
+  @assert Δ < bucket "pop_fraction can only pop from the top cell: $(col), $(Δ)"
   parcel = (Δ / bucket) .* col[1,:]
   col[1,:] .-= parcel
   return parcel
 end
 
 function peek_sediment(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
+  if Δ == 0
+      return zeros(F, size(col)[2])
+  end
+
   bucket = sum(col[1,:])
   if Δ < bucket
     parcel = (Δ / bucket) .* col[1,:]

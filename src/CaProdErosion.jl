@@ -123,12 +123,12 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT <: Boundary}
             if f == 0
                 continue
             end
-        (denudation_mass[idx]) = denudation(input, box, input.denudationparam, w[idx], slope[idx],input.facies[f])
+        (denudation_mass[idx]) = denudation(box, input.denudationparam, w[idx], slope[idx],input.facies[f])
         end
     
         inf_map = get_inf_map(s,input)
         redistribution_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
-        (redistribution_mass) = calculate_redistribution(input,box,input.denudationparam,w,slope,inf_map)
+        (redistribution_mass) = calculate_redistribution(box,input.denudationparam,w,slope,inf_map)
     
     return DenudationFrame(denudation_mass,redistribution_mass)
     

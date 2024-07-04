@@ -55,24 +55,24 @@ Computes the denudation for a single time-step, given denudation parameters
 `param` and a simulation state `state`. `param` should have a `DenudationType`
 type and `state` should contain the `height` property and `sealevel`.
 """
-function denudation(input::Input, ::Type{BT},param::DT, water_depth::Any, slope, facies::Facies) where {BT <: Boundary, DT <: DenudationType}
+function denudation(::Type{BT},param::DT, water_depth::Any, slope, facies::Facies) where {BT <: Boundary, DT <: DenudationType}
 end
 
 #specific functions
 
-function denudation(input::Input, box::Box{BT},p::NoDenudation, water_depth::Any, slope, facies::Facies) where {BT <: Boundary}
+function denudation(box::Box{BT},p::NoDenudation, water_depth::Any, slope, facies::Facies) where {BT <: Boundary}
     return (zeros(Float64, box.grid_size...) * u"m/kyr") 
 end
 
-function denudation(input::Input, box::Box{BT}, p::EmpericalDenudationParam, water_depth::Any, slope, facies::Facies) where {BT<: Boundary} 
+function denudation(box::Box{BT}, p::EmpericalDenudationParam, water_depth::Any, slope, facies::Facies) where {BT<: Boundary} 
     return (emperical_denudation.(p.precip, slope) .* u"m/kyr") 
 end
 
-function denudation(input::Input, box::Box{BT}, p::Dissolution, water_depth::Any, slope, facies::Facies) where {BT<: Boundary}
+function denudation(box::Box{BT}, p::Dissolution, water_depth::Any, slope, facies::Facies) where {BT<: Boundary}
     return(dissolution(p.temp, p.precip, p.pco2, p.reactionrate, water_depth, facies) * u"m/kyr") 
 end
 
-function denudation(input::Input, box::Box{BT}, p::PhysicalErosionParam, water_depth::Any, slope, facies::Facies) where {BT<: Boundary}
+function denudation(box::Box{BT}, p::PhysicalErosionParam, water_depth::Any, slope, facies::Facies) where {BT<: Boundary}
     # This needs transport feature to be merged so that we know the facies type of the
     # top most layer. What follows should still be regarded as pseudo-code.
     # We need to look into this further.
@@ -81,23 +81,23 @@ function denudation(input::Input, box::Box{BT}, p::PhysicalErosionParam, water_d
 end
 
 #function for redistribution
-function calculate_redistribution(input::Input,::Type{BT},param::DT,water_depth,slope,facies) where {BT <: Boundary, DT <: DenudationType}
+function calculate_redistribution(::Type{BT},param::DT,water_depth,slope,facies) where {BT <: Boundary, DT <: DenudationType}
 end
 
-function calculate_redistribution(input::Input,box::Box{BT},p::NoDenudation,water_depth,slope,facies) where {BT <: Boundary}
+function calculate_redistribution(box::Box{BT},p::NoDenudation,water_depth,slope,facies) where {BT <: Boundary}
     return (zeros(typeof(0.0u"m/kyr"),box.grid_size...))
 end
 
-function calculate_redistribution(input::Input,box::Box{BT},p::Dissolution,water_depth,slope,facies) where {BT <: Boundary}
+function calculate_redistribution(box::Box{BT},p::Dissolution,water_depth,slope,facies) where {BT <: Boundary}
     return (zeros(typeof(0.0u"m/kyr"),box.grid_size...))
 end
 
-function calculate_redistribution(input::Input,box::Box{BT},p::EmpericalDenudationParam,water_depth,slope,facies) where {BT <: Boundary}
+function calculate_redistribution(box::Box{BT},p::EmpericalDenudationParam,water_depth,slope,facies) where {BT <: Boundary}
     @show p.precip
     return (zeros(typeof(0.0u"m/kyr"),box.grid_size...))
 end
 
-function calculate_redistribution(input::Input,box::Box{BT},p::PhysicalErosionParam,water_depth, slope,facies) where {BT <: Boundary}
+function calculate_redistribution(box::Box{BT},p::PhysicalErosionParam,water_depth, slope,facies) where {BT <: Boundary}
     redis = mass_erosion(Float64, BT, slope,(3,3),water_depth,box.phys_scale ./u"m",facies,p.erodability)
     redistribution = total_mass_redistribution(redis, slope)
     return (redistribution .* u"m/kyr")

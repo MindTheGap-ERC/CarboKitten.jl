@@ -10,11 +10,13 @@ using Unitful
     using CarboKitten.Burgess2013.CA: step_ca, run_ca
     using CarboKitten.Burgess2013.Config: Facies
     using CarboKitten.InputConfig: Input, DenudationType
-    using CarboKitten.Denudation: denudation, Dissolution, NoDenudation, PhysicalErosionParam, EmpericalDenudationParam
+    using CarboKitten.Denudation: denudation, calculate_redistribution, Dissolution, NoDenudation, PhysicalErosionParam, EmpericalDenudationParam
     
 
-    DENUDATION_LOW_T = Dissolution(273.0,100.0,10^(-1.5),2e-3)
+    DENUDATION_LOW_T = Dissolution(273.0,1000.0,10^(-1.5),2e-3)
     DENUDATION_HIGH_T = Dissolution(303.0,1000.0,10^(-1.5),2e-3)
+    DENUDATION_LOW_P = EmpericalDenudationParam(100.0)
+    DENUDATION_HIGH_P = EmpericalDenudationParam(1000.0)
 
     MODEL1 = [
         Facies(viability_range = (4, 10),
@@ -50,6 +52,8 @@ using Unitful
     ca_init = rand(0:n_facies, box.grid_size...)
     denudation_mass_LOW_T = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
     denudation_mass_HIGH_T = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
+    denudation_mass_LOW_P = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
+    denudation_mass_HIGH_P = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
     water_depth = rand(box.grid_size...)
 
     slope = zeros(Float64, box.grid_size...)
@@ -65,7 +69,17 @@ using Unitful
     (denudation_mass_HIGH_T[idx]) = denudation(box, DENUDATION_HIGH_T, water_depth[idx], slope[idx],MODEL1[f])
     end
 
-    @test sum(denudation_mass_LOW_T) < sum(denudation_mass_HIGH_T) 
 
+    for idx in CartesianIndices(ca_init)
+        f = ca_init[idx]
+        if f == 0
+            continue
+        end
+    (denudation_mass_LOW_P[idx]) = denudation(box, DENUDATION_LOW_P, water_depth[idx], slope[idx],MODEL1[f])
+    (denudation_mass_HIGH_P[idx]) = denudation(box, DENUDATION_HIGH_P, water_depth[idx], slope[idx],MODEL1[f])
+    end
+
+    @test sum(denudation_mass_LOW_T) < sum(denudation_mass_HIGH_T) 
+    @test sum(denudation_mass_LOW_P) < sum(denudation_mass_HIGH_P) 
 
 end

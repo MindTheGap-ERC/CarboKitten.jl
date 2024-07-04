@@ -15,7 +15,7 @@ include("./Denudation/PhysicalErosion.jl")
 import ..Denudation.CarbDissolution: dissolution
 import ..Denudation.EmpericalDenudation: emperical_denudation, slope_kernel
 import ..Denudation.PhysicalErosion: physical_erosion, mass_erosion, total_mass_redistribution
-export denudation, calculate_redisttribution
+export denudation, calculate_redistribution
 
 # configuration 
 

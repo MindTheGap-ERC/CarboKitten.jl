@@ -17,9 +17,7 @@ using ...Utility: in_units_of
 const Myr = u"Myr"
 const m = u"m"
 
-const PERIOD = 200.0u"kyr"
-const AMPLITUDE = 4.0u"m"
-
+# ~/~ begin <<docs/src/model-alcap.md#alcaps-facies>>[init]
 @kwdef struct Facies
     viability_range::Tuple{Int,Int}
     activation_range::Tuple{Int,Int}
@@ -34,7 +32,7 @@ const AMPLITUDE = 4.0u"m"
     diffusion_coefficient::typeof(1.0m)
 end
 
-const MODEL1 = [
+const FACIES = [
     Facies(viability_range = (4, 10),
            activation_range = (6, 10),
            maximum_growth_rate = 500u"m/Myr",
@@ -56,36 +54,50 @@ const MODEL1 = [
            saturation_intensity = 60u"W/m^2",
            diffusion_coefficient = 10000u"m")
 ]
-
-const STD_TIME_PROPS = TimeProperties(Δt=0.001Myr, steps=1000, write_interval=1)
+# ~/~ end
+# ~/~ begin <<docs/src/model-alcap.md#alcaps-sealevel>>[init]
+const PERIOD = 0.2Myr
+const AMPLITUDE = 4.0m
+# ~/~ end
 
 @kwdef struct Input
+    # ~/~ begin <<docs/src/model-alcap.md#alcaps-input>>[init]
     box::Box              = Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m)
-    time::TimeProperties  = STD_TIME_PROPS
+    # ~/~ end
+    # ~/~ begin <<docs/src/model-alcap.md#alcaps-input>>[1]
+    time::TimeProperties  = TimeProperties(
+        Δt=0.0002Myr,
+        steps=5000,
+        write_interval=1)
+    # ~/~ end
+    # ~/~ begin <<docs/src/model-alcap.md#alcaps-input>>[2]
     ca_interval::Int      = 1
-
+    # ~/~ end
+    # ~/~ begin <<docs/src/model-alcap.md#alcaps-input>>[3]
     bedrock_elevation     = (x, y) -> -x / 300.0  # (m, m) -> m
+    # ~/~ end
+    # ~/~ begin <<docs/src/model-alcap.md#alcaps-input>>[4]
     sea_level             = t -> AMPLITUDE * sin(2π * t / PERIOD)
+    # ~/~ end
+    # ~/~ begin <<docs/src/model-alcap.md#alcaps-input>>[5]
     subsidence_rate::Rate = 50.0m/Myr
-
-    facies::Vector{Facies}    = MODEL1
+    # ~/~ end
+    # ~/~ begin <<docs/src/model-alcap.md#alcaps-input>>[6]
     disintegration_rate::Rate = 500.0m/Myr   # same as maximum production rate
+    # ~/~ end
+    # ~/~ begin <<docs/src/model-alcap.md#alcaps-input>>[7]
     insolation::typeof(1.0u"W/m^2") = 400.0u"W/m^2"
-
+    # ~/~ end
+    # ~/~ begin <<docs/src/model-alcap.md#alcaps-input>>[8]
     sediment_buffer_size::Int     = 50
+    # ~/~ end
+    # ~/~ begin <<docs/src/model-alcap.md#alcaps-input>>[9]
     depositional_resolution::Amount = 0.5m
+    # ~/~ end
+    facies::Vector{Facies}    = FACIES
 end
 # ~/~ end
 # ~/~ begin <<docs/src/model-alcap.md#alcaps>>[1]
-## Emitting a ModelFrame every iteration allows for
-## inspecting the output of an entire run
-## For 100x50x3 x 3 x 10000 x 8B ≈ 5GB
-struct ModelFrame
-    disintegration::Array{Amount,3}    # facies, x, y
-    production::Array{Amount,3}
-    deposition::Array{Amount,3}
-end
-
 mutable struct State
     time::typeof(1.0u"Myr")
 
@@ -96,7 +108,8 @@ mutable struct State
     # sediment_buffer stores fractions, so no units
     sediment_buffer::Array{Float64,4}  # z, facies, x, y
 end
-
+# ~/~ end
+# ~/~ begin <<docs/src/model-alcap.md#alcaps>>[2]
 function initial_state(input)
     sediment_height = zeros(Float64, input.box.grid_size...) * u"m"
     n_facies = length(input.facies)
@@ -111,7 +124,8 @@ function initial_state(input)
 
     return state
 end
-
+# ~/~ end
+# ~/~ begin <<docs/src/model-alcap.md#alcaps>>[3]
 function disintegration(input)
     n_facies = length(input.facies)
     max_h = input.disintegration_rate * input.time.Δt
@@ -124,7 +138,8 @@ function disintegration(input)
         return output .* input.depositional_resolution
     end
 end
-
+# ~/~ end
+# ~/~ begin <<docs/src/model-alcap.md#alcaps>>[4]
 function production(input)
     n_facies = length(input.facies)
     x, y = axes(input.box)
@@ -142,7 +157,8 @@ function production(input)
         return output
     end
 end
-
+# ~/~ end
+# ~/~ begin <<docs/src/model-alcap.md#alcaps>>[5]
 function transportation(input)
     n_facies = length(input.facies)
     x, y = axes(input.box)
@@ -162,6 +178,14 @@ function transportation(input)
 
         return transported_output
     end
+end
+# ~/~ end
+# ~/~ begin <<docs/src/model-alcap.md#alcaps>>[6]
+struct ModelFrame
+    disintegration::Array{Amount,3}    # facies, x, y
+    production::Array{Amount,3}
+    deposition::Array{Amount,3}
+    sediment_height::Array{Amount,2}
 end
 
 function run_model(input)
@@ -183,24 +207,26 @@ function run_model(input)
             active_layer = p .+ d
             sediment = transport(state, active_layer)
 
-            put!(ch, ModelFrame(d, p, sediment))
-
             push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|> NoUnits)
             state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
             state.time += input.time.Δt
+
+            put!(ch, ModelFrame(d, p, sediment, state.sediment_height))
         end
     end
 end
 
 function main(input::Input, output::String)
     x, y = axes(input.box)
+    t = (0:input.time.steps) .* input.time.Δt
 
     h5open(output, "w") do fid
         gid = create_group(fid, "input")
         gid["x"] = collect(x) |> in_units_of(u"m")
         gid["y"] = collect(y) |> in_units_of(u"m")
+        gid["t"] = t .|> in_units_of(u"Myr")
         gid["bedrock_elevation"] = input.bedrock_elevation.(x, y') |> in_units_of(u"m")
-        gid["t"] = collect((0:(input.time.steps-1)) .* input.time.Δt) |> in_units_of(u"Myr")
+        gid["sea_level"] = input.sea_level.(t) .|> in_units_of(u"m")
 
         attr = attributes(gid)
         attr["delta_t"] = input.time.Δt |> in_units_of(u"Myr")
@@ -219,12 +245,16 @@ function main(input::Input, output::String)
         ds_sedim = create_dataset(fid, "deposition", datatype(Float64),
             dataspace(n_facies, input.box.grid_size..., input.time.steps),
             chunk=(n_facies, input.box.grid_size..., 1))
+        ds_height = create_dataset(fid, "sediment_height", datatype(Float64),
+            dataspace(input.box.grid_size..., input.time.steps),
+            chunk=(input.box.grid_size..., 1))
 
         results = run_model(input)
         for (step, frame) in enumerate(results)
             ds_prod[:, :, :, step] = frame.production |> in_units_of(u"m")
             ds_disint[:, :, :, step] = frame.disintegration |> in_units_of(u"m")
             ds_sedim[:, :, :, step] = frame.deposition |> in_units_of(u"m")
+            ds_height[:, :, step] = frame.sediment_height |> in_units_of(u"m")
         end
     end
 end

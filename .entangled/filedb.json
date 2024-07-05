@@ -53,9 +53,9 @@
     {
       "path": "docs/src/ca-with-production.md",
       "deps": null,
-      "modified": "2024-06-24T11:13:30.504880",
-      "hexdigest": "cb0dad95af601b7cc3dec0e40b945291145dad5cdc9611baed82e0e503d136ea",
-      "size": 15019
+      "modified": "2024-07-06T00:33:56.351139",
+      "hexdigest": "ccca57c3b175dc490834d31598842f1536d3d45267bf46dcf59c2909ee6e08d1",
+      "size": 20360
     },
     {
       "path": "docs/src/stencils.md",
@@ -197,20 +197,22 @@
       "deps": [
         "docs/src/bosscher-1992.md",
         "docs/src/bosscher-1992.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
         "docs/src/stencils.md",
         "docs/src/stencils.md",
         "docs/src/stencils.md",
         "docs/src/active-layer-transport.md",
-        "docs/src/active-layer-transport.md"
+        "docs/src/active-layer-transport.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/model-alcap.md",
+        "docs/src/model-alcap.md"
       ],
-      "modified": "2024-06-28T21:27:22.496945",
-      "hexdigest": "189109304829290e0b6a64119b4de0412d397430700b89e06e10dd6392668104",
-      "size": 5167
+      "modified": "2024-07-06T00:34:22.473336",
+      "hexdigest": "9338d2d310dfee50960bcdb424464f2aca38ca5d15d1a71d345c20211e81a703",
+      "size": 5868
     },
     {
       "path": "examples/ca/eca.jl",
@@ -262,18 +264,18 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-06-10T14:56:12.713671",
-      "hexdigest": "b2619322d2c57bda8889bc43b303d3a654c72fb9cbe9de3edad887f5d6b00f52",
-      "size": 3042
+      "modified": "2024-07-06T00:33:56.272138",
+      "hexdigest": "f7e7346d6e46b79beeb7d84ffa9ba549f14e6575a4b4c667b6e52c6ad58e6f71",
+      "size": 8274
     },
     {
       "path": "src/Visualization.jl",
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "modified": "2024-06-10T14:56:12.714671",
-      "hexdigest": "18387bbaf0cff487784a7942c14ad58021ca2398ec86569ff10ab720000b31a4",
-      "size": 442
+      "modified": "2024-07-05T16:54:48.362687",
+      "hexdigest": "b6a0bcb1c76d177aa4174c196f7741dc67431dcc99742ff90eac6f18d0df07aa",
+      "size": 553
     },
     {
       "path": "examples/production-only/plot-cap-slope.jl",
@@ -389,9 +391,9 @@
     {
       "path": "docs/src/sediment-buffer.md",
       "deps": null,
-      "modified": "2024-07-03T14:06:51.377963",
-      "hexdigest": "8e832b0cf0101085fa72f6f3f75ad72a33d2fd6fa2c1634a074fcb19b9fab067",
-      "size": 4948
+      "modified": "2024-07-06T00:56:40.410745",
+      "hexdigest": "214e518e8e3e3391e13eb4a3cde1d3b271774080061bdba29f5cb4e7405b926e",
+      "size": 4996
     },
     {
       "path": "src/SedimentStack.jl",
@@ -448,18 +450,18 @@
     {
       "path": "docs/src/model-alcap.md",
       "deps": null,
-      "modified": "2024-07-03T22:24:55.776180",
-      "hexdigest": "c05878d3292a2cfa1c50d4265ac5b16ec3ccbbd0f31592042d9699c275395b96",
-      "size": 8297
+      "modified": "2024-07-06T01:08:22.289317",
+      "hexdigest": "74c44690f220095c81d67de783a308e0f33cc55cf0c2576da49cbe731438f9a4",
+      "size": 11362
     },
     {
       "path": "src/Model/ALCAPS.jl",
       "deps": [
         "docs/src/model-alcap.md"
       ],
-      "modified": "2024-07-03T22:24:55.521178",
-      "hexdigest": "6fa3a4a4f244479912ee337fd6ecc23685fe586242eb0e1f5b28237a556e9bdd",
-      "size": 7927
+      "modified": "2024-07-06T01:08:22.363318",
+      "hexdigest": "55e7ffb0e2c100bd2827d893cb7be9e591f4056bafd9985ba8f7247cbcf1b5f6",
+      "size": 9342
     },
     {
       "path": "src/Transport/ActiveLayer.jl",
@@ -469,6 +471,24 @@
       "modified": "2024-06-28T21:37:44.022617",
       "hexdigest": "aa984fe1aa66cb28dc4e78c655d89a847251b5f4473aa602ec7d786f4b59d84d",
       "size": 775
+    },
+    {
+      "path": "examples/alcaps/defaults.jl",
+      "deps": [
+        "docs/src/model-alcap.md"
+      ],
+      "modified": "2024-07-06T00:19:08.109436",
+      "hexdigest": "7f7e7a67a1506989aaee7ed766d8ff94e45cd231696bb784adbe4095ddea35df",
+      "size": 238
+    },
+    {
+      "path": "examples/alcaps/plot-defaults.jl",
+      "deps": [
+        "docs/src/model-alcap.md"
+      ],
+      "modified": "2024-07-06T00:34:22.328335",
+      "hexdigest": "9f061be6094b2fb5a976b42625ab797e5a8b45775d52e775d744300b5446962a",
+      "size": 464
     }
   ],
   "source": [],
@@ -477,6 +497,7 @@
     "src/Utility.jl",
     "examples/BS92/fig8-sealevel.jl",
     "examples/burgess2013-fig2.gnuplot",
+    "examples/alcaps/plot-defaults.jl",
     "src/Config.jl",
     "src/Erosion.jl",
     "src/Burgess2013/Config.jl",
@@ -501,6 +522,7 @@
     "src/SedimentStack.jl",
     "src/Visualization.jl",
     ".entangled/tasks.json",
+    "examples/alcaps/defaults.jl",
     "examples/production-only/plot-cap-slope.jl",
     "src/Burgess2013/CA.jl",
     "examples/plot-caps-osc.jl",

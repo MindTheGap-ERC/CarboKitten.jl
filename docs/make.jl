@@ -11,11 +11,11 @@ module Entangled
         counts = DefaultDict(0)
         Channel{String}() do ch
             for line in src
-                if (m = match(r"``` *{[^#}]*#([a-zA-Z0-9\-_]+)[^}]*\}", line)) !== nothing
-                    term = counts[m[1]] == 0 ? "≣" : "⊞"
-                    put!(ch, "```@raw html")
-                    put!(ch, "<div class=\"noweb-label\">⪡" * m[1] * "⪢" * term * "</div>")
-                    put!(ch, "```")
+                if (m = match(r"( *)``` *{[^#}]*#([a-zA-Z0-9\-_]+)[^}]*\}", line)) !== nothing
+                    term = counts[m[2]] == 0 ? "≣" : "⊞"
+                    put!(ch, "$(m[1])```@raw html")
+                    put!(ch, "$(m[1])<div class=\"noweb-label\">⪡" * m[2] * "⪢" * term * "</div>")
+                    put!(ch, "$(m[1])```")
                     put!(ch, line)
                     counts[m[1]] += 1
                 elseif (m = match(r"``` *{[^}]*file=([a-zA-Z0-9\-_\.\/\\]+)[^}]*}", line)) !== nothing
@@ -62,11 +62,14 @@ makedocs(
     # repo=Remotes.GitHub("MindTheGap-ERC", "CarboKitten"),
     pages = [
         "Introduction" => "index.md",
-        "Bosscher and Schlager 1992" => "bosscher-1992.md",
+        "Models" => [
+            "Bosscher and Schlager 1992" => "bosscher-1992.md",
+            "Model with CA and Production" => "ca-with-production.md",
+            "ALCAPS" => "model-alcap.md"
+        ],
         "CarboCAT" => [
             "Summary" => "carbocat.md",
             "Cellular Automaton" => "carbocat-ca.md",
-            "Model with CA and Production" => "ca-with-production.md",
             "Sediment Transport" => "carbocat-transport.md"
         ],
         "Transport" => [

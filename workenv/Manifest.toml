@@ -2,7 +2,7 @@
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "028e51b9c9b2483ffb5657588ee87fba531979f9"
+project_hash = "2411df68033621b0af0ed77685426677831b75bb"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "2314e58e823f0fd6ee02dbbecb997370f501dd4a"
@@ -280,10 +280,10 @@ deps = ["AxisArrays", "HDF5", "ProgressBars", "Transducers", "Unitful"]
 path = ".."
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 version = "0.1.0"
-weakdeps = ["GeometryBasics", "Makie"]
+weakdeps = ["GeometryBasics", "Makie", "Statistics"]
 
     [deps.CarboKitten.extensions]
-    VisualizationExt = ["GeometryBasics", "Makie"]
+    VisualizationExt = ["Makie", "Statistics", "GeometryBasics"]
 
 [[deps.CatIndices]]
 deps = ["CustomUnitRanges", "OffsetArrays"]

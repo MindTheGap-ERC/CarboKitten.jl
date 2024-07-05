@@ -1,5 +1,7 @@
 # Sediment Buffers
 
+FIXME: Needs some graphics to explain concepts
+
 In some models of transport it is important to remember the type of sediment facies some time in the past. Suppose sedimented material is loosened again due to submarine erosion processes. Particle sizes may depend on the sediment facies.
 
 To compute such models efficiently we need to store the sedimentation history in a buffer. One approach is to remember several iterations into the past, but then there will be areas where sedimentation is slow and fast, and soon you'll find you have to store the entire simulation for retrieval.

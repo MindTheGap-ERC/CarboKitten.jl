@@ -70,11 +70,11 @@ function propagator(input)
 	μ0 = input.bedrock_elevation.(x, y')
 
 	function active_layer(state)
-		max_erosion = input.disintegration_rate * input.Δt
-		erosion = min.(max_erosion, state.sediment)
-		state.sediment .-= erosion
+		max_amount = input.disintegration_rate * input.Δt
+		amount = min.(max_amount, state.sediment)
+		state.sediment .-= amount
 
-		input.production.(x, y') * input.Δt .+ erosion
+		input.production.(x, y') * input.Δt .+ amount
 	end
 
 	stc = pde_stencil(input.box, input.diffusion_coefficient)

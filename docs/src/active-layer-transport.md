@@ -1,14 +1,16 @@
 # Active Layer Transport
 
-The following is inspired on well-known **active layer** approaches in river bed sediment transport. All quantities with subscript $f$ are facies dependent. Sediment is measured in meters of deposited material. $P_f$ is the production of sediment per facies in $m/s$. Further unit calculations would be more readable if we consider the unit of sediment as separate, so for instance it doesn't cancel against $m^2$ in the units of sediment flux. In the implementation, $\nu$ has the units of ${\rm m}$ which is totaly weird. TBC
+The following is inspired on well-known **active layer** approaches in river bed sediment transport [Paola1992](@cite) [James2010](@cite) [^1]. All quantities with subscript $f$ are facies dependent. Sediment is measured in meters of deposited material. $P_f$ is the production of sediment per facies in $m/s$. Further unit calculations would be more readable if we consider the unit of sediment as separate, so for instance it doesn't cancel against $m^2$ in the units of sediment flux. In the implementation, $\nu$ has the units of ${\rm m}$ which is totaly weird. TBC
+
+[^1]: Literature on active (or mixing) layer transport modeling is vast. Most of which is concerned with much smaller time scales, and more complicated physics than we are mostly dealing with.
 
 In a model without transport, we could write
 
 $$\sigma + \sum_f {{\partial \eta_f} \over {\partial t}} = \sum_f P_f,$$
 
-where $\sigma$ is the subsidence rate in $m/s$.
+where $\sigma$ is the subsidence rate in $m/s$. We consider the mass balance for each facies separately.
 
-We suppose that loose sediment, either fresh production or disintegrated older sediment, is being transported in a layer on top of the sea bed. The flux in this layer is assumed to be directly proportional to the local slope of the sea bed $| \nabla_x \eta_* |$, where $\eta_* = \sum_f \eta_f$, the sum over all facies contributions.
+We suppose that loose sediment, either fresh production or disintegrated older sediment, is being transported in a layer on top of the sea bed. The flux in this layer is assumed to be directly proportional to the local slope of the sea bed $| \nabla_x \eta_* |$, where $\eta_* = \sum_f \eta_f$, the sum over all facies contributions, including $\eta_0$, the initial bedrock eleveation.
 
 ![Schematic of Active Layer approach](fig/active-layer-export.svg)
 
@@ -18,9 +20,11 @@ $${\bf q_f} = -\nu_f C_f {\bf \nabla_x} \eta_*.$$
 
 The following is the mass balance:
 
-$$\sigma + \sum_f {{\partial \eta_f} \over {\partial t}} = -\sum_f {\bf \nabla_x} \cdot {\bf q_f} + \sum_f P_f,$$
+$$\sigma + {{\partial \eta_*} \over {\partial t}} = -\sum_f {\bf \nabla_x} \cdot {\bf q_f} + \sum_f P_f,$$
 
-In our modelling we keep track of individual contributions per facies over time. Note that in other approaches to active layer transport there would be a factor $1/C_f$. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.
+In our modelling we keep track of individual contributions per facies over time [^2].
+
+[^2]: Note that in other approaches to active layer transport, like Paola 1992, there would be a factor $1/C_f$. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.
 
 Combining these equations, and ignoring subsidence for the moment (which is a global effect and can't be expressed on a per-facies basis), we get a component-wise diffusion equation
 
@@ -36,9 +40,15 @@ where $\nu' = \nu_f \alpha_f$
 
 So we have a advection component with velocity $\nu' \nabla P_f$ and a diffusion component with a coefficient $\nu' P_f$.
 
+As part of the production $P_f$ we disintegrate older sediment at a fixed rate.
+
 ## Test 1: production transport
 
-Suppose we have an incline in one direction, as per usual on a coastal shelf. Production is happening in a circular patch in our box, with constant rate. In addition, we'll release the top 1m of sediment for further transport.
+Suppose we have an incline in one direction, as per usual on a coastal slice. Production is happening in a circular patch in our box, with constant rate. In addition, we'll release the top 1m of sediment for further transport.
+
+```@raw html
+<details><summary>Test model</summary>
+```
 
 ``` {.julia file=examples/transport/active-layer.jl}
 module ActiveLayer
@@ -55,6 +65,12 @@ using CarboKitten.Transport.ActiveLayer: pde_stencil, Amount, Rate
 end
 ```
 
+```@raw html
+</details>
+```
+
+Our input structure facilitates a single facies, specifying an initial bedrock elevation, sediment layer and a function for a location dependent constant production rate. The transport is parametrized by a disintegration rate and a diffusion coefficient.
+
 ``` {.julia #example-active-layer}
 @kwdef struct Input
 	box
@@ -70,7 +86,7 @@ end
 ```
 
 ### Production patch
-Establish a grid of 100x50, 15km on each side, dropping from 0 to 50m depth.
+Establish a grid of 100x50, 15km on each side, dropping from 0 to 50m depth. Keeping the disintegration rate to a similar value as the production rate seems a sensible choice.
 
 ``` {.julia #example-active-layer}
 production_patch(center, radius, rate) = function(x, y)
@@ -100,6 +116,12 @@ const input = Input(
 )
 ```
 
+![Production patch on an inclining bedrock](fig/active-layer-production-patch.png)
+
+```@raw html
+<details><summary>Plotting code</summary>
+```
+
 ``` {.julia .task file=examples/transport/active-layer-plot-production.jl}
 #| requires: examples/transport/active-layer.jl
 #| creates: docs/src/_fig/active-layer-production-patch.png
@@ -126,7 +148,9 @@ end
 main()
 ```
 
-![Production patch on an inclining bedrock](fig/active-layer-production-patch.png)
+```@raw html
+</details>
+```
 
 ### Solving the PDE
 
@@ -171,6 +195,8 @@ end
 
 ### Model loop
 
+Every iteration we determine the maximum disintegrated sediment. If the total amount of sediment is smaller than the maximum, then that amount is disintegrated instead. We compute the concentrations in the active layer in terms of amounts of sediment, so $P \Delta t$. Since $P$ appears in every term of the PDE, we're free to do so.
+
 ``` {.julia #example-active-layer}
 mutable struct State
 	time::typeof(1.0u"Myr")
@@ -193,11 +219,11 @@ function propagator(input)
 	μ0 = input.bedrock_elevation.(x, y')
 
 	function active_layer(state)
-		max_erosion = input.disintegration_rate * input.Δt
-		erosion = min.(max_erosion, state.sediment)
-		state.sediment .-= erosion
+		max_amount = input.disintegration_rate * input.Δt
+		amount = min.(max_amount, state.sediment)
+		state.sediment .-= amount
 
-		input.production.(x, y') * input.Δt .+ erosion
+		input.production.(x, y') * input.Δt .+ amount
 	end
 
 	stc = pde_stencil(input.box, input.diffusion_coefficient)
@@ -228,6 +254,12 @@ end
 ### Running the model
 
 We run the model with 1000 time steps but only inspect one in every 100.
+
+![Active layer test](fig/active-layer-test.png)
+
+```@raw html
+<details><summary>Plotting code</summary>
+```
 
 ``` {.julia .task file=examples/transport/active-layer-plot-result.jl}
 #| requires: examples/transport/active-layer.jl
@@ -267,16 +299,19 @@ end
 main()
 ```
 
-![Active layer test](fig/active-layer-test.png)
+```@raw html
+</details>
+```
 
 Note in the bottom figure, due to sedimentation not keeping up with subsidence, the lines go down in time. We see the sediment transport being favoured to downslope areas, which is what we want. This effect could be made more extreme by increasing the erosion rate.
-
 
 ## Test 2: erosion
 
 Suppose now we have **no** production, but we start with a steep gradient in the existing sediment. We expect this gradient to erode.
 
 In the input we set the `production` to zero, but we specify an initial sediment that contains both a step and a top-hat function. Erodability of these kind of features could be a measurable quantity to which we could potentially calibrate this transport model.
+
+Note that, due to the way we populate the active layer, the gradient $\nabla P$ will vanish, leaving us with a pure diffusion system.
 
 ``` {.julia #example-active-layer-erosion}
 function initial_sediment(x, y)

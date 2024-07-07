@@ -14,6 +14,7 @@ using CarboKitten.Transport.ActiveLayer: pde_stencil, Amount, Rate
 	Δt::typeof(1.0u"Myr")
 	t_end::typeof(1.0u"Myr")
 	bedrock_elevation   # function (x::u"m", y::u"m") -> u"m"
+	initial_sediment    # function (x::u"m", y::u"m") -> u"m"
 	production          # function (x::u"m", y::u"m") -> u"m/s"
 	disintegration_rate::typeof(1.0u"m/Myr")
 	subsidence_rate::typeof(1.0u"m/Myr")
@@ -34,6 +35,7 @@ const input = Input(
 	t_end=1.0u"Myr",
 
 	bedrock_elevation = (x, y) -> -x / 300.0,
+	initial_sediment = (x, y) -> 0.0u"m",
 
 	production = production_patch(
 		(5000.0u"m", 3750.0u"m"),
@@ -53,7 +55,8 @@ mutable struct State
 end
 
 function initial_state(input)
-	State(0.0u"Myr", fill(0.0u"m", input.box.grid_size...))
+    x, y = axes(input.box)
+	State(0.0u"Myr", input.initial_sediment.(x, y'))
 end
 
 struct Frame

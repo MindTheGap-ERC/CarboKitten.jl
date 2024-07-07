@@ -200,19 +200,21 @@
         "docs/src/stencils.md",
         "docs/src/stencils.md",
         "docs/src/stencils.md",
-        "docs/src/active-layer-transport.md",
-        "docs/src/active-layer-transport.md",
         "docs/src/ca-with-production.md",
         "docs/src/ca-with-production.md",
         "docs/src/ca-with-production.md",
         "docs/src/ca-with-production.md",
         "docs/src/ca-with-production.md",
         "docs/src/model-alcap.md",
-        "docs/src/model-alcap.md"
+        "docs/src/model-alcap.md",
+        "docs/src/model-alcap.md",
+        "docs/src/model-alcap.md",
+        "docs/src/active-layer-transport.md",
+        "docs/src/active-layer-transport.md"
       ],
-      "modified": "2024-07-06T00:34:22.473336",
-      "hexdigest": "9338d2d310dfee50960bcdb424464f2aca38ca5d15d1a71d345c20211e81a703",
-      "size": 5868
+      "modified": "2024-07-07T16:50:50.283396",
+      "hexdigest": "2719894f6e565bbb94220eccf47afec950d3ad90b28d44e97a61358005410345",
+      "size": 6518
     },
     {
       "path": "examples/ca/eca.jl",
@@ -416,18 +418,18 @@
     {
       "path": "docs/src/active-layer-transport.md",
       "deps": null,
-      "modified": "2024-06-28T21:37:44.226618",
-      "hexdigest": "d9470788240563754991faeac86650c95ee54a65dcbc215d9d47040874650aa7",
-      "size": 9453
+      "modified": "2024-07-07T17:20:18.240753",
+      "hexdigest": "d8607204160fe6028800068cd1268fd522f48323d0d797a248291c5a6946113b",
+      "size": 12115
     },
     {
       "path": "examples/transport/active-layer.jl",
       "deps": [
         "docs/src/active-layer-transport.md"
       ],
-      "modified": "2024-06-28T21:31:08.055123",
-      "hexdigest": "4325b4e8f55245b5ba3f051777daea5975c96a434e63a7f0bb87a48826eff63a",
-      "size": 2559
+      "modified": "2024-07-07T17:01:30.116892",
+      "hexdigest": "6331000ef8730d5f88f88862008948f95c58f747e1a864d997902961943bdf93",
+      "size": 2677
     },
     {
       "path": "examples/transport/active-layer-plot-result.jl",
@@ -450,9 +452,9 @@
     {
       "path": "docs/src/model-alcap.md",
       "deps": null,
-      "modified": "2024-07-06T01:08:22.289317",
-      "hexdigest": "74c44690f220095c81d67de783a308e0f33cc55cf0c2576da49cbe731438f9a4",
-      "size": 11362
+      "modified": "2024-07-07T13:00:57.216555",
+      "hexdigest": "d5b1e1f9a2ebafa0c5d109feb9290c736d134111190b5917a0c573de0da8d71a",
+      "size": 13949
     },
     {
       "path": "src/Model/ALCAPS.jl",
@@ -489,50 +491,80 @@
       "modified": "2024-07-06T00:34:22.328335",
       "hexdigest": "9f061be6094b2fb5a976b42625ab797e5a8b45775d52e775d744300b5446962a",
       "size": 464
+    },
+    {
+      "path": "examples/alcaps/plot-alternative.jl",
+      "deps": [
+        "docs/src/model-alcap.md"
+      ],
+      "modified": "2024-07-06T23:06:40.055849",
+      "hexdigest": "00c6a7c011393aa70f76a7c0c6b5b738b6b765700171f438b523305c72499f50",
+      "size": 420
+    },
+    {
+      "path": "examples/alcaps/alternative.jl",
+      "deps": [
+        "docs/src/model-alcap.md"
+      ],
+      "modified": "2024-07-06T23:11:29.686212",
+      "hexdigest": "645102387b09f04717811f869bdb7c898d25619b3ffbb0049d5e3cc2af0e6949",
+      "size": 1806
+    },
+    {
+      "path": "examples/transport/active-layer-erosion.jl",
+      "deps": [
+        "docs/src/active-layer-transport.md"
+      ],
+      "modified": "2024-07-07T17:18:18.106789",
+      "hexdigest": "93be1f9508e6dc92de48703038f9acb30197b23f91670d2ff481ee177dbe6b8e",
+      "size": 1944
     }
   ],
   "source": [],
   "target": [
-    "src/Transport/ActiveLayer.jl",
-    "src/Utility.jl",
-    "examples/BS92/fig8-sealevel.jl",
-    "examples/burgess2013-fig2.gnuplot",
-    "examples/alcaps/plot-defaults.jl",
-    "src/Config.jl",
-    "src/Erosion.jl",
-    "src/Burgess2013/Config.jl",
-    "src/Burgess2013/Transport.jl",
-    "examples/ca/long-term.jl",
-    "examples/production-only/ca-slope.jl",
-    "src/Vectors.jl",
-    "src/CaProd.jl",
-    "examples/production-only/ca-uniform.jl",
-    "examples/production-only/caps-osc.jl",
+    "src/Visualization.jl",
+    "examples/plot-caps-osc.jl",
+    "test/SedimentStackSpec.jl",
+    "src/BoundaryTrait.jl",
     "test/Unitful.jl",
+    "examples/transport/active-layer-erosion.jl",
+    "examples/alcaps/plot-alternative.jl",
+    "examples/ca/long-term.jl",
+    "examples/production-only/plot-cap-slope.jl",
+    "examples/transport/active-layer-plot-result.jl",
+    "examples/transport/active-layer.jl",
+    "examples/alcaps/defaults.jl",
+    "examples/alcaps/plot-defaults.jl",
+    "src/CaProd.jl",
+    ".entangled/tasks.json",
+    "examples/alcaps/alternative.jl",
+    "examples/burgess2013-fig2.gnuplot",
+    "src/Erosion.jl",
     "examples/transport/active-layer-plot-production.jl",
-    "examples/ca/eca.jl",
     "examples/ca/life.jl",
+    "examples/production-only/ca-uniform.jl",
+    "src/Burgess2013/CA.jl",
     "test/CASpec.jl",
-    "examples/ca/burgess-2013.jl",
-    "src/Burgess2013.jl",
+    "src/Transport/ActiveLayer.jl",
     "examples/BS92/BS92.jl",
+    "examples/ca/burgess-2013.jl",
     "src/Burgess2013/Production.jl",
-    "src/Stencil.jl",
+    "src/Model/ALCAPS.jl",
+    "examples/plot-tanh.gnuplot",
     "examples/BS92/fig8.jl",
     "src/SedimentStack.jl",
-    "src/Visualization.jl",
-    ".entangled/tasks.json",
-    "examples/alcaps/defaults.jl",
-    "examples/production-only/plot-cap-slope.jl",
-    "src/Burgess2013/CA.jl",
-    "examples/plot-caps-osc.jl",
-    "src/Model/ALCAPS.jl",
-    "examples/transport/active-layer-plot-result.jl",
-    "examples/plot-tanh.gnuplot",
-    "test/ConfigSpec.jl",
-    "test/SedimentStackSpec.jl",
-    "examples/transport/active-layer.jl",
     "ext/VisualizationExt.jl",
-    "src/BoundaryTrait.jl"
+    "examples/production-only/ca-slope.jl",
+    "src/Stencil.jl",
+    "examples/production-only/caps-osc.jl",
+    "src/Burgess2013.jl",
+    "src/Vectors.jl",
+    "src/Config.jl",
+    "src/Burgess2013/Config.jl",
+    "src/Burgess2013/Transport.jl",
+    "examples/ca/eca.jl",
+    "src/Utility.jl",
+    "examples/BS92/fig8-sealevel.jl",
+    "test/ConfigSpec.jl"
   ]
 }

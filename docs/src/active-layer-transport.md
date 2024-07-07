@@ -10,6 +10,8 @@ where $\sigma$ is the subsidence rate in $m/s$.
 
 We suppose that loose sediment, either fresh production or disintegrated older sediment, is being transported in a layer on top of the sea bed. The flux in this layer is assumed to be directly proportional to the local slope of the sea bed $| \nabla_x \eta_* |$, where $\eta_* = \sum_f \eta_f$, the sum over all facies contributions.
 
+![Schematic of Active Layer approach](fig/active-layer-export.svg)
+
 The active layer now contains a concentration $C_f$ particles of different grain size (for each facies $f$). If needed, $C_f = \alpha_f P_f$ where $\alpha_f$ is some facies parameter determining the fraction of production that is available for transport. The sediment flux is given as,
 
 $${\bf q_f} = -\nu_f C_f {\bf \nabla_x} \eta_*.$$
@@ -34,7 +36,7 @@ where $\nu' = \nu_f \alpha_f$
 
 So we have a advection component with velocity $\nu' \nabla P_f$ and a diffusion component with a coefficient $\nu' P_f$.
 
-## Test 1
+## Test 1: production transport
 
 Suppose we have an incline in one direction, as per usual on a coastal shelf. Production is happening in a circular patch in our box, with constant rate. In addition, we'll release the top 1m of sediment for further transport.
 
@@ -59,6 +61,7 @@ end
 	Δt::typeof(1.0u"Myr")
 	t_end::typeof(1.0u"Myr")
 	bedrock_elevation   # function (x::u"m", y::u"m") -> u"m"
+	initial_sediment    # function (x::u"m", y::u"m") -> u"m"
 	production          # function (x::u"m", y::u"m") -> u"m/s"
 	disintegration_rate::typeof(1.0u"m/Myr")
 	subsidence_rate::typeof(1.0u"m/Myr")
@@ -83,6 +86,7 @@ const input = Input(
 	t_end=1.0u"Myr",
 
 	bedrock_elevation = (x, y) -> -x / 300.0,
+	initial_sediment = (x, y) -> 0.0u"m",
 
 	production = production_patch(
 		(5000.0u"m", 3750.0u"m"),
@@ -174,7 +178,8 @@ mutable struct State
 end
 
 function initial_state(input)
-	State(0.0u"Myr", fill(0.0u"m", input.box.grid_size...))
+    x, y = axes(input.box)
+	State(0.0u"Myr", input.initial_sediment.(x, y'))
 end
 
 struct Frame
@@ -265,3 +270,92 @@ main()
 ![Active layer test](fig/active-layer-test.png)
 
 Note in the bottom figure, due to sedimentation not keeping up with subsidence, the lines go down in time. We see the sediment transport being favoured to downslope areas, which is what we want. This effect could be made more extreme by increasing the erosion rate.
+
+
+## Test 2: erosion
+
+Suppose now we have **no** production, but we start with a steep gradient in the existing sediment. We expect this gradient to erode.
+
+In the input we set the `production` to zero, but we specify an initial sediment that contains both a step and a top-hat function. Erodability of these kind of features could be a measurable quantity to which we could potentially calibrate this transport model.
+
+``` {.julia #example-active-layer-erosion}
+function initial_sediment(x, y)
+  if x < 5.0u"km"
+    return 30.0u"m"
+  end
+
+  if x > 10.0u"km" && x < 11.0u"km"
+    return 20.0u"m"
+  end
+
+  return 5.0u"m"
+end
+
+const INPUT = ActiveLayer.Input(
+	box                   = Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),
+	Δt                    = 0.001u"Myr",
+	t_end                 = 1.0u"Myr",
+
+	bedrock_elevation     = (x, y) -> -30.0u"m",
+	initial_sediment      = initial_sediment,
+	production            = (x, y) -> 0.0u"m/Myr",
+
+	disintegration_rate   = 50.0u"m/Myr",
+	subsidence_rate       = 50.0u"m/Myr",
+	diffusion_coefficient = 10000.0u"m")
+```
+
+![Active layer erosion test](fig/active-layer-erosion.png)
+
+```@raw html
+<details><summary>Plotting code</summary>
+```
+
+``` {.julia file=examples/transport/active-layer-erosion.jl}
+#| requires: examples/transport/active-layer.jl
+#| creates: docs/src/_fig/active-layer-erosion.png
+#| collect: figures
+
+module ActiveLayerErosion
+
+include("active-layer.jl")
+
+using Unitful
+using CarboKitten.BoundaryTrait: Shelf
+using CarboKitten.Config: Box, axes
+using CarboKitten.Utility: in_units_of
+using CairoMakie
+
+<<example-active-layer-erosion>>
+
+function main(input)
+    y_idx = 1
+    result = Iterators.map(deepcopy,
+  	    Iterators.filter(x -> mod(x[1]-1, 400) == 0, enumerate(ActiveLayer.run_model(input)))) |> collect
+
+	(x, y) = axes(input.box)
+	# p = input.production.(x, y')
+
+	fig = Figure(size=(800, 600))
+	# ax = Axis3(fig[1:2,1], xlabel="x (km)", ylabel="y (km)", zlabel="η (m)", azimuth=5π/3)
+	# surface!(ax, x |> in_units_of(u"km"), y |> in_units_of(u"km"), η |> in_units_of(u"m"))
+
+	ax2 = Axis(fig[1,1], xlabel="x (km)", ylabel="η (m)")
+
+	for r in result
+		η = input.bedrock_elevation.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
+
+		lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"))
+	end
+
+	save("docs/src/_fig/active-layer-erosion.png", fig)
+end
+
+end
+
+ActiveLayerErosion.main(ActiveLayerErosion.INPUT)
+```
+
+```@raw html
+</details>
+```

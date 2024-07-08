@@ -4,9 +4,16 @@
 
 ## About
 
-CarboKitten is a clone of Peter Burgess' CarboCAT, a model for growing carbonate platforms.
+CarboKitten is a reimplementation of Peter Burgess' CarboCAT, a model for generating carbonate platform stratigraphies. CarboKitten is a three-dimensional model, having two spatial dimensions and one for stored stediment.
 
-![Sample output stratigraphy](fig/b13-capsosc-crosssection.png)
+Features:
+
+- Cellular Automata to regulate facies type
+- Advection-diffusion based sediment transport
+
+![Sample output stratigraphy](fig/alcaps-alternative.png)
+
+CarboKitten is written in Julia for performance and extensibility.
 
 ## Julia Quickstarter
 
@@ -63,10 +70,10 @@ You may install the `IJulia` kernel with `add IJulia`.
 
 ### Pluto
 
-An alternative notebook interface is called `Pluto`.
+An alternative (and in our opinion superior) notebook interface is called `Pluto`.
 
 - Pluto is **reactive**: changes to code cells automatically update downstream dependencies.
-- Pluto notebooks are written to regular Julia files and can be run independent from Pluto.
+- Pluto notebooks are written to regular Julia files and can (though maybe shouldn't) be run independent from Pluto.
 - The user interface of Pluto is slightly less mature than Jupyter
 
 In Pkg-mode say `add Pluto`.
@@ -85,9 +92,9 @@ julia> Pluto.run()
 
 ### Plotting
 
-The most used library to do plotting in Julia is called `Plots`. However, this library comes with a fair share of problems: there are a number of back-ends for which the generated plots may look slightly different. Here "back-end" means some plotting library written in a different language than Julia.
+The most used library to do plotting in Julia is called `Plots.jl`. However, this library comes with a fair share of problems: there are a number of back-ends for which the generated plots may look slightly different. Here "back-end" means some plotting library written in a different language than Julia.
 
-A nicer plotting library that also happens to be a bit more versatile is `Makie`. This has three back-ends that are `CairoMakie`, `GLMakie` and `WGLMakie`. These are all written in Julia, but they focus on different kinds of results. `CairoMakie` is usually slow but results in publication quality vector graphics: `SVG` or `PDF`. `GLMakie` is very fast, renders on your graphics card, but only produces raster images, say `PNG`. Then `WGLMakie` does a similar thing, but through the web-browser.
+A nicer plotting library that also happens to be a bit more versatile is `Makie.jl`. This has three back-ends that are `CairoMakie`, `GLMakie` and `WGLMakie`. These are all written in Julia, but they focus on different kinds of results. `CairoMakie` is relatively slow but results in publication quality vector graphics: `SVG` or `PDF`. `GLMakie` is very fast, renders on your graphics card, but only produces raster images, say `PNG`. Then `WGLMakie` does a similar thing, but through the web-browser.
 
 ### Design style
 
@@ -104,7 +111,7 @@ Most of the model code is written in the following particular pattern:
 
 ```julia
 function component(input)
-    prepare()
+    prepare(input)
 
     return function(state)
         iterate!(state)
@@ -127,6 +134,8 @@ poetry run entangled watch
 ```
 
 Entangled is still under development and it may occur that the daemon complains about not knowing wether to `tangle` or `stitch`, for example when you've accidentally written both markdown and source code. If this happens you may manually `entangled tangle` or `entangled stitch` with the `--force` argument to decide the issue. It may be worth saving your work in version control before doing so.
+
+A somewhat frequent occurence is that you forgot to run `entangled watch` while developing. In this case, commit the work you have done to git, then run `entangled tangle` or `entangled stitch` (whichever applies). Your files are now back in their old state, but you can `git restore` the edits you have made and run `entangled sync` again to propagate the changes. The project should be in a good state again.
 
 ### Building Documentation
 
@@ -163,7 +172,11 @@ julia --workenv=docs docs/make.jl
 └── test                # unit tests
 ```
 
-The figures from the documentation in "docs/src/fig" are git tracked, but are often regenerated when you change some of their direct dependencies. This makes switching branches harder, it would require issuing "git stash" first. We have now made sure that the regenerated figures appear in "docs/src/\_fig" and are not git tracked. There is a task in pyproject.toml that takes care of copying from "docs/src/\_fig" to "docs/src/fig" when this repo is cloned.
+The figures from the documentation in "docs/src/fig" are git tracked, but are often regenerated when you change some of their direct dependencies. This makes switching branches harder, it would require issuing "git stash" first. We have made sure that the regenerated figures appear in `docs/src/_fig` and are not git tracked. There is a task in pyproject.toml that takes care of copying from `docs/src/_fig` to `docs/src/fig` when this repo is cloned:
+
+```shell
+poetry run brei copy_figures
+```
 
 ## Authors
 

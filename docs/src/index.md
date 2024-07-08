@@ -36,7 +36,7 @@ $ julia
  _/ |\__'_|_|_|\__'_|  |  Official https://julialang.org/ release
 |__/                   |
 
-julia> 
+julia>
 ```
 
 From here you may use CarboKitten `using CarboKitten` and run any of the code inside. To work with CarboKitten efficiently, you may want to load `Revise`. Revise auto-detects changes to loaded code and makes it easy to rerun.
@@ -76,11 +76,11 @@ julia> using Pluto
 
 julia> Pluto.run()
 [ Info: Loading...
-┌ Info: 
+┌ Info:
 └ Opening http://localhost:1234/?secret=xyzxyzzy in your default browser... ~ have fun!
-┌ Info: 
+┌ Info:
 │ Press Ctrl+C in this terminal to stop Pluto
-└ 
+└
 ```
 
 ### Plotting
@@ -124,7 +124,7 @@ julia --workenv=docs docs/make.jl
 ├── data                # data files
 ├── docs                # documentation
 │   ├── make.jl         # docs build script
-│   ├── Manifest.toml   # 
+│   ├── Manifest.toml   #
 │   ├── Project.toml    # dependencies for building docs
 │   └── src             # markdown source for docs
 ├── entangled.toml      # entangled config
@@ -133,7 +133,7 @@ julia --workenv=docs docs/make.jl
 ├── Manifest.toml       #
 ├── Project.toml        # project dependencies
 ├── pyproject.toml      # dependencies for running Entangled
-├── README.md           # 
+├── README.md           #
 ├── src                 # tangled library source
 └── test                # unit tests
 ```
@@ -142,45 +142,45 @@ The figures from the documentation in "docs/src/fig" are git tracked, but are of
 
 ## Authors
 
-Lead engineer: **Johan Hidding**  
-Netherlands eScience Center  
+Lead engineer: **Johan Hidding**
+Netherlands eScience Center
 email: j.hidding [at] esciencecenter.nl
-Web page: [www.esciencecenter.nl/team/johan-hidding-msc/](https://www.esciencecenter.nl/team/johan-hidding-msc/)  
+Web page: [www.esciencecenter.nl/team/johan-hidding-msc/](https://www.esciencecenter.nl/team/johan-hidding-msc/)
 ORCID: [0000-0002-7550-1796](https://orcid.org/0000-0002-7550-1796)
 
-Original author: **Peter Burgess**  
-University of Liverpool  
+Original author: **Peter Burgess**
+University of Liverpool
 Web page: [www.liverpool.ac.uk/environmental-sciences/staff/peter-burgess](https://www.liverpool.ac.uk/environmental-sciences/staff/peter-burgess/)
 
-Project lead: **Emilia Jarochowska**  
-Utrecht University  
-email: e.b.jarochowska [at] uu.nl  
-Web page: [www.uu.nl/staff/EBJarochowska](https://www.uu.nl/staff/EBJarochowska)  
+Project lead: **Emilia Jarochowska**
+Utrecht University
+email: e.b.jarochowska [at] uu.nl
+Web page: [www.uu.nl/staff/EBJarochowska](https://www.uu.nl/staff/EBJarochowska)
 ORCID: [0000-0001-8937-9405](https://orcid.org/0000-0001-8937-9405)
 
 **Other team members:**
 
-**Niklas Hohmann**  
-Utrecht University  
-email: n.h.hohmann [at] uu.nl  
-Web page: [www.uu.nl/staff/NHohmann](https://www.uu.nl/staff/NHHohmann)  
+**Niklas Hohmann**
+Utrecht University
+email: n.h.hohmann [at] uu.nl
+Web page: [www.uu.nl/staff/NHohmann](https://www.uu.nl/staff/NHHohmann)
 ORCID: [0000-0003-1559-1838](https://orcid.org/0000-0003-1559-1838)
 
-**Xianyi Liu**  
-Utrecht University  
-email: x.liu6 [at] uu.nl  
-Web page: [www.uu.nl/staff/XLiu6](https://www.uu.nl/staff/XLiu6)  
+**Xianyi Liu**
+Utrecht University
+email: x.liu6 [at] uu.nl
+Web page: [www.uu.nl/staff/XLiu6](https://www.uu.nl/staff/XLiu6)
 ORCID:
 
-**Hanno Spreeuw**  
-Netherlands eScience Center  
-email: h.spreeuw [at] esciencecenter.nl  
-Web page: [www.esciencecenter.nl/team/dr-hanno-spreeuw/](https://www.esciencecenter.nl/team/dr-hanno-spreeuw)  
+**Hanno Spreeuw**
+Netherlands eScience Center
+email: h.spreeuw [at] esciencecenter.nl
+Web page: [www.esciencecenter.nl/team/dr-hanno-spreeuw/](https://www.esciencecenter.nl/team/dr-hanno-spreeuw)
 ORCID: [0000-0002-5057-0322](https://orcid.org/0000-0002-5057-0322)
 
-**David De Vleeschouwer**  
-Westfälische Wilhelms-Universität Münster  
-Web page: [www.uni-muenster.de/GeoPalaeontologie/erdsystemforschung/staff/DeVleeschouwer](https://www.uni-muenster.de/GeoPalaeontologie/erdsystemforschung/staff/DeVleeschouwer.html)  
+**David De Vleeschouwer**
+Westfälische Wilhelms-Universität Münster
+Web page: [www.uni-muenster.de/GeoPalaeontologie/erdsystemforschung/staff/DeVleeschouwer](https://www.uni-muenster.de/GeoPalaeontologie/erdsystemforschung/staff/DeVleeschouwer.html)
 ORCID: [0000-0002-3323-807X](https://orcid.org/0000-0002-3323-807X)
 
 ## Copyright
@@ -189,7 +189,18 @@ Copyright 2023 Netherlands eScience Center and Utrecht University
 
 ## License
 
-Apache 2.0 License, see LICENSE file for license text.
+> This program is free software: you can redistribute it and/or modify
+> it under the terms of the GNU General Public License as published by
+> the Free Software Foundation, either version 3 of the License, or
+> (at your option) any later version.
+>
+> This program is distributed in the hope that it will be useful,
+> but WITHOUT ANY WARRANTY; without even the implied warranty of
+> MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> GNU General Public License for more details.
+>
+> You should have received a copy of the GNU General Public License
+> along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ## Funding information
 

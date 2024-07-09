@@ -2,7 +2,7 @@
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "2411df68033621b0af0ed77685426677831b75bb"
+project_hash = "b4a745bbff8803c018906fa25084fd70d3387fb4"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "2314e58e823f0fd6ee02dbbecb997370f501dd4a"
@@ -1050,6 +1050,12 @@ git-tree-sha1 = "7134810b1afce04bbc1045ca1985fbe81ce17653"
 uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
 version = "0.9.5"
 
+[[deps.IOCapture]]
+deps = ["Logging", "Random"]
+git-tree-sha1 = "b6d6bfdd7ce25b0f9b2f6b3dd56b2673a66c8770"
+uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
+version = "0.2.5"
+
 [[deps.IfElse]]
 git-tree-sha1 = "debdd00ffef04665ccbb3e150747a77560e8fad1"
 uuid = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
@@ -1556,6 +1562,12 @@ version = "2.30.1"
     Metal = "dde4c033-4e86-420c-a63e-0dd931031962"
     Pardiso = "46dd5b70-b6fb-5a00-ae2d-e8fea33afaf2"
     RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
+
+[[deps.Literate]]
+deps = ["Base64", "IOCapture", "JSON", "REPL"]
+git-tree-sha1 = "596df2daea9c27da81eee63ef2cf101baf10c24c"
+uuid = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
+version = "2.18.0"
 
 [[deps.LittleCMS_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll"]

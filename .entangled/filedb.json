@@ -522,27 +522,27 @@
     {
       "path": "docs/src/dsl.md",
       "deps": null,
-      "modified": "2024-07-11T23:06:49.124123",
-      "hexdigest": "6121945a325bcc59e1a97f58f70326e0d2cad14db5471dba3857f87e688982bc",
-      "size": 5111
+      "modified": "2024-07-11T23:47:49.972918",
+      "hexdigest": "ba405e8ba291a6e2f6c94c111d054684d7a720308454a03f36c758a6519b8b32",
+      "size": 5165
     },
     {
       "path": "src/DSL.jl",
       "deps": [
         "docs/src/dsl.md"
       ],
-      "modified": "2024-07-11T23:06:48.981123",
-      "hexdigest": "d7e2de9898333d321ef456e30b9fb2437ec156f8c19027b37948f285e0878fec",
-      "size": 2280
+      "modified": "2024-07-11T23:47:49.819917",
+      "hexdigest": "e37f355622427879973e3b2c03a8c90748906f6c27a0fd2c572ad9843311d10d",
+      "size": 2337
     },
     {
       "path": "test/DSLSpec.jl",
       "deps": [
         "docs/src/dsl.md"
       ],
-      "modified": "2024-07-11T22:57:25.096796",
-      "hexdigest": "e76f5e16808bb77ce04fb6f6271a229e6f2cdb2b0c5d7e309fd099db801ece5a",
-      "size": 689
+      "modified": "2024-07-11T23:46:24.134539",
+      "hexdigest": "f3a5183bab647fda8f91f1fe97db8fa57ef92b523d78a26ea8b0da0d22943d48",
+      "size": 691
     }
   ],
   "source": [],

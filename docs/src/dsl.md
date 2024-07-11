@@ -75,7 +75,7 @@ end
 ```
 
 ``` {.julia #dsl-spec}
-@test getfields(C.S) == [:a, :b]
+@test fieldnames(C.S) == (:a, :b)
 ```
 
 ``` {.julia #dsl}
@@ -98,11 +98,11 @@ macro compose(modname, cs)
   @assert cs.head == :vect
   cs.args .|> scan
 
-  :(module $(esc(modname))
+  Core.eval(__module__, :(module $modname
 	  $(using_statements...)
 	  $(Iterators.map(splat(define_const), pairs(const_statements))...)
 	  $(Iterators.map(splat(define_struct), pairs(structs))...)
-	end)
+  end))
 end
 ```
 
@@ -131,18 +131,20 @@ function pass(e)
 		else
 			create!(name, is_mutable, fields)
 		end
-		return e
+		return
 	end
 
 	if @capture(e, const n_ = x_)
 		const_statements[n] = x
-		return e
+		return
 	end
 
 	if @capture(e, using x__)
 		push!(using_statements, e)
-		return e
+		return
 	end
+
+  return e
 end
 
 function scan(c::Symbol)
@@ -151,7 +153,8 @@ function scan(c::Symbol)
 	end
 	push!(specs_used, c)
 
-	postwalk(pass, esc(c))
+  e = Core.eval(__module__, :($c))
+	postwalk(pass, e)
 end
 ```
 

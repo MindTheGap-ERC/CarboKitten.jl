@@ -30,7 +30,7 @@ end
   @test clean(MySpec) == clean(:(begin "hello" end))
   # ~/~ end
   # ~/~ begin <<docs/src/dsl.md#dsl-spec>>[1]
-  @test getfields(C.S) == [:a, :b]
+  @test fieldnames(C.S) == (:a, :b)
   # ~/~ end
 end
 # ~/~ end

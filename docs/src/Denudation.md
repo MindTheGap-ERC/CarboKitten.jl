@@ -7,7 +7,7 @@ The denudation could be achieved by three ways: modelling physical erosion, mode
 This method not only considers the amount of materials that have been removed, but also how the eroded materials being distributed to the neighboring regions depending on slopes on each direction.
 
 ### Physical erosion 
-The equations used to estimate how much material could one cell provide to the lower cells is described underneath. The equation is found in [Tucker et al., 1998](https://link.springer.com/chapter/10.1007/978-1-4615-0575-4_12). We choose this equation mainly because it specifically deals with bedrock substrates instead of loose sediments. In the equation, $ k_v $ is erodibility, and the default value is 0.23 according to the paper. $ (1 - I_f) $ indicates run-off generated in one cell and slope is the slope calculated based on [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm). 
+The equations used to estimate how much material could one cell provide to the lower cells is described underneath. The equation is found in [Tucker et al., 1998](https://link.springer.com/chapter/10.1007/978-1-4615-0575-4_12). We choose this equation mainly because it specifically deals with bedrock substrates instead of loose sediments. In the equation, $k_v$ is erodibility, and the default value is 0.23 according to the paper. $(1 - I_f)$ indicates run-off generated in one cell and slope is the slope calculated based on [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm). 
 
 $$D_{phys} = -k_v * (1 - I_f)^{1/3} |\nabla h|^{2/3}$$
 
@@ -111,20 +111,20 @@ FIXME: fix equations, use proper citations (add entries to `ref.bib` and cite us
 
 The details could be found in paper by [Kaufmann 2001](https://onlinelibrary.wiley.com/doi/full/10.1046/j.1365-3121.2001.00345.x) [Kaufmann2001](@cite), Terra Nova.
 
-Limestone is made of $ CaCO_3 $, easily dissolved. This depends mainly on precipitation (rainfall) and temperature. The paper used equation 1 to quantify this process.
+Limestone is made of $CaCO_3$, easily dissolved. This depends mainly on precipitation (rainfall) and temperature. The paper used equation 1 to quantify this process.
 
 $(dh/dt) = 0.001 * κ_c * q_i/A_i$ 
 
-Herein $ dh/dt $ is the chemical weathering rate and the unit is in m/s.
-Other parameters are defined as: $ q_i $ is the discharge of water at a certain cell. $ A_i $ is the surface area of the cell. If we assume there would be no surface water on land, $ q_i $ reduces to precipitation – evaporation. Let’s set it to 400 mm/y for now. Therefore equation 1 could be reduced to Equation 2.
+Herein $dh/dt$ is the chemical weathering rate and the unit is in m/s.
+Other parameters are defined as: $q_i$ is the discharge of water at a certain cell. $A_i$ is the surface area of the cell. If we assume there would be no surface water on land, $q_i$ reduces to precipitation – evaporation. Let’s set it to 400 mm/y for now. Therefore equation 1 could be reduced to Equation 2.
 
 $(dh/dt) = 0.001 * κ_c * I$
 
-Where $ I $ is runoff (mm/y?). The parameter $ κ_c $ is dimensionless and should be described by equation 3:
+Where $I$ is runoff (mm/y?). The parameter $κ_c$ is dimensionless and should be described by equation 3:
 
 $kc = 40 * 1000 * [Ca^{2+}]_{eq}/ρ$
 
-Parameter ρ is the density of calcite, and we choose 2700 $ kg/m^3 $ here. $[Ca^{2+}]_{eq}$ is defined in equation 4:
+Parameter ρ is the density of calcite, and we choose 2700 $kg/m^3$ here. $[Ca^{2+}]_{eq}$ is defined in equation 4:
 
 $[Ca^{2+}]_{eq} = (PCO_2 * (K_1 * K_C * K_H) / (4 * K_2 * γCa * (γHCO_3)^2))^{(1/3)}$
 
@@ -162,15 +162,19 @@ Herein, λ = I/αL.
 
 Therefore $D_{average} = (I * c_{eq}/ρ) * (1 – (λ/z0) * (1 – e^{(-z0/λ)}))$
 
-α used in this article is α = 2·10^{−6} or 3.5·10^{−7} cm/s (for temp at 298K). This is indeed a controversial parameter TBH. We can try different values and see what happens.
+α used in this article is $α = 2·10^{−6}$ or $3.5·10^{−7}$ cm/s (for temp at 298K). This is indeed a controversial parameter TBH. We can try different values and see what happens.
 
 ## Emperical denudation
 Cl isotopes are an emerging tool to decipher the denudation rates (chemical dissolution + physical erosion) in carbonate-dominated area.
 
-Research based on the karst region and carbonate platform terrace suggested that the denudation rates are mainly controlled by precipitation and slopes, although the debates about which factor is more important is still ongoing ([Ryb et al., 2014](https://www.sciencedirect.com/science/article/pii/S1871101420300248#sec4), [Thomas et al., 2018](https://www.sciencedirect.com/science/article/pii/S0169555X18301740)). In general, the precipitation mainly controls the chemical dissolution while the slopes mainly controls the physical ersions. In addition, the type of carbonates may also play an important role ([Kirklec et al., 2022](https://www.sciencedirect.com/science/article/pii/S0169555X22002513)), but given this feature is studied poorly so we will ditch it for now. We have checked and compiled the denudation rates (mm/kyr) along with precipitation and slopes serve as a starting point to create a function relates denudation rates (mm/kyr) to precipitation and slopes. The compiled data could be found in OSFdatabase. This is an empirical relationship and have a relatively large uncertainty in terms of fitting. 
+Research based on the karst region and carbonate platform terrace suggested that the denudation rates are mainly controlled by precipitation and slopes, although the debates about which factor is more important is still ongoing ([Ryb et al., 2014](https://www.sciencedirect.com/science/article/pii/S1871101420300248#sec4), [Thomas et al., 2018](https://www.sciencedirect.com/science/article/pii/S0169555X18301740)). In general, the precipitation mainly controls the chemical dissolution while the slopes mainly controls the physical ersions. In addition, the type of carbonates may also play an important role ([Kirklec et al., 2022](https://www.sciencedirect.com/science/article/pii/S0169555X22002513)), but given this feature is studied poorly so we will ditch it for now. We have checked and compiled the denudation rates (mm/kyr) along with precipitation and slopes serve as a starting point to create a function relates denudation rates (mm/kyr) to precipitation and slopes. The compiled data could be found in OSFdatabase. This is an empirical relationship and have a relatively large uncertainty in terms of fitting.
+
 <img width="433" alt="image" src="https://github.com/MindTheGap-ERC/CarboKitten.jl/assets/64159957/29da37f3-0e14-479f-8ed3-a8b5adc052a5">
+
 *Fig 1. The relationship between MAP (mean precipitation per year, mm/y) and denudation rates (mm/ky)*
+
 <img width="370" alt="image" src="https://github.com/MindTheGap-ERC/CarboKitten.jl/assets/64159957/1bd9e2ae-d4d7-4611-a8b8-83459222022f">
+
 *Fig 2. The relationship between the curvature (i.e., slope or height) and the denudation rates (mm/ky)*
 
 We can see that both the slope and precipitation could increase the denudation rates, and reaches a 'steady state' after a certain point.

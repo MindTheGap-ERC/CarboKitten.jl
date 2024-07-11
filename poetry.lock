@@ -99,23 +99,25 @@ name = "entangled-cli"
 version = "2.0.5"
 description = "Literate Programming toolbox"
 optional = false
-python-versions = "<4.0,>=3.11"
-files = [
-    {file = "entangled_cli-2.0.5-py3-none-any.whl", hash = "sha256:a2dc40b4f80b586ead6c451c15d2c0ce32d489689cb386f1f63e8fe4d20ed944"},
-    {file = "entangled_cli-2.0.5.tar.gz", hash = "sha256:b19d03f05302d069f06a6b7f1cc5bf345353151b2772e00169826ee6523740b0"},
-]
+python-versions = "^3.11"
+files = []
+develop = true
 
 [package.dependencies]
-argh = ">=0.30,<0.31"
-brei = ">=0.2.3,<0.3.0"
-copier = ">=9,<10"
-filelock = ">=3.12.0,<4.0.0"
-mawk = ">=0.1.4,<0.2.0"
-pexpect = ">=4.9.0,<5.0.0"
-rich = ">=13.3.5,<14.0.0"
-rich-argparse = ">=1.4.0,<2.0.0"
-tomlkit = ">=0.12.1,<0.13.0"
-watchdog = ">=3.0.0,<4.0.0"
+argh = "^0.30"
+brei = "^0.2.3"
+copier = "^9"
+filelock = "^3.12.0"
+mawk = "^0.1.4"
+pexpect = "^4.9.0"
+rich = "^13.3.5"
+rich-argparse = "^1.4.0"
+tomlkit = "^0.12.1"
+watchdog = "^3.0.0"
+
+[package.source]
+type = "directory"
+url = "../../entangled/entangled.py"
 
 [[package]]
 name = "filelock"
@@ -715,4 +717,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "72115c9a2ed3f0cf79117f4491b8b4f94112ff991a7b629fb0e9a018946fa305"
+content-hash = "08fc1697e5e2d3c1abbeedc74a0f519e43dd374596e0a23a86bcc4b46de723e8"

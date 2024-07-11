@@ -1,78 +1,107 @@
 # ~/~ begin <<docs/src/dsl.md#src/DSL.jl>>[init]
 module DSL
 
-using Unitful
+using MacroTools: @capture, postwalk
 
 # ~/~ begin <<docs/src/dsl.md#dsl>>[init]
-const Amount = typeof(1.0u"m")
-const Time = typeof(1.0u"Myr")
-const Height = typeof(1.0u"m")
-const Location = typeof(1.0u"km")
-const Rate = typeof(1.0u"m/Myr")
-const Intensity = typeof(1.0u"W/m^2")
+"""
+    @spec name body
 
-abstract type Input end
-abstract type State end
-abstract type Facies end
+Create a spec. When a spec is composed, the items in the spec will be spliced into a newly generated module. The `@spec` macro itself doesn't perform any operations other than storing the spec in a `const` expression.
+"""
+macro spec(name, body)
+	:(const $(esc(name)) = $(QuoteNode(body)))
+end
 # ~/~ end
 # ~/~ begin <<docs/src/dsl.md#dsl>>[1]
-@spec WaterDepth begin
-  struct Input
-    box::Box
-    sea_level          # function (t::Time) -> Length
-    bedrock_elevation  # function (x::Location, y::Location) -> Length
-    subsidence_rate::Rate
-  end
-
-  struct State
-    time::Time
-    sediment_height::Matrix{Height}
-  end
+# ~/~ begin <<docs/src/dsl.md#dsl-struct-type>>[init]
+struct Struct
+	mut::Bool
+	fields::Vector{Union{Expr,Symbol}}
 end
 
-function water_depth(input::Input)
-  x, y = axes(input.box)
-  eta0 = input.bedrock_elevation.(x, y')
-
-  return function(state::State)
-    return input.sea_level(state.time) .- eta0 .+
-      (input.subsidence_rate * state.time) .- state.sediment_height
-  end
+function define_struct(name::Symbol, s::Struct)
+	if s.mut
+		:(mutable struct $name
+			$(s.fields...)
+		end)
+	else
+		:(struct $name
+			$(s.fields...)
+		end)
+	end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/dsl.md#dsl>>[2]
-@spec UniformProduction begin
-  @requires WaterDepth
 
-  struct Facies
-    maximum_growth_rate::Rate
-    extinction_coefficient::typeof(1.0u"m^-1")
-    saturation_intensity::Intensity
-  end
-
-  struct Input
-    insolation::Intensity
-    facies::Vector{Facies}
-  end
+function define_const(name::Symbol, v)
+	:(const $(esc(name)) = $v)
 end
 
-function production_rate(insolation, facies, water_depth)
-    gₘ = facies.maximum_growth_rate
-    I = insolation / facies.saturation_intensity
-    x = water_depth * facies.extinction_coefficient
-    return water_depth > 0.0u"m" ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
-end
+macro compose(modname, cs)
+  components = Set{Symbol}()
 
-function uniform_production(input::Input)
-  w = water_depth(input)
-  na = [CartesianIndex()]
+  structs = IdDict()
+  using_statements = []
+  const_statements = IdDict()
+  specs_used = Set()
 
-  return function(state::State)
-    return production_rate.(
-      input.insolation,
-      input.facies[:,na,na],
-      w(state)[na,:,:])
+  # ~/~ begin <<docs/src/dsl.md#dsl-compose>>[init]
+  function extend!(name::Symbol, fields::Vector)
+  	append!(structs[name].fields, fields)
   end
+
+  function create!(name::Symbol, is_mutable::Bool, fields::Vector)
+  	structs[name] = Struct(is_mutable, fields)
+  end
+
+  function pass(e)
+  	if @capture(e, @requires parents__)
+  		parents .|> scan
+  		return e
+  	end
+
+  	if @capture(e, (struct name_ fields__ end) |
+  				   (mutable struct mut_name_ fields__ end))
+  		is_mutable = mut_name !== nothing
+  		name = is_mutable ? mut_name : name
+
+  		if name in keys(structs)
+  			extend!(name, fields)
+  		else
+  			create!(name, is_mutable, fields)
+  		end
+  		return e
+  	end
+
+  	if @capture(e, const n_ = x_)
+  		const_statements[n] = x
+  		return e
+  	end
+
+  	if @capture(e, using x__)
+  		push!(using_statements, e)
+  		return e
+  	end
+  end
+
+  function scan(c::Symbol)
+  	if c in specs_used
+  		return
+  	end
+  	push!(specs_used, c)
+
+  	postwalk(pass, esc(c))
+  end
+  # ~/~ end
+
+  @assert cs.head == :vect
+  cs.args .|> scan
+
+  :(module $(esc(modname))
+	  $(using_statements...)
+	  $(Iterators.map(splat(define_const), pairs(const_statements))...)
+	  $(Iterators.map(splat(define_struct), pairs(structs))...)
+	end)
 end
 # ~/~ end
 

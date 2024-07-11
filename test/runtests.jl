@@ -7,6 +7,7 @@ using Unitful
 end
 
 include("Unitful.jl")
+include("DSLSpec.jl")
 
 @testset "CarboKitten" begin
     include("ConfigSpec.jl")

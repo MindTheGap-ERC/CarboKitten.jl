@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-entangled-cli = "^2.0.2"
+entangled-cli = {path = "/home/johannes/Code/entangled/entangled.py", develop = true}
 
 
 [build-system]

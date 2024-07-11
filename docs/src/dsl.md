@@ -2,19 +2,181 @@
 
 At some point in the evolution of CarboKitten, there will be many different implementations for production, disintegration, transport etc. Each with slightly different needs on the `Input` and `State` structures. Wouldn't it be cool if we could compose a model directly out of these components?
 
+## Implementation
+
+``` {.julia file=test/DSLSpec.jl}
+using CarboKitten.DSL: @spec, @compose
+using MacroTools: prewalk, rmlines
+
+clean(expr) = prewalk(rmlines, expr)
+
+<<dsl-spec-defs>>
+
+@testset "CarboKitten.DSL" begin
+  <<dsl-spec>>
+end
+```
+
 ``` {.julia file=src/DSL.jl}
 module DSL
 
-using Unitful
+using MacroTools: @capture, postwalk
 
 <<dsl>>
 
 end
 ```
 
-## Some types
+### `@spec`
+
+The `@spec` macro stores a spec syntax.
+
+``` {.julia #dsl-spec-defs}
+@spec MySpec begin
+    "hello"
+end
+```
+
+``` {.julia #dsl-spec}
+@test clean(MySpec) == clean(:(begin "hello" end))
+```
 
 ``` {.julia #dsl}
+"""
+    @spec name body
+
+Create a spec. When a spec is composed, the items in the spec will be spliced into a newly generated module. The `@spec` macro itself doesn't perform any operations other than storing the spec in a `const` expression.
+"""
+macro spec(name, body)
+	:(const $(esc(name)) = $(QuoteNode(body)))
+end
+```
+
+### `@compose`
+
+The idea of `@compose` is that it splices `struct` definitions, such that resulting structs contain all members from required specs.
+
+We define some variables to collect structs, consts and `using` declarations. At the end we use these collections to build a new module.
+
+``` {.julia #dsl-spec-defs}
+@spec A begin
+  struct S
+    a::Int
+  end
+end
+
+@spec B begin
+  struct S
+    b::Int
+  end
+end
+
+@compose C [A, B]
+```
+
+``` {.julia #dsl-spec}
+@test getfields(C.S) == [:a, :b]
+```
+
+``` {.julia #dsl}
+<<dsl-struct-type>>
+
+function define_const(name::Symbol, v)
+	:(const $(esc(name)) = $v)
+end
+
+macro compose(modname, cs)
+  components = Set{Symbol}()
+
+  structs = IdDict()
+  using_statements = []
+  const_statements = IdDict()
+  specs_used = Set()
+
+  <<dsl-compose>>
+
+  @assert cs.head == :vect
+  cs.args .|> scan
+
+  :(module $(esc(modname))
+	  $(using_statements...)
+	  $(Iterators.map(splat(define_const), pairs(const_statements))...)
+	  $(Iterators.map(splat(define_struct), pairs(structs))...)
+	end)
+end
+```
+
+``` {.julia #dsl-compose}
+function extend!(name::Symbol, fields::Vector)
+	append!(structs[name].fields, fields)
+end
+
+function create!(name::Symbol, is_mutable::Bool, fields::Vector)
+	structs[name] = Struct(is_mutable, fields)
+end
+
+function pass(e)
+	if @capture(e, @requires parents__)
+		parents .|> scan
+		return e
+	end
+
+	if @capture(e, (struct name_ fields__ end) |
+				   (mutable struct mut_name_ fields__ end))
+		is_mutable = mut_name !== nothing
+		name = is_mutable ? mut_name : name
+
+		if name in keys(structs)
+			extend!(name, fields)
+		else
+			create!(name, is_mutable, fields)
+		end
+		return e
+	end
+
+	if @capture(e, const n_ = x_)
+		const_statements[n] = x
+		return e
+	end
+
+	if @capture(e, using x__)
+		push!(using_statements, e)
+		return e
+	end
+end
+
+function scan(c::Symbol)
+	if c in specs_used
+		return
+	end
+	push!(specs_used, c)
+
+	postwalk(pass, esc(c))
+end
+```
+
+``` {.julia #dsl-struct-type}
+struct Struct
+	mut::Bool
+	fields::Vector{Union{Expr,Symbol}}
+end
+
+function define_struct(name::Symbol, s::Struct)
+	if s.mut
+		:(mutable struct $name
+			$(s.fields...)
+		end)
+	else
+		:(struct $name
+			$(s.fields...)
+		end)
+	end
+end
+```
+
+## Some types
+
+``` {.julia #types}
 const Amount = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
 const Height = typeof(1.0u"m")
@@ -29,7 +191,7 @@ abstract type Facies end
 
 ## Water depth
 
-``` {.julia #dsl}
+``` {.julia #dsl-example}
 @spec WaterDepth begin
   struct Input
     box::Box
@@ -57,7 +219,7 @@ end
 
 ## Uniform Production
 
-``` {.julia #dsl}
+``` {.julia #dsl-example}
 @spec UniformProduction begin
   @requires WaterDepth
 

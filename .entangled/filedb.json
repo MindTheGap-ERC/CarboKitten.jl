@@ -452,18 +452,18 @@
     {
       "path": "docs/src/model-alcap.md",
       "deps": null,
-      "modified": "2024-07-09T21:24:13.574315",
-      "hexdigest": "5d261d84259e37be5e3a99da2ecd2b61045a84924c5a0a169dd2ea7fe3b904b5",
-      "size": 16560
+      "modified": "2024-07-10T07:05:05.596336",
+      "hexdigest": "0d1668f687ff535bfd7666de77caec7076eafae4ad274e596d62a6d507fb7212",
+      "size": 16608
     },
     {
       "path": "src/Model/ALCAPS.jl",
       "deps": [
         "docs/src/model-alcap.md"
       ],
-      "modified": "2024-07-09T21:24:13.338313",
-      "hexdigest": "93cc2dd85ba115253c3e869b54de6061df0805968c767c24757d6830fe1593e4",
-      "size": 11687
+      "modified": "2024-07-10T07:05:05.827333",
+      "hexdigest": "eb4dde6d59c63d98a262f78c2aea4eba0ad6bfd85669bbb2e20f4bc707a17cef",
+      "size": 11670
     },
     {
       "path": "src/Transport/ActiveLayer.jl",
@@ -522,66 +522,76 @@
     {
       "path": "docs/src/dsl.md",
       "deps": null,
-      "modified": "2024-07-09T21:09:55.572978",
-      "hexdigest": "89adba87dd756db9a4884e4afaf502d44d884bf2f87b4b3f2db0b40303a13e78",
-      "size": 2122
+      "modified": "2024-07-11T23:06:49.124123",
+      "hexdigest": "6121945a325bcc59e1a97f58f70326e0d2cad14db5471dba3857f87e688982bc",
+      "size": 5111
     },
     {
       "path": "src/DSL.jl",
       "deps": [
         "docs/src/dsl.md"
       ],
-      "modified": "2024-07-09T21:09:55.801978",
-      "hexdigest": "11b481d668a28eb387d5c12bf9c02f8e6baf49ea99e0d9aac2141c122dc3fa52",
-      "size": 1847
+      "modified": "2024-07-11T23:06:48.981123",
+      "hexdigest": "d7e2de9898333d321ef456e30b9fb2437ec156f8c19027b37948f285e0878fec",
+      "size": 2280
+    },
+    {
+      "path": "test/DSLSpec.jl",
+      "deps": [
+        "docs/src/dsl.md"
+      ],
+      "modified": "2024-07-11T22:57:25.096796",
+      "hexdigest": "e76f5e16808bb77ce04fb6f6271a229e6f2cdb2b0c5d7e309fd099db801ece5a",
+      "size": 689
     }
   ],
   "source": [],
   "target": [
-    "test/CASpec.jl",
-    "test/SedimentStackSpec.jl",
-    "src/Vectors.jl",
+    "examples/transport/active-layer-plot-production.jl",
+    "examples/alcaps/alternative.jl",
+    "examples/ca/burgess-2013.jl",
+    "examples/transport/active-layer-erosion.jl",
+    "src/Erosion.jl",
+    "src/BoundaryTrait.jl",
+    "src/Visualization.jl",
+    "src/Transport/ActiveLayer.jl",
+    "src/CaProd.jl",
+    "examples/production-only/ca-uniform.jl",
+    "src/Config.jl",
+    "examples/production-only/ca-slope.jl",
     "examples/BS92/BS92.jl",
     "src/Burgess2013/CA.jl",
-    "test/Unitful.jl",
-    "examples/transport/active-layer-erosion.jl",
-    "src/Burgess2013.jl",
-    "examples/production-only/ca-uniform.jl",
-    "examples/alcaps/plot-defaults.jl",
-    "src/CaProd.jl",
-    "examples/burgess2013-fig2.gnuplot",
-    "examples/production-only/plot-cap-slope.jl",
-    "examples/transport/active-layer-plot-production.jl",
-    "examples/transport/active-layer-plot-result.jl",
-    "ext/VisualizationExt.jl",
-    "src/Visualization.jl",
-    "src/Burgess2013/Transport.jl",
-    "examples/BS92/fig8-sealevel.jl",
-    "src/Burgess2013/Config.jl",
-    "examples/ca/long-term.jl",
-    "examples/BS92/fig8.jl",
-    "examples/alcaps/defaults.jl",
-    "src/Config.jl",
-    "src/Erosion.jl",
-    "examples/production-only/ca-slope.jl",
-    "src/Burgess2013/Production.jl",
-    "src/Transport/ActiveLayer.jl",
-    "examples/ca/eca.jl",
-    "examples/ca/life.jl",
-    "test/ConfigSpec.jl",
-    ".entangled/tasks.json",
     "examples/transport/active-layer.jl",
-    "examples/alcaps/plot-alternative.jl",
-    "examples/alcaps/alternative.jl",
-    "src/Stencil.jl",
-    "examples/ca/burgess-2013.jl",
-    "src/SedimentStack.jl",
-    "src/DSL.jl",
-    "examples/plot-caps-osc.jl",
-    "examples/plot-tanh.gnuplot",
-    "src/BoundaryTrait.jl",
     "src/Utility.jl",
+    "examples/BS92/fig8-sealevel.jl",
+    "src/Burgess2013/Production.jl",
+    "test/ConfigSpec.jl",
+    "examples/alcaps/plot-defaults.jl",
+    "examples/alcaps/defaults.jl",
+    "src/Stencil.jl",
+    "examples/BS92/fig8.jl",
+    "examples/ca/long-term.jl",
+    "test/SedimentStackSpec.jl",
+    ".entangled/tasks.json",
+    "examples/production-only/plot-cap-slope.jl",
+    "examples/burgess2013-fig2.gnuplot",
+    "src/DSL.jl",
+    "test/CASpec.jl",
+    "test/Unitful.jl",
+    "src/Burgess2013/Config.jl",
+    "test/DSLSpec.jl",
+    "ext/VisualizationExt.jl",
+    "src/Burgess2013.jl",
+    "examples/production-only/caps-osc.jl",
+    "examples/transport/active-layer-plot-result.jl",
+    "src/Burgess2013/Transport.jl",
+    "examples/alcaps/plot-alternative.jl",
+    "src/Vectors.jl",
+    "examples/plot-caps-osc.jl",
     "src/Model/ALCAPS.jl",
-    "examples/production-only/caps-osc.jl"
+    "examples/ca/life.jl",
+    "src/SedimentStack.jl",
+    "examples/ca/eca.jl",
+    "examples/plot-tanh.gnuplot"
   ]
 }

@@ -354,7 +354,7 @@ To construct the initial state, we forward the CA by 20 generations before start
 """
     initial_state(input::Input) -> State
 
-Generate the initial state for the model, given the `input`. Returns a [`State`](@ref).
+Generate the initial state for the model, given the `input`. Returns a `State`.
 """
 function initial_state(input)
     sediment_height = zeros(Float64, input.box.grid_size...) * u"m"
@@ -492,7 +492,7 @@ end
 """
     run_model(input) -> Channel{ModelFrame}
 
-Runs the ALCAPS model on a given input. Returns a channel of [`ModelFrame`](@ref).
+Runs the ALCAPS model on a given input. Returns a channel of `ModelFrame`.
 """
 function run_model(input)
     state = initial_state(input)
@@ -569,4 +569,10 @@ function main(input::Input, output::String)
         end
     end
 end
+```
+
+## API
+
+```@autodocs
+Modules = [CarboKitten.Models.ALCAPS]
 ```

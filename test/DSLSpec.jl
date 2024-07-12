@@ -22,7 +22,21 @@ end
   end
 end
 
-@compose C [A, B]
+@compose AB [A, B]
+# ~/~ end
+# ~/~ begin <<docs/src/dsl.md#dsl-spec-defs>>[2]
+@spec C begin
+  @requires A
+  struct S
+    c::Int
+  end
+
+  @kwarg struct T
+    f::Int
+  end
+end
+
+@compose AC [C]
 # ~/~ end
 
 @testset "CarboKitten.DSL" begin
@@ -30,7 +44,12 @@ end
   @test clean(MySpec) == clean(:(begin "hello" end))
   # ~/~ end
   # ~/~ begin <<docs/src/dsl.md#dsl-spec>>[1]
-  @test fieldnames(C.S) == (:a, :b)
+  @test fieldnames(AB.S) == (:a, :b)
+  # ~/~ end
+  # ~/~ begin <<docs/src/dsl.md#dsl-spec>>[2]
+  @test fieldnames(AC.S) == (:a, :c)
+  @test fieldnames(AC.T) == (:f,)
+  @test AC.T(f = 4).f == 4
   # ~/~ end
 end
 # ~/~ end

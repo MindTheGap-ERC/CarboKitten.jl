@@ -99,7 +99,7 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT <: Boundary}
 
     function get_inf_map(s::State,input::Input)
         w = water_depth(s) ./ u"m"
-        inf_map = zeros(size(w)...)
+        inf_map = ones(size(w)...)
         for idx in CartesianIndices(s.ca)
             f = s.ca[idx]
             if f == 0
@@ -123,7 +123,10 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT <: Boundary}
             if f == 0
                 continue
             end
-        (denudation_mass[idx]) = denudation(box, input.denudationparam, w[idx], slope[idx],input.facies[f])
+
+            if w[idx] >= 0
+            (denudation_mass[idx]) = denudation(box, input.denudationparam, w[idx], slope[idx],input.facies[f])
+            end
         end
     
         inf_map = get_inf_map(s,input)

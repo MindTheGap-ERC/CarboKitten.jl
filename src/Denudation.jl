@@ -97,9 +97,9 @@ function calculate_redistribution(box::Box{BT},p::EmpericalDenudationParam,water
     return (zeros(typeof(0.0u"m/kyr"),box.grid_size...))
 end
 
-function calculate_redistribution(box::Box{BT},p::PhysicalErosionParam,water_depth, slope,facies) where {BT <: Boundary}
-    redis = mass_erosion(Float64, BT, slope,(3,3),water_depth,box.phys_scale ./u"m",facies,p.erodability)
-    redistribution = total_mass_redistribution(redis, slope)
+function calculate_redistribution(box::Box{BT},p::PhysicalErosionParam,water_depth, slope,inf) where {BT <: Boundary}
+    redis = mass_erosion(Float64, BT, slope,(3,3),water_depth,box.phys_scale ./u"m",inf,p.erodability)
+    redistribution = total_mass_redistribution(redis, slope, BT)
     return (redistribution .* u"m/kyr")
 end
 

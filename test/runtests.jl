@@ -12,4 +12,7 @@ include("Unitful.jl")
     include("ConfigSpec.jl")
     include("CASpec.jl")
     include("Denudationtest.jl")
+    include("SedimentStackSpec.jl")
+
+
 end

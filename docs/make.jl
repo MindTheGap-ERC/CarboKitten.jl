@@ -76,6 +76,7 @@ makedocs(
         "Algorithms" => [
             "Unitful" => "unitful.md",
             "Boxes" => "boxes.md",
+            "Sediment Buffers" => "sediment-buffer.md",
             "Stencils" => "stencils.md",
             "Utility" => "utility.md"
         ],

@@ -7,7 +7,7 @@ The denudation could be achieved by three ways: modelling physical erosion, mode
 This method not only considers the amount of materials that have been removed, but also how the eroded materials being distributed to the neighboring regions depending on slopes on each direction.
 
 ### Physical erosion 
-The equations used to estimate how much material could one cell provide to the lower cells is described underneath. The equation is found in [Tucker et al., 1998](https://link.springer.com/chapter/10.1007/978-1-4615-0575-4_12). We choose this equation mainly because it specifically deals with bedrock substrates instead of loose sediments. In the equation, $k_v$ is erodibility, and the default value is 0.23 according to the paper. $(1 - I_f)$ indicates run-off generated in one cell and slope is the slope calculated based on [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm). 
+The equations used to estimate how much material could one cell provide to the lower cells is described underneath. The equation is found in [Tucker et al., 1998](https://link.springer.com/chapter/10.1007/978-1-4615-0575-4_12). We choose this equation mainly because it specifically deals with bedrock substrates instead of loose sediments. In the equation, $k_v$ is erodibility, and the default value is 0.23 according to the paper. $(1 - I_f)$ indicates run-off generated in one cell and slope is the slope calculated based on [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm). Note that the algorithms to calculate slope does not work on depressions. 
 
 $$D_{phys} = -k_v * (1 - I_f)^{1/3} |\nabla h|^{2/3}$$
 
@@ -89,20 +89,17 @@ end
 #### how much sediments would one cell receive in total
 
 ``` {.julia #erosion-transport}
-function total_mass_redistribution(redis::Array{Float64},slope::Matrix{Float64})
-	result = zeros(Float64,size(slope))
-	for idx in CartesianIndices(redis)
-		for i in CartesianIndices(slope)
-			#println(idx)
-			#println(i)
-			#println(idx[1],idx[2],idx[3],idx[4],i[1],i[2])
-			# what does this do?
-		if idx[1] + idx[3] -1 == i[1] && idx[2] + idx[4] -1 == i[2]
-		result[i] += redis[idx]
-		end
+function total_mass_redistribution(redis::Array{Float64},slope::Any,::Type{BT}) where {BT <: Boundary}
+	mass = zeros(Float64,size(slope))
+    for i in CartesianIndices(slope)
+        for idx in CartesianIndices(redis)
+            if offset_index(BT, size(slope), CartesianIndex(idx[3],idx[4]), CartesianIndex(idx[1]-2,idx[2]-2)) == i
+            @show i
+			mass[i] += redis[idx]
+            end
 		end
 	end
-	return result
+	return mass
 end
 ```
 
@@ -184,8 +181,8 @@ In terms of implementation, I used the function form of $D = P * S$, where $D$ m
 ## How to use?
 In CarboKitten, you could choose which type of the three you would like to attempt. To do this you could simply change the `erosion_type` in the input. 
 
-Example: in examples, you find `caps_miller.jl`. This file uses the [Miller et al. (2020) curve](https://www.science.org/doi/full/10.1126/science.1116412) as sealevel curve input. You could simply try different erosion types by changing the `erosion_type`:
-- `0` means no erosion
-- `1` means chemical dissolution
-- `2` means physical erosion and sediments redistribution
-- `3` means total denudation calculated based on emperical relationship by Cl isotope observations.
+Example: in examples, you find `caps_miller_diss.jl`, `caps_miller_emp.jl`, `caps_miller_phys.jl`, for chemical dissolution, emperical denudation or physical denudation, respectively. This file uses the [Miller et al. (2020) curve](https://www.science.org/doi/full/10.1126/science.1116412) as sealevel curve input. You could simply try different erosion types by changing the `erosion_type`:
+- `NoDenudation` means no erosion
+- `Dissolution` means chemical dissolution
+- `PhysicalErosionParam` means physical erosion and sediments redistribution
+- `EmpericalDenudationParam` means total denudation calculated based on emperical relationship by Cl isotope observations.

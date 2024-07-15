@@ -197,7 +197,10 @@ function main(input::Input, output::String)
         attr["delta_t"] = input.time.Δt |> in_units_of(u"Myr")
         attr["write_interval"] = input.time.write_interval
         attr["time_steps"] = input.time.steps
+        attr["sea_level"] = input.sea_level
         attr["subsidence_rate"] = input.subsidence_rate |> in_units_of(u"m/Myr")
+        println("Subsidence rate saved successfully.")
+
 
         n_facies = length(input.facies)
         ds = create_dataset(fid, "sediment", datatype(Float64),

@@ -4,7 +4,7 @@ module VisualizationErosion
 export plot_crosssection
 
 using HDF5
-using CairoMakie
+using GLMakie
 using GeometryBasics
 
 function plot_crosssection(pos, datafile)

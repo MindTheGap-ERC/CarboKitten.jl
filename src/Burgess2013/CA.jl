@@ -13,7 +13,7 @@ cycle_permutation(n_species::Int) =
     (circshift(1:n_species, x) for x in Iterators.countfrom(0))
 # ~/~ end
 # ~/~ begin <<docs/src/carbocat-ca.md#burgess2013-rules>>[init]
-function rules(facies::Vector{Facies})
+function rules(facies::Vector{F}) where {F}
     function (neighbourhood::Matrix{Int}, order::Vector{Int})
         cell_facies = neighbourhood[3, 3]
         neighbour_count(f) = sum(neighbourhood .== f)
@@ -52,7 +52,7 @@ function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
 end
 # ~/~ end
 
-function run_ca(::Type{B}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {B<:Boundary{2}}
+function run_ca(::Type{B}, facies::Vector{F}, init::Matrix{Int}, n_species::Int) where {B<:Boundary{2}, F}
     r = rules(facies)
     Channel{Matrix{Int}}() do ch
         target = Matrix{Int}(undef, size(init))

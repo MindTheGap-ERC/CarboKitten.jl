@@ -3,7 +3,7 @@ CarboCAT is primarily based on a very simple cellular automaton (CA). We may exp
 
 # Overview
 
-The CarboCAT model [B13: @Burgess2013] consists of several components, many of which are optional or contain optional levels of complexity.
+The CarboCAT model [Burgess2013](@cite) consists of several components, many of which are optional or contain optional levels of complexity.
 
 1. Species **habitation**: an algorithm is in place to evolve the locality of a number of factory species.
 2. Sediment **production**: each species will produce sediment according to some model.
@@ -83,7 +83,7 @@ export Facies, MODEL1
     saturation_intensity::typeof(1.0u"W/m^2")
 end
 
-MODEL1 = [
+const MODEL1 = [
     Facies(viability_range = (4, 10),
            activation_range = (6, 10),
            maximum_growth_rate = 500u"m/Myr",

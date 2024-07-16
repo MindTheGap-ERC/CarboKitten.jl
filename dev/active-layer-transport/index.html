@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Active Layer · CarboKitten</title><meta name="title" content="Active Layer · CarboKitten"/><meta property="og:title" content="Active Layer · CarboKitten"/><meta property="twitter:title" content="Active Layer · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li></ul></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li><li><a class="tocitem" href="../carbocat-ca/">Cellular Automaton</a></li><li><a class="tocitem" href="../carbocat-transport/">Sediment Transport</a></li></ul></li><li><span class="tocitem">Transport</span><ul><li class="is-active"><a class="tocitem" href>Active Layer</a><ul class="internal"><li><a class="tocitem" href="#Test-1:-production-transport"><span>Test 1: production transport</span></a></li><li><a class="tocitem" href="#Test-2:-erosion"><span>Test 2: erosion</span></a></li></ul></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../sediment-buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Transport</a></li><li class="is-active"><a href>Active Layer</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Active Layer</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/active-layer-transport.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Active-Layer-Transport"><a class="docs-heading-anchor" href="#Active-Layer-Transport">Active Layer Transport</a><a id="Active-Layer-Transport-1"></a><a class="docs-heading-anchor-permalink" href="#Active-Layer-Transport" title="Permalink"></a></h1><p>The following is inspired on well-known <strong>active layer</strong> approaches in river bed sediment transport <a href="../references/#Paola1992">[3]</a> <a href="../references/#James2010">[4]</a> <sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup>. All quantities with subscript <span>$f$</span> are facies dependent. Sediment is measured in meters of deposited material. <span>$P_f$</span> is the production of sediment per facies in <span>$m/s$</span>. Further unit calculations would be more readable if we consider the unit of sediment as separate, so for instance it doesn&#39;t cancel against <span>$m^2$</span> in the units of sediment flux. In the implementation, <span>$\nu$</span> has the units of <span>${\rm m}$</span> which is totaly weird. TBC</p><p>In a model without transport, we could write</p><p class="math-container">\[\sigma + \sum_f {{\partial \eta_f} \over {\partial t}} = \sum_f P_f,\]</p><p>where <span>$\sigma$</span> is the subsidence rate in <span>$m/s$</span>. We consider the mass balance for each facies separately.</p><p>We suppose that loose sediment, either fresh production or disintegrated older sediment, is being transported in a layer on top of the sea bed. The flux in this layer is assumed to be directly proportional to the local slope of the sea bed <span>$| \nabla_x \eta_* |$</span>, where <span>$\eta_* = \sum_f \eta_f$</span>, the sum over all facies contributions, including <span>$\eta_0$</span>, the initial bedrock eleveation.</p><p><img src="../fig/active-layer-export.svg" alt="Schematic of Active Layer approach"/></p><p>The active layer now contains a concentration <span>$C_f$</span> particles of different grain size (for each facies <span>$f$</span>). If needed, <span>$C_f = \alpha_f P_f$</span> where <span>$\alpha_f$</span> is some facies parameter determining the fraction of production that is available for transport. The sediment flux is given as,</p><p class="math-container">\[{\bf q_f} = -\nu_f C_f {\bf \nabla_x} \eta_*.\]</p><p>The following is the mass balance:</p><p class="math-container">\[\sigma + {{\partial \eta_*} \over {\partial t}} = -\sum_f {\bf \nabla_x} \cdot {\bf q_f} + \sum_f P_f,\]</p><p>In our modelling we keep track of individual contributions per facies over time <sup class="footnote-reference"><a id="citeref-2" href="#footnote-2">[2]</a></sup>.</p><p>Combining these equations, and ignoring subsidence for the moment (which is a global effect and can&#39;t be expressed on a per-facies basis), we get a component-wise diffusion equation</p><p class="math-container">\[{{\partial \eta_f(x)}\over{\partial t}} = {\bf \nabla_x} \cdot \big[ \nu_f \alpha_f\ P_f(x)\ {\bf \nabla_x} \eta_{*}(x) \big] + P_f(x),\]</p><p>In our model we need to solve this equation one time-step each iteration. If we solve this using forward methods, we should be reminded of the CFL limit for diffusion equations (depending on the diffusion constants and grid size we shouldn&#39;t pick the time steps too large). Alternatively, for these two-dimensional situations, an implicit approach is feasible. Also we should take care that somehow <span>$\nabla(\nu\alpha P \nabla \eta) + P &gt; 0$</span>. The interpretation being that we can&#39;t transport more than we produce, even if there is capacity to do so.</p><p>To solve this equation, it is nicer to expand the transport-diffusion term using the product rule, in short notation:</p><p class="math-container">\[\partial_t \eta_f = \nu&#39; \nabla P_f(x) \cdot \nabla \eta(x) + \nu&#39; P_f(x) \nabla^2 \eta(x) + P_f(x),\]</p><p>where <span>$\nu&#39; = \nu_f \alpha_f$</span></p><p>So we have a advection component with velocity <span>$\nu&#39; \nabla P_f$</span> and a diffusion component with a coefficient <span>$\nu&#39; P_f$</span>.</p><p>As part of the production <span>$P_f$</span> we disintegrate older sediment at a fixed rate.</p><h2 id="Test-1:-production-transport"><a class="docs-heading-anchor" href="#Test-1:-production-transport">Test 1: production transport</a><a id="Test-1:-production-transport-1"></a><a class="docs-heading-anchor-permalink" href="#Test-1:-production-transport" title="Permalink"></a></h2><p>Suppose we have an incline in one direction, as per usual on a coastal slice. Production is happening in a circular patch in our box, with constant rate. In addition, we&#39;ll release the top 1m of sediment for further transport.</p><details><summary>Test model</summary><div class="noweb-label">file:<i>examples/transport/active-layer.jl</i></div><pre><code class="language- julia hljs">module ActiveLayer
+
+using Unitful
+using CarboKitten.Stencil: convolution, stencil
+using CarboKitten.Config: Box, axes
+using CarboKitten.BoundaryTrait: Shelf
+using CarboKitten.Utility: in_units_of
+using CarboKitten.Transport.ActiveLayer: pde_stencil, Amount, Rate
+
+&lt;&lt;example-active-layer&gt;&gt;
+
+end</code></pre></details><p>Our input structure facilitates a single facies, specifying an initial bedrock elevation, sediment layer and a function for a location dependent constant production rate. The transport is parametrized by a disintegration rate and a diffusion coefficient.</p><div class="noweb-label">⪡example-active-layer⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Input
+	box
+	Δt::typeof(1.0u&quot;Myr&quot;)
+	t_end::typeof(1.0u&quot;Myr&quot;)
+	bedrock_elevation   # function (x::u&quot;m&quot;, y::u&quot;m&quot;) -&gt; u&quot;m&quot;
+	initial_sediment    # function (x::u&quot;m&quot;, y::u&quot;m&quot;) -&gt; u&quot;m&quot;
+	production          # function (x::u&quot;m&quot;, y::u&quot;m&quot;) -&gt; u&quot;m/s&quot;
+	disintegration_rate::typeof(1.0u&quot;m/Myr&quot;)
+	subsidence_rate::typeof(1.0u&quot;m/Myr&quot;)
+	diffusion_coefficient::typeof(1.0u&quot;m&quot;)
+end</code></pre><h3 id="Production-patch"><a class="docs-heading-anchor" href="#Production-patch">Production patch</a><a id="Production-patch-1"></a><a class="docs-heading-anchor-permalink" href="#Production-patch" title="Permalink"></a></h3><p>Establish a grid of 100x50, 15km on each side, dropping from 0 to 50m depth. Keeping the disintegration rate to a similar value as the production rate seems a sensible choice.</p><div class="noweb-label">⪡example-active-layer⪢≣</div><pre><code class="language- julia hljs">production_patch(center, radius, rate) = function(x, y)
+	(pcx, pcy) = center
+	(x - pcx)^2 + (y - pcy)^2 &lt; radius^2 ?
+		rate :
+		0.0u&quot;m/Myr&quot;
+end
+
+const input = Input(
+	box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0u&quot;m&quot;),
+	Δt=0.001u&quot;Myr&quot;,
+	t_end=1.0u&quot;Myr&quot;,
+
+	bedrock_elevation = (x, y) -&gt; -x / 300.0,
+	initial_sediment = (x, y) -&gt; 0.0u&quot;m&quot;,
+
+	production = production_patch(
+		(5000.0u&quot;m&quot;, 3750.0u&quot;m&quot;),
+		2.0u&quot;km&quot;,
+		50.0u&quot;m/Myr&quot;),
+
+	disintegration_rate = 50.0u&quot;m/Myr&quot;,
+	subsidence_rate = 50.0u&quot;m/Myr&quot;,
+
+	diffusion_coefficient = 10000.0u&quot;m&quot;
+)</code></pre><p><img src="../fig/active-layer-production-patch.png" alt="Production patch on an inclining bedrock"/></p><details><summary>Plotting code</summary><div class="noweb-label">file:<i>examples/transport/active-layer-plot-production.jl</i></div><pre><code class="language- julia hljs">#| requires: examples/transport/active-layer.jl
+#| creates: docs/src/_fig/active-layer-production-patch.png
+#| collect: figures
+
+include(&quot;active-layer.jl&quot;)
+using Unitful
+using CarboKitten.Config: axes
+using CarboKitten.Utility: in_units_of
+using CairoMakie
+using .ActiveLayer: input
+
+function main()
+  (x, y) = axes(input.box)
+  η = input.bedrock_elevation.(x, y&#39;)
+  p = input.production.(x, y&#39;)
+
+  fig = Figure()
+  ax = Axis3(fig[1,1], xlabel=&quot;x (km)&quot;, ylabel=&quot;y (km)&quot;, zlabel=&quot;η (m)&quot;, azimuth=5π/3)
+  surface!(ax, x |&gt; in_units_of(u&quot;km&quot;), y |&gt; in_units_of(u&quot;km&quot;), η |&gt; in_units_of(u&quot;m&quot;), color = p |&gt; in_units_of(u&quot;m/Myr&quot;))
+  save(&quot;docs/src/_fig/active-layer-production-patch.png&quot;, fig)
+end
+
+main()</code></pre></details><h3 id="Solving-the-PDE"><a class="docs-heading-anchor" href="#Solving-the-PDE">Solving the PDE</a><a id="Solving-the-PDE-1"></a><a class="docs-heading-anchor-permalink" href="#Solving-the-PDE" title="Permalink"></a></h3><p>Just as a reminder:</p><p class="math-container">\[\partial_t \eta_f = \nu&#39; \nabla P_f(x) \cdot \nabla \eta(x) + \nu&#39; P_f(x) \nabla^2 \eta(x) + P_f(x)\]</p><p>Below is the kernel encoding a central differencing scheme i.e. <code>[-1, 0, 1]/(2Δx)</code> for first derivative and <code>[0 -1 0; -1 4 -1; 0 -1 0]/Δx^2</code> for the laplacian.</p><div class="noweb-label">file:<i>src/Transport/ActiveLayer.jl</i></div><pre><code class="language- julia hljs">module ActiveLayer
+
+using Unitful
+using ...BoundaryTrait
+using ...Config: Box
+using ...Stencil: stencil
+
+const Rate = typeof(1.0u&quot;m/Myr&quot;)
+const Amount = typeof(1.0u&quot;m&quot;)
+
+function pde_stencil(box::Box{BT}, ν) where {BT &lt;: Boundary{2}}
+	Δx = box.phys_scale
+
+	function kernel(x)
+		adv = ν * ((x[3, 2][1] - x[1, 2][1]) * (x[3, 2][2] - x[1, 2][2]) +
+     			   (x[2, 3][1] - x[2, 1][1]) * (x[2, 3][2] - x[2, 1][2])) /
+			      (2Δx)^2
+
+		dif = ν * x[2, 2][2] * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
+				  x[2, 1][1] - 4*x[2, 2][1]) / (Δx)^2
+
+		prd = x[2, 2][2]
+
+		return max(0.0u&quot;m&quot;, adv + dif + prd)
+	end
+
+	stencil(Tuple{Amount, Amount}, Amount, BT, (3, 3), kernel)
+end
+
+end</code></pre><h3 id="Model-loop"><a class="docs-heading-anchor" href="#Model-loop">Model loop</a><a id="Model-loop-1"></a><a class="docs-heading-anchor-permalink" href="#Model-loop" title="Permalink"></a></h3><p>Every iteration we determine the maximum disintegrated sediment. If the total amount of sediment is smaller than the maximum, then that amount is disintegrated instead. We compute the concentrations in the active layer in terms of amounts of sediment, so <span>$P \Delta t$</span>. Since <span>$P$</span> appears in every term of the PDE, we&#39;re free to do so.</p><div class="noweb-label">⪡example-active-layer⪢≣</div><pre><code class="language- julia hljs">mutable struct State
+	time::typeof(1.0u&quot;Myr&quot;)
+	sediment::Matrix{typeof(1.0u&quot;m&quot;)}
+end
+
+function initial_state(input)
+    x, y = axes(input.box)
+	State(0.0u&quot;Myr&quot;, input.initial_sediment.(x, y&#39;))
+end
+
+struct Frame
+	t::typeof(1.0u&quot;Myr&quot;)
+	δ::Matrix{Amount}
+end
+
+function propagator(input)
+	δ = Matrix{Amount}(undef, input.box.grid_size...)
+	x, y = axes(input.box)
+	μ0 = input.bedrock_elevation.(x, y&#39;)
+
+	function active_layer(state)
+		max_amount = input.disintegration_rate * input.Δt
+		amount = min.(max_amount, state.sediment)
+		state.sediment .-= amount
+
+		input.production.(x, y&#39;) * input.Δt .+ amount
+	end
+
+	stc = pde_stencil(input.box, input.diffusion_coefficient)
+	apply_pde(μ::Matrix{Amount}, p::Matrix{Amount}) = stc(tuple.(μ, p), δ)
+
+	function (state)
+		p = active_layer(state)
+		apply_pde(state.sediment .+ μ0, p)
+		return Frame(state.time, δ)
+	end
+end
+
+function run_model(input)
+	state = initial_state(input)
+	prop = propagator(input)
+
+	Channel{State}() do ch
+		while state.time &lt; input.t_end
+			Δ = prop(state)
+			state.sediment .+= Δ.δ
+			state.time += input.Δt
+			put!(ch, state)
+		end
+	end
+end</code></pre><h3 id="Running-the-model"><a class="docs-heading-anchor" href="#Running-the-model">Running the model</a><a id="Running-the-model-1"></a><a class="docs-heading-anchor-permalink" href="#Running-the-model" title="Permalink"></a></h3><p>We run the model with 1000 time steps but only inspect one in every 100.</p><p><img src="../fig/active-layer-test.png" alt="Active layer test"/></p><details><summary>Plotting code</summary><div class="noweb-label">file:<i>examples/transport/active-layer-plot-result.jl</i></div><pre><code class="language- julia hljs">#| requires: examples/transport/active-layer.jl
+#| creates: docs/src/_fig/active-layer-test.png
+#| collect: figures
+
+include(&quot;active-layer.jl&quot;)
+using CairoMakie
+using Unitful
+using CarboKitten.Config: axes
+using CarboKitten.Utility: in_units_of
+using .ActiveLayer: input, run_model
+
+function main()
+  result = Iterators.map(deepcopy,
+  	Iterators.filter(x -&gt; mod(x[1], 100) == 0, enumerate(run_model(input)))) |&gt; collect
+
+	(x, y) = axes(input.box)
+	η = input.bedrock_elevation.(x, y&#39;) .+ result[10][2].sediment .- input.subsidence_rate * result[10][2].time
+	# p = input.production.(x, y&#39;)
+
+	fig = Figure(size=(800, 1000))
+	ax = Axis3(fig[1:2,1], xlabel=&quot;x (km)&quot;, ylabel=&quot;y (km)&quot;, zlabel=&quot;η (m)&quot;, azimuth=5π/3)
+	surface!(ax, x |&gt; in_units_of(u&quot;km&quot;), y |&gt; in_units_of(u&quot;km&quot;), η |&gt; in_units_of(u&quot;m&quot;))
+
+	ax2 = Axis(fig[3,1], xlabel=&quot;x (km)&quot;, ylabel=&quot;η (m)&quot;)
+
+	for i in 1:10
+		η = input.bedrock_elevation.(x, y&#39;) .+ result[i][2].sediment .- input.subsidence_rate * result[i][2].time
+
+		lines!(ax2, x |&gt; in_units_of(u&quot;km&quot;), η[:, 25] |&gt; in_units_of(u&quot;m&quot;))
+	end
+
+	save(&quot;docs/src/_fig/active-layer-test.png&quot;, fig)
+end
+
+main()</code></pre></details><p>Note in the bottom figure, due to sedimentation not keeping up with subsidence, the lines go down in time. We see the sediment transport being favoured to downslope areas, which is what we want. This effect could be made more extreme by increasing the disintegration rate.</p><h2 id="Test-2:-erosion"><a class="docs-heading-anchor" href="#Test-2:-erosion">Test 2: erosion</a><a id="Test-2:-erosion-1"></a><a class="docs-heading-anchor-permalink" href="#Test-2:-erosion" title="Permalink"></a></h2><p>Suppose now we have <strong>no</strong> production, but we start with a steep gradient in the existing sediment. We expect this gradient to erode.</p><p>In the input we set the <code>production</code> to zero, but we specify an initial sediment that contains both a step and a top-hat function. Erodability of these kind of features could be a measurable quantity to which we could potentially calibrate this transport model.</p><p>Note that, due to the way we populate the active layer, the gradient <span>$\nabla P$</span> will vanish, leaving us with a pure diffusion system.</p><div class="noweb-label">⪡example-active-layer-erosion⪢≣</div><pre><code class="language- julia hljs">function initial_sediment(x, y)
+  if x &lt; 5.0u&quot;km&quot;
+    return 30.0u&quot;m&quot;
+  end
+
+  if x &gt; 10.0u&quot;km&quot; &amp;&amp; x &lt; 11.0u&quot;km&quot;
+    return 20.0u&quot;m&quot;
+  end
+
+  return 5.0u&quot;m&quot;
+end
+
+const INPUT = ActiveLayer.Input(
+	box                   = Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u&quot;m&quot;),
+	Δt                    = 0.001u&quot;Myr&quot;,
+	t_end                 = 1.0u&quot;Myr&quot;,
+
+	bedrock_elevation     = (x, y) -&gt; -30.0u&quot;m&quot;,
+	initial_sediment      = initial_sediment,
+	production            = (x, y) -&gt; 0.0u&quot;m/Myr&quot;,
+
+	disintegration_rate   = 50.0u&quot;m/Myr&quot;,
+	subsidence_rate       = 50.0u&quot;m/Myr&quot;,
+	diffusion_coefficient = 10000.0u&quot;m&quot;)</code></pre><p><img src="../fig/active-layer-erosion.png" alt="Active layer erosion test"/></p><details><summary>Plotting code</summary><div class="noweb-label">file:<i>examples/transport/active-layer-erosion.jl</i></div><pre><code class="language- julia hljs">#| requires: examples/transport/active-layer.jl
+#| creates: docs/src/_fig/active-layer-erosion.png
+#| collect: figures
+
+module ActiveLayerErosion
+
+include(&quot;active-layer.jl&quot;)
+
+using Unitful
+using CarboKitten.BoundaryTrait: Shelf
+using CarboKitten.Config: Box, axes
+using CarboKitten.Utility: in_units_of
+using CairoMakie
+
+&lt;&lt;example-active-layer-erosion&gt;&gt;
+
+function main(input)
+    y_idx = 1
+    result = Iterators.map(deepcopy,
+  	    Iterators.filter(x -&gt; mod(x[1]-1, 400) == 0, enumerate(ActiveLayer.run_model(input)))) |&gt; collect
+
+	(x, y) = axes(input.box)
+	# p = input.production.(x, y&#39;)
+
+	fig = Figure(size=(800, 600))
+	# ax = Axis3(fig[1:2,1], xlabel=&quot;x (km)&quot;, ylabel=&quot;y (km)&quot;, zlabel=&quot;η (m)&quot;, azimuth=5π/3)
+	# surface!(ax, x |&gt; in_units_of(u&quot;km&quot;), y |&gt; in_units_of(u&quot;km&quot;), η |&gt; in_units_of(u&quot;m&quot;))
+
+	ax2 = Axis(fig[1,1], xlabel=&quot;x (km)&quot;, ylabel=&quot;η (m)&quot;)
+
+	for r in result
+		η = input.bedrock_elevation.(x, y&#39;) .+ r[2].sediment .- input.subsidence_rate * r[2].time
+
+		lines!(ax2, x |&gt; in_units_of(u&quot;km&quot;), η[:, y_idx] |&gt; in_units_of(u&quot;m&quot;))
+	end
+
+	save(&quot;docs/src/_fig/active-layer-erosion.png&quot;, fig)
+end
+
+end
+
+ActiveLayerErosion.main(ActiveLayerErosion.INPUT)</code></pre></details><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Literature on active (or mixing) layer transport modeling is vast. Most of which is concerned with much smaller time scales, and more complicated physics than we are mostly dealing with.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Note that in other approaches to active layer transport, like Paola 1992, there would be a factor <span>$1/C_f$</span>. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../carbocat-transport/">« Sediment Transport</a><a class="docs-footer-nextpage" href="../unitful/">Unitful »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.0 on <span class="colophon-date" title="Tuesday 16 July 2024 10:35">Tuesday 16 July 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

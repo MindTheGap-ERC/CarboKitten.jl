@@ -1,19 +1,12 @@
 # ~/~ begin <<docs/src/dsl.md#src/DSL.jl>>[init]
 module DSL
 
-using MacroTools: @capture, postwalk
+include("DSL/Forward.jl")
 
-# ~/~ begin <<docs/src/dsl.md#dsl>>[init]
-"""
-    @spec name body
+using .Forward: @dynamic, @forward
+using MacroTools: @capture, postwalk, prewalk
+export @spec, @requires, @compose, @dynamic, @forward
 
-Create a spec. When a spec is composed, the items in the spec will be spliced into a newly generated module. The `@spec` macro itself doesn't perform any operations other than storing the spec in a `const` expression. The real magic happens inside the `@compose` macro.
-"""
-macro spec(name, body)
-    :(const $(esc(name)) = $(QuoteNode(body)))
-end
-# ~/~ end
-# ~/~ begin <<docs/src/dsl.md#dsl>>[1]
 # ~/~ begin <<docs/src/dsl.md#dsl-struct-type>>[init]
 struct Struct
     mut::Bool
@@ -27,7 +20,7 @@ function define_struct(name::Symbol, s::Struct)
             $(s.fields...)
         end)
     elseif s.kwarg
-        :(@kwarg struct $name
+        :(@kwdef struct $name
             $(s.fields...)
           end)
     else
@@ -38,6 +31,27 @@ function define_struct(name::Symbol, s::Struct)
 end
 # ~/~ end
 
+# ~/~ begin <<docs/src/dsl.md#dsl>>[init]
+"""
+    @spec name body
+
+Create a spec. When a spec is composed, the items in the spec will be spliced into a newly generated module. The `@spec` macro itself doesn't perform any operations other than storing the spec in a `const` expression. The real magic happens inside the `@compose` macro.
+"""
+macro spec(name, body)
+    quoted_body = QuoteNode(body)
+
+    clean_body = postwalk(e -> @capture(e, @requires parents__) ? :() : e, body)
+    esc(Expr(:toplevel, :(module $name
+        $clean_body
+        const AST = $quoted_body
+    end)))
+end
+
+macro requires(deps...)
+    :(const $(esc(:PARENTS)) = [$(deps)...])
+end
+# ~/~ end
+# ~/~ begin <<docs/src/dsl.md#dsl>>[1]
 function define_const(name::Symbol, v)
     :(const $(esc(name)) = $v)
 end
@@ -46,6 +60,7 @@ macro compose(modname, cs)
     components = Set{Symbol}()
 
     structs = IdDict()
+    forwards = Vector
     using_statements = []
     const_statements = IdDict()
     specs_used = Set()
@@ -66,7 +81,7 @@ macro compose(modname, cs)
         end
 
         if @capture(e, (struct name_ fields__ end) |
-                       (@kwdef struct kw_name_ fields__ end)
+                       (@kwdef struct kw_name_ fields__ end) |
                        (mutable struct mut_name_ fields__ end))
             is_mutable = mut_name !== nothing
             is_kwarg = kw_name !== nothing
@@ -99,8 +114,8 @@ macro compose(modname, cs)
         end
         push!(specs_used, c)
 
-        e = Core.eval(__module__, :($c))
-        postwalk(pass, e)
+        e = Core.eval(__module__, :($(c).AST))
+        prewalk(pass, e)
     end
     # ~/~ end
 

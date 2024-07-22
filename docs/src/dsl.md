@@ -52,7 +52,162 @@ end
 </details>
 ```
 
-## Example
+## First Example
+
+The models in CarboKitten are all variations on a basic design. With the DSL we want to make it easy to swap model components without too much programming. This requires a method of composition that is not natively supported by the Julia language, however using some macros we can still get there.
+
+The mini language we introduce here has three primitives: `@spec`, `@requires` and `@compose`.
+
+``` {.julia}
+using CarboKitten.DSL: @spec, @requires, @compose
+```
+
+The `@spec` syntax effectively does nothing else than creating a regular Julia module (a little bit more, just to make `@compose` work later on). This module will contain `struct` definitions and methods like you're used to.
+
+``` {.julia}
+@spec A begin
+  mutable struct State
+    a
+  end
+
+  step!(state) = ...
+end
+```
+
+Now with a second spec `B`:
+
+``` {.julia}
+@spec B begin
+  mutable struct State
+    b
+  end
+
+  step!(state) = ...
+end
+```
+
+We can now merge the two specs using `@compose`.
+
+``` {.julia}
+@compose C [A, B] begin
+  using ..A
+  using ..B
+
+  step!(state) = begin
+    A.step!(state)
+    B.step!(state)
+  end
+end
+```
+
+This also creates a new module, but it will merge all struct definitions in the list of parents (`[A, B]` in this case). So the resulting code would look something like:
+
+``` {.julia}
+@compose C [A, B] begin
+  using ..A
+  using ..B
+
+  mutable struct State
+    a
+    b
+  end
+
+  step!(state) = begin
+    A.step!(state)
+    B.step!(state)
+  end
+end
+```
+
+Notice, we still had to manually program the `step!` method, as there may be no clear way to merge such a method unambiguously. From this example it may still not be completely obvious why the `@spec`/`@compose` design gives us significant benifits.
+
+First of all, in CarboKitten, both the `Input` and `State` data structures can get quite wieldy, and copying over large input data structures just to create variations of models can become cumbersome and error prone. This way, we can force models to keep consistent naming and structuring.
+
+Second, if you look at the definition of the `C.step!(state)` method, notice that we could call `A.step!` and `B.step!` on the same data. This is always possible in Julia, because Julia is a dynamic language. Now however, when we change the interface in spec `A` we can trust that the composed model doesn't need to be changed with it.
+
+Third, we can (yet to be implemented) automatically generate part of our documentation. Every model in CarboKitten will have an inheritance diagram showing exactly what components go into the model.
+
+### Alternatives considered
+Before going into alternatives, we should point out the peculiar properties of this system of inheritance:
+
+- Non-hierarchical: the resulting `@compose`d struct definition really is just that: a struct containing all members from its parent definitions. Julia's dynamic type system does the rest for us. In the final composed model all types are completely known at compile time, making this solution efficient.
+- Multiple inheritance: the basic nature of this system makes multiple inheritance trivial and this is what we want, since we're not really inheriting, we're composing.
+
+#### Path not taken: Individual struct inheritance
+
+Could be slightly simpler but ignores the way that different types have interplay, like `Input` and `State`. Having our model components represented as modules is a much cleaner solution.
+
+#### Path not taken: Hierarchical composition
+
+Often we see the nomer ["composition over inheritance"](https://en.wikipedia.org/wiki/Composition_over_inheritance) when it comes to object oriented programming. In most class based systems, this would mean that our composed state would look like this:
+
+```julia
+struct State
+  a::A.State
+  b::B.State
+end
+```
+
+Then given some `x::State`, we would need to say `x.a.a` to access the element that was in `A.State`. A `@forward` macro can be constructed to reduce the indirection here.
+
+This seems attractive, as it makes the composed state object easier to construct from its components, and also we can retrieve the original components by simple dereference. However, this betrays some old-fashioned thinking from the realm of staticly compiled languages: the idea that we then have a singly typed method that works for everyone (which is basically how OOP works in C++ and the likes).
+
+The real problem comes when we compose from two specs that both have th same sub-spec (using the `@requires` syntax). Suddenly object construction becomes hard to implement (though not impossible). What becomes even harder though, is truly composed structs.
+
+```julia
+@spec A begin
+    struct Facies
+        a
+    end
+
+    struct Input
+        facies::Facies
+    end
+end
+
+@spec B begin
+    struct Facies
+        b
+    end
+end
+
+@compose C [A, B] begin end
+```
+
+Now in module `A` we have some function expecting a type `A.Facies`. To get there, we now need to know that `C.Facies` also contains `A.Facies`. But how do we know that reasoning from the `Input` type? We can only reasonably do so by making sure `C.Facies` obeys the same interface as `A.Facies` and not type the functions in module `A` too strongly. This means we gained nothing from a lot of added complexity. Not typing functions too strongly is not the worst part. We couldn't even type the `Input.facies` member strongly, because really the `A.Input` struct now should contain a member of type `C.Facies`.
+
+As it stands now, the above example works trivially, since the `@compose` macro only performs a (slightly fancy) code transformation.
+
+#### TODO Nested composition
+
+It's a bit of a shame that composed models cannot be further composed, or that we have more symmetric notation. With future modifications it might be possible to get rid of this. Then all components would be given as items in a `@requires` statement.
+
+Currently, `@spec` just stores the abstract syntax tree (AST) of a module inside that module and then `@compose` does all the mingling needed to insert the required structs in the final model.
+
+The alternative: `@composing` and `@mixin`.
+
+```julia
+@composing module A
+end
+
+@composing module B
+end
+
+@composing module C
+    @mixin A, B
+
+    ...
+end
+```
+
+The `@mixin` term comes from Ruby land.
+
+#### Existing Julia libraries
+
+- `Mixers.jl` works on a per struct basis, every definition creates a new macro making for a weird syntax.
+- `ObjectOriented.jl` used for "classical" OOP, which does not apply here.
+
+## Example: BS92
 
 As a first example, let us recreate the [Bosscher1992](@cite) model. For this, we need to know the water depth, and specify a uniform production (i.e. without CA). First we define some units.
 
@@ -264,7 +419,8 @@ end
 end
 ```
 
-## `@forward`
+## Implementation
+### `@forward`
 
 The `@forward` macro is not at the front of our DSL, rather a method of inheritance for structs that leads up to the DSL. One of the oft repeated answers to the question "why doesn't Julia have OOP?" is: compose don't inherit. What we'll do is inherit through composition. That way it is also easier to down-cast an object.
 
@@ -351,7 +507,7 @@ end
 ```
 
 
-## `@spec`
+### `@spec`
 
 The `@spec` macro stores a spec syntax in a newly created module.
 
@@ -389,7 +545,7 @@ macro requires(deps...)
 end
 ```
 
-## `@compose`
+### `@compose`
 
 The idea of `@compose` is that it splices `struct` definitions, such that resulting structs contain all members from required specs.
 
@@ -553,13 +709,4 @@ end
 
 ```@raw html
 </details>
-```
-
-## Some types
-
-``` {.julia #types}
-
-abstract type Input end
-abstract type State end
-abstract type Facies end
 ```

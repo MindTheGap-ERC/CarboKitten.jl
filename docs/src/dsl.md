@@ -37,8 +37,9 @@ module DSL
 
 include("DSL/Forward.jl")
 
+using .Forward: @dynamic, @forward
 using MacroTools: @capture, postwalk, prewalk
-export @spec, @requires, @compose
+export @spec, @requires, @compose, @dynamic, @forward
 
 <<dsl-struct-type>>
 
@@ -56,7 +57,7 @@ end
 As a first example, let us recreate the [Bosscher1992](@cite) model. For this, we need to know the water depth, and specify a uniform production (i.e. without CA). First we define some units.
 
 ``` {.julia file=examples/dsl/bs92.jl}
-using CarboKitten.DSL: @spec, @compose
+using CarboKitten.DSL: @spec, @requires, @compose
 
 module Units
   using Unitful
@@ -70,19 +71,26 @@ module Units
   const Location = typeof(1.0u"km")
   const Rate = typeof(1.0u"m/Myr")
   const Intensity = typeof(1.0u"W/m^2")
+
+  export AbstractInput, AbstractFacies, AbstractState
+
+  abstract type AbstractInput end
+  abstract type AbstractFacies end
+  abstract type AbstractState end
 end
 
 <<dsl-example-time>>
 <<dsl-example-waterdepth>>
 <<dsl-example-production>>
 
-@compose BS92 [UniformProduction]
-
-module BS92
+@compose BS92 [UniformProduction] begin
   using CSV
   using DataFrames
   using Interpolations
   using CarboKitten.BoundaryTrait: Shelf
+  using ..UniformProduction: uniform_production
+  using ..TimeIntegration
+  using ..WaterDepth
 
   # In the future, this function will be auto-generated
   function State(input::Input)
@@ -94,7 +102,7 @@ module BS92
   function step(input::Input)
     τ = uniform_production(input)
     function (state::State)
-      Δη = τ(state) .* input.time.Δt
+      Δη = sum(τ(state); dims=1)[1,:,:] .* input.time.Δt
       state.sediment_height .+= Δη
       state.time += input.time.Δt
     end
@@ -106,29 +114,63 @@ module BS92
   end
 
   const INPUT = Input(
-      box = Box(grid_size=(100, 1), phys_scale=600.0u"m"),
+      box = Box{Shelf}(grid_size=(100, 1), phys_scale=600.0u"m"),
       time = TimeProperties(
-        Δt = 10u"yr",
+        Δt = 10.0u"yr",
         steps = 8000,
-        write_interval = 1),
-      sea_level = sealevel_curve(),
-      bedrock_elevation = (x, y) -> x / 300.0,
+        write_interval = 100),
+      sea_level = let sc = sealevel_curve()
+        t -> -sc(t / u"yr") * u"m"
+      end,
+      bedrock_elevation = (x, y) -> - x / 300.0,
       subsidence_rate = 0.0u"m/yr",
       insolation = 400.0u"W/m^2",
       facies = [Facies(
         maximum_growth_rate = 0.005u"m/yr",
-        saturation_intensity = 50u"W/m^2",
+        saturation_intensity = 50.0u"W/m^2",
         extinction_coefficient = 0.05u"m^-1"
       )])
 
   function run(input::Input)
       step! = step(input)
+      getwd = WaterDepth.water_depth(input)
       state = State(input)
-      for i = 1:input.time.steps
-          step!(state)
+
+      n_writes = input.time.steps ÷ input.time.write_interval
+      result = Array{Amount, 2}(undef, input.box.grid_size[1], n_writes)
+      wd = Array{Amount, 2}(undef, input.box.grid_size[1], n_writes)
+      for i = 1:n_writes
+        wd[:,i] = getwd(state)
+        for _ = 1:input.time.write_interval
+              step!(state)
+          end
+          result[:,i] = state.sediment_height[:,1]
       end
+      return result, wd
   end
 end
+
+using GLMakie
+using CarboKitten.Utility: in_units_of
+using CarboKitten.Config: axes as box_axes
+using Unitful
+
+function main()
+  result, wd = BS92.run(BS92.INPUT)
+  fig = Figure()
+  ax = Axis(fig[1,1], xlabel="x (km)", ylabel="z (m)")
+  x, y = box_axes(BS92.INPUT.box)
+  η0 = BS92.INPUT.bedrock_elevation.(x, y')
+
+  for l in eachcol(result)
+    η = η0 .+ l
+    lines!(ax, x |> in_units_of(u"km"), vec(η) |> in_units_of(u"m"), color=:steelblue4)
+  end
+
+  fig
+end
+
+main()
 ```
 
 ### Time
@@ -138,15 +180,15 @@ end
   using ..Units
   using CarboKitten.Config: TimeProperties
 
-  @kwdef struct Input
+  @kwdef struct Input <: AbstractInput
     time::TimeProperties
   end
 
-  mutable struct State
+  mutable struct State <: AbstractState
     time::Time
   end
 
-  State(input::Input) = State(0.0u"Myr")
+  State(input::AbstractInput) = State(0.0u"Myr")
 end
 ```
 
@@ -155,25 +197,26 @@ end
 @spec WaterDepth begin
   @requires TimeIntegration
   using ..Units
+  using CarboKitten.Config: axes
 
-  @kwdef struct Input
+  @kwdef struct Input <: AbstractInput
     box::Box
     sea_level          # function (t::Time) -> Length
     bedrock_elevation  # function (x::Location, y::Location) -> Length
     subsidence_rate::Rate
   end
 
-  mutable struct State
+  mutable struct State <: AbstractState
     sediment_height::Matrix{Height}
   end
 
-  State(input::Input) = State(zeros(Height, input.box.grid_size...))
+  State(input::AbstractInput) = State(zeros(Height, input.box.grid_size...))
 
-  function water_depth(input)
+  function water_depth(input::AbstractInput)
     x, y = axes(input.box)
     eta0 = input.bedrock_elevation.(x, y')
 
-    return function(state)
+    return function(state::AbstractState)
       return input.sea_level(state.time) .- eta0 .+
         (input.subsidence_rate * state.time) .- state.sediment_height
     end
@@ -187,14 +230,15 @@ end
 @spec UniformProduction begin
   @requires WaterDepth
   using ..Units
+  using ..WaterDepth: water_depth
 
-  @kwdef struct Facies
+  @kwdef struct Facies <: AbstractFacies
     maximum_growth_rate::Rate
     extinction_coefficient::typeof(1.0u"m^-1")
     saturation_intensity::Intensity
   end
 
-  @kwdef struct Input
+  @kwdef struct Input <: AbstractInput
     insolation::Intensity
     facies::Vector{Facies}
   end
@@ -206,11 +250,11 @@ end
       return water_depth > 0.0u"m" ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
   end
 
-  function uniform_production(input)
+  function uniform_production(input::AbstractInput)
     w = water_depth(input)
     na = [CartesianIndex()]
 
-    return function(state)
+    return function(state::AbstractState)
       return production_rate.(
         input.insolation,
         input.facies[:,na,na],
@@ -242,6 +286,7 @@ end
 let c = Child(Parent(42), 23)
 @assert c.x == 42
 @assert c.y == 23
+end
 ```
 
 The amount of `$(esc(:blah))` expressions make this code impossible to read. Not sure if there's ways to reduce those.
@@ -333,15 +378,14 @@ macro spec(name, body)
     quoted_body = QuoteNode(body)
 
     clean_body = postwalk(e -> @capture(e, @requires parents__) ? :() : e, body)
-    Core.eval(__module__, :(
-        module $name
-            $clean_body
-            const AST = $quoted_body
-        end))
+    esc(Expr(:toplevel, :(module $name
+        $(clean_body.args...)
+        const AST = $quoted_body
+    end)))
 end
 
 macro requires(deps...)
-    :(const $(esc(:PARENTS)) = [$(deps)...])
+    esc(:(const PARENTS = [$(deps)...]))
 end
 ```
 
@@ -364,7 +408,8 @@ end
   end
 end
 
-@compose AB [A, B]
+@compose AB [A, B] begin
+end
 ```
 
 ``` {.julia #dsl-spec}
@@ -385,7 +430,8 @@ A spec can depend on another using the `@require` syntax.
   end
 end
 
-@compose AC [C]
+@compose AC [C] begin
+end
 ```
 
 ``` {.julia #dsl-spec}
@@ -399,17 +445,12 @@ end
 ```
 
 ``` {.julia #dsl}
-function define_const(name::Symbol, v)
-    :(const $(esc(name)) = $v)
-end
-
-macro compose(modname, cs)
+macro compose(modname, cs, body)
     components = Set{Symbol}()
 
     structs = IdDict()
-    forwards = Vector
     using_statements = []
-    const_statements = IdDict()
+    const_statements = []
     specs_used = Set()
 
     <<dsl-compose>>
@@ -417,21 +458,22 @@ macro compose(modname, cs)
     @assert cs.head == :vect
     cs.args .|> scan
 
-    Core.eval(__module__, :(module $modname
+    Expr(:toplevel, esc(:(module $modname
         $(using_statements...)
-        $(Iterators.map(splat(define_const), pairs(const_statements))...)
+        $(const_statements...)
         $(Iterators.map(splat(define_struct), pairs(structs))...)
-    end))
+        $(body.args...)
+    end)))
 end
 ```
 
 ``` {.julia #dsl-compose}
-function extend!(name::Symbol, fields::Vector)
+function extend_struct!(name::Symbol, fields::Vector)
     append!(structs[name].fields, fields)
 end
 
-function create!(name::Symbol, is_mutable::Bool, is_kwarg::Bool, fields::Vector)
-    structs[name] = Struct(is_mutable, is_kwarg, fields)
+function create_struct!(name::Symbol, is_mutable::Bool, is_kwarg::Bool, abst::Union{Symbol, Nothing}, fields::Vector)
+    structs[name] = Struct(is_mutable, is_kwarg, abst, fields)
 end
 
 function pass(e)
@@ -445,22 +487,24 @@ function pass(e)
                    (mutable struct mut_name_ fields__ end))
         is_mutable = mut_name !== nothing
         is_kwarg = kw_name !== nothing
-        name = is_mutable ? mut_name : (is_kwarg ? kw_name : name)
+        sname = is_mutable ? mut_name : (is_kwarg ? kw_name : name)
+
+        @capture(sname, (name_ <: abst_) | name_)
 
         if name in keys(structs)
-            extend!(name, fields)
+            extend_struct!(name, fields)
         else
-            create!(name, is_mutable, is_kwarg, fields)
+            create_struct!(name, is_mutable, is_kwarg, abst, fields)
         end
         return
     end
 
     if @capture(e, const n_ = x_)
-        const_statements[n] = x
+        push!(const_statements, e)
         return
     end
 
-    if @capture(e, using x__)
+    if @capture(e, using x__ | using mod__: x__)
         push!(using_statements, e)
         return
     end
@@ -483,10 +527,14 @@ end
 struct Struct
     mut::Bool
     kwarg::Bool
+    parent::Union{Symbol, Nothing}
     fields::Vector{Union{Expr,Symbol}}
 end
 
 function define_struct(name::Symbol, s::Struct)
+    if s.parent !== nothing
+        name = :($name <: $(s.parent))
+    end
     if s.mut
         :(mutable struct $name
             $(s.fields...)

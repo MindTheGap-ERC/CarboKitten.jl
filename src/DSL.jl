@@ -11,10 +11,14 @@ export @spec, @requires, @compose, @dynamic, @forward
 struct Struct
     mut::Bool
     kwarg::Bool
+    parent::Union{Symbol, Nothing}
     fields::Vector{Union{Expr,Symbol}}
 end
 
 function define_struct(name::Symbol, s::Struct)
+    if s.parent !== nothing
+        name = :($name <: $(s.parent))
+    end
     if s.mut
         :(mutable struct $name
             $(s.fields...)
@@ -42,36 +46,31 @@ macro spec(name, body)
 
     clean_body = postwalk(e -> @capture(e, @requires parents__) ? :() : e, body)
     esc(Expr(:toplevel, :(module $name
-        $clean_body
+        $(clean_body.args...)
         const AST = $quoted_body
     end)))
 end
 
 macro requires(deps...)
-    :(const $(esc(:PARENTS)) = [$(deps)...])
+    esc(:(const PARENTS = [$(deps)...]))
 end
 # ~/~ end
 # ~/~ begin <<docs/src/dsl.md#dsl>>[1]
-function define_const(name::Symbol, v)
-    :(const $(esc(name)) = $v)
-end
-
-macro compose(modname, cs)
+macro compose(modname, cs, body)
     components = Set{Symbol}()
 
     structs = IdDict()
-    forwards = Vector
     using_statements = []
-    const_statements = IdDict()
+    const_statements = []
     specs_used = Set()
 
     # ~/~ begin <<docs/src/dsl.md#dsl-compose>>[init]
-    function extend!(name::Symbol, fields::Vector)
+    function extend_struct!(name::Symbol, fields::Vector)
         append!(structs[name].fields, fields)
     end
 
-    function create!(name::Symbol, is_mutable::Bool, is_kwarg::Bool, fields::Vector)
-        structs[name] = Struct(is_mutable, is_kwarg, fields)
+    function create_struct!(name::Symbol, is_mutable::Bool, is_kwarg::Bool, abst::Union{Symbol, Nothing}, fields::Vector)
+        structs[name] = Struct(is_mutable, is_kwarg, abst, fields)
     end
 
     function pass(e)
@@ -85,22 +84,24 @@ macro compose(modname, cs)
                        (mutable struct mut_name_ fields__ end))
             is_mutable = mut_name !== nothing
             is_kwarg = kw_name !== nothing
-            name = is_mutable ? mut_name : (is_kwarg ? kw_name : name)
+            sname = is_mutable ? mut_name : (is_kwarg ? kw_name : name)
+
+            @capture(sname, (name_ <: abst_) | name_)
 
             if name in keys(structs)
-                extend!(name, fields)
+                extend_struct!(name, fields)
             else
-                create!(name, is_mutable, is_kwarg, fields)
+                create_struct!(name, is_mutable, is_kwarg, abst, fields)
             end
             return
         end
 
         if @capture(e, const n_ = x_)
-            const_statements[n] = x
+            push!(const_statements, e)
             return
         end
 
-        if @capture(e, using x__)
+        if @capture(e, using x__ | using mod__: x__)
             push!(using_statements, e)
             return
         end
@@ -122,11 +123,12 @@ macro compose(modname, cs)
     @assert cs.head == :vect
     cs.args .|> scan
 
-    Core.eval(__module__, :(module $modname
+    Expr(:toplevel, esc(:(module $modname
         $(using_statements...)
-        $(Iterators.map(splat(define_const), pairs(const_statements))...)
+        $(const_statements...)
         $(Iterators.map(splat(define_struct), pairs(structs))...)
-    end))
+        $(body.args...)
+    end)))
 end
 # ~/~ end
 

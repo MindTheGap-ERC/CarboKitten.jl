@@ -35,7 +35,8 @@ end
   end
 end
 
-@compose AB [A, B]
+@compose AB [A, B] begin
+end
 # ~/~ end
 # ~/~ begin <<docs/src/dsl.md#dsl-spec-defs>>[3]
 @spec C begin
@@ -49,7 +50,8 @@ end
   end
 end
 
-@compose AC [C]
+@compose AC [C] begin
+end
 # ~/~ end
 
 @testset "CarboKitten.DSL" begin

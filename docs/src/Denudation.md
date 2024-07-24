@@ -1,13 +1,12 @@
 # Denudation
-FIXME: run a spell check, fix equations
 
-The denudation could be achieved by three ways: modelling physical erosion, modelling  chemical dissolutionand estimating total denudation rates based on chlorine (Cl) isotope data.
+Denudation could be achieved by three ways: modelling physical erosion, modelling chemical dissolution and estimating total denudation rates based on chlorine (Cl) isotope data.
 
 ## Physical erosion and sediment redistribution
 This method not only considers the amount of materials that have been removed, but also how the eroded materials being distributed to the neighboring regions depending on slopes on each direction.
 
 ### Physical erosion 
-The equations used to estimate how much material could one cell provide to the lower cells is described underneath. The equation is found in [Tucker et al., 1998](https://link.springer.com/chapter/10.1007/978-1-4615-0575-4_12). We choose this equation mainly because it specifically deals with bedrock substrates instead of loose sediments. In the equation, $k_v$ is erodibility, and the default value is 0.23 according to the paper. $(1 - I_f)$ indicates run-off generated in one cell and slope is the slope calculated based on [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm). Note that the algorithms to calculate slope does not work on depressions. 
+The equations used to estimate how much material could one cell provide to the lower cells is described underneath. The equation is found in [tucker_channel-hillslope_2001](@cite). We choose this equation mainly because it specifically deals with bedrock substrates instead of loose sediments. In the equation, $k_v$ is erodibility, and the default value is 0.23 according to the paper. $(1 - I_f)$ indicates run-off generated in one cell and slope is the slope calculated based on [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm). Note that the algorithms to calculate slope does not work on depressions. 
 
 $$D_{phys} = -k_v * (1 - I_f)^{1/3} |\nabla h|^{2/3}$$
 
@@ -21,9 +20,9 @@ end
 
 ### Redistribution of sediments
 
-The redistribution of sediments after physical erosion is based on [van der Wiel et al., 2007](https://www.sciencedirect.com/science/article/pii/S0169555X07001341): the eroded sediments calculated from the above equation are distributed to the neighboring 8 cells according to the slopes (defined as elevation differences/horizontal differences) towards each direction. The amount of sediments of one cell received is calculated by three functions below: 
+The redistribution of sediments after physical erosion is based on [van_de_wiel_embedding_2007](@cite): the eroded sediments calculated from the above equation are distributed to the neighboring 8 cells according to the slopes (defined as elevation differences/horizontal differences) towards each direction. The amount of sediments of one cell received is calculated by three functions below: 
 
-#### find the kernel to calculate redistibution co-efficient for the neighboring 8 cells depending on slopes
+#### Find the kernel to calculate redistibution co-efficient for the neighboring 8 cells depending on slopes
 
 ``` {.julia}
 module Erosion
@@ -63,7 +62,7 @@ function redistribution_kernel(w::Matrix{Float64},cellsize::Float64)
 end
 ```
 
-#### find how much sediments would distributed to the neighboring 8 cells
+#### Find out how much sediments would distributed to the neighboring 8 cells
 
 ``` {.julia #erosion-transport}
 function mass_erosion(::Type{T},::Type{BT},slope::Matrix{Float64},n::NTuple{dim,Int}) where {T, dim, BT <: Boundary{dim}}
@@ -86,7 +85,7 @@ function mass_erosion(::Type{T},::Type{BT},slope::Matrix{Float64},n::NTuple{dim,
 end
 ```
 
-#### how much sediments would one cell receive in total
+#### How much sediment would one cell receive in total
 
 ``` {.julia #erosion-transport}
 function total_mass_redistribution(redis::Array{Float64},slope::Any,::Type{BT}) where {BT <: Boundary}
@@ -104,9 +103,8 @@ end
 ```
 
 ## Chemical dissolution
-FIXME: fix equations, use proper citations (add entries to `ref.bib` and cite using `[GoerzQ2022](@cite)` syntax)
 
-The details could be found in paper by [Kaufmann 2001](https://onlinelibrary.wiley.com/doi/full/10.1046/j.1365-3121.2001.00345.x) [Kaufmann2001](@cite), Terra Nova.
+The details could be found in paper by [Kaufmann2001](@cite).
 
 Limestone is made of $CaCO_3$, easily dissolved. This depends mainly on precipitation (rainfall) and temperature. The paper used equation 1 to quantify this process.
 
@@ -133,21 +131,20 @@ Other parameters could be found in the following figure.
 
 However, the above discussion is true only if the percolated fluid is saturated (in terms of Ca) when leaving the platform. In some cases, when the fluid is not saturated, the dissolved amount is lower than the scenario described above.
 
-The following articles describe this: [Gabrovšek (2009)](https://www.sciencedirect.com/science/article/pii/S0169555X08004133#bib22)
-and [Kaufman & Dreybrodt (2007)](https://www.sciencedirect.com/science/article/pii/S001670370602240X)
+The following articles describe this: [gabrovsek_concepts_2009](@cite) and [kaufmann_calcite_2007](@cite)
 
 Ideally, a reactive transport model should be accurate, but that needs more computation resources. So herein, the author just suggested the dissolution rates of rocks depend on the depth. This makes sense, as the deeper the solution penetrates, the more concentrated it becomes. Also, this does not consider diffusion in this chapter.
 
 The dissolution rate of carbonate follows linear rate laws of:
-$F = α (c_eq-c(z))$
+$F = α (c_{eq}-c(z))$
 
-The rate law is a common expression way to describe the kinetics of certain chemical reactions and [click here for more info](https://chem.libretexts.org/Bookshelves/General_Chemistry/Chemistry_1e_(OpenSTAX)/12%3A_Kinetics/12.3%3A_Rate_Laws)
+The rate law is a common expression way to describe the kinetics of certain chemical reactions [see Rate Laws](https://chem.libretexts.org/Bookshelves/General_Chemistry/Chemistry_1e_(OpenSTAX)/12%3A_Kinetics/12.3%3A_Rate_Laws)
 
-$F$ is the dissolution rate, α is constant (kinetic co-efficient), $c_eq$ is the concentration in fluid when equilibrium is reached (i.e., no more dissolution, which is $[Ca^{2+}]_{eq}$ in Chapter 1), $c(z)$ is the current concentrationion at depth $z$ in the fluid. This equation then expands to 
+$F$ is the dissolution rate, α is constant (kinetic co-efficient), $c_{eq}$ is the concentration in fluid when equilibrium is reached (i.e., no more dissolution, which is $[Ca^{2+}]_{eq}$ in Chapter 1), $c(z)$ is the current concentrationion at depth $z$ in the fluid. This equation then expands to 
 
 $I *dc = α (c_{eq}-c(z)) * L dz$
 
-This equation indicates that the concentration increase in the infiltrated water equals the dissolution of rocks in the thickness of 'dz'. $L$ is the specific length of fractures/porosities (units: m/m^2, we can try 100 at the first place). I.e., this term defines the relative reactive surface of the subsurface rocks, or how much surface is actually dissolving. This term is difficult to determine. $I$ is infiltration, but slightly different as chapter 1: this $I$ is the $I$ in each rain event according to the paper. We certainly do not gonna know how this parameter works, so we just set it the same as in chapter 1?
+This equation indicates that the concentration increase in the infiltrated water equals the dissolution of rocks in the thickness of $dz$. $L$ is the specific length of fractures/porosities (units: $m/m^2$, we can try 100 at the first place). I.e., this term defines the relative reactive surface of the subsurface rocks, or how much surface is actually dissolving. This term is difficult to determine. $I$ is infiltration, but slightly different as chapter 1: this $I$ is the $I$ in each rain event according to the paper. We certainly do not gonna know how this parameter works, so we just set it the same as in chapter 1?
 
 However, to solve this equation we still need to know $c(z)$.
 
@@ -164,7 +161,7 @@ Therefore $D_{average} = (I * c_{eq}/ρ) * (1 – (λ/z0) * (1 – e^{(-z0/λ)})
 ## Emperical denudation
 Cl isotopes are an emerging tool to decipher the denudation rates (chemical dissolution + physical erosion) in carbonate-dominated area.
 
-Research based on the karst region and carbonate platform terrace suggested that the denudation rates are mainly controlled by precipitation and slopes, although the debates about which factor is more important is still ongoing ([Ryb et al., 2014](https://www.sciencedirect.com/science/article/pii/S1871101420300248#sec4), [Thomas et al., 2018](https://www.sciencedirect.com/science/article/pii/S0169555X18301740)). In general, the precipitation mainly controls the chemical dissolution while the slopes mainly controls the physical ersions. In addition, the type of carbonates may also play an important role ([Kirklec et al., 2022](https://www.sciencedirect.com/science/article/pii/S0169555X22002513)), but given this feature is studied poorly so we will ditch it for now. We have checked and compiled the denudation rates (mm/kyr) along with precipitation and slopes serve as a starting point to create a function relates denudation rates (mm/kyr) to precipitation and slopes. The compiled data could be found in OSFdatabase. This is an empirical relationship and have a relatively large uncertainty in terms of fitting.
+Research based on the karst region and carbonate platform terrace suggested that the denudation rates are mainly controlled by precipitation and slopes, although the debates about which factor is more important is still ongoing ([yang_combined_2020](@cite), [thomas_limited_2018](@cite)). In general, the precipitation mainly controls the chemical dissolution while the slopes mainly controls the physical ersions. In addition, the type of carbonates may also play an important role ([krklec_long-term_2022](@cite)), but given this feature is studied poorly so we will ditch it for now. We have checked and compiled the denudation rates (mm/kyr) along with precipitation and slopes serve as a starting point to create a function relates denudation rates (mm/kyr) to precipitation and slopes. The compiled data could be found in OSFdatabase. This is an empirical relationship and have a relatively large uncertainty in terms of fitting.
 
 <img width="433" alt="image" src="https://github.com/MindTheGap-ERC/CarboKitten.jl/assets/64159957/29da37f3-0e14-479f-8ed3-a8b5adc052a5">
 
@@ -176,12 +173,12 @@ Research based on the karst region and carbonate platform terrace suggested that
 
 We can see that both the slope and precipitation could increase the denudation rates, and reaches a 'steady state' after a certain point.
 
-In terms of implementation, I used the function form of $D = P * S$, where $D$ means denudation rates, $P$ means effects of precipitation while $S$ means effects of Slope. By doing so, we can consider both effects. Such formula structure is similar to RUSLE model, a widely used LEM (e.g., (Thapa et al., 2020)[https://environmentalsystemsresearch.springeropen.com/articles/10.1186/s40068-020-00177-2]).
+In terms of implementation, I used the function form of $D = P * S$, where $D$ means denudation rates, $P$ means effects of precipitation while $S$ means effects of Slope. By doing so, we can consider both effects. Such formula structure is similar to RUSLE model, a widely used LEM (e.g., (thapa_spatial_2020)[@cite]).
 
 ## How to use?
 In CarboKitten, you could choose which type of the three you would like to attempt. To do this you could simply change the `erosion_type` in the input. 
 
-Example: in examples, you find `caps_miller_diss.jl`, `caps_miller_emp.jl`, `caps_miller_phys.jl`, for chemical dissolution, emperical denudation or physical denudation, respectively. This file uses the [Miller et al. (2020) curve](https://www.science.org/doi/full/10.1126/science.1116412) as sealevel curve input. You could simply try different erosion types by changing the `erosion_type`:
+Example: in examples, you find `caps_miller_diss.jl`, `caps_miller_emp.jl`, `caps_miller_phys.jl`, for chemical dissolution, empirical denudation or physical denudation, respectively. This file uses the [Mmiller_phanerozoic_2005] (@cite) cure as sea level curve input. You could try different erosion types by changing the `erosion_type`:
 - `NoDenudation` means no erosion
 - `Dissolution` means chemical dissolution
 - `PhysicalErosionParam` means physical erosion and sediments redistribution

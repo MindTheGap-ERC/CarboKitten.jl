@@ -174,9 +174,9 @@ end
 @compose C [A, B] begin end
 ```
 
-Now in module `A` we have some function expecting a type `A.Facies`. To get there, we now need to know that `C.Facies` also contains `A.Facies`. But how do we know that reasoning from the `Input` type? We can only reasonably do so by making sure `C.Facies` obeys the same interface as `A.Facies` and not type the functions in module `A` too strongly. This means we gained nothing from a lot of added complexity. Not typing functions too strongly is not the worst part. We couldn't even type the `Input.facies` member strongly, because really the `A.Input` struct now should contain a member of type `C.Facies`.
+Now in module `A` we have some function expecting a type `A.Facies`. To get there, we now need to know that `C.Facies` also contains `A.Facies`. But how do we know that reasoning from the `Input` type? We could only reasonably do so by making sure `C.Facies` obeys the same interface as `A.Facies` and not type the functions in module `A` too strongly. This means we gained nothing from a lot of added complexity. Not typing functions too strongly is not the worst part. We couldn't even type the `Input.facies` member strongly, because really the `A.Input` struct now should contain a member of type `C.Facies`.
 
-As it stands now, the above example works trivially, since the `@compose` macro only performs a (slightly fancy) code transformation.
+As it stands now, the above example works trivially, since the `@compose` macro only performs a (slightly fancy) code transformation. We still get "composition over inheritance", though the distinctioned becomes a bit blurred.
 
 #### TODO Nested composition
 

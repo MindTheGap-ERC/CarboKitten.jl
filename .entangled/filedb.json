@@ -522,9 +522,9 @@
     {
       "path": "docs/src/dsl.md",
       "deps": null,
-      "modified": "2024-07-23T00:29:50.141062",
-      "hexdigest": "67bd85c0b5b5bf84a97a3a5d737e64917fc81b552c7fbbdd1ccb1ec11915e29f",
-      "size": 20643
+      "modified": "2024-07-23T07:10:52.882434",
+      "hexdigest": "5b077f1635055d94ab3cd28629c42df61afd4af65e5c6570e6be3e469fcc8152",
+      "size": 20738
     },
     {
       "path": "examples/dsl/bs92.jl",
@@ -577,10 +577,10 @@
     "src/CaProd.jl",
     "src/DSL/Forward.jl",
     "src/Burgess2013/Transport.jl",
+    "examples/transport/active-layer-erosion.jl",
     "src/Burgess2013/CA.jl",
     "test/Unitful.jl",
     "examples/production-only/caps-osc.jl",
-    "examples/transport/active-layer-erosion.jl",
     "examples/alcaps/plot-defaults.jl",
     "examples/alcaps/defaults.jl",
     "examples/plot-caps-osc.jl",

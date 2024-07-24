@@ -131,14 +131,14 @@ Other parameters could be found in the following table by [Kaufmann2001](@cite).
 |-----------------|-----------------|-----------------|----------------------|
 | *T*                       | Absolute temperature     | \[°K\]                | Tc + 273.16                                                                |
 | *I*                       | Ion activity             | \[-\]                 | 0.1                                                                        |
-| $A^*$                     | Debye-Hückel coefficient | \[-\]                 | -0.4883 + 8.074 x 10^-4^*T*~c~                                             |
-| $B^*$                     | Debye-Hückel coefficient | \[-\]                 | -0.3241 + 1.600 x 10^-4^*T*~c~                                             |
+| $A^*$                     | Debye-Hückel coefficient | \[-\]                 | $-0.4883 + 8.074 \times 10^{-4}T_c$                                             |
+| $B^*$                     | Debye-Hückel coefficient | \[-\]                 | $-0.3241 + 1.600 \times 10^{-4}T_c$                                             |
 | $log \gamma Ca\dagger$    | Activity coefficient     | \[-\]                 | $-4A\sqrt{I}(1 + 5.0 x 10^{-8}B\sqrt{I})$                                  |
 | $log \gamma HCO_3\dagger$ | Activity coefficient     | \[-\]                 | $-1A\sqrt{I}/(1 + 5.4 x 10^{-8}B\sqrt{I})$                                 |
-| $log K_1\ddagger$         | Mass balance coefficient | \[mol L^-1^\]         | -356.3094 - 0.06091964*T* + 21834.37/*T* + 126.8339log*T* - 1684915/*T*^2^ |
-| $log K_2\ddagger$         | Mass balance coefficient | \[mol L^-1^\]         | -107.8871 - 0.03252849*T* + 5151.79/*T* + 38.92561log*T* - 563713.9/*T*^2^ |
-| $log K_c\ddagger$         | Mass balance coefficient | \[mol^2^ L^-2^\]      | -171.9065 - 0.077993*T* + 2839.319/*T* + 71.595log*T*                      |
-| $log K_H\ddagger$         | Mass balance coefficient | \[mol L^-1^ atm^-1^\] | 108.3865 + 0.01985076*T* - 6919.53/*T* - 40.45154log*T* + 669365/*T*^2^    |
+| $log K_1\ddagger$         | Mass balance coefficient | \[$mol L^{-1}$\]         | $-356.3094 - 0.06091964T + 21834.37/T + 126.8339logT - 1684915/T^2$ |
+| $log K_2\ddagger$         | Mass balance coefficient | \[$mol L^{-1}$\]         | $-107.8871 - 0.03252849T + 5151.79/T + 38.92561logT - 563713.9/T^2$ |
+| $log K_c\ddagger$         | Mass balance coefficient | \[$mol^2 L^{-2}$\]      | $-171.9065 - 0.077993T + 2839.319/T + 71.595logT$                      |
+| $log K_H\ddagger$         | Mass balance coefficient | \[$mol L^{-1} atm^{-1}$\] | $108.3865 + 0.01985076T - 6919.53/T - 40.45154logT + 669365/T^2$    |
 
 However, the above discussion is true only if the percolated fluid is saturated (in terms of Ca) when leaving the platform. In some cases, when the fluid is not saturated, the dissolved amount is lower than the scenario described above.
 

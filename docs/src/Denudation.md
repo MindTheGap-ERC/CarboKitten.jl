@@ -123,11 +123,22 @@ Parameter ρ is the density of calcite, and we choose 2700 $kg/m^3$ here. $[Ca^{
 
 $[Ca^{2+}]_{eq} = (PCO_2 * (K_1 * K_C * K_H) / (4 * K_2 * γCa * (γHCO_3)^2))^{(1/3)}$
 
-Mass balance coefficients $K_1$, $K_2$, $K_C$, $K_H$ depend on temperature. $PCO_2$ is assumed to be between $10^(-1.5)$ to $10^(-3.5)$ (units?). 
+Mass balance coefficients $K_1$, $K_2$, $K_C$, $K_H$ depend on temperature. $PCO_2$ is assumed to be between $10^{-1.5}$ to $10^{-3.5}$ (units?). 
 
-Other parameters could be found in the following figure.
+Other parameters could be found in the following table by [Kaufmann2001](@cite).
 
-![image](https://github.com/MindTheGap-ERC/CarboKitten/assets/64159957/0f8af162-c508-4873-b5ab-25d39a955f87)
+| Parameter                 | Description              | Unit                  | Value                                                                      |
+|-----------------|-----------------|-----------------|----------------------|
+| *T*                       | Absolute temperature     | \[°K\]                | Tc + 273.16                                                                |
+| *I*                       | Ion activity             | \[-\]                 | 0.1                                                                        |
+| $A^*$                     | Debye-Hückel coefficient | \[-\]                 | -0.4883 + 8.074 x 10^-4^*T*~c~                                             |
+| $B^*$                     | Debye-Hückel coefficient | \[-\]                 | -0.3241 + 1.600 x 10^-4^*T*~c~                                             |
+| $log \gamma Ca\dagger$    | Activity coefficient     | \[-\]                 | $-4A\sqrt{I}(1 + 5.0 x 10^{-8}B\sqrt{I})$                                  |
+| $log \gamma HCO_3\dagger$ | Activity coefficient     | \[-\]                 | $-1A\sqrt{I}/(1 + 5.4 x 10^{-8}B\sqrt{I})$                                 |
+| $log K_1\ddagger$         | Mass balance coefficient | \[mol L^-1^\]         | -356.3094 - 0.06091964*T* + 21834.37/*T* + 126.8339log*T* - 1684915/*T*^2^ |
+| $log K_2\ddagger$         | Mass balance coefficient | \[mol L^-1^\]         | -107.8871 - 0.03252849*T* + 5151.79/*T* + 38.92561log*T* - 563713.9/*T*^2^ |
+| $log K_c\ddagger$         | Mass balance coefficient | \[mol^2^ L^-2^\]      | -171.9065 - 0.077993*T* + 2839.319/*T* + 71.595log*T*                      |
+| $log K_H\ddagger$         | Mass balance coefficient | \[mol L^-1^ atm^-1^\] | 108.3865 + 0.01985076*T* - 6919.53/*T* - 40.45154log*T* + 669365/*T*^2^    |
 
 However, the above discussion is true only if the percolated fluid is saturated (in terms of Ca) when leaving the platform. In some cases, when the fluid is not saturated, the dissolved amount is lower than the scenario described above.
 

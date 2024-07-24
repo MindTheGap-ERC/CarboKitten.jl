@@ -2,22 +2,21 @@ using Test
 using Unitful
 
 @testset "DenudationTST" begin
-    import CarboKitten.Denudation.CarbDissolution: dissolution
-    import CarboKitten.Denudation.EmpericalDenudation: emperical_denudation, slope_kernel
-    import CarboKitten.Denudation.PhysicalErosion: physical_erosion, mass_erosion, total_mass_redistribution
+    import CarboKitten.Denudation.DissolutionMod: dissolution
+    import CarboKitten.Denudation.EmpericalDenudationMod: emperical_denudation, slope_kernel
+    import CarboKitten.Denudation.PhysicalErosionMod: physical_erosion, mass_erosion, total_mass_redistribution
     using CarboKitten.Stencil: Periodic, Reflected, stencil
     using CarboKitten.Config: Box, Vectors, TimeProperties
     using CarboKitten.Burgess2013.CA: step_ca, run_ca
-    using CarboKitten.Burgess2013.Config: Facies
-    using CarboKitten.InputConfig: Input, DenudationType
-    using CarboKitten.Denudation: denudation, calculate_redistribution, Dissolution, NoDenudation, PhysicalErosionParam, EmpericalDenudationParam
+    using CarboKitten.Model.WithDenudation: Input, Facies
+    using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpericalDenudation
 
 
     DENUDATION_LOW_T = Dissolution(273.0,1000.0,10^(-1.5),2e-3)
     DENUDATION_HIGH_T = Dissolution(303.0,1000.0,10^(-1.5),2e-3)
-    DENUDATION_LOW_P = EmpericalDenudationParam(800.0)
-    DENUDATION_HIGH_P = EmpericalDenudationParam(1000.0)
-    DENUDATION_PHYS = PhysicalErosionParam(0.23)
+    DENUDATION_LOW_P = EmpericalDenudation(800.0)
+    DENUDATION_HIGH_P = EmpericalDenudation(1000.0)
+    DENUDATION_PHYS = PhysicalErosion(0.23)
     MODEL1 = [
         Facies(viability_range = (4, 10),
         activation_range = (6, 10),
@@ -103,7 +102,7 @@ using Unitful
     (denudation_mass_phys_flat[idx]) = denudation(box, DENUDATION_PHYS, water_depth_flat[idx], slope_flat[idx],MODEL1[f])
     inf_map[idx] = MODEL1[f].infiltration_coefficient
     end
-    (redistribution_mass) = calculate_redistribution(box,DENUDATION_PHYS,water_depth,slope,inf_map)
+    (redistribution_mass) = redistribution(box,DENUDATION_PHYS,water_depth,slope,inf_map)
 
     @test sum(denudation_mass_LOW_T) < sum(denudation_mass_HIGH_T)
     @test sum(denudation_mass_LOW_P) < sum(denudation_mass_HIGH_P)

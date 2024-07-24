@@ -1,4 +1,4 @@
-using Test 
+using Test
 using Unitful
 
 @testset "DenudationTST" begin
@@ -11,7 +11,7 @@ using Unitful
     using CarboKitten.Burgess2013.Config: Facies
     using CarboKitten.InputConfig: Input, DenudationType
     using CarboKitten.Denudation: denudation, calculate_redistribution, Dissolution, NoDenudation, PhysicalErosionParam, EmpericalDenudationParam
-    
+
 
     DENUDATION_LOW_T = Dissolution(273.0,1000.0,10^(-1.5),2e-3)
     DENUDATION_HIGH_T = Dissolution(303.0,1000.0,10^(-1.5),2e-3)
@@ -27,7 +27,7 @@ using Unitful
         reactive_surface = 1000,
         mass_density = 2730,
         infiltration_coefficient= 0.5),
-    
+
         Facies(viability_range = (4, 10),
         activation_range = (6, 10),
         maximum_growth_rate = 400u"m/Myr",
@@ -36,7 +36,7 @@ using Unitful
         reactive_surface = 1000,
         mass_density = 2730,
         infiltration_coefficient= 0.5),
-    
+
         Facies(viability_range = (4, 10),
         activation_range = (6, 10),
         maximum_growth_rate = 100u"m/Myr",
@@ -105,14 +105,10 @@ using Unitful
     end
     (redistribution_mass) = calculate_redistribution(box,DENUDATION_PHYS,water_depth,slope,inf_map)
 
-    println("Denudation mass: ", denudation_mass_phys ./u"m/kyr")
-    println("Redistribution mass: ", redistribution_mass ./u"m/kyr")
-    println("Denudation mass, Low T: ", denudation_mass_LOW_T ./u"m/kyr")
-    println("Denudation mass, Low P: ", denudation_mass_LOW_P ./u"m/kyr")
-    @test sum(denudation_mass_LOW_T) < sum(denudation_mass_HIGH_T) 
+    @test sum(denudation_mass_LOW_T) < sum(denudation_mass_HIGH_T)
     @test sum(denudation_mass_LOW_P) < sum(denudation_mass_HIGH_P)
     @test sum(denudation_mass_phys) > sum(denudation_mass_phys_flat)
-    @test sum(denudation_mass_phys) ≈ sum(redistribution_mass) 
+    @test sum(denudation_mass_phys) ≈ sum(redistribution_mass)
 
     #regression_test
     @test 1651*0.95 < abs.(sum(denudation_mass_LOW_T)) ./u"m/kyr" < 1651 *1.05

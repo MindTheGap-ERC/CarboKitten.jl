@@ -2,7 +2,6 @@
 module Config
 
 using Unitful
-using Parameters
 export Facies
 
 @kwdef struct Facies

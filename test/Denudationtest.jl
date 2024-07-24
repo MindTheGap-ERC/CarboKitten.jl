@@ -105,10 +105,10 @@ using Unitful
     end
     (redistribution_mass) = calculate_redistribution(box,DENUDATION_PHYS,water_depth,slope,inf_map)
 
-    println(denudation_mass_phys ./u"m/kyr")
-    println(redistribution_mass ./u"m/kyr")
-    println(denudation_mass_LOW_T ./u"m/kyr")
-    println(denudation_mass_LOW_P ./u"m/kyr")
+    println("Denudation mass: ", denudation_mass_phys ./u"m/kyr")
+    println("Redistribution mass: ", redistribution_mass ./u"m/kyr")
+    println("Denudation mass, Low T: ", denudation_mass_LOW_T ./u"m/kyr")
+    println("Denudation mass, Low P: ", denudation_mass_LOW_P ./u"m/kyr")
     @test sum(denudation_mass_LOW_T) < sum(denudation_mass_HIGH_T) 
     @test sum(denudation_mass_LOW_P) < sum(denudation_mass_HIGH_P)
     @test sum(denudation_mass_phys) > sum(denudation_mass_phys_flat)

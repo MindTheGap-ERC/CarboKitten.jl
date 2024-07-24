@@ -19,4 +19,12 @@ include("./CaProdErosion.jl")
 
 include("./Visualization.jl")
 
+module Transport
+include("./Transport/ActiveLayer.jl")
+end
+
+module Model
+include("./Model/ALCAPS.jl")
+end
+
 end # module CarboKitten

@@ -1,6 +1,4 @@
----
-title: References
----
+# References
 
 ```@bibliography
 ```

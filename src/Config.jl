@@ -22,6 +22,12 @@ struct Box{BT} <: AbstractBox{BT}
     end
 end
 
+function axes(box::Box)
+	y_axis = (0:(box.grid_size[2] - 1)) .* box.phys_scale
+	x_axis = (0:(box.grid_size[1] - 1)) .* box.phys_scale
+	return x_axis, y_axis
+end
+
 phys_size(grid_size, phys_scale) = (
     x = grid_size[1] * (phys_scale / m |> NoUnits),
     y = grid_size[2] * (phys_scale / m |> NoUnits))
@@ -30,7 +36,7 @@ phys_size(grid_size, phys_scale) = (
 abstract type AbstractTimeProperties end
 
 @kwdef struct TimeProperties <: AbstractTimeProperties
-    Δt::typeof(1.0u"yr")
+    Δt::typeof(1.0u"Myr")
     steps::Int
     write_interval::Int
 end

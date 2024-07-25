@@ -189,7 +189,7 @@ In terms of implementation, I used the function form of $D = P * S$, where $D$ m
 ## How to use?
 In CarboKitten, you could choose which type of the three you would like to attempt. To do this you could simply change the `erosion_type` in the input. 
 
-Example: in examples, you find `caps_miller_diss.jl`, `caps_miller_emp.jl`, `caps_miller_phys.jl`, for chemical dissolution, empirical denudation or physical denudation, respectively. This file uses the [Mmiller_phanerozoic_2005] (@cite) cure as sea level curve input. You could try different erosion types by changing the `erosion_type`:
+Example: in examples, you find `caps_miller_diss.jl`, `caps_miller_emp.jl`, `caps_miller_phys.jl`, for chemical dissolution, empirical denudation or physical denudation, respectively. This file uses the [miller_phanerozoic_2005] (@cite) cure as sea level curve input. You could try different erosion types by changing the `erosion_type`:
 - `NoDenudation` means no erosion
 - `Dissolution` means chemical dissolution
 - `PhysicalErosionParam` means physical erosion and sediments redistribution

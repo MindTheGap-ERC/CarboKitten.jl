@@ -39,7 +39,7 @@ abstract type DenudationType end
     facies::Vector{Facies}
     insolation::typeof(1.0u"W/m^2")
 
-    denudationparam::DenudationType
+    denudation::DenudationType
 end
 
 struct ProductionFrame

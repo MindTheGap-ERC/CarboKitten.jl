@@ -508,7 +508,7 @@
       "deps": [
         "docs/src/denudation/chemical.md"
       ],
-      "modified": "2024-07-25T22:16:05.020522",
+      "modified": "2024-07-25T23:37:23.910374",
       "hexdigest": "4de83dac6b475f15a4270d6dd2b0a5ed4f7578d06d88a8e30202d973f6739539",
       "size": 2383
     },
@@ -563,9 +563,9 @@
     {
       "path": "docs/src/denudation/chemical.md",
       "deps": null,
-      "modified": "2024-07-25T21:56:01.305559",
-      "hexdigest": "8d1752aea9050b7e36c1a0c5d10b1d17c6ab014ce5ba9f7f17abfd68df3581ad",
-      "size": 7956
+      "modified": "2024-07-25T23:37:23.715373",
+      "hexdigest": "f640927f5d85beb6ec5f471a8b74f05d9a8a6960d7602bbfbaac169e094e8845",
+      "size": 8031
     },
     {
       "path": "src/Denudation/PhysicalErosionMod.jl",

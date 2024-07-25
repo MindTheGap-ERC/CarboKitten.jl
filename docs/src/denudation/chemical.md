@@ -43,13 +43,14 @@ The following articles describe this: [gabrovsek_concepts_2009](@cite) and [kauf
 Ideally, a reactive transport model should be accurate, but that needs more computation resources. So herein, the author just suggested the dissolution rates of rocks depend on the depth. This makes sense, as the deeper the solution penetrates, the more concentrated it becomes. Also, this does not consider diffusion in this chapter.
 
 The dissolution rate of carbonate follows linear rate laws of:
-$F = α (c_{eq}-c(z))$
+
+$$F = \alpha (c_{eq}-c(z))$$
 
 The rate law is a common expression way to describe the kinetics of certain chemical reactions [see Rate Laws](https://chem.libretexts.org/Bookshelves/General_Chemistry/Chemistry_1e_(OpenSTAX)/12%3A_Kinetics/12.3%3A_Rate_Laws)
 
-$F$ is the dissolution rate, α is constant (kinetic co-efficient), $c_{eq}$ is the concentration in fluid when equilibrium is reached (i.e., no more dissolution, which is $[Ca^{2+}]_{eq}$ in Chapter 1), $c(z)$ is the current concentrationion at depth $z$ in the fluid. This equation then expands to
+$F$ is the dissolution rate, $\alpha$ is constant (kinetic co-efficient), $c_{eq}$ is the concentration in fluid when equilibrium is reached (i.e., no more dissolution, which is $[Ca^{2+}]_{eq}$ in Chapter 1), $c(z)$ is the current concentrationion at depth $z$ in the fluid. This equation then expands to
 
-$I *dc = α (c_{eq}-c(z)) * L dz$
+$$I\ {\rm d}c = \alpha (c_{eq}-c(z)) L\ {\rm d}z$$
 
 This equation indicates that the concentration increase in the infiltrated water equals the dissolution of rocks in the thickness of $dz$. $L$ is the specific length of fractures/porosities (units: $m/m^2$, we can try 100 at the first place). I.e., this term defines the relative reactive surface of the subsurface rocks, or how much surface is actually dissolving. This term is difficult to determine. $I$ is infiltration, but slightly different as chapter 1: this $I$ is the $I$ in each rain event according to the paper. We certainly do not gonna know how this parameter works, so we just set it the same as in chapter 1?
 
@@ -57,13 +58,15 @@ However, to solve this equation we still need to know $c(z)$.
 
 If assuming the initial percolating water has $c(0) = 0$, then we could get the following equation (as $c$ is related to depth):
 
-$c(z) = c_{eq} * (1 - e^{(-z/λ)})$
+$$c(z) = c_{eq} * (1 - e^{(-z/\lambda)})$$
 
-Herein, λ = I/αL.
+Herein, $\lambda = I/\alpha L$.
 
-Therefore $D_{average} = (I * c_{eq}/ρ) * (1 – (λ/z0) * (1 – e^{(-z0/λ)}))$
+Therefore,
 
-α used in this article is $α = 2·10^{−6}$ or $3.5·10^{−7}$ cm/s (for temp at 298K). This is indeed a controversial parameter TBH. We can try different values and see what happens.
+$$D_{\rm average} = (I * c_{eq}/\rho) * (1 – (\lambda/z_0) * (1 – e^{(-z_0/\lambda)}))$$
+
+α used in this article is $\alpha = 2·10^{−6}$ or $3.5·10^{−7}$ cm/s (for temp at 298K). This is indeed a controversial parameter TBH. We can try different values and see what happens.
 
 ## Implementation
 

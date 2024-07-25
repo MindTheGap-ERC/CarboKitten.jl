@@ -30,10 +30,10 @@ function transpile_md(src)
     end
 end
 
-function transpile_file(src, target_path)
-    mkpath(joinpath(target_path, dirname(src)))
-    content = open(readlines, src, "r")
-    open(joinpath(target_path, basename(src)), "w") do fout
+function transpile_file(srcdir, file, target_path)
+    mkpath(joinpath(target_path, dirname(file)))
+    content = open(readlines, joinpath(srcdir, file), "r")
+    open(joinpath(target_path, file), "w") do fout
         join(fout, transpile_md(content), "\n")
     end
 end
@@ -48,12 +48,20 @@ function copydir(src, dst)
     end
 end
 
-is_markdown(path) = splitext(path)[2] == ".md"
-sources = filter(is_markdown, readdir(joinpath(@__DIR__, "src"), join=true))
+function get_source_files()
+    home = joinpath(@__DIR__, "src")
+    is_markdown(path) = splitext(path)[2] == ".md"
+    files_in_dir(d, _, fs) = (relpath(joinpath(d, f), home) for f in filter(is_markdown, fs))
+    Iterators.flatten(Iterators.map(
+        splat(files_in_dir), walkdir(home))) |> collect
+end
+
+sources = get_source_files()
+println(sources)
 path = joinpath(@__DIR__, "transpiled")
 rm(path; force=true, recursive=true)
 mkpath(path)
-Entangled.transpile_file.(sources, path)
+Entangled.transpile_file.(joinpath(@__DIR__, "src"), sources, path)
 copydir(joinpath(@__DIR__, "src/fig"), joinpath(path, "fig"))
 
 makedocs(
@@ -65,6 +73,7 @@ makedocs(
         "Models" => [
             "Bosscher and Schlager 1992" => "bosscher-1992.md",
             "Model with CA and Production" => "ca-with-production.md",
+            "With Denudation" => "ca-prod-with-denudation.md",
             "ALCAPS" => "model-alcap.md"
         ],
         "CarboCAT" => [
@@ -73,8 +82,10 @@ makedocs(
             "Sediment Transport" => "carbocat-transport.md"
         ],
         "Denudation" => [
-            "Denudation" => "Denudation.md",
-            "Model" => "ca-prod-with-erosion.md"
+            "Denudation" => "denudation/denudation.md",
+            "Empirical Denudation" => "denudation/empirical.md",
+            "Chemical Dissolution" => "denudation/chemical.md",
+            "Physical Erosion" => "denudation/physical_erosion.md"
         ],
         "Transport" => [
             "Active Layer" => "active-layer-transport.md",

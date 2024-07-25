@@ -11,7 +11,7 @@ using CarboKitten.Burgess2013
 
 #change sinouid function
 DEFAULT_INPUT = CarboKitten.CaProdErosion.Input(
-    sea_level = t -> 20 * sin(2π * t) + 5 * sin(2π * t / 0.112), 
+    sea_level = t -> 20 * sin(2π * t) + 5 * sin(2π * t / 0.112),
     subsidence_rate = 50.0,
     initial_depth = x -> x / 2,
     grid_size = (50, 100),
@@ -38,7 +38,7 @@ CarboKitten.CaProdErosion.main(DEFAULT_INPUT, "data/capes-osc.h5")
 
 This writes output to an HDF5 file that you may use for further analysis and visualization.
 
-``` {.julia .build file=examples/erosion/plot-caps-osc.jl target=docs/src/fig/capesosc-crosssection.png deps=data/capes-osc.h5}
+``` {.julia .build file=examples/denudation/plot-caps-osc.jl target=docs/src/fig/capesosc-crosssection.png deps=data/capes-osc.h5}
 module Script
     using CarboKitten.Visualization
     using GLMakie
@@ -262,7 +262,7 @@ function run_model(input::Input)
 end
 ```
 
-``` {.julia file=src/CaProdErosion.jl}
+``` {.julia}
 module CaProdErosion
 
 using CarboKitten
@@ -327,7 +327,7 @@ end # CaProd
 
 # Visualizing output
 
-``` {.julia file=src/VisualizationErosion.jl}
+``` {.julia}
 module VisualizationErosion
 
 export plot_crosssection

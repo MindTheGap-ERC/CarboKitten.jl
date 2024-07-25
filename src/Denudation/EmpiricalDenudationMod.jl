@@ -1,11 +1,12 @@
+# ~/~ begin <<docs/src/denudation/empirical.md#src/Denudation/EmpiricalDenudationMod.jl>>[init]
 ## this code used the emperical equations with form of D = f(precipitation, slope) to estimate the denudation rates on exposed carbonate platform.
-module EmpericalDenudationMod
+module EmpiricalDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
 using ...Config: Box
 using Unitful
 
-@kwdef struct EmpericalDenudation <: DenudationType
+@kwdef struct EmpiricalDenudation <: DenudationType
     precip
 end
 
@@ -20,10 +21,10 @@ function slope_kernel(w::Any, cellsize::Float64)
         atan(sqrt(dzdx^2 + dzdy^2)) * (180 / π)
     end
 end
-#small bug: slope not equals to 0 for depression. 
+#small bug: slope not equals to 0 for depression.
 
 # calculate denudation based on regressed function
-function emperical_denudation(precip::Float64, slope::Any)
+function empirical_denudation(precip::Float64, slope::Any)
     local a = 9.1363
     local b = -0.008519
     local c = 580.51
@@ -33,12 +34,13 @@ function emperical_denudation(precip::Float64, slope::Any)
     (a ./ (1 .+ exp.(b .* (precip .- c)))) .* (d ./ (1 .+ exp.(e .* (slope .- f)))) # using logistic function
 end
 
-function denudation(::Box, p::EmpericalDenudation, water_depth, slope, facies)
-    return (emperical_denudation.(p.precip, slope) .* u"m/kyr")
+function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies)
+    return (empirical_denudation.(p.precip, slope) .* u"m/kyr")
 end
 
-function redistribution(box::Box, ::EmpericalDenudation, water_depth, slope, facies)
-    return (zeros(typeof(0.0u"m/kyr"), box.grid_size...))
+function redistribution(box::Box, ::EmpiricalDenudation, water_depth, slope, facies)
+    return nothing
 end
 
 end
+# ~/~ end

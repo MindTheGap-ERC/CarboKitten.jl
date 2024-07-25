@@ -1,3 +1,4 @@
+# ~/~ begin <<docs/src/denudation/chemical.md#src/Denudation/DissolutionMod.jl>>[init]
 # based on Kaufman 2002, Geomorphology
 module DissolutionMod
 
@@ -50,7 +51,8 @@ function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies) where
 end
 
 function redistribution(box::Box{BT}, p::Dissolution, water_depth, slope, facies) where {BT<:Boundary}
-    return (zeros(typeof(0.0u"m/kyr"), box.grid_size...))
+    return nothing
 end
 
 end
+# ~/~ end

@@ -5,7 +5,7 @@ using ...Stencil: Periodic, stencil
 using ...Utility
 using ...BoundaryTrait: Boundary
 using ...Denudation: denudation, redistribution
-using ...Denudation.EmpericalDenudationMod: slope_kernel
+using ...Denudation.EmpiricalDenudationMod: slope_kernel
 using ...Burgess2013
 using ...Burgess2013.CA: step_ca, run_ca
 using ...Config: Box, TimeProperties
@@ -47,11 +47,11 @@ struct ProductionFrame
 end
 
 struct DenudationFrame
-    denudation::Array{typeof(1.0u"m/Myr"),2}
-    redistribution::Array{typeof(1.0u"m/Myr"),2}
+    denudation::Union{Array{typeof(1.0u"m/Myr"),2}, Nothing}
+    redistribution::Union{Array{typeof(1.0u"m/Myr"),2}, Nothing}
 end
 
-struct OutputFrame 
+struct OutputFrame
     production::Array{typeof(1.0u"m/Myr"),3}
     denudation::Array{typeof(1.0u"m/Myr"),2}
     redistribution::Array{typeof(1.0u"m/Myr"),2}
@@ -67,7 +67,7 @@ end
 function initial_state(input::Input)  # -> State
     height = zeros(Float64, input.box.grid_size...) * u"m"
     for i in CartesianIndices(height)
-        height[i] = input.initial_depth(i[2] * input.box.phys_scale) 
+        height[i] = input.initial_depth(i[2] * input.box.phys_scale)
     end
     n_facies = length(input.facies)
     ca = rand(0:n_facies, input.box.grid_size...)
@@ -102,7 +102,7 @@ function prod_propagator(input::Input,box::Box{BT}) where {BT<:Boundary}
     return ProductionFrame(production)
     end
 
-    
+
 end
 
 
@@ -144,15 +144,13 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT <: Boundary}
             (denudation_mass[idx]) = denudation(box, input.denudationparam, w[idx], slope[idx],input.facies[f])
             end
         end
-    
+
         inf_map = get_inf_map(s,input)
-        redistribution_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
-        (redistribution_mass) = calculate_redistribution(box,input.denudationparam,w,slope,inf_map)
-    
-    return DenudationFrame(denudation_mass,redistribution_mass)
-    
+        redistribution_mass = redistribution(box,input.denudationparam,w,slope,inf_map)
+
+        return DenudationFrame(denudation_mass,redistribution_mass)
     end
-    
+
 end
 
 function updater(input)
@@ -227,7 +225,7 @@ function main(input::Input, output::String)
 
         results = map(stack_frames, partition(run_model(input,box), input.time.write_interval))
         for (step, frame) in enumerate(take(results, n_writes))
-            ds[:, :, :, step] = frame.production |> in_units_of(u"m/Myr")  
+            ds[:, :, :, step] = frame.production |> in_units_of(u"m/Myr")
             denudation[:,:,step] = frame.denudation |> in_units_of(u"m/kyr")
             redistribution[:,:,step] = frame.redistribution |> in_units_of(u"m/kyr")
         end
@@ -235,4 +233,3 @@ function main(input::Input, output::String)
 end
 
 end  # module
-

@@ -1,3 +1,4 @@
+# ~/~ begin <<docs/src/denudation/physical_erosion.md#src/Denudation/PhysicalErosionMod.jl>>[init]
 module PhysicalErosionMod
 
 import ..Abstract: DenudationType, denudation, redistribution
@@ -89,3 +90,4 @@ function redistribution(box::Box{BT}, p::PhysicalErosion, water_depth, slope, in
 end
 
 end
+# ~/~ end

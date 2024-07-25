@@ -15,3 +15,62 @@ Example: in examples, you find `caps_miller_diss.jl`, `caps_miller_emp.jl`, `cap
 - `Dissolution` means chemical dissolution
 - `PhysicalErosion` means physical erosion and sediments redistribution
 - `EmpericalDenudation` means total denudation calculated based on emperical relationship by Cl isotope observations.
+
+## API
+
+The different denudation models all follow the same API.
+
+``` {.julia file=src/Denudation/Abstract.jl}
+module Abstract
+
+using ...BoundaryTrait: Boundary
+
+abstract type DenudationType end
+
+"""
+    denudation(box, param, state)
+
+FIXME Computes the denudation for a single time-step, given denudation parameters `param` and a simulation state `state`. `param` should have a `DenudationType` type and `state` should contain the `height` property and `sealevel`.
+"""
+function denudation(::Type{BT}, param::DenudationType, water_depth, slope, facies) where {BT<:Boundary}
+    error("Abstract `denudation` function called.")
+end
+
+"""
+    redistribution()
+
+FIXME
+"""
+function redistribution(::Type{BT}, param::DenudationType, water_depth, slope, facies) where {BT<:Boundary}
+    error("Abstract `redistribution` function called.")
+end
+
+end  # module
+```
+
+### No Denudation
+
+``` {.julia file=src/Denudation/NoDenudationMod.jl}
+"""
+    module NoDenudation
+
+Doesn't do any denudation: used for testing purposes.
+"""
+module NoDenudationMod
+
+import ..Abstract: DenudationType, denudation, redistribution
+using ...Config: Box
+using Unitful
+
+struct NoDenudation <: DenudationType end
+
+function denudation(box::Box, p::NoDenudation, water_depth::Any, slope, facies)
+    return nothing
+end
+
+function redistribution(box::Box, p::NoDenudation, water_depth, slope, facies)
+    return nothing
+end
+
+end
+```

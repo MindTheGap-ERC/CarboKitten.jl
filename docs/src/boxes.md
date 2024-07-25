@@ -65,6 +65,8 @@ phys_size(grid_size, phys_scale) = (
 Now we can specify the box parameters as follows:
 
 ``` {.julia file=test/ConfigSpec.jl}
+using Test 
+using Unitful
 @testset "Config" begin
     using CarboKitten.BoundaryTrait
     using CarboKitten.Config: Box

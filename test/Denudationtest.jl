@@ -3,19 +3,19 @@ using Unitful
 
 @testset "DenudationTST" begin
     import CarboKitten.Denudation.DissolutionMod: dissolution
-    import CarboKitten.Denudation.EmpericalDenudationMod: emperical_denudation, slope_kernel
+    import CarboKitten.Denudation.EmpiricalDenudationMod: empirical_denudation, slope_kernel
     import CarboKitten.Denudation.PhysicalErosionMod: physical_erosion, mass_erosion, total_mass_redistribution
     using CarboKitten.Stencil: Periodic, Reflected, stencil
     using CarboKitten.Config: Box, Vectors, TimeProperties
     using CarboKitten.Burgess2013.CA: step_ca, run_ca
     using CarboKitten.Model.WithDenudation: Input, Facies
-    using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpericalDenudation
+    using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpiricalDenudation
 
 
     DENUDATION_LOW_T = Dissolution(273.0,1000.0,10^(-1.5),2e-3)
     DENUDATION_HIGH_T = Dissolution(303.0,1000.0,10^(-1.5),2e-3)
-    DENUDATION_LOW_P = EmpericalDenudation(800.0)
-    DENUDATION_HIGH_P = EmpericalDenudation(1000.0)
+    DENUDATION_LOW_P = EmpiricalDenudation(800.0)
+    DENUDATION_HIGH_P = EmpiricalDenudation(1000.0)
     DENUDATION_PHYS = PhysicalErosion(0.23)
     MODEL1 = [
         Facies(viability_range = (4, 10),

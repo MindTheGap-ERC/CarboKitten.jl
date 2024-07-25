@@ -57,7 +57,6 @@ function get_source_files()
 end
 
 sources = get_source_files()
-println(sources)
 path = joinpath(@__DIR__, "transpiled")
 rm(path; force=true, recursive=true)
 mkpath(path)
@@ -73,7 +72,7 @@ makedocs(
         "Models" => [
             "Bosscher and Schlager 1992" => "bosscher-1992.md",
             "Model with CA and Production" => "ca-with-production.md",
-            "With Denudation" => "ca-prod-with-denudation.md",
+            # "With Denudation" => "ca-prod-with-denudation.md",
             "ALCAPS" => "model-alcap.md"
         ],
         "CarboCAT" => [

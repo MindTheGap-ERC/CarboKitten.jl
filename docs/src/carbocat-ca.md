@@ -14,7 +14,7 @@ cycle_permutation(n_species::Int) =
 The `stencil` function has an `args...` variadic arguments that are forwarded to the given rule. This means we can create a `rules` function that we pass the preference order as a second argument.
 
 ``` {.julia #burgess2013-rules}
-function rules(facies::Vector{Facies})
+function rules(facies::Vector{F}) where {F}
     function (neighbourhood::Matrix{Int}, order::Vector{Int})
         cell_facies = neighbourhood[3, 3]
         neighbour_count(f) = sum(neighbourhood .== f)
@@ -37,7 +37,7 @@ end
 
 <<ca-stateful>>
 
-function run_ca(::Type{B}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {B<:Boundary{2}}
+function run_ca(::Type{B}, facies::Vector{F}, init::Matrix{Int}, n_species::Int) where {B<:Boundary{2}, F}
     r = rules(facies)
     Channel{Matrix{Int}}() do ch
         target = Matrix{Int}(undef, size(init))

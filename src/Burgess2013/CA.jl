@@ -5,14 +5,15 @@ using ...BoundaryTrait
 using ...Stencil
 using ..Config: Facies
 using ...Config: Box
-export run_ca, step_ca
+
+export run_ca
 
 # ~/~ begin <<docs/src/carbocat-ca.md#cycle-permutation>>[init]
 cycle_permutation(n_species::Int) =
     (circshift(1:n_species, x) for x in Iterators.countfrom(0))
 # ~/~ end
 # ~/~ begin <<docs/src/carbocat-ca.md#burgess2013-rules>>[init]
-function rules(facies::Vector{Facies})
+function rules(facies::Vector{F}) where {F}
     function (neighbourhood::Matrix{Int}, order::Vector{Int})
         cell_facies = neighbourhood[3, 3]
         neighbour_count(f) = sum(neighbourhood .== f)
@@ -33,7 +34,7 @@ function rules(facies::Vector{Facies})
     end
 end
 
-
+# ~/~ begin <<docs/src/carbocat-ca.md#ca-stateful>>[init]
 function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
     """Creates a propagator for the state, updating the celullar automaton in place.
 
@@ -49,13 +50,14 @@ function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
         state.ca_priority = circshift(state.ca_priority, 1)
     end
 end
+# ~/~ end
 
-function run_ca(::Box{BT}, facies::Vector{Facies}, init::Matrix{Int}, n_species::Int) where {BT <: Boundary{2}}
+function run_ca(::Type{B}, facies::Vector{F}, init::Matrix{Int}, n_species::Int) where {B<:Boundary{2}, F}
     r = rules(facies)
     Channel{Matrix{Int}}() do ch
         target = Matrix{Int}(undef, size(init))
         put!(ch, init)
-        stencil_op = stencil(Int, BT, (5, 5), r)
+        stencil_op = stencil(Int, B, (5, 5), r)
         for perm in cycle_permutation(n_species)
             stencil_op(init, target, perm)
             init, target = target, init

@@ -1,41 +1,61 @@
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#src/CaProdErosion.jl>>[init]
-module CaProdErosion
+module WithDenudation
 
 using CarboKitten
-using ..Stencil: Periodic, stencil
-using ..Utility
-using ..BoundaryTrait: Boundary
-#using ..BS92: sealevel_curve
-using ..Denudation: denudation, calculate_redistribution
-using ..Denudation.EmpericalDenudation: slope_kernel
-using ..Burgess2013
-using ..Burgess2013.CA: step_ca, run_ca
-using ..InputConfig: Input, DenudationType
-using ..Config: Box
+using ...Stencil: Periodic, stencil
+using ...Utility
+using ...BoundaryTrait: Boundary
+using ...Denudation: denudation, redistribution
+using ...Denudation.EmpiricalDenudationMod: slope_kernel
+using ...Burgess2013
+using ...Burgess2013.CA: step_ca, run_ca
+using ...Config: Box, TimeProperties
 using Unitful
 using HDF5
 using .Iterators: drop, peel, partition, map, take
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-input>>[init]
-# ~/~ end
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-frame>>[init]
 
-abstract type Frame end
-struct ProductionFrame <: Frame
+@kwdef struct Facies
+    viability_range::Tuple{Int,Int}
+    activation_range::Tuple{Int,Int}
+
+    maximum_growth_rate::typeof(1.0u"m/Myr")
+    extinction_coefficient::typeof(1.0u"m^-1")
+    saturation_intensity::typeof(1.0u"W/m^2")
+
+    reactive_surface::Float64 #reactive surface
+    mass_density::Float64 #density of different carb factory
+    infiltration_coefficient::Float64 #infiltration coeff
+end
+
+abstract type DenudationType end
+
+@kwdef struct Input
+    box :: Box
+    time :: TimeProperties
+
+    sea_level       # Myr -> m
+    subsidence_rate::typeof(1.0u"m/Myr")
+    initial_depth  # m -> m
+
+    facies::Vector{Facies}
+    insolation::typeof(1.0u"W/m^2")
+
+    denudationparam::DenudationType
+end
+
+struct ProductionFrame
     production::Array{typeof(1.0u"m/Myr"),3}
 end
 
-struct DenudationFrame <: Frame
-    denudation::Array{typeof(1.0u"m/Myr"),2}
-    redistribution::Array{typeof(1.0u"m/Myr"),2}
+struct DenudationFrame
+    denudation::Union{Array{typeof(1.0u"m/Myr"),2}, Nothing}
+    redistribution::Union{Array{typeof(1.0u"m/Myr"),2}, Nothing}
 end
 
-struct OutputFrame 
+struct OutputFrame
     production::Array{typeof(1.0u"m/Myr"),3}
     denudation::Array{typeof(1.0u"m/Myr"),2}
     redistribution::Array{typeof(1.0u"m/Myr"),2}
 end
-# ~/~ end
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-state>>[init]
 # FIXME: deduplicate
 mutable struct State
     time::typeof(1.0u"Myr")
@@ -43,13 +63,11 @@ mutable struct State
     ca_priority::Vector{Int}
     height::Array{typeof(1.0u"m"),2}
 end
-# ~/~ end
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-model>>[init]
 # FIXME: deduplicate
 function initial_state(input::Input)  # -> State
     height = zeros(Float64, input.box.grid_size...) * u"m"
     for i in CartesianIndices(height)
-        height[i] = input.initial_depth(i[2] * input.box.phys_scale) 
+        height[i] = input.initial_depth(i[2] * input.box.phys_scale)
     end
     n_facies = length(input.facies)
     ca = rand(0:n_facies, input.box.grid_size...)
@@ -61,8 +79,6 @@ function initial_state(input::Input)  # -> State
     end
     return state
 end
-# ~/~ end
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-model>>[1]
 
 # propagator for production
 function prod_propagator(input::Input,box::Box{BT}) where {BT<:Boundary}
@@ -86,7 +102,7 @@ function prod_propagator(input::Input,box::Box{BT}) where {BT<:Boundary}
     return ProductionFrame(production)
     end
 
-    
+
 end
 
 
@@ -128,19 +144,15 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT <: Boundary}
             (denudation_mass[idx]) = denudation(box, input.denudationparam, w[idx], slope[idx],input.facies[f])
             end
         end
-    
+
         inf_map = get_inf_map(s,input)
-        redistribution_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
-        (redistribution_mass) = calculate_redistribution(box,input.denudationparam,w,slope,inf_map)
-    
-    return DenudationFrame(denudation_mass,redistribution_mass)
-    
+        redistribution_mass = redistribution(box,input.denudationparam,w,slope,inf_map)
+
+        return DenudationFrame(denudation_mass,redistribution_mass)
     end
-    
+
 end
 
-# ~/~ end
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-model>>[2]
 function updater(input)
     n_facies = length(input.facies)
     function update(state, Δ::ProductionFrame)
@@ -157,8 +169,6 @@ function updater(input)
 
     update
 end
-# ~/~ end
-# ~/~ begin <<docs/src/ca-prod-with-erosion.md#cape-model>>[3]
 function run_model(input::Input,box::Box{BT}) where {BT <:Boundary}
     Channel{OutputFrame}() do ch
         s = initial_state(input)
@@ -175,7 +185,6 @@ function run_model(input::Input,box::Box{BT}) where {BT <:Boundary}
         end
     end
 end
-# ~/~ end
 
 function stack_frames(fs::Vector{OutputFrame})  # -> Frame
     OutputFrame(sum(f.production for f in fs),sum(f.denudation for f in fs),sum(f.redistribution for f in fs))#
@@ -217,12 +226,11 @@ function main(input::Input, output::String)
 
         results = map(stack_frames, partition(run_model(input,box), input.time.write_interval))
         for (step, frame) in enumerate(take(results, n_writes))
-            ds[:, :, :, step] = frame.production |> in_units_of(u"m/Myr")  
+            ds[:, :, :, step] = frame.production |> in_units_of(u"m/Myr")
             denudation[:,:,step] = frame.denudation |> in_units_of(u"m/kyr")
             redistribution[:,:,step] = frame.redistribution |> in_units_of(u"m/kyr")
         end
     end
 end
 
-end # CaProd
-# ~/~ end
+end  # module

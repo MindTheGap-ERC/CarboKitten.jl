@@ -32,6 +32,91 @@
     {
       "description": null,
       "creates": [
+        "docs/src/_fig/active-layer-production-patch.png"
+      ],
+      "requires": [
+        "examples/transport/active-layer.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/transport/active-layer-plot-production.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/active-layer-test.png"
+      ],
+      "requires": [
+        "examples/transport/active-layer.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/transport/active-layer-plot-result.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "data/alcaps_default.h5"
+      ],
+      "requires": [
+        "src/Model/ALCAPS.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/alcaps/defaults.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/alcaps_default_profile.png"
+      ],
+      "requires": [
+        "ext/VisualizationExt.jl",
+        "data/alcaps_default.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/alcaps/plot-defaults.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "data/alcaps2.h5"
+      ],
+      "requires": [
+        "src/Model/ALCAPS.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/alcaps/alternative.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/alcaps-alternative.png"
+      ],
+      "requires": [
+        "data/alcaps2.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/alcaps/plot-alternative.jl"
+    },
+    {
+      "description": null,
+      "creates": [
         "docs/src/_fig/eca.png"
       ],
       "requires": [
@@ -147,6 +232,10 @@
       "name": "figures",
       "requires": [
         "docs/src/_fig/bs92-fig8.svg",
+        "docs/src/_fig/active-layer-production-patch.png",
+        "docs/src/_fig/active-layer-test.png",
+        "docs/src/_fig/alcaps_default_profile.png",
+        "docs/src/_fig/alcaps-alternative.png",
         "docs/src/_fig/eca.png",
         "docs/src/_fig/life.gif",
         "docs/src/_fig/boundary_types.png",

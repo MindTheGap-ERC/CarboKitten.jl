@@ -186,18 +186,19 @@ function main(input::Input, output::String)
     y_axis = (0:(input.box.grid_size[1]-1)) .* input.box.phys_scale
     initial_height = input.initial_depth.(x_axis)
     n_writes = input.time.steps ÷ input.time.write_interval
+    t = collect((0:(n_writes-1)) .* (input.time.Δt * input.time.write_interval))
 
     h5open(output, "w") do fid
         gid = create_group(fid, "input")
         gid["x"] = collect(x_axis) |> in_units_of(u"m")
         gid["y"] = collect(y_axis) |> in_units_of(u"m")
         gid["height"] = collect(initial_height) |> in_units_of(u"m")
-        gid["t"] = collect((0:(n_writes-1)) .* (input.time.Δt * input.time.write_interval)) |> in_units_of(u"Myr")
+        gid["t"] =  t |> in_units_of(u"Myr")
         attr = attributes(gid)
         attr["delta_t"] = input.time.Δt |> in_units_of(u"Myr")
         attr["write_interval"] = input.time.write_interval
         attr["time_steps"] = input.time.steps
-        attr["sea_level"] = input.sea_level
+        attr["sea_level"] = input.sea_level.(t) 
         attr["subsidence_rate"] = input.subsidence_rate |> in_units_of(u"m/Myr")
         println("Subsidence rate saved successfully.")
 

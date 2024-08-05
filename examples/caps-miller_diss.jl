@@ -64,5 +64,5 @@ const INPUT = Input(
     denudationparam = DENUDATION
   )
 
-CaProdErosion.main(INPUT, "data/caps-test.h5")
+CaProdErosion.main(INPUT, "data/caps-test2.h5")
 # ~/~ end

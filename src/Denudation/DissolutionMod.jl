@@ -11,10 +11,10 @@ using Unitful
 # TODO add units
 
 @kwdef struct Dissolution <: DenudationType
-    temp
-    precip
-    pco2
-    reactionrate::Float64
+    temp::typeof(1.0u"K")
+    precip::typeof(1.0u"m")
+    pco2::typeof(1.0u"atm")
+    reactionrate::typeof(1.0u"m/yr")
 end
 
 # Kaufmann 2002, Table 2
@@ -34,12 +34,12 @@ end
 #calculate ceq and Deq, Kaufman 2002
 function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies)
     p = karst_denudation_parameters(temp)
-    eq_c = (pco2 .* (p.K1 * p.KC * p.KH) ./ (4 * p.K2 * p.activity_Ca .* (p.activity_Alk)^2)) .^ (1 / 3)
-    eq_d = 1000 * precip .* facies.infiltration_coefficient * 40 * 1000 .* eq_c ./ facies.mass_density
+    eq_c = (pco2 .* (p.K1 * p.KC * p.KH) ./ (4 * p.K2 * p.activity_Ca .* (p.activity_Alk)^2)) .^ (1 / 3) * u"mol/L"
+    eq_d = 1000 * precip .* facies.infiltration_coefficient * 40 * 1000 .* eq_c ./ facies.mass_density * u"m/kyr"
     (concentration=eq_c, denudation=eq_d)
 end
 
-function dissolution(temp::Float64, precip::Float64, alpha::Float64, pco2::Float64, water_depth, facies)
+function dissolution(temp, precip, alpha, pco2, water_depth, facies)
     # TODO not used: I = precip .* facies.infiltration_coefficient #assume vertical infiltration
     λ = precip .* facies.infiltration_coefficient ./ (alpha .* facies.reactive_surface)
     eq = equilibrium(temp, pco2, precip, facies) # pass ceq Deq from the last function
@@ -47,7 +47,11 @@ function dissolution(temp::Float64, precip::Float64, alpha::Float64, pco2::Float
 end
 
 function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies) where {BT<:Boundary}
-    return (dissolution(p.temp, p.precip, p.pco2, p.reactionrate, water_depth, facies) * u"m/kyr")
+    temp = p.temp ./ u"K"
+    precip = p.precip ./"m"
+    pco2 = p.pco2 ./"atm"
+    reactionrate = p.reactionrate ./"m/yr"
+    return (dissolution(temp, precip, pco2, reactionrate, water_depth, facies))
 end
 
 function redistribution(box::Box{BT}, p::Dissolution, water_depth, slope, facies) where {BT<:Boundary}

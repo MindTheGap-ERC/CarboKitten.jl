@@ -35,7 +35,7 @@ function empirical_denudation(precip::Float64, slope::Any)
 end
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies)
-    precip = p.precip
+    precip = p.precip ./ u"m"
     return (empirical_denudation.(precip, slope) )
 end
 

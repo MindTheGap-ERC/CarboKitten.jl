@@ -12,9 +12,30 @@ In CarboKitten, you could choose which type of the three you would like to attem
 Example: in examples, you find `caps_miller_diss.jl`, `caps_miller_emp.jl`, `caps_miller_phys.jl`, for chemical dissolution, empirical denudation or physical denudation, respectively. This file uses the [miller_phanerozoic_2005] (@cite) cure as sea level curve input. You could try different erosion types by changing the `erosion_type`:
 
 - `NoDenudation` means no erosion, and is used for debugging only.
-- `Dissolution` means chemical dissolution
-- `PhysicalErosion` means physical erosion and sediments redistribution
-- `EmpericalDenudation` means total denudation calculated based on emperical relationship by Cl isotope observations.
+- `Dissolution` means chemical dissolution. The default input parameters are: Temperature = 273K, precipitation = 1000mm/yr, atmospheric CO2 partial pressure = 10^(-1.5)* ATM, and reaction rate = 0.002 m/yr.
+- `PhysicalErosion` means physical erosion and sediments redistribution. The default parameters is erodability = 0.001 m/yr.
+- `EmpericalDenudation` means total denudation calculated based on emperical relationship by Cl isotope observations. The default input parameter is: precipitation = 1000mm/yr.
+
+## Tests for three modes of denudation
+In this module, 7 tests are implemented. 
+
+Tests 1: 
+ // @test sum(denudation_mass_LOW_T) < sum(denudation_mass_HIGH_T)
+This means that higher temperature would dissolve faster than the colder scenario. It tests the Dissolution mode.
+
+Test2: 
+//  @test sum(denudation_mass_LOW_P) < sum(denudation_mass_HIGH_P)
+This means more humid scenario has higher denudation rates than the arid scenario. This tests emperical denudation mode.
+
+Test3:
+//  @test sum(denudation_mass_phys) > sum(denudation_mass_phys_flat)
+This means more topography has higher denudation rates than the flatter topography. This tests physical erosion.
+
+Test4:
+// @test sum(denudation_mass_phys) ≈ sum(redistribution_mass)
+This means in physical erosion mode, the total amount of eroded material = the total amount of redistributed material. In this case, boundary condition of 'Periodic has been used.
+
+Test 5 to 7 are regression tests: the outputs from the module is similar to the values calculated by calculator.
 
 ## API
 

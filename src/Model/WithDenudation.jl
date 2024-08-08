@@ -21,8 +21,8 @@ using .Iterators: drop, peel, partition, map, take
     extinction_coefficient::typeof(1.0u"m^-1")
     saturation_intensity::typeof(1.0u"W/m^2")
 
-    reactive_surface::Float64 #reactive surface
-    mass_density::Float64 #density of different carb factory
+    reactive_surface::typeof(1.0u"m^2/m^3") #reactive surface
+    mass_density::typeof(1.0u"kg/m^3") #density of different carb factory
     infiltration_coefficient::Float64 #infiltration coeff
 end
 
@@ -132,7 +132,6 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT <: Boundary}
         slopefn = stencil(Float64, BT, (3, 3), slope_kernel)
         slopefn(w, slope, box.phys_scale ./u"m")
         denudation_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
-        w = water_depth(s) ./ u"m"
 
         for idx in CartesianIndices(s.ca)
             f = s.ca[idx]

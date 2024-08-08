@@ -14,7 +14,7 @@ using Unitful
 end
 
 function physical_erosion(slope::Any, inf::Any, erodability::Float64)
-    -1 * -erodability .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3) .* u"m/kyr"
+    -1 * -erodability .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3) 
 end
 
 #erodability = 0.23
@@ -79,16 +79,16 @@ function denudation(::Box, p::PhysicalErosion, water_depth::Any, slope, facies)
     # This needs transport feature to be merged so that we know the facies type of the
     # top most layer. What follows should still be regarded as pseudo-code.
     # We need to look into this further.
-    erodability = p.erodability ./ u"m/kyr"
+    erodability = p.erodability ./ u"m/yr"
     denudation_amount = physical_erosion.(slope, facies.infiltration_coefficient, erodability)
-    return (denudation_amount)
+    return (denudation_amount .* u"m/kyr")
 end
 
 function redistribution(box::Box{BT}, p::PhysicalErosion, water_depth, slope, inf) where {BT<:Boundary}
-    erodability = p.erodability ./ u"m/kyr"
+    erodability = p.erodability ./ u"m/yr"
     redis = mass_erosion(Float64, BT, slope, (3, 3), water_depth, box.phys_scale ./ u"m", inf, erodability)
     redistribution = total_mass_redistribution(redis, slope, BT)
-    return (redistribution)
+    return (redistribution .* u"m/kyr")
 end
 
 end

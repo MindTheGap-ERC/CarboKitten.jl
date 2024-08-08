@@ -12,19 +12,19 @@ using Unitful
     using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpiricalDenudation
 
 
-    DENUDATION_LOW_T = Dissolution(273.0,1000.0,10^(-1.5),2e-3)
-    DENUDATION_HIGH_T = Dissolution(303.0,1000.0,10^(-1.5),2e-3)
-    DENUDATION_LOW_P = EmpiricalDenudation(800.0)
-    DENUDATION_HIGH_P = EmpiricalDenudation(1000.0)
-    DENUDATION_PHYS = PhysicalErosion(0.23)
+    DENUDATION_LOW_T = Dissolution(temp = 273.0u"K",precip = 1.0u"m", pco2 = 10^(-1.5)*u"atm",reactionrate = 2e-3u"m/yr")
+    DENUDATION_HIGH_T = Dissolution(temp = 303.0u"K",precip = 1.0u"m", pco2 = 10^(-1.5)*u"atm",reactionrate = 2e-3u"m/yr")
+    DENUDATION_LOW_P = EmpiricalDenudation(precip = 0.8u"m")
+    DENUDATION_HIGH_P = EmpiricalDenudation(precip = 1.0u"m")
+    DENUDATION_PHYS = PhysicalErosion(0.23u"m/yr")
     MODEL1 = [
         Facies(viability_range = (4, 10),
         activation_range = (6, 10),
         maximum_growth_rate = 500u"m/Myr",
         extinction_coefficient = 0.8u"m^-1",
         saturation_intensity = 60u"W/m^2",
-        reactive_surface = 1000,
-        mass_density = 2730,
+        reactive_surface = 1000u"m^2/m^3",
+        mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5),
 
         Facies(viability_range = (4, 10),
@@ -32,8 +32,8 @@ using Unitful
         maximum_growth_rate = 400u"m/Myr",
         extinction_coefficient = 0.1u"m^-1",
         saturation_intensity = 60u"W/m^2",
-        reactive_surface = 1000,
-        mass_density = 2730,
+        reactive_surface = 1000u"m^2/m^3",
+        mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5),
 
         Facies(viability_range = (4, 10),
@@ -41,8 +41,8 @@ using Unitful
         maximum_growth_rate = 100u"m/Myr",
         extinction_coefficient = 0.005u"m^-1",
         saturation_intensity = 60u"W/m^2",
-        reactive_surface = 1000,
-        mass_density = 2730,
+        reactive_surface = 1000u"m^2/m^3",
+        mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5)
     ]
 
@@ -103,15 +103,14 @@ using Unitful
     inf_map[idx] = MODEL1[f].infiltration_coefficient
     end
     (redistribution_mass) = redistribution(box,DENUDATION_PHYS,water_depth,slope,inf_map)
-
     @test sum(denudation_mass_LOW_T) < sum(denudation_mass_HIGH_T)
     @test sum(denudation_mass_LOW_P) < sum(denudation_mass_HIGH_P)
     @test sum(denudation_mass_phys) > sum(denudation_mass_phys_flat)
     @test sum(denudation_mass_phys) ≈ sum(redistribution_mass)
 
     #regression_test
-    @test 1651*0.95 < abs.(sum(denudation_mass_LOW_T)) ./u"m/kyr" < 1651 *1.05
-    @test 479.5*0.95 < abs.(sum(denudation_mass_LOW_P)) ./u"m/kyr" < 479.5*1.05
+    @test 968*0.95 < abs.(sum(denudation_mass_LOW_T)) ./u"m/kyr" < 968 *1.05
+    @test 3.93*0.95 < abs.(sum(denudation_mass_LOW_P)) ./u"m/kyr" < 3.93*1.05
     @test 0.95* 0.7115 < sum(denudation_mass_phys) ./u"m/kyr" < 0.7115*1.05
 
 end

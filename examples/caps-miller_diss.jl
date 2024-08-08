@@ -47,7 +47,7 @@ const MODEL1 = [
     infiltration_coefficient= 0.5)
 ]
 
-const DENUDATION = Dissolution(temp = 273.0u"",preci = 1, pco2 = 10^(-1.5),reactionrate = 2e-3)#PhysicalErosionParam(1e-3)EmpericalDenudationParam(1.0)
+const DENUDATION = Dissolution(temp = 273.0u"K",precip = 1.0u"mm", pco2 = 10^(-1.5)*u"atm",reactionrate = 2e-3u"m/yr")#PhysicalErosionParam(1e-3)EmpericalDenudationParam(1.0)
 
 const INPUT = Input(
     box=Box{Shelf}(grid_size = (100, 50), phys_scale = 1.0u"km"),

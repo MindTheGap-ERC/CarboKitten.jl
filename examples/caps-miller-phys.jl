@@ -47,7 +47,7 @@ const MODEL1 = [
     infiltration_coefficient= 0.5)
 ]
 
-const DENUDATION = PhysicalErosionParam(erodability = 1e-3)
+const DENUDATION = PhysicalErosionParam(erodability = 1e-3u"m/yr")
 
 const INPUT = Input(
     box=Box{Shelf}(grid_size = (100, 50), phys_scale = 1.0u"km"),

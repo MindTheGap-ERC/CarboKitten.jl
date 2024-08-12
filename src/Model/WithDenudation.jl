@@ -21,8 +21,8 @@ using .Iterators: drop, peel, partition, map, take
     extinction_coefficient::typeof(1.0u"m^-1")
     saturation_intensity::typeof(1.0u"W/m^2")
 
-    reactive_surface::Float64 #reactive surface
-    mass_density::Float64 #density of different carb factory
+    reactive_surface::typeof(1.0u"m^2/m^3") #reactive surface
+    mass_density::typeof(1.0u"kg/m^3") #density of different carb factory
     infiltration_coefficient::Float64 #infiltration coeff
 end
 
@@ -132,7 +132,6 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT <: Boundary}
         slopefn = stencil(Float64, BT, (3, 3), slope_kernel)
         slopefn(w, slope, box.phys_scale ./u"m")
         denudation_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
-        w = water_depth(s) ./ u"m"
 
         for idx in CartesianIndices(s.ca)
             f = s.ca[idx]
@@ -195,18 +194,19 @@ function main(input::Input, output::String)
     y_axis = (0:(input.box.grid_size[1]-1)) .* input.box.phys_scale
     initial_height = input.initial_depth.(x_axis)
     n_writes = input.time.steps ÷ input.time.write_interval
+    t = collect((0:(n_writes-1)) .* (input.time.Δt * input.time.write_interval))
 
     h5open(output, "w") do fid
         gid = create_group(fid, "input")
         gid["x"] = collect(x_axis) |> in_units_of(u"m")
         gid["y"] = collect(y_axis) |> in_units_of(u"m")
         gid["height"] = collect(initial_height) |> in_units_of(u"m")
-        gid["t"] = collect((0:(n_writes-1)) .* (input.time.Δt * input.time.write_interval)) |> in_units_of(u"Myr")
+        gid["t"] =  t |> in_units_of(u"Myr")
         attr = attributes(gid)
         attr["delta_t"] = input.time.Δt |> in_units_of(u"Myr")
         attr["write_interval"] = input.time.write_interval
         attr["time_steps"] = input.time.steps
-        attr["sea_level"] = input.sea_level
+        attr["sea_level"] = input.sea_level.(t) 
         attr["subsidence_rate"] = input.subsidence_rate |> in_units_of(u"m/Myr")
         println("Subsidence rate saved successfully.")
 

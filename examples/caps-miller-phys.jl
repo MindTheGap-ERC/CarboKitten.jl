@@ -24,8 +24,8 @@ const MODEL1 = [
     maximum_growth_rate = 500u"m/Myr",
     extinction_coefficient = 0.8u"m^-1",
     saturation_intensity = 60u"W/m^2",
-    reactive_surface = 1000,
-    mass_density = 2730,
+    reactive_surface = 1000u"m^2/m^3",
+    mass_density = 2730u"kg/m^3",
     infiltration_coefficient= 0.5),
 
     Burgess2013.Facies(viability_range = (4, 10),
@@ -33,8 +33,8 @@ const MODEL1 = [
     maximum_growth_rate = 400u"m/Myr",
     extinction_coefficient = 0.1u"m^-1",
     saturation_intensity = 60u"W/m^2",
-    reactive_surface = 1000,
-    mass_density = 2730,
+    reactive_surface = 1000u"m^2/m^3",
+    mass_density = 2730u"kg/m^3",
     infiltration_coefficient= 0.5),
 
     Burgess2013.Facies(viability_range = (4, 10),
@@ -42,12 +42,12 @@ const MODEL1 = [
     maximum_growth_rate = 100u"m/Myr",
     extinction_coefficient = 0.005u"m^-1",
     saturation_intensity = 60u"W/m^2",
-    reactive_surface = 1000,
-    mass_density = 2730,
+    reactive_surface = 1000u"m^2/m^3",
+    mass_density = 2730u"kg/m^3",
     infiltration_coefficient= 0.5)
 ]
 
-const DENUDATION = PhysicalErosionParam(1e-3)
+const DENUDATION = PhysicalErosionParam(erodability = 1e-3u"m/yr")
 
 const INPUT = Input(
     box=Box{Shelf}(grid_size = (100, 50), phys_scale = 1.0u"km"),

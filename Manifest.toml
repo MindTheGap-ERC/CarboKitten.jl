@@ -2,7 +2,7 @@
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "3ae2ede909c38d17e8405b06ba4ad4593fd19193"
+project_hash = "96fff6ad1d4d7a764b81a3e58bbe9948cab11461"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra", "Requires"]
@@ -286,6 +286,12 @@ version = "10.1.4+0"
 
 [[deps.Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
+
+[[deps.ModuleMixins]]
+deps = ["MacroTools"]
+git-tree-sha1 = "31c64af39e29d2b46cbc771a230e6df77b5a4a52"
+uuid = "2b5f0a26-aae2-5c4c-af55-bc6d20297121"
+version = "0.1.0"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"

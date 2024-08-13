@@ -1,5 +1,5 @@
 # ~/~ begin <<docs/src/dsl.md#examples/dsl/bs92.jl>>[init]
-using CarboKitten.DSL: @spec, @requires, @compose
+using ModuleMixins: @compose
 
 module Units
   using Unitful
@@ -22,7 +22,7 @@ module Units
 end
 
 # ~/~ begin <<docs/src/dsl.md#dsl-example-time>>[init]
-@spec TimeIntegration begin
+@compose module TimeIntegration
   using ..Units
   using CarboKitten.Config: TimeProperties
 
@@ -38,8 +38,8 @@ end
 end
 # ~/~ end
 # ~/~ begin <<docs/src/dsl.md#dsl-example-waterdepth>>[init]
-@spec WaterDepth begin
-  @requires TimeIntegration
+@compose module WaterDepth
+  @mixin TimeIntegration
   using ..Units
   using CarboKitten.Config: axes
 
@@ -68,8 +68,8 @@ end
 end
 # ~/~ end
 # ~/~ begin <<docs/src/dsl.md#dsl-example-production>>[init]
-@spec UniformProduction begin
-  @requires WaterDepth
+@compose module UniformProduction
+  @mixin WaterDepth
   using ..Units
   using ..WaterDepth: water_depth
 
@@ -105,7 +105,9 @@ end
 end
 # ~/~ end
 
-@compose BS92 [UniformProduction] begin
+@compose module BS92
+  @mixin UniformProduction
+
   using CSV
   using DataFrames
   using Interpolations
@@ -178,7 +180,7 @@ using CarboKitten.Config: axes as box_axes
 using Unitful
 
 function main()
-  result, wd = BS92.run(BS92.INPUT)
+  result, _ = BS92.run(BS92.INPUT)
   fig = Figure()
   ax = Axis(fig[1,1], xlabel="x (km)", ylabel="z (m)")
   x, y = box_axes(BS92.INPUT.box)

@@ -29,8 +29,8 @@ end
 abstract type DenudationType end
 
 @kwdef struct Input
-    box :: Box
-    time :: TimeProperties
+    box::Box
+    time::TimeProperties
 
     sea_level       # Myr -> m
     subsidence_rate::typeof(1.0u"m/Myr")
@@ -47,8 +47,8 @@ struct ProductionFrame
 end
 
 struct DenudationFrame
-    denudation::Union{Array{typeof(1.0u"m/Myr"),2}, Nothing}
-    redistribution::Union{Array{typeof(1.0u"m/Myr"),2}, Nothing}
+    denudation::Union{Array{typeof(1.0u"m/Myr"),2},Nothing}
+    redistribution::Union{Array{typeof(1.0u"m/Myr"),2},Nothing}
 end
 
 struct OutputFrame
@@ -81,7 +81,7 @@ function initial_state(input::Input)  # -> State
 end
 
 # propagator for production
-function prod_propagator(input::Input,box::Box{BT}) where {BT<:Boundary}
+function prod_propagator(input::Input, box::Box{BT}) where {BT<:Boundary}
     n_facies = length(input.facies)
 
     function water_depth(s::State)
@@ -89,31 +89,31 @@ function prod_propagator(input::Input,box::Box{BT}) where {BT<:Boundary}
         s.height .- sea_level
     end
 
-    function(s::State)
-    production = zeros(typeof(0.0u"m/Myr"), box.grid_size..., n_facies)
-    w = water_depth(s)
-    for idx in CartesianIndices(s.ca)
-        f = s.ca[idx]
-        if f == 0
-            continue
+    function (s::State)
+        production = zeros(typeof(0.0u"m/Myr"), box.grid_size..., n_facies)
+        w = water_depth(s)
+        for idx in CartesianIndices(s.ca)
+            f = s.ca[idx]
+            if f == 0
+                continue
+            end
+            production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
         end
-        production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
-    end
-    return ProductionFrame(production)
+        return ProductionFrame(production)
     end
 
 
 end
 
 
-function denu_propagator(input::Input, box::Box{BT}) where {BT <: Boundary}
+function denu_propagator(input::Input, box::Box{BT}) where {BT<:Boundary}
 
     function water_depth(s::State)
         sea_level = input.sea_level(s.time) .* u"m"
         s.height .- sea_level
     end
 
-    function get_inf_map(s::State,input::Input)
+    function get_inf_map(s::State, input::Input)
         w = water_depth(s) ./ u"m"
         inf_map = ones(size(w)...)
         for idx in CartesianIndices(s.ca)
@@ -126,28 +126,18 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT <: Boundary}
         return inf_map
     end
 
-    function (s::State)
-        w = water_depth(s) ./ u"m"
+    function (state::State)
+        w = water_depth(state) ./ u"m"
         slope = zeros(Float64, box.grid_size...)
         slopefn = stencil(Float64, BT, (3, 3), slope_kernel)
-        slopefn(w, slope, box.phys_scale ./u"m")
-        denudation_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
+        slopefn(w, slope, box.phys_scale ./ u"m")
+        denudation_mass = zeros(typeof(0.0u"m/kyr"), box.grid_size...)
 
-        for idx in CartesianIndices(s.ca)
-            f = s.ca[idx]
-            if f == 0
-                continue
-            end
+        inf_map = get_inf_map(state, input)
+        denudation_mass = denudation(input, state)
+        redistribution_mass = redistribution(box, input.denudationparam, w, slope, inf_map)
 
-            if w[idx] >= 0
-            (denudation_mass[idx]) = denudation(box, input.denudationparam, w[idx], slope[idx],input.facies[f])
-            end
-        end
-
-        inf_map = get_inf_map(s,input)
-        redistribution_mass = redistribution(box,input.denudationparam,w,slope,inf_map)
-
-        return DenudationFrame(denudation_mass,redistribution_mass)
+        return DenudationFrame(denudation_mass, redistribution_mass)
     end
 
 end
@@ -168,11 +158,11 @@ function updater(input)
 
     update
 end
-function run_model(input::Input,box::Box{BT}) where {BT <:Boundary}
+function run_model(input::Input, box::Box{BT}) where {BT<:Boundary}
     Channel{OutputFrame}() do ch
         s = initial_state(input)
-        p = prod_propagator(input,box)
-        d = denu_propagator(input,box)  # FIXME: implement
+        p = prod_propagator(input, box)
+        d = denu_propagator(input, box)  # FIXME: implement
         u = updater(input)
 
         while true
@@ -186,7 +176,7 @@ function run_model(input::Input,box::Box{BT}) where {BT <:Boundary}
 end
 
 function stack_frames(fs::Vector{OutputFrame})  # -> Frame
-    OutputFrame(sum(f.production for f in fs),sum(f.denudation for f in fs),sum(f.redistribution for f in fs))#
+    OutputFrame(sum(f.production for f in fs), sum(f.denudation for f in fs), sum(f.redistribution for f in fs))#
 end
 
 function main(input::Input, output::String)
@@ -201,12 +191,12 @@ function main(input::Input, output::String)
         gid["x"] = collect(x_axis) |> in_units_of(u"m")
         gid["y"] = collect(y_axis) |> in_units_of(u"m")
         gid["height"] = collect(initial_height) |> in_units_of(u"m")
-        gid["t"] =  t |> in_units_of(u"Myr")
+        gid["t"] = t |> in_units_of(u"Myr")
         attr = attributes(gid)
         attr["delta_t"] = input.time.Δt |> in_units_of(u"Myr")
         attr["write_interval"] = input.time.write_interval
         attr["time_steps"] = input.time.steps
-        attr["sea_level"] = input.sea_level.(t) 
+        attr["sea_level"] = input.sea_level.(t)
         attr["subsidence_rate"] = input.subsidence_rate |> in_units_of(u"m/Myr")
         println("Subsidence rate saved successfully.")
 
@@ -217,17 +207,17 @@ function main(input::Input, output::String)
             chunk=(input.box.grid_size..., n_facies, 1))
         denudation = create_dataset(fid, "denudation", datatype(Float64),
             dataspace(input.box.grid_size..., input.time.steps),
-           chunk=(input.box.grid_size..., 1))
+            chunk=(input.box.grid_size..., 1))
         redistribution = create_dataset(fid, "redistribution", datatype(Float64),
-           dataspace(input.box.grid_size..., input.time.steps),
-          chunk=(input.box.grid_size..., 1))
+            dataspace(input.box.grid_size..., input.time.steps),
+            chunk=(input.box.grid_size..., 1))
         box = input.box
 
-        results = map(stack_frames, partition(run_model(input,box), input.time.write_interval))
+        results = map(stack_frames, partition(run_model(input, box), input.time.write_interval))
         for (step, frame) in enumerate(take(results, n_writes))
             ds[:, :, :, step] = frame.production |> in_units_of(u"m/Myr")
-            denudation[:,:,step] = frame.denudation |> in_units_of(u"m/kyr")
-            redistribution[:,:,step] = frame.redistribution |> in_units_of(u"m/kyr")
+            denudation[:, :, step] = frame.denudation |> in_units_of(u"m/kyr")
+            redistribution[:, :, step] = frame.redistribution |> in_units_of(u"m/kyr")
         end
     end
 end

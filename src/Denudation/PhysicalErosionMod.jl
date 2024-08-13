@@ -14,7 +14,7 @@ using Unitful
 end
 
 function physical_erosion(slope::Any, inf::Any, erodability::Float64)
-    -1 * -erodability .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3) 
+    -1 * -erodability .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3)
 end
 
 #erodability = 0.23
@@ -61,13 +61,12 @@ function mass_erosion(::Type{T}, ::Type{BT}, slope::Any, n::NTuple{dim,Int}, w::
     return redis
 end
 
-function total_mass_redistribution(redis::Array{Float64}, slope::Any, ::Type{BT}) where {BT<:Boundary}
+function total_mass_redistribution(redis::Array{Float64}, slope, ::Type{BT}) where {BT<:Boundary}
     mass = zeros(Float64, size(slope))
     for i in CartesianIndices(slope)
-        for idx in CartesianIndices(redis)
-            if offset_index(BT, size(slope), CartesianIndex(idx[3], idx[4]), CartesianIndex(idx[1] - 2, idx[2] - 2)) == i
-                mass[i] += redis[idx]
-            end
+        for subidx in CartesianIndices((-1:1, -1:1))
+            idx = offset_index(BT, size(slope), i, subidx)
+            mass[i] += redis[idx]
             #if idx[1] + idx[3] -1 == i[1] && idx[2] + idx[4] -1 == i[2]
             #result[i] += redis[idx]
         end

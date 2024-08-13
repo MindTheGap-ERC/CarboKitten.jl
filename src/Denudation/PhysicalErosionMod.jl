@@ -47,16 +47,16 @@ function redistribution_kernel(w::Array{Float64}, cellsize::Float64)
     end
 end
 
-function mass_erosion(::Type{T}, ::Type{BT}, slope::Any, n::NTuple{dim,Int}, w::Array{Float64}, csz::Float64, inf::Any, erodability) where {T,dim,BT<:Boundary{dim}}
+function mass_erosion(::Type{T}, ::Type{BT}, slope::Any, n::NTuple{dim,Int}, water_depth::Array{Float64}, cell_size::Float64, inf::Any, erodability) where {T,dim,BT<:Boundary{dim}}
     m = n .÷ 2
     stencil_shape = range.(.-m, m)
     stencil = zeros(T, n)
-    redis = zeros(Float64, (3, 3, size(w)...))
-    for i in CartesianIndices(w)
+    redis = zeros(Float64, (3, 3, size(water_depth)...))
+    for i in CartesianIndices(water_depth)
         for (k, Δi) in enumerate(CartesianIndices(stencil_shape))
-            stencil[k] = offset_value(BT, w, i, Δi)
+            stencil[k] = offset_value(BT, water_depth, i, Δi)
         end
-        redis[:, :, i] .= redistribution_kernel(stencil, csz) .* physical_erosion(slope[i], inf[i], erodability)
+        redis[:, :, i] .= redistribution_kernel(stencil, cell_size) .* physical_erosion(slope[i], inf[i], erodability)
     end
     return redis
 end

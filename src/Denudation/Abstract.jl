@@ -2,6 +2,9 @@
 module Abstract
 
 using ...BoundaryTrait: Boundary
+using ...Config: Box
+
+using Unitful
 
 abstract type DenudationType end
 

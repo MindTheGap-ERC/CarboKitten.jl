@@ -66,7 +66,7 @@ function total_mass_redistribution(redis::Array{Float64}, slope, ::Type{BT}) whe
     for i in CartesianIndices(slope)
         for subidx in CartesianIndices((-1:1, -1:1))
             idx = offset_index(BT, size(slope), i, subidx)
-            mass[i] += redis[idx]
+            mass[i] += redis[2-subidx[1], 2-subidx[2], idx[1], idx[2]]
             #if idx[1] + idx[3] -1 == i[1] && idx[2] + idx[4] -1 == i[2]
             #result[i] += redis[idx]
         end

@@ -107,6 +107,8 @@ end
 
 
 function denu_propagator(input::Input, box::Box{BT}) where {BT<:Boundary}
+    denudate = denudation(input)
+    redistribute = redistribution(input)
 
     function water_depth(s::State)
         sea_level = input.sea_level(s.time) .* u"m"
@@ -134,8 +136,8 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT<:Boundary}
         denudation_mass = zeros(typeof(0.0u"m/kyr"), box.grid_size...)
 
         inf_map = get_inf_map(state, input)
-        denudation_mass = denudation(input, state)
-        redistribution_mass = redistribution(box, input.denudationparam, w, slope, inf_map)
+        denudation_mass = denudate(state, water_depth, slope)
+        redistribution_mass = redistribute(state, water_depth, slope, inf_map)
 
         return DenudationFrame(denudation_mass, redistribution_mass)
     end

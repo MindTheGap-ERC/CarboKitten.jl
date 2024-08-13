@@ -41,12 +41,12 @@ function redistribution(input)
     n_facies = length(input.facies)
     redistribution_mass::Array{typeof(1.0u"m/kyr"),3} = Array(undef, n_facies, input.box.grid_size...)
 
-    function (state, water_depth, slope, inf_map)
+    function (state, denudation_mass, slope, inf_map)
         return redistribution_mass
     end
 end
 
-function redistribution(box::Box, param::DenudationType, water_depth, slope, facies)
+function redistribution(box::Box, param::DenudationType, water_depth, slope, inf_map)
     error("Abstract `redistribution` function called.")
 end
 

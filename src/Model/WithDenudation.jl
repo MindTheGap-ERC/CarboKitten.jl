@@ -115,19 +115,6 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT<:Boundary}
         s.height .- sea_level
     end
 
-    function get_inf_map(s::State, input::Input)
-        w = water_depth(s) ./ u"m"
-        inf_map = ones(size(w)...)
-        for idx in CartesianIndices(s.ca)
-            f = s.ca[idx]
-            if f == 0
-                continue
-            end
-            inf_map[idx] = input.facies[f].infiltration_coefficient
-        end
-        return inf_map
-    end
-
     function (state::State)
         w = water_depth(state) ./ u"m"
         slope = zeros(Float64, box.grid_size...)
@@ -137,7 +124,7 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT<:Boundary}
 
         inf_map = get_inf_map(state, input)
         denudation_mass = denudate(state, water_depth, slope)
-        redistribution_mass = redistribute(state, water_depth, slope, inf_map)
+        redistribution_mass = redistribute(state, water_depth, slope)
 
         return DenudationFrame(denudation_mass, redistribution_mass)
     end

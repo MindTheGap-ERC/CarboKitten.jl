@@ -36,10 +36,10 @@ end
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies)
     precip = p.precip ./ u"m"
-    return (empirical_denudation.(precip, slope) )
+    return empirical_denudation.(precip, slope)
 end
 
-function redistribution(box::Box, ::EmpiricalDenudation, water_depth, slope, facies)
+function redistribution(::Box, ::EmpiricalDenudation, water_depth, slope, facies)
     return nothing
 end
 

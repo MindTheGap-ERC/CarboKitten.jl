@@ -46,15 +46,16 @@ function mass_erosion(box::Box{BT}, denudation_mass, water_depth::Array{Float64}
     for (k, Δi) in enumerate(CartesianIndices((-1:1, -1:1)))
         wd[k] = offset_value(BT, water_depth, i, Δi)
     end
-    return redistribution_kernel(wd, box.phys_scale |> in_units_of(u"m")) .* denudation_mass[i]
+    cell_size = box.phys_scale ./ u"m"
+    return redistribution_kernel(wd, cell_size) .* denudation_mass[i]
 end
 
 function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth) where {BT<:Boundary{2}}
-    mass = zeros(Float64, box.grid_size...)
+    mass = zeros(typeof(0.0u"m/kyr"), box.grid_size...)
     for i in CartesianIndices(mass)
         redis = mass_erosion(box, denudation_mass, water_depth, i)
         for subidx in CartesianIndices((-1:1, -1:1))
-            target = offset_index(BT, size(slope), i, subidx)
+            target = offset_index(BT, size(water_depth), i, subidx)
             mass[target] += redis[2+subidx[1], 2+subidx[2]]
         end
     end
@@ -76,7 +77,7 @@ function redistribution(input)
 end
 
 function redistribution(box::Box{BT}, ::PhysicalErosion, denudation_mass, water_depth) where {BT<:Boundary}
-    return total_mass_redistribution(box, denudation_mass, water_depth) * u"m/kyr"
+    return total_mass_redistribution(box, denudation_mass, water_depth) 
 end
 
 end

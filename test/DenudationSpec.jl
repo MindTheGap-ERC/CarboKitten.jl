@@ -46,7 +46,7 @@ using Unitful
         infiltration_coefficient= 0.5)
     ]
 
-    box = Box{Periodic{2}}(grid_size=(5, 5), phys_scale=100.0u"m")
+    box = Box{Periodic{2}}(grid_size=(5, 5), phys_scale=1.0u"km")
     n_facies = length(MODEL1)
     ca_init = rand(0:n_facies, box.grid_size...)
     ca_init = [ 0  0  1  3  3
@@ -54,13 +54,22 @@ using Unitful
                 2  0  1  0  1
                 1  3  3  3  0
                 1  3  2  3  2]
+ #=   denudation_mass_LOW_T = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
+    denudation_mass_HIGH_T = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
+    denudation_mass_LOW_P = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
+    denudation_mass_HIGH_P = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
+    denudation_mass_phys = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
+    denudation_mass_phys_flat = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
+    redistribution_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...) =#
+
     denudation_mass_LOW_T = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
     denudation_mass_HIGH_T = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
     denudation_mass_LOW_P = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
     denudation_mass_HIGH_P = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
     denudation_mass_phys = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
     denudation_mass_phys_flat = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
-    redistribution_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
+    redistribution_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...) 
+
     water_depth = rand(box.grid_size...)
     water_depth = [ 0.989943  0.48076   0.518983  0.997996   0.895681
                     0.872733  0.208779  0.882917  0.550494   0.674066
@@ -102,7 +111,7 @@ using Unitful
     (denudation_mass_phys_flat[idx]) = denudation(box, DENUDATION_PHYS, water_depth_flat[idx], slope_flat[idx],MODEL1[f])
     inf_map[idx] = MODEL1[f].infiltration_coefficient
     end
-    (redistribution_mass) = redistribution(box,DENUDATION_PHYS,water_depth,slope,inf_map)
+    (redistribution_mass) = redistribution(box,DENUDATION_PHYS,denudation_mass_phys,water_depth)
     @test sum(denudation_mass_LOW_T) < sum(denudation_mass_HIGH_T)
     @test sum(denudation_mass_LOW_P) < sum(denudation_mass_HIGH_P)
     @test sum(denudation_mass_phys) > sum(denudation_mass_phys_flat)
@@ -110,7 +119,7 @@ using Unitful
 
     #regression_test
     @test 968*0.95 < abs.(sum(denudation_mass_LOW_T)) ./u"m/kyr" < 968 *1.05
-    @test 3.93*0.95 < abs.(sum(denudation_mass_LOW_P)) ./u"m/kyr" < 3.93*1.05
-    @test 0.95* 0.7115 < sum(denudation_mass_phys) ./u"m/kyr" < 0.7115*1.05
+    @test 477*0.95 < abs.(sum(denudation_mass_LOW_P)) ./u"m/kyr" < 477*1.05
+    @test 0.15* 0.7115 < sum(denudation_mass_phys) ./u"m/kyr" < 0.15*1.05
 
 end

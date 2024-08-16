@@ -42,7 +42,7 @@ FIXME
 """
 function redistribution(input)
     n_facies = length(input.facies)
-    redistribution_mass::Array{typeof(1.0u"m/kyr"),3} = Array(undef, n_facies, input.box.grid_size...)
+    redistribution_mass::Array{typeof(1.0u"m/kyr"),2} = Array(undef,  input.box.grid_size...) #make sure involve facies in the future
 
     function (state, denudation_mass, slope)
         return redistribution_mass

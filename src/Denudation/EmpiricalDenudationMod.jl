@@ -31,7 +31,7 @@ function empirical_denudation(precip::Float64, slope::Any)
     local d = 9.0156
     local e = -0.1245
     local f = 4.91086
-    (a ./ (1 .+ exp.(b .* (precip .- c)))) .* (d ./ (1 .+ exp.(e .* (slope .- f)))) .* u"m/kyr" # using logistic function
+    (a ./ (1 .+ exp.(b .* (precip .* 1000 .- c)))) .* (d ./ (1 .+ exp.(e .* (slope .- f)))) .* u"m/kyr" # using logistic function
 end
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies)

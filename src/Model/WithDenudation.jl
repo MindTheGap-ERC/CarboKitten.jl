@@ -12,7 +12,7 @@ using ...Config: Box, TimeProperties
 using Unitful
 using HDF5
 using .Iterators: drop, peel, partition, map, take
-
+using ...Denudation.Abstract: DenudationType
 @kwdef struct Facies
     viability_range::Tuple{Int,Int}
     activation_range::Tuple{Int,Int}
@@ -26,7 +26,7 @@ using .Iterators: drop, peel, partition, map, take
     infiltration_coefficient::Float64 #infiltration coeff
 end
 
-abstract type DenudationType end
+#abstract type DenudationType end
 
 @kwdef struct Input
     box::Box
@@ -122,9 +122,9 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT<:Boundary}
         slopefn(w, slope, box.phys_scale ./ u"m")
         denudation_mass = zeros(typeof(0.0u"m/kyr"), box.grid_size...)
 
-        inf_map = get_inf_map(state, input)
-        denudation_mass = denudate(state, water_depth, slope)
-        redistribution_mass = redistribute(state, water_depth, slope)
+        #inf_map = get_inf_map(state, input)
+        denudation_mass = denudate(state, w, slope)
+        redistribution_mass = redistribute(state, w, denudation_mass)
 
         return DenudationFrame(denudation_mass, redistribution_mass)
     end

@@ -2,9 +2,11 @@ module Denudation
 
 include("./Denudation/Abstract.jl")
 include("./Denudation/DissolutionMod.jl")
-include("./Denudation/EmpiricalDenudationMod.jl")
-include("./Denudation/PhysicalErosionMod.jl")
 include("./Denudation/NoDenudationMod.jl")
+include("./Denudation/PhysicalErosionMod.jl")
+include("./Denudation/EmpiricalDenudationMod.jl")
+
+
 
 using .Abstract: DenudationType, denudation, redistribution
 using .DissolutionMod: Dissolution

@@ -14,7 +14,7 @@ abstract type DenudationType end
 FIXME Computes the denudation for a single time-step, given denudation parameters `param` and a simulation state `state`. `param` should have a `DenudationType` type and `state` should contain the `height` property and `sealevel`.
 """
 function denudation(input)
-    denudation_mass::Array{typeof(1.0u"m/kyr"),2} = Array(undef, input.box.grid_size...)
+    denudation_mass::Array{typeof(1.0u"m/kyr"),2} = Array{typeof(1.0u"m/kyr")}(undef, input.box.grid_size...)
 
     function (state, water_depth, slope)
         for idx in CartesianIndices(state.ca)
@@ -41,10 +41,9 @@ end
 FIXME
 """
 function redistribution(input)
-    n_facies = length(input.facies)
-    redistribution_mass::Array{typeof(1.0u"m/kyr"),2} = Array(undef,  input.box.grid_size...) #make sure involve facies in the future
-
-    function (state, denudation_mass, slope)
+    redistribution_mass::Array{typeof(1.0u"m/kyr"),2} = Array{typeof(1.0u"m/kyr")}(undef, input.box.grid_size...)
+    function (state, water_depth, denudation_mass)
+        redistribution_mass = redistribution(input.box, input.denudation, denudation_mass, water_depth)
         return redistribution_mass
     end
 end

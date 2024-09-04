@@ -5,10 +5,8 @@ module DissolutionMod
 import ..Abstract: DenudationType, denudation, redistribution
 using ...BoundaryTrait: Boundary
 using ...Config: Box
-
+export Dissolution
 using Unitful
-
-# TODO add units
 
 @kwdef struct Dissolution <: DenudationType
     temp::typeof(1.0u"K")
@@ -56,8 +54,8 @@ function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies) where
     return (dissolution(temp, precip, pco2, reactionrate, water_depth, facies))
 end
 
-function redistribution(box::Box{BT}, p::Dissolution, water_depth, slope, facies) where {BT<:Boundary}
-    return nothing
+function redistribution(box::Box{BT}, p::Dissolution, denudation_mass, water_depth) where {BT<:Boundary}
+    return denudation_mass .* 0
 end
 
 end

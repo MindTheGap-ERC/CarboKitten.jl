@@ -53,6 +53,7 @@ end
 function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth) where {BT<:Boundary{2}}
     mass = zeros(typeof(0.0u"m/kyr"), box.grid_size...)
     for i in CartesianIndices(mass)
+        print(i)
         redis = mass_erosion(box, denudation_mass, water_depth, i)
         for subidx in CartesianIndices((-1:1, -1:1))
             target = offset_index(BT, size(water_depth), i, subidx)
@@ -71,12 +72,13 @@ function denudation(::Box, p::PhysicalErosion, water_depth::Any, slope, facies)
     return (denudation_mass .* u"m/kyr")
 end
 
-function redistribution(input)
-    function (state)
-    end
-end
 
-function redistribution(box::Box{BT}, ::PhysicalErosion, denudation_mass, water_depth) where {BT<:Boundary}
+# function redistribution(input)
+#     function (state)
+#     end
+# end
+
+function redistribution(box::Box{BT}, p::PhysicalErosion, denudation_mass, water_depth) where {BT<:Boundary}
     return total_mass_redistribution(box, denudation_mass, water_depth) 
 end
 

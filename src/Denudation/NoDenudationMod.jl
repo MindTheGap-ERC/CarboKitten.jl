@@ -16,8 +16,8 @@ function denudation(box::Box, p::NoDenudation, water_depth::Any, slope, facies)
     return nothing
 end
 
-function redistribution(box::Box, p::NoDenudation, water_depth, slope, facies)
-    return nothing
+function redistribution(box::Box, p::NoDenudation, denudation_mass, water_depth)
+    return denudation_mass .* 0
 end
 
 end

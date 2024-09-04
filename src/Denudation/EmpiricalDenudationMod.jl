@@ -39,8 +39,8 @@ function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies)
     return empirical_denudation.(precip, slope)
 end
 
-function redistribution(::Box, ::EmpiricalDenudation, water_depth, slope, facies)
-    return nothing
+function redistribution(::Box, p::EmpiricalDenudation, denudation_mass, water_depth)
+    return denudation_mass .* 0
 end
 
 end

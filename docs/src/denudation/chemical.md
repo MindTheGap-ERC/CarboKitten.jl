@@ -13,13 +13,13 @@ $$\frac{dh}{dt} = 0.001\ \kappa_c\  I$$
 
 Where $I$ is runoff (mm/y?). The parameter $\kappa_c$ is dimensionless and should be described by equation 3:
 
-$$\kappa_c = 40\times 1000\ frac{[Ca^{2+}]_{eq}}{ρ}$$
+$$\kappa_c = 40\times 1000\ \frac{[Ca^{2+}]_{eq}}{ρ}$$
 
 Parameter ρ is the density of calcite, and we choose 2700 $kg/m^3$ here. $[Ca^{2+}]_{eq}$ is defined in equation 4:
 
-$$[Ca^{2+}]_{eq} = {{(PCO_2\ (K_1\ K_C\ K_H)} \over {(4\ K_2\ \gamma Ca\ (\gamma HCO_3)^2))^{(1/3)}}}$$
+$$[Ca^{2+}]_{eq} = {{(PCO_2\ (K_1\ K_C\ K_H)} \over {(4\ K_2\times \gamma Ca\ (\gamma HCO_3)^2))^{(1/3)}}}$$
 
-Mass balance coefficients $K_1$, $K_2$, $K_C$, $K_H$ depend on temperature. $PCO_2$ is assumed to be between $10^{-1.5} ATM$ to $10^{-3.5} ATM$.
+Mass balance coefficients $K_1$, $K_2$, $K_C$, $K_H$ depend on temperature. $_PCO_2$ is assumed to be between $10^{-1.5} ATM$ to $10^{-3.5} ATM$.
 
 Other parameters could be found in the following table by [Kaufmann2001](@cite).
 
@@ -95,7 +95,7 @@ $$D_{\rm average} = (I\times c_{eq}/\rho)\ (1 – (\lambda/z_0)\ (1 – e^{(-z_0
 
 α used in this article is $\alpha = 2·10^{−6}$ or $3.5·10^{−7}$ cm/s (for temp at 298K). This is indeed a controversial parameter TBH. We can try different values and see what happens.
 
-These functions are implemented as ```dissolution``` function:
+These equations are implemented as ```dissolution``` function:
 
 ``` {.julia #karst-dissolution-function}
 function dissolution(temp, precip, pco2, alpha, water_depth, facies)

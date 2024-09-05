@@ -1,5 +1,4 @@
 # ~/~ begin <<docs/src/denudation/chemical.md#src/Denudation/DissolutionMod.jl>>[init]
-# based on Kaufman 2002, Geomorphology
 module DissolutionMod
 
 import ..Abstract: DenudationType, denudation, redistribution
@@ -15,7 +14,7 @@ using Unitful
     reactionrate::typeof(1.0u"m/yr")
 end
 
-# Kaufmann 2002, Table 2
+# ~/~ begin <<docs/src/denudation/chemical.md#karst-denudation-function>>[init]
 function karst_denudation_parameters(temp::Float64)
     A = -0.4883 + 8.074 * 0.0001 * (temp - 273.0)
     B = -0.3241 + 1.6 * 0.0001 * (temp - 273.0)
@@ -28,13 +27,14 @@ function karst_denudation_parameters(temp::Float64)
         activity_Ca=10^(-4A * sqrt(IA) / (1 + 10^(-8) * B * sqrt(IA))),
         activity_Alk=10^(-A * sqrt(IA) / (1 + 5.4 * 10^(-8) * B * sqrt(IA))))
 end
+# ~/~ end
 
 #calculate ceq and Deq, Kaufman 2002
 function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies)
     p = karst_denudation_parameters(temp)
     mass_density = facies.mass_density ./ u"kg/m^3"
-    eq_c = (pco2 .* (p.K1 * p.KC * p.KH) ./ (4 * p.K2 * p.activity_Ca .* (p.activity_Alk)^2)) .^ (1 / 3) 
-    eq_d = 1000 * precip .* facies.infiltration_coefficient * 40 * 1000 .* eq_c ./ mass_density 
+    eq_c = (pco2 .* (p.K1 * p.KC * p.KH) ./ (4 * p.K2 * p.activity_Ca .* (p.activity_Alk)^2)) .^ (1 / 3)
+    eq_d = 1000 * precip .* facies.infiltration_coefficient * 40 * 1000 .* eq_c ./ mass_density
     (concentration=eq_c, denudation=eq_d)
 end
 

@@ -84,8 +84,8 @@ Saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation p
 
 ``` {.julia #ca-prod-input}
 @kwdef struct Input
-    box::Box
-    time::TimeProperties
+    box :: Box
+    time :: TimeProperties
 
     sea_level       # Myr -> m
     subsidence_rate::typeof(1.0u"m/Myr")

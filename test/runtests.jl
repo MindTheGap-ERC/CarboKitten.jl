@@ -11,5 +11,8 @@ include("Unitful.jl")
 @testset "CarboKitten" begin
     include("ConfigSpec.jl")
     include("CASpec.jl")
+    include("DenudationSpec.jl")
     include("SedimentStackSpec.jl")
+
+
 end

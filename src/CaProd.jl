@@ -17,8 +17,8 @@ using .Iterators: drop, peel, partition, map, take
 
 # ~/~ begin <<docs/src/ca-with-production.md#ca-prod-input>>[init]
 @kwdef struct Input
-    box::Box
-    time::TimeProperties
+    box :: Box
+    time :: TimeProperties
 
     sea_level       # Myr -> m
     subsidence_rate::typeof(1.0u"m/Myr")

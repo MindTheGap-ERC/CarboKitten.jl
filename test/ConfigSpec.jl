@@ -1,4 +1,6 @@
 # ~/~ begin <<docs/src/boxes.md#test/ConfigSpec.jl>>[init]
+using Test 
+using Unitful
 @testset "Config" begin
     using CarboKitten.BoundaryTrait
     using CarboKitten.Config: Box

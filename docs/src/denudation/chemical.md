@@ -52,7 +52,7 @@ function karst_denudation_parameters(temp::Float64)
         activity_Alk=10^(-A * sqrt(IA) / (1 + 5.4 * 10^(-8) * B * sqrt(IA))))
 end
 ```
-and ```equlibrium``` function to calculate the [Ca^{2+}]_{eq}:
+and ```equlibrium``` function to calculate the $[Ca^{2+}]_{eq}$:
 
 ``` {.julia #karst-equilibrium-function}
 function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies)
@@ -85,13 +85,13 @@ However, to solve this equation we still need to know $c(z)$.
 
 If assuming the initial percolating water has $c(0) = 0$, then we could get the following equation (as $c$ is related to depth):
 
-$$c(z) = c_{eq}\ (1 - e^{(-z/\lambda)})$$
+$$c(z) = c_{eq}\ (1 - e^{(\frac{-z}{\lambda})})$$
 
 Herein, $\lambda = {{I} \over {\alpha L}} $. 
 
 Therefore,
 
-$$D_{\rm average} = (I\times c_{eq}/\rho)\ (1 – (\lambda/z_0)\ (1 – e^{(-z_0/\lambda)}))$$
+$$D_{\rm average} = (I\times \frac{c_{eq}}{\rho})\ (1 – (\frac{\lambda}{z_0})\ (1 – e^{(\frac{-z_0}{\lambda})}))$$
 
 α used in this article is $\alpha = 2·10^{−6}$ or $3.5·10^{−7}$ cm/s (for temp at 298K). This is indeed a controversial parameter TBH. We can try different values and see what happens.
 

@@ -13,13 +13,13 @@ $$\frac{dh}{dt} = 0.001\ \kappa_c\  I$$
 
 Where $I$ is runoff (mm/y?). The parameter $\kappa_c$ is dimensionless and should be described by equation 3:
 
-$$\kappa_c = 40\ 1000\ [Ca^{2+}]_{eq}/ρ$$
+$$\kappa_c = 40\times 1000\ frac{[Ca^{2+}]_{eq}}{ρ}$$
 
 Parameter ρ is the density of calcite, and we choose 2700 $kg/m^3$ here. $[Ca^{2+}]_{eq}$ is defined in equation 4:
 
-$[Ca^{2+}]_{eq} = {(PCO_2\ (K_1\ K_C\ K_H)} \over {(4\ K_2\ \gamma Ca\ (\gamma HCO_3)^2))^{(1/3)}}$$
+$$[Ca^{2+}]_{eq} = {{(PCO_2\ (K_1\ K_C\ K_H)} \over {(4\ K_2\ \gamma Ca\ (\gamma HCO_3)^2))^{(1/3)}}}$$
 
-Mass balance coefficients $K_1$, $K_2$, $K_C$, $K_H$ depend on temperature. $PCO_2$ is assumed to be between $10^{-1.5} ATM $ to $10^{-3.5} ATM$.
+Mass balance coefficients $K_1$, $K_2$, $K_C$, $K_H$ depend on temperature. $PCO_2$ is assumed to be between $10^{-1.5} ATM$ to $10^{-3.5} ATM$.
 
 Other parameters could be found in the following table by [Kaufmann2001](@cite).
 
@@ -52,7 +52,7 @@ function karst_denudation_parameters(temp::Float64)
         activity_Alk=10^(-A * sqrt(IA) / (1 + 5.4 * 10^(-8) * B * sqrt(IA))))
 end
 ```
-and ```equlibrium`` function to calculate the [Ca^{2+}]_{eq}:
+and ```equlibrium``` function to calculate the [Ca^{2+}]_{eq}:
 
 ``` {.julia #karst-equilibrium-function}
 function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies)
@@ -87,11 +87,11 @@ If assuming the initial percolating water has $c(0) = 0$, then we could get the 
 
 $$c(z) = c_{eq}\ (1 - e^{(-z/\lambda)})$$
 
-Herein, $\lambda = {I} \over {\alpha L} $. 
+Herein, $\lambda = {{I} \over {\alpha L}} $. 
 
 Therefore,
 
-$$D_{\rm average} = (I\ c_{eq}/\rho)\ (1 – (\lambda/z_0)\ (1 – e^{(-z_0/\lambda)}))$$
+$$D_{\rm average} = (I\times c_{eq}/\rho)\ (1 – (\lambda/z_0)\ (1 – e^{(-z_0/\lambda)}))$$
 
 α used in this article is $\alpha = 2·10^{−6}$ or $3.5·10^{−7}$ cm/s (for temp at 298K). This is indeed a controversial parameter TBH. We can try different values and see what happens.
 

@@ -48,15 +48,16 @@ function empirical_denudation(precip::Float64, slope::Any)
     local d = 9.0156
     local e = -0.1245
     local f = 4.91086
-    (a ./ (1 .+ exp.(b .* (precip .- c)))) .* (d ./ (1 .+ exp.(e .* (slope .- f)))) # using logistic function
+    (a ./ (1 .+ exp.(b .* (precip .* 1000 .- c)))) .* (d ./ (1 .+ exp.(e .* (slope .- f)))) .* u"m/kyr" # using logistic function
 end
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies)
-    return (empirical_denudation.(p.precip, slope) .* u"m/kyr")
+    precip = p.precip ./ u"m"
+    return empirical_denudation.(precip, slope)
 end
 
-function redistribution(box::Box, ::EmpiricalDenudation, water_depth, slope, facies)
-    return nothing
+function redistribution(::Box, p::EmpiricalDenudation, denudation_mass, water_depth)
+    return denudation_mass .* 0
 end
 
 end

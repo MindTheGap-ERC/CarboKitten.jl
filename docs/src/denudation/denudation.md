@@ -17,22 +17,38 @@ Example: in examples, you find `caps_miller_diss.jl`, `caps_miller_emp.jl`, `cap
 - `EmpericalDenudation` means total denudation calculated based on emperical relationship by Cl isotope observations. The default input parameter is: precipitation = 1000mm/yr.
 
 ## Tests for three modes of denudation
-In this module, 7 tests are implemented. 
+In this module, 7 tests are implemented.
 
-Tests 1: 
- // @test sum(denudation_mass_LOW_T) < sum(denudation_mass_HIGH_T)
+Tests 1:
+
+```julia
+@test sum(denudation_mass_LOW_T) < sum(denudation_mass_HIGH_T)
+```
+
 This means that higher temperature would dissolve faster than the colder scenario. It tests the Dissolution mode.
 
-Test2: 
-//  @test sum(denudation_mass_LOW_P) < sum(denudation_mass_HIGH_P)
+Test2:
+
+```julia
+@test sum(denudation_mass_LOW_P) < sum(denudation_mass_HIGH_P)
+```
+
 This means more humid scenario has higher denudation rates than the arid scenario. This tests emperical denudation mode.
 
 Test3:
-//  @test sum(denudation_mass_phys) > sum(denudation_mass_phys_flat)
+
+```julia
+@test sum(denudation_mass_phys) > sum(denudation_mass_phys_flat)
+```
+
 This means more topography has higher denudation rates than the flatter topography. This tests physical erosion.
 
 Test4:
-// @test sum(denudation_mass_phys) ≈ sum(redistribution_mass)
+
+```julia
+@test sum(denudation_mass_phys) ≈ sum(redistribution_mass)
+```
+
 This means in physical erosion mode, the total amount of eroded material = the total amount of redistributed material. In this case, boundary condition of 'Periodic has been used.
 
 Test 5 to 7 are regression tests: the outputs from the module is similar to the values calculated by calculator.

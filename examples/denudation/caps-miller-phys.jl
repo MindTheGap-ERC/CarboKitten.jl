@@ -1,4 +1,7 @@
-# ~/~ begin <<docs/src/ca-with-production.md#examples/caps-osc.jl>>[init]
+using CarboKitten.Model.WithDenudation
+
+module Script
+
 using CarboKitten
 using CarboKitten.Model.WithDenudation
 using CarboKitten.Burgess2013
@@ -9,8 +12,7 @@ using Interpolations
 using Unitful
 using CarboKitten.Config: Box, Vectors, TimeProperties
 using CarboKitten.BoundaryTrait
-using CarboKitten.Denudation: DissolutionMod, NoDenudationMod, PhysicalErosionMod, EmpiricalDenudationMod
-using CarboKitten.Denudation: Dissolution, EmpiricalDenudation, PhysicalErosion, NoDenudation
+using CarboKitten.Denudation
 
 
 const MODEL1 = [
@@ -51,7 +53,7 @@ const INPUT = Input(
       steps = 100,
       write_interval = 1
     ),
-    sea_level = t -> 0.0, 
+    sea_level = t -> 0.0,
     subsidence_rate = 50.0u"m/Myr",
     initial_depth = x -> x/300.0,
     facies = MODEL1,
@@ -59,5 +61,6 @@ const INPUT = Input(
     denudation = DENUDATION
   )
 
-WithDenudation.main(INPUT, "data/caps-test.h5")
-# ~/~ end
+end
+
+WithDenudation.main(Script.INPUT, "data/caps-test.h5")

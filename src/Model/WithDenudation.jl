@@ -120,9 +120,7 @@ function denu_propagator(input::Input, box::Box{BT}) where {BT<:Boundary}
         slope = zeros(Float64, box.grid_size...)
         slopefn = stencil(Float64, BT, (3, 3), slope_kernel)
         slopefn(w, slope, box.phys_scale ./ u"m")
-        denudation_mass = zeros(typeof(0.0u"m/kyr"), box.grid_size...)
 
-        #inf_map = get_inf_map(state, input)
         denudation_mass = denudate(state, w, slope)
         redistribution_mass = redistribute(state, w, denudation_mass)
 

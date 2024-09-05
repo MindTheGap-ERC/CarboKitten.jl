@@ -14,25 +14,25 @@ export Facies, MODEL1
 
 end
 
-# const MODEL1 = [
-#     Facies(viability_range = (4, 10),
-#            activation_range = (6, 10),
-#            maximum_growth_rate = 500u"m/Myr",
-#            extinction_coefficient = 0.8u"m^-1",
-#            saturation_intensity = 60u"W/m^2"),
+const MODEL1 = [
+    Facies(viability_range = (4, 10),
+           activation_range = (6, 10),
+           maximum_growth_rate = 500u"m/Myr",
+           extinction_coefficient = 0.8u"m^-1",
+           saturation_intensity = 60u"W/m^2"),
 
-#     Facies(viability_range = (4, 10),
-#            activation_range = (6, 10),
-#            maximum_growth_rate = 400u"m/Myr",
-#            extinction_coefficient = 0.1u"m^-1",
-#            saturation_intensity = 60u"W/m^2"),
+    Facies(viability_range = (4, 10),
+           activation_range = (6, 10),
+           maximum_growth_rate = 400u"m/Myr",
+           extinction_coefficient = 0.1u"m^-1",
+           saturation_intensity = 60u"W/m^2"),
 
-#     Facies(viability_range = (4, 10),
-#            activation_range = (6, 10),
-#            maximum_growth_rate = 100u"m/Myr",
-#            extinction_coefficient = 0.005u"m^-1",
-#            saturation_intensity = 60u"W/m^2")
-# ]
+    Facies(viability_range = (4, 10),
+           activation_range = (6, 10),
+           maximum_growth_rate = 100u"m/Myr",
+           extinction_coefficient = 0.005u"m^-1",
+           saturation_intensity = 60u"W/m^2")
+]
 
 end
 # ~/~ end

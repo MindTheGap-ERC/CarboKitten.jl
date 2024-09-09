@@ -6,14 +6,14 @@ Limestone is made of $CaCO_3$, easily dissolved. This depends mainly on precipit
 
 $$\frac{dh}{dt} = 0.001\ \kappa_c\ {{q_i} \over {A_i}}$$
 
-Herein $\frac{dh}{dt}$ is the chemical weathering rate and the unit is in m/s.
+Herein $dh/dt$ is the chemical weathering rate and the unit is in m/s.
 Other parameters are defined as: $q_i$ is the discharge of water at a certain cell. $A_i$ is the surface area of the cell. If we assume there would be no surface water on land, $q_i$ reduces to precipitation – evaporation. Let’s set it to 400 mm/y for now. Therefore equation 1 could be reduced to Equation 2.
 
 $$\frac{dh}{dt} = 0.001\ \kappa_c\  I$$
 
 Where $I$ is runoff (mm/y?). The parameter $\kappa_c$ is dimensionless and should be described by equation 3:
 
-$$\kappa_c = 40\times 1000\ \frac{[Ca^{2+}]_{eq}}{ρ}$$
+$$\kappa_c = 40\ 1000\ \frac{[Ca^{2+}]_{eq}}{\rho}$$
 
 Parameter ρ is the density of calcite, and we choose 2700 $kg/m^3$ here. $[Ca^{2+}]_{eq}$ is defined in equation 4:
 
@@ -38,7 +38,7 @@ Other parameters could be found in the following table by [Kaufmann2001](@cite).
 
 This leads to the following implementation of the ```karst_denudation_parameters``` function to calculate the parameters for the dissolution equation:
 
-``` {.julia #karst-parameter-function}
+``` {.julia #karst_denudation_parameters}
 function karst_denudation_parameters(temp::Float64)
     A = -0.4883 + 8.074 * 0.0001 * (temp - 273.0)
     B = -0.3241 + 1.6 * 0.0001 * (temp - 273.0)
@@ -52,7 +52,7 @@ function karst_denudation_parameters(temp::Float64)
         activity_Alk=10^(-A * sqrt(IA) / (1 + 5.4 * 10^(-8) * B * sqrt(IA))))
 end
 ```
-and ```equlibrium``` function to calculate the $[Ca^{2+}]_{eq}$:
+and ```equilibrium``` function to calculate the $[Ca^{2+}]_{eq}$:
 
 ``` {.julia #karst-equilibrium-function}
 function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies)
@@ -85,7 +85,7 @@ However, to solve this equation we still need to know $c(z)$.
 
 If assuming the initial percolating water has $c(0) = 0$, then we could get the following equation (as $c$ is related to depth):
 
-$$c(z) = c_{eq}\ (1 - e^{(\frac{-z}{\lambda})})$$
+$$c(z) = c_{eq}\ (1 - e^{(-z/\lambda)})$$
 
 Herein, $\lambda = {{I} \over {\alpha L}} $. 
 

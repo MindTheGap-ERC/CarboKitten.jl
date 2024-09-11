@@ -3,34 +3,6 @@
     {
       "description": null,
       "creates": [
-        "docs/src/_fig/active-layer-production-patch.png"
-      ],
-      "requires": [
-        "examples/transport/active-layer.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/transport/active-layer-plot-production.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/active-layer-test.png"
-      ],
-      "requires": [
-        "examples/transport/active-layer.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/transport/active-layer-plot-result.jl"
-    },
-    {
-      "description": null,
-      "creates": [
         "data/bs92-sealevel-curve.csv"
       ],
       "requires": [
@@ -56,6 +28,34 @@
       "stdin": null,
       "script": null,
       "path": "examples/BS92/fig8.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/active-layer-production-patch.png"
+      ],
+      "requires": [
+        "examples/transport/active-layer.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/transport/active-layer-plot-production.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/active-layer-test.png"
+      ],
+      "requires": [
+        "examples/transport/active-layer.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/transport/active-layer-plot-result.jl"
     },
     {
       "description": null,
@@ -231,9 +231,9 @@
     {
       "name": "figures",
       "requires": [
+        "docs/src/_fig/bs92-fig8.svg",
         "docs/src/_fig/active-layer-production-patch.png",
         "docs/src/_fig/active-layer-test.png",
-        "docs/src/_fig/bs92-fig8.svg",
         "docs/src/_fig/eca.png",
         "docs/src/_fig/life.gif",
         "docs/src/_fig/boundary_types.png",

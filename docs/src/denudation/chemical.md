@@ -38,7 +38,7 @@ Other parameters could be found in the following table by [Kaufmann2001](@cite).
 
 This leads to the following implementation of the ```karst_denudation_parameters``` function to calculate the parameters for the dissolution equation:
 
-``` {.julia #karst_denudation_parameters}
+``` {.julia #karst-parameter-function}
 function karst_denudation_parameters(temp::Float64)
     A = -0.4883 + 8.074 * 0.0001 * (temp - 273.0)
     B = -0.3241 + 1.6 * 0.0001 * (temp - 273.0)
@@ -52,6 +52,7 @@ function karst_denudation_parameters(temp::Float64)
         activity_Alk=10^(-A * sqrt(IA) / (1 + 5.4 * 10^(-8) * B * sqrt(IA))))
 end
 ```
+
 and ```equilibrium``` function to calculate the $[Ca^{2+}]_{eq}$:
 
 ``` {.julia #karst-equilibrium-function}
@@ -87,7 +88,7 @@ If assuming the initial percolating water has $c(0) = 0$, then we could get the 
 
 $$c(z) = c_{eq}\ (1 - e^{(-z/\lambda)})$$
 
-Herein, $\lambda = {{I} \over {\alpha L}} $. 
+Herein, $\lambda = {{I} \over {\alpha L}} $.
 
 Therefore,
 

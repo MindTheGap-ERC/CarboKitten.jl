@@ -14,7 +14,7 @@ using Unitful
     reactionrate::typeof(1.0u"m/yr")
 end
 
-# ~/~ begin <<docs/src/denudation/chemical.md#karst-denudation-function>>[init]
+# ~/~ begin <<docs/src/denudation/chemical.md#karst-parameter-function>>[init]
 function karst_denudation_parameters(temp::Float64)
     A = -0.4883 + 8.074 * 0.0001 * (temp - 273.0)
     B = -0.3241 + 1.6 * 0.0001 * (temp - 273.0)
@@ -30,7 +30,7 @@ end
 # ~/~ end
 
 #calculate ceq and Deq, Kaufman 2002
-# ~/~ begin <<docs/src/denudation/chemical.md#karst-denudation-function>>[init]
+# ~/~ begin <<docs/src/denudation/chemical.md#karst-equilibrium-function>>[init]
 function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies)
     p = karst_denudation_parameters(temp)
     mass_density = facies.mass_density ./ u"kg/m^3"
@@ -40,7 +40,7 @@ function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies)
 end
 # ~/~ end
 
-# ~/~ begin <<docs/src/denudation/chemical.md#dissolution>>[init]
+# ~/~ begin <<docs/src/denudation/chemical.md#karst-dissolution-function>>[init]
 function dissolution(temp, precip, pco2, alpha, water_depth, facies)
     # TODO not used: I = precip .* facies.infiltration_coefficient #assume vertical infiltration
     reactive_surface =  facies.reactive_surface ./u"m^2/m^3"
@@ -49,6 +49,7 @@ function dissolution(temp, precip, pco2, alpha, water_depth, facies)
     eq.denudation .* (1 - (λ ./ -water_depth) .* (1 - exp.(water_depth ./ λ))) * u"m/kyr"
 end
 # ~/~ end
+
 
 function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies) where {BT<:Boundary}
     temp = p.temp ./ u"K"

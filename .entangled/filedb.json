@@ -46,11 +46,11 @@
       "size": 7696
     },
     {
-      "deps": null,
-      "hexdigest": "d60e8d3aeeb0b116936c7f31e55bc07cd5cc3a0073317019a868fc57d1912d58",
-      "modified": "2024-09-11T11:32:34.249195",
+      "deps": [],
+      "hexdigest": "7288c637779d60468bc59c16ce30b505cb9341e7c3cb3b52bf27ae1bc3e184f6",
+      "modified": "2024-09-23T13:03:26.745527",
       "path": "docs/src/ca-with-production.md",
-      "size": 20364
+      "size": 20994
     },
     {
       "deps": null,
@@ -75,10 +75,10 @@
     },
     {
       "deps": [],
-      "hexdigest": "ce3d0a638263439df21148aa824195c20c6b5cc6b6c012f66b2b64d4b5fc6aab",
-      "modified": "2024-09-12T09:20:34.547414",
+      "hexdigest": "1ca51f3d6e3fdbe1343828b8a2a78803e52c079b7e5201d519c67c10ca0c1465",
+      "modified": "2024-09-23T13:03:26.748527",
       "path": "docs/src/data-export.md",
-      "size": 3582
+      "size": 4771
     },
     {
       "deps": null,
@@ -359,10 +359,10 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "hexdigest": "f7e7346d6e46b79beeb7d84ffa9ba549f14e6575a4b4c667b6e52c6ad58e6f71",
-      "modified": "2024-09-11T13:21:47.096030",
+      "hexdigest": "864618bf9841a608a84536df13df58ccd0981630e0df0e14df05a2215dcb6ccd",
+      "modified": "2024-09-23T09:20:55.655307",
       "path": "ext/VisualizationExt.jl",
-      "size": 8274
+      "size": 8904
     },
     {
       "deps": [
@@ -486,10 +486,10 @@
       "deps": [
         "docs/src/data-export.md"
       ],
-      "hexdigest": "9ab5921e0d840533dba37e273f2a747ae555a7ff6883aad54c7f6b0dfcb3d345",
-      "modified": "2024-09-12T09:17:43.649772",
+      "hexdigest": "92612b85ef87f7f7a6e1adc79f6303dfc5a9cca4bba49209d46013c7f1a595af",
+      "modified": "2024-09-23T11:21:26.759460",
       "path": "src/Export.jl",
-      "size": 3483
+      "size": 4672
     },
     {
       "deps": [

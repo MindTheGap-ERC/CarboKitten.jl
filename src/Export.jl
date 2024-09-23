@@ -5,6 +5,7 @@ using HDF5
 using Unitful
 using DataFrames
 import CSV: write as write_csv
+using .Iterators: flatten
 
 const Rate = typeof(1.0u"m/Myr")
 const Amount = typeof(1.0u"m")
@@ -113,11 +114,14 @@ write_unitful_csv(io, df::DataFrame) =
 Base.accumulate(f) = (args...; kwargs...) -> accumulate(f, args...; kwargs...)
 
 """
-    age_depth_curve(sediment_accumulation_curve)
+    age_depth_model(sediment_accumulation_curve::Vector)
+    age_depth_model(sediment_accumulation_curve::DataFrame)
 
 Compute the ADM from the SAC. Implemented as:
 
     reverse ∘ accumulate(min) ∘ reverse
+
+The `DataFrame` version `select`s SAC columns, transformed into ADM.
 """
 age_depth_model(sac::Vector{T}) where {T} = sac |> reverse |> accumulate(min) |> reverse
 age_depth_model(sac_df::DataFrame) =
@@ -156,11 +160,68 @@ function data_export(::Type{CSVExportTrait{:adm}}, io::IO, header::Header, data:
     write_unitful_csv(io, adm)
 end
 
+function data_export(::Type{CSVExportTrait{:sc}}, io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    sc = extract_sc(header, data, grid_locations)
+    write_unitful_csv(io, sc)
+end
+
+"""
+    extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+Extract Sediment Accumumlation Curve (SAC) from the data. The SAC is directly copied from
+`data.sediment_elevation`. Returns a `DataFrame` with `time` and `sac<n>` columns where `<n>`
+is in the range `1:length(grid_locations)`.
+"""
 function extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-    n_cols = length(grid_locations)
     DataFrame(:time => header.axes.t[2:end],
-        (Symbol("sac$(i)") => data.sediment_elevation[grid_locations[i]..., :]
-         for i = 1:n_cols)...)
+        (Symbol("sac$(i)") => data.sediment_elevation[loc..., :]
+         for (i, loc) in enumerate(grid_locations))...)
+end
+
+"""
+    stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
+
+Compute the Stratigraphic Column for a given grid position `loc`.
+Returns an `Array{Quantity, 2}` where the `Quantity` is in units of meters.
+"""
+function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
+    n_times = length(header.axes.t) - 1
+    sc = zeros(typeof(1.0u"m"), n_times)
+
+    for ts = 1:n_times
+        acc = data.deposition[facies, loc..., ts] - data.disintegration[facies, loc..., ts]
+        if acc > 0.0u"m"
+            sc[ts] = acc
+            continue
+        end
+        ts_down = ts - 1
+        while acc < 0.0u"m"
+            ts_down < 1 && break
+            if -acc < sc[ts_down]
+                sc[ts_down] -= acc
+                break
+            else
+                acc += sc[ts_down]
+                sc[ts_down] = 0.0u"m"
+            end
+            ts_down -= 1
+        end
+    end
+
+    sc
+end
+
+"""
+    extract_sc(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+Extract Stratigraphic Column (SC) from the data. Returns a `DataFrame` with `time` and `sc<n>` columns where `<n>`
+is in the range `1:length(grid_locations)`.
+"""
+function extract_sc(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    n_facies = size(data.production)[1]
+    DataFrame("time" => header.axes.t[1:end-1],
+        ("sc$(i)_f$(f)" => stratigraphic_column(header, data, loc, f)
+         for f in 1:n_facies, (i, loc) in enumerate(grid_locations))...)
 end
 # ~/~ end
 

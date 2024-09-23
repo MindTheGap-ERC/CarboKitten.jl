@@ -6,10 +6,13 @@ import ..Abstract: DenudationType, denudation, redistribution
 using ...Config: Box
 using Unitful
 
+# ~/~ begin <<docs/src/denudation/empirical.md#Input-Precipitation>>[init]
 @kwdef struct EmpiricalDenudation <: DenudationType
     precip
 end
+# ~/~ end
 
+# ~/~ begin <<docs/src/denudation/empirical.md#calculate-slope>>[init]
 #calculate planar slopes based on [ARCGIS apporach](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm)
 function slope_kernel(w::Any, cellsize::Float64)
     dzdx = (-w[1, 1] - 2 * w[2, 1] - w[3, 1] + w[1, 3] + 2 * w[2, 3] + w[3, 3]) / (8 * cellsize)
@@ -22,7 +25,9 @@ function slope_kernel(w::Any, cellsize::Float64)
     end
 end
 #small bug: slope not equals to 0 for depression.
+# ~/~ end
 
+# ~/~ begin <<docs/src/denudation/empirical.md#Empirical-Function>>[init]
 # calculate denudation based on regressed function
 function empirical_denudation(precip::Float64, slope::Any)
     local a = 9.1363
@@ -33,6 +38,7 @@ function empirical_denudation(precip::Float64, slope::Any)
     local f = 4.91086
     (a ./ (1 .+ exp.(b .* (precip .* 1000 .- c)))) .* (d ./ (1 .+ exp.(e .* (slope .- f)))) .* u"m/kyr" # using logistic function
 end
+# ~/~ end
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies)
     precip = p.precip ./ u"m"

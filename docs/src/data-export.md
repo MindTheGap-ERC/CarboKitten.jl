@@ -301,7 +301,8 @@ end
 ```
 
 ``` {.julia file=test/ExportSpec.jl}
-using CarboKitten.Export: Axes, Header, Data, data_export, CSVExportTrait, age_depth_model, extract_sac
+using CarboKitten.Export: Axes, Header, Data, data_export, CSVExportTrait,
+    age_depth_model, extract_sac, extract_sc
 using CSV: read as read_csv
 using DataFrames
 using Unitful
@@ -368,6 +369,15 @@ const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
         @test sac.sac2 != adm.adm2
 
         @test all(adm.adm2[2:end] .- adm.adm2[1:end-1] .>= 0.0u"m")
+    end
+
+    @testset "SC sum equals ADM" begin
+        sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
+        adm = sac |> age_depth_model
+        sc = extract_sc(HEADER1, DATA1, GRID_LOCATIONS1)
+        @test cumsum(sc.sc1_f1) ≈ adm.adm1
+        @test cumsum(sc.sc2_f1) ≈ adm.adm2
+        @test cumsum(sc.sc3_f1) ≈ adm.adm3
     end
 end
 ```

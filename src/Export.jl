@@ -27,13 +27,13 @@ end
 CSV(grid_locations, kwargs...) = CSV(grid_locations, IdDict(kwargs...))
 # ~/~ end
 
-struct Axes
+@kwdef struct Axes
     x::Vector{Length}
     y::Vector{Length}
     t::Vector{Time}
 end
 
-struct Header
+@kwdef struct Header
     axes::Axes
     Δt::Time
     time_steps::Int
@@ -42,7 +42,7 @@ struct Header
     subsidence_rate::Rate
 end
 
-struct Data
+@kwdef struct Data
     disintegration::Array{Amount,4}
     production::Array{Amount,4}
     deposition::Array{Amount,4}
@@ -240,7 +240,7 @@ Extract Sediment Accumumlation Curve (SAC) from the data. The SAC is directly co
 is in the range `1:length(grid_locations)`.
 """
 function extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-    DataFrame(:time => header.axes.t[2:end],
+    DataFrame(:time => header.axes.t[1:end-1],
         (Symbol("sac$(i)") => data.sediment_elevation[loc..., :]
          for (i, loc) in enumerate(grid_locations))...)
 end

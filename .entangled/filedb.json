@@ -75,10 +75,10 @@
     },
     {
       "deps": [],
-      "hexdigest": "366af8518fdc73aaa2d185629ab74bac63a8e7227d105f04bf04deba00091c8a",
-      "modified": "2024-09-24T09:39:35.319948",
+      "hexdigest": "dae79aecc9bb013826cb245e251e08b1885906b13f553359d72bfa2d76a9609f",
+      "modified": "2024-09-24T14:18:32.916007",
       "path": "docs/src/data-export.md",
-      "size": 9111
+      "size": 10951
     },
     {
       "deps": null,
@@ -486,10 +486,10 @@
       "deps": [
         "docs/src/data-export.md"
       ],
-      "hexdigest": "c5152ec3907473af9a53bc5999db122f4d02328d1bbbf5ba068ec4b7aa49fed0",
-      "modified": "2024-09-24T09:38:44.654129",
+      "hexdigest": "a42ffaffa813c61eb6e93b71c599516fe85a4e3b411bb5ad282c1dfa2a154b22",
+      "modified": "2024-09-24T14:07:28.292516",
       "path": "src/Export.jl",
-      "size": 8082
+      "size": 8105
     },
     {
       "deps": [
@@ -575,6 +575,15 @@
     },
     {
       "deps": [
+        "docs/src/data-export.md"
+      ],
+      "hexdigest": "40d1657b7c0f6c2d2a2ccc8a744f286e95f3ac9838fa123273e332641f05b254",
+      "modified": "2024-09-24T14:18:01.937659",
+      "path": "test/ExportSpec.jl",
+      "size": 1850
+    },
+    {
+      "deps": [
         "docs/src/sediment-buffer.md"
       ],
       "hexdigest": "30ab51054f97dfbfc51bb6f103c1a9442cd25d02122ae2bf13e46f9ab16574db",
@@ -636,6 +645,7 @@
     "src/Visualization.jl",
     "test/CASpec.jl",
     "test/ConfigSpec.jl",
+    "test/ExportSpec.jl",
     "test/SedimentStackSpec.jl",
     "test/Unitful.jl"
   ],

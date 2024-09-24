@@ -139,6 +139,18 @@ let
 	fig
 end
 
+# ╔═╡ 0b44fd6a-1246-42b8-a682-14a1e030bb29
+const Amount = typeof(1.0u"m")
+
+# ╔═╡ 9714f818-099e-42a6-90b0-50c744f8539a
+prod = reshape(hcat(ones(Amount, 10), ones(Amount, 10), cumsum(ones(Amount, 10)) / 5.5)', 1, 3, 1, 10)
+
+# ╔═╡ 3e4f9992-0588-45f5-95c0-72b72805d087
+sum(prod[1,:,1,:]; dims=2)
+
+# ╔═╡ b1b090e3-c39b-4a7c-94a9-913f8de926cd
+split("time [Myr]")
+
 # ╔═╡ Cell order:
 # ╠═e84f6252-7043-11ef-19ec-cbda366d00ef
 # ╠═ef15eb8e-e70a-4c0c-9037-eae7cd65515d
@@ -163,3 +175,7 @@ end
 # ╠═1190809d-a887-4f05-961f-fc20c3434ce9
 # ╠═b8968897-9a60-4b21-9ca0-ec382bc30917
 # ╠═b1fa959e-a364-40ca-811a-53ea29543eed
+# ╠═0b44fd6a-1246-42b8-a682-14a1e030bb29
+# ╠═9714f818-099e-42a6-90b0-50c744f8539a
+# ╠═3e4f9992-0588-45f5-95c0-72b72805d087
+# ╠═b1b090e3-c39b-4a7c-94a9-913f8de926cd

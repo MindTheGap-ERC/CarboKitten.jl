@@ -1,19 +1,19 @@
 # Emperical denudation
 Cl isotopes are an emerging tool to decipher the denudation rates (chemical dissolution + physical erosion) in carbonate-dominated area.
 
-Research based on the karst region and carbonate platform terrace suggested that the denudation rates are mainly controlled by precipitation and slopes, although the debates about which factor is more important is still ongoing ([Yang et al., 2020](@https://doi.org/10.1016/j.quageo.2020.101075), [Thomas et al., 2018](@https://doi.org/10.1016/j.geomorph.2018.04.014)). In general, the precipitation mainly controls the chemical dissolution while the slopes mainly controls the physical ersions. In addition, the type of carbonates may also play an important role ([Krklec et al., 2022](@https://doi.org/10.1016/j.geomorph.2022.108358)), but given this feature is studied poorly so we will ditch it for now. We have checked and compiled the denudation rates (mm/kyr) along with precipitation and slopes serve as a starting point to create a function relates denudation rates (mm/kyr) to precipitation and slopes. The compiled data could be found in OSFdatabase. This is an empirical relationship and have a relatively large uncertainty in terms of fitting.
+Research based on the karst region and carbonate platform terrace suggested that the denudation rates are mainly controlled by precipitation and slopes, although the debates about which factor is more important is still ongoing ([Yang et al., 2020](https://doi.org/10.1016/j.quageo.2020.101075), [Thomas et al., 2018](https://doi.org/10.1016/j.geomorph.2018.04.014)). In general, the precipitation mainly controls the chemical dissolution while the slopes mainly controls the physical ersions. In addition, the type of carbonates may also play an important role ([Krklec et al., 2022](https://doi.org/10.1016/j.geomorph.2022.108358)), but given this feature is studied poorly so we will ditch it for now. We have checked and compiled the denudation rates (mm/kyr) along with precipitation and slopes serve as a starting point to create a function relates denudation rates (mm/kyr) to precipitation and slopes. The compiled data could be found in OSFdatabase. This is an empirical relationship and have a relatively large uncertainty in terms of fitting.
 
 <img width="433" alt="image" src="../fig/Precipitation-Denudation.png">
 
 *Fig 1. The relationship between MAP (mean precipitation per year, mm/y) and denudation rates (mm/ky)* 
 
-<img width="370" alt="image" src="../fig/Slope-Denudation.png">
+<img width="433" alt="image" src="../fig/Slope-Denudation.png">
 
 *Fig 2. The relationship between the slope and the denudation rates (mm/ky)*
 
 We can see that both the slope and precipitation could increase the denudation rates, and reaches a 'steady state' after a certain point.
 
-Therefore, we could use the function form of $D = P * S$, where $D$ means denudation rates, $P$ means effects of precipitation while $S$ means effects of Slope. By doing so, we can consider both effects. Such formula structure is similar to RUSLE model, a widely used LEM (e.g., [Thapa et al., 2020](@https://doi.org/10.1016/j.ejrh.2020.100704)). We use [sigmoidal function](https://en.wikipedia.org/wiki/Sigmoid_function) to approximate the influence of P or S on D, by fitting the function with the observed data and rendering parameter a, b, c, d, e, f. These are impleted as ```empirical_denudation```. For more information please refer to the documentation in NonCarboKitten.
+Therefore, we could use the function form of $D = P * S$, where $D$ means denudation rates, $P$ means effects of precipitation while $S$ means effects of Slope. By doing so, we can consider both effects. Such formula structure is similar to RUSLE model, a widely used LEM (e.g., [Thapa et al., 2020](https://doi.org/10.1016/j.ejrh.2020.100704)). We use [sigmoidal function](https://en.wikipedia.org/wiki/Sigmoid_function) to approximate the influence of P or S on D, by fitting the function with the observed data and rendering parameter a, b, c, d, e, f. These are impleted as ```empirical_denudation```. For more information please refer to the documentation in NonCarboKitten.
 
 ``` {.julia #Empirical-Function}
 # calculate denudation based on regressed function

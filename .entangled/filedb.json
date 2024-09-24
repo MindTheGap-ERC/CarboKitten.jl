@@ -75,10 +75,10 @@
     },
     {
       "deps": [],
-      "hexdigest": "dae79aecc9bb013826cb245e251e08b1885906b13f553359d72bfa2d76a9609f",
-      "modified": "2024-09-24T14:18:32.916007",
+      "hexdigest": "04c344c0f34c530c8890bd342544c11ce0d487205fb5a9c039c15d81c4edc14d",
+      "modified": "2024-09-24T14:19:16.610499",
       "path": "docs/src/data-export.md",
-      "size": 10951
+      "size": 10905
     },
     {
       "deps": null,
@@ -577,10 +577,10 @@
       "deps": [
         "docs/src/data-export.md"
       ],
-      "hexdigest": "40d1657b7c0f6c2d2a2ccc8a744f286e95f3ac9838fa123273e332641f05b254",
-      "modified": "2024-09-24T14:18:01.937659",
+      "hexdigest": "af33d767d5b5524a9211f01d40f2d2643218b507e0bb61c90e6f7146d09cefbf",
+      "modified": "2024-09-24T14:19:07.691398",
       "path": "test/ExportSpec.jl",
-      "size": 1850
+      "size": 1804
     },
     {
       "deps": [

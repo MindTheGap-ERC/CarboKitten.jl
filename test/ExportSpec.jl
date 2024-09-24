@@ -51,7 +51,6 @@ const GRID_LOCATIONS1 = [(1,1), (2, 1), (3,1)]
       buffer = UInt8[]
       io = IOBuffer(buffer, read=true, write=true)
       data_export(CSVExportTrait{:sediment_accumulation_curve}, io, HEADER1, DATA1, GRID_LOCATIONS1)
-      println(read(IOBuffer(buffer), String))
       df = read_csv(IOBuffer(buffer), DataFrame)
       rename!(df, (n => split(n)[1] for n in names(df))...)
       @test df.sac1 ≈ ELEVATION1[1, 1, :] / u"m"

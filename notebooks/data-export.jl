@@ -25,6 +25,9 @@ using GLMakie
 # ╔═╡ 1780ccbd-9c49-455e-8987-a4cacb0d05fc
 using CarboKitten.Visualization: sediment_profile!
 
+# ╔═╡ 243bec8b-ef96-4694-9e10-e22ee2c4ec4a
+using CSV: read as read_csv
+
 # ╔═╡ 777f6eea-3901-492f-8fa2-0e9508594b1a
 header, data = read_data("../data/alcaps_default.h5")
 
@@ -143,13 +146,17 @@ end
 const Amount = typeof(1.0u"m")
 
 # ╔═╡ 9714f818-099e-42a6-90b0-50c744f8539a
-prod = reshape(hcat(ones(Amount, 10), ones(Amount, 10), cumsum(ones(Amount, 10)) / 5.5)', 1, 3, 1, 10)
+begin
+	adm = read_csv("../data/export_test_adm.csv", DataFrame)
+	# select(adm, ((n => (c -> c * uparse(split(n)[2])) => split(n)[1]) for n in names(adm))...)
+	adm
+end
 
-# ╔═╡ 3e4f9992-0588-45f5-95c0-72b72805d087
-sum(prod[1,:,1,:]; dims=2)
-
-# ╔═╡ b1b090e3-c39b-4a7c-94a9-913f8de926cd
-split("time [Myr]")
+# ╔═╡ 8383f24a-b7e7-4755-b89e-52636e33a601
+names(adm) .|> function(x)
+	nu = split(x)
+	(Symbol(x), Symbol(nu[1]), uparse(nu[2]))
+end
 
 # ╔═╡ Cell order:
 # ╠═e84f6252-7043-11ef-19ec-cbda366d00ef
@@ -159,6 +166,7 @@ split("time [Myr]")
 # ╠═a4b39575-11c9-404d-9333-3296c6052902
 # ╠═5201a517-aa6c-482c-af02-7bef3d2a903f
 # ╠═1780ccbd-9c49-455e-8987-a4cacb0d05fc
+# ╠═243bec8b-ef96-4694-9e10-e22ee2c4ec4a
 # ╠═777f6eea-3901-492f-8fa2-0e9508594b1a
 # ╠═8d67a359-69b2-4d08-a8bc-a17b2c8975af
 # ╠═a2f870c8-59fe-4a04-a9f9-e8b97b9727c5
@@ -177,5 +185,4 @@ split("time [Myr]")
 # ╠═b1fa959e-a364-40ca-811a-53ea29543eed
 # ╠═0b44fd6a-1246-42b8-a682-14a1e030bb29
 # ╠═9714f818-099e-42a6-90b0-50c744f8539a
-# ╠═3e4f9992-0588-45f5-95c0-72b72805d087
-# ╠═b1b090e3-c39b-4a7c-94a9-913f8de926cd
+# ╠═8383f24a-b7e7-4755-b89e-52636e33a601

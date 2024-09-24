@@ -1,7 +1,8 @@
 # ~/~ begin <<docs/src/data-export.md#test/ExportSpec.jl>>[init]
 using CarboKitten.Export: Axes, Header, Data, data_export, CSVExportTrait,
-    age_depth_model, extract_sac, extract_sc
+    age_depth_model, extract_sac, extract_sc, CSV
 using CSV: read as read_csv
+using TOML
 using DataFrames
 using Unitful
 
@@ -50,7 +51,7 @@ const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
 @testset "Data Export" begin
     @testset "Hither and Dither" begin
         buffer = UInt8[]
-        io = IOBuffer(buffer, read=true, write=true)
+        io = IOBuffer(buffer, write=true)
         data_export(CSVExportTrait{:sediment_accumulation_curve}, io, HEADER1, DATA1, GRID_LOCATIONS1)
         df = read_csv(IOBuffer(buffer), DataFrame)
         rename!(df, (n => split(n)[1] for n in names(df))...)
@@ -76,6 +77,27 @@ const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
         @test cumsum(sc.sc1_f1) ≈ adm.adm1
         @test cumsum(sc.sc2_f1) ≈ adm.adm2
         @test cumsum(sc.sc3_f1) ≈ adm.adm3
+    end
+
+    @testset "Write to folder" begin
+        mktempdir() do path
+            spec = CSV(GRID_LOCATIONS1,
+                :sediment_accumulation_curve => joinpath(path, "sac.csv"),
+                :age_depth_model => joinpath(path, "adm.csv"),
+                :stratigraphic_column => joinpath(path, "sc.csv"),
+                :metadata => joinpath(path, "metadata.toml"))
+            data_export(spec, HEADER1, DATA1)
+            for f in values(spec.output_files)
+                @test isfile(f)
+            end
+
+            metadata = TOML.parsefile(spec.output_files[:metadata])
+            @test IdDict(Symbol(k) => v for (k, v) in metadata["files"]) == spec.output_files
+            @test length(metadata["locations"]) == 3
+            adm = read_csv(spec.output_files[:age_depth_model], DataFrame)
+            rename!(adm, (n => split(n)[1] for n in names(adm))...)
+            @test adm == ustrip(extract_sac(HEADER1, DATA1, GRID_LOCATIONS1) |> age_depth_model)
+        end
     end
 end
 # ~/~ end

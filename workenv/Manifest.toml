@@ -276,7 +276,7 @@ uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 version = "0.5.1"
 
 [[deps.CarboKitten]]
-deps = ["AxisArrays", "CSV", "DataFrames", "HDF5", "ProgressBars", "Transducers", "Unitful"]
+deps = ["AxisArrays", "CSV", "DataFrames", "HDF5", "ProgressBars", "TOML", "Transducers", "Unitful"]
 path = ".."
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 version = "0.1.0"

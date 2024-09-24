@@ -9,18 +9,18 @@
         "docs/src/stencils.md",
         "docs/src/stencils.md",
         "docs/src/stencils.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
         "docs/src/model-alcap.md",
         "docs/src/model-alcap.md",
         "docs/src/model-alcap.md",
-        "docs/src/model-alcap.md"
+        "docs/src/model-alcap.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md"
       ],
-      "hexdigest": "0e772be36d40fce6c4aacd41cdc6644927364666ac90c51f9fe6c59272ffab06",
-      "modified": "2024-09-11T13:46:22.508618",
+      "hexdigest": "b465f9f26540975a90aa308887e9e1f268f96fe5dc815d1f60bca30f06795858",
+      "modified": "2024-09-23T20:10:39.907703",
       "path": ".entangled/tasks.json",
       "size": 6519
     },
@@ -46,7 +46,7 @@
       "size": 7696
     },
     {
-      "deps": [],
+      "deps": null,
       "hexdigest": "7288c637779d60468bc59c16ce30b505cb9341e7c3cb3b52bf27ae1bc3e184f6",
       "modified": "2024-09-23T13:03:26.745527",
       "path": "docs/src/ca-with-production.md",
@@ -75,10 +75,10 @@
     },
     {
       "deps": [],
-      "hexdigest": "cbf16320edd1148aa761f615deda8f1ab5957183dab8ccba527f7107c63dac92",
-      "modified": "2024-09-23T16:31:48.691510",
+      "hexdigest": "366af8518fdc73aaa2d185629ab74bac63a8e7227d105f04bf04deba00091c8a",
+      "modified": "2024-09-24T09:39:35.319948",
       "path": "docs/src/data-export.md",
-      "size": 6962
+      "size": 9111
     },
     {
       "deps": null,
@@ -486,10 +486,10 @@
       "deps": [
         "docs/src/data-export.md"
       ],
-      "hexdigest": "7e304e75628f27a3daf3608baceadd95ac7ec3809a95555305db9bf9261281dd",
-      "modified": "2024-09-23T16:30:15.276909",
+      "hexdigest": "c5152ec3907473af9a53bc5999db122f4d02328d1bbbf5ba068ec4b7aa49fed0",
+      "modified": "2024-09-24T09:38:44.654129",
       "path": "src/Export.jl",
-      "size": 6863
+      "size": 8082
     },
     {
       "deps": [

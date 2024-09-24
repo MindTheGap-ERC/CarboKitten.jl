@@ -2,9 +2,11 @@
 module Export
 
 using HDF5
+import CSV: write as write_csv
+using TOML
+
 using Unitful
 using DataFrames
-import CSV: write as write_csv
 using .Iterators: flatten
 
 const Rate = typeof(1.0u"m/Myr")
@@ -22,7 +24,7 @@ abstract type ExportSpecification end
     output_files::IdDict{Symbol,String}
 end
 
-CSV(; grid_locations, kwargs...) = CSV(grid_locations, kwargs)
+CSV(grid_locations, kwargs...) = CSV(grid_locations, IdDict(kwargs...))
 # ~/~ end
 
 struct Axes
@@ -110,7 +112,8 @@ represented in the CSV header, and stripped from the individual values.
 """
 write_unitful_csv(io, df::DataFrame) =
     write_csv(io, ustrip(df), header=unitful_headers(df))
-
+# ~/~ end
+# ~/~ begin <<docs/src/data-export.md#export-function>>[1]
 Base.accumulate(f) = (args...; kwargs...) -> accumulate(f, args...; kwargs...)
 
 """
@@ -131,57 +134,12 @@ age_depth_model(sac_df::DataFrame) =
         select(sac_df, "time", (sac => age_depth_model => adm
                                 for (sac, adm) in zip(sac_cols, adm_cols))...)
     end
-
-struct CSVExportTrait{S} end
-
-function data_export(spec::T, filepath::String) where {T<:ExportSpecification}
-    data_export(spec, read_data(filepath)...)
-end
-
-function data_export(spec::CSV, header::Header, data::Data)
-    for (key, filename) in spec.output_files
-        open(filename, "w") do io
-            data_export(CSVExportTrait{key}, io, header, data, spec.grid_locations)
-        end
-    end
-end
-
-function data_export(::Type{CSVExportTrait{S}}, args...) where {S}
-    error("Unknown CSV data export: `$(S)`")
-end
-
-function data_export(::Type{CSVExportTrait{:sac}}, io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-    sac = extract_sac(header, data, grid_locations)
-    write_unitful_csv(io, sac)
-end
-
-function data_export(::Type{CSVExportTrait{:adm}}, io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-    adm = extract_sac(header, data, grid_locations) |> age_depth_model
-    write_unitful_csv(io, adm)
-end
-
-function data_export(::Type{CSVExportTrait{:sc}}, io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-    sc = extract_sc(header, data, grid_locations)
-    write_unitful_csv(io, sc)
-end
-
-"""
-    extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-
-Extract Sediment Accumumlation Curve (SAC) from the data. The SAC is directly copied from
-`data.sediment_elevation`. Returns a `DataFrame` with `time` and `sac<n>` columns where `<n>`
-is in the range `1:length(grid_locations)`.
-"""
-function extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-    DataFrame(:time => header.axes.t[2:end],
-        (Symbol("sac$(i)") => data.sediment_elevation[loc..., :]
-         for (i, loc) in enumerate(grid_locations))...)
-end
-
+# ~/~ end
+# ~/~ begin <<docs/src/data-export.md#export-function>>[2]
 """
     stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
 
-Compute the Stratigraphic Column for a given grid position `loc`.
+Compute the Stratigraphic Column for a given grid position `loc` and `facies` index.
 Returns an `Array{Quantity, 2}` where the `Quantity` is in units of meters.
 """
 function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
@@ -209,6 +167,82 @@ function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, fa
     end
 
     sc
+end
+# ~/~ end
+# ~/~ begin <<docs/src/data-export.md#export-function>>[3]
+struct CSVExportTrait{S} end
+
+function data_export(spec::T, filepath::String) where {T<:ExportSpecification}
+    data_export(spec, read_data(filepath)...)
+end
+
+function data_export(spec::CSV, header::Header, data::Data)
+    for (key, filename) in spec.output_files
+        if key == :metadata
+            md = Dict(
+                "global" => Dict(
+                    "subsidence_rate" => header.subsidence_rate,
+                    "time_steps" => header.time_steps),
+                "locations" => [Dict(
+                    "number" => i,
+                    "x" => header.axes.x[loc[1]],
+                    "y" => header.axes.y[loc[2]],
+                    "bedrock_elevation" => header.bedrock_elevation[loc...])
+                                for (i, loc) in enumerate(spec.grid_locations)],
+                "files" => spec.output_files)
+            open(filename, "w") do io
+                TOML.print(io, md) do obj
+                    if obj isa Quantity
+                        [ustrip(obj), string(unit(obj))]
+                    else
+                        obj
+                    end
+                end
+            end
+            continue
+        end
+        open(filename, "w") do io
+            data_export(CSVExportTrait{key}, io, header, data, spec.grid_locations)
+        end
+    end
+end
+
+function data_export(::Type{CSVExportTrait{S}}, args...) where {S}
+    error("Unknown CSV data export: `$(S)`")
+end
+
+function data_export(::Type{CSVExportTrait{:sediment_accumulation_curve}},
+    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+    sac = extract_sac(header, data, grid_locations)
+    write_unitful_csv(io, sac)
+end
+
+function data_export(::Type{CSVExportTrait{:age_depth_model}},
+    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+    adm = extract_sac(header, data, grid_locations) |> age_depth_model
+    write_unitful_csv(io, adm)
+end
+
+function data_export(::Type{CSVExportTrait{:stratigraphic_column}},
+    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+    sc = extract_sc(header, data, grid_locations)
+    write_unitful_csv(io, sc)
+end
+
+"""
+    extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+Extract Sediment Accumumlation Curve (SAC) from the data. The SAC is directly copied from
+`data.sediment_elevation`. Returns a `DataFrame` with `time` and `sac<n>` columns where `<n>`
+is in the range `1:length(grid_locations)`.
+"""
+function extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    DataFrame(:time => header.axes.t[2:end],
+        (Symbol("sac$(i)") => data.sediment_elevation[loc..., :]
+         for (i, loc) in enumerate(grid_locations))...)
 end
 
 """

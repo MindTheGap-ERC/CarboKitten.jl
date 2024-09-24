@@ -28,8 +28,13 @@ using CarboKitten.Visualization: sediment_profile!
 # ╔═╡ 777f6eea-3901-492f-8fa2-0e9508594b1a
 header, data = read_data("../data/alcaps_default.h5")
 
+# ╔═╡ a2f870c8-59fe-4a04-a9f9-e8b97b9727c5
+let x = 4.5u"m"
+	[ustrip(x), string(unit(x))]
+end
+
 # ╔═╡ b6ec79cd-0d67-48f0-9111-58967098f7d2
-open("../data/export_test_sc.csv", "r") do io
+open("../data/export_test_meta.toml", "r") do io
 	print(read(io, String))
 end
 
@@ -37,10 +42,11 @@ end
 grid_locations=[(10, 25), (30, 25), (50, 25), (70, 25)]
 
 # ╔═╡ 8d67a359-69b2-4d08-a8bc-a17b2c8975af
-data_export(CSV(grid_locations=grid_locations,
-	sac = "../data/export_test_sac.csv",
-	adm = "../data/export_test_adm.csv",
-	sc = "../data/export_test_sc.csv"), header, data)
+data_export(CSV(grid_locations,
+	:metadata => "../data/export_test_meta.toml",
+	:sediment_accumulation_curve => "../data/export_test_sac.csv",
+	:age_depth_model => "../data/export_test_adm.csv",
+	:stratigraphic_column => "../data/export_test_sc.csv"), header, data)
 
 # ╔═╡ 58776042-49a1-4d31-af06-366066b9c019
 sac = extract_sac(header, data, grid_locations)
@@ -143,6 +149,7 @@ end
 # ╠═1780ccbd-9c49-455e-8987-a4cacb0d05fc
 # ╠═777f6eea-3901-492f-8fa2-0e9508594b1a
 # ╠═8d67a359-69b2-4d08-a8bc-a17b2c8975af
+# ╠═a2f870c8-59fe-4a04-a9f9-e8b97b9727c5
 # ╠═b6ec79cd-0d67-48f0-9111-58967098f7d2
 # ╠═51f80e72-a691-4132-b8dd-9e7ac8a2f165
 # ╠═58776042-49a1-4d31-af06-366066b9c019

@@ -30,6 +30,53 @@ There is a `data_export` function that can be overloaded with any `ExportSpcific
 - `:stratigraphic_column` amount of deposited material per facies per time step, corrected for disintegrated material. The cumulative sum of the SC should add up to the ADM.
 - `:metadata` some metadata, written as a TOML file.
 
+## Tests
+
+We have a test case with just three pixels.
+
+1. Uniform production
+2. Uniform production, top-hat disintegration, making the sediment accumulation non-monotonic
+3. Linearly increasing production (not sure what this adds)
+
+``` {.julia #export-test-case}
+const AXES1 = Axes(
+    x=[0.0, 1.0, 2.0] * u"m",
+    y=[1.0] * u"m",
+    t=(0.0:0.1:1.0) * u"Myr")
+
+const HEADER1 = Header(
+    axes=AXES1,
+    Δt=0.1u"Myr",
+    time_steps=10,
+    bedrock_elevation=zeros(typeof(1.0u"m"), 3, 3),
+    sea_level=zeros(typeof(1.0u"m"), 10),
+    subsidence_rate=10u"m/Myr")
+
+const PRODUCTION1 = reshape(
+    hcat(ones(Amount, 10),
+        ones(Amount, 10),
+        cumsum(ones(Amount, 10)) / 5.5)',
+    1, 3, 1, 10)
+
+const DISINTEGRATION1 = reshape(
+    hcat(zeros(Amount, 10),
+        1:10 .|> (x -> x < 4 || x > 6 ? 0.0u"m" : 2.0u"m"),
+        zeros(Amount, 10))',
+    1, 3, 1, 10)
+
+const ELEVATION1 = cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :]
+
+const DATA1 = Data(
+    disintegration=DISINTEGRATION1,
+    production=PRODUCTION1,
+    deposition=PRODUCTION1 .- DISINTEGRATION1,
+    sediment_elevation=ELEVATION1)
+
+const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
+```
+
+### Sediment Accumulation
+
 ## Writing CSV files
 
 The `CSV.jl` module lets us write a `DataFrame` to CSV, but doesn't work so well in combination with Units.
@@ -63,6 +110,21 @@ write_unitful_csv(io, df::DataFrame) =
     write_csv(io, ustrip(df), header=unitful_headers(df))
 ```
 
+We may test that writing and reading the CSV back, gives the same result:
+
+``` {.julia #export-test}
+@testset "Hither and Dither" begin
+    buffer = UInt8[]
+    io = IOBuffer(buffer, write=true)
+    data_export(CSVExportTrait{:sediment_accumulation_curve}, io, HEADER1, DATA1, GRID_LOCATIONS1)
+    df = read_csv(IOBuffer(buffer), DataFrame)
+    rename!(df, (n => split(n)[1] for n in names(df))...)
+    @test df.sac1 ≈ ELEVATION1[1, 1, :] / u"m"
+    @test df.sac2 ≈ ELEVATION1[2, 1, :] / u"m"
+    @test df.sac3 ≈ ELEVATION1[3, 1, :] / u"m"
+end
+```
+
 ## Age-depth model
 
 ``` {.julia #export-function}
@@ -86,6 +148,21 @@ age_depth_model(sac_df::DataFrame) =
         select(sac_df, "time", (sac => age_depth_model => adm
                                 for (sac, adm) in zip(sac_cols, adm_cols))...)
     end
+```
+
+We test that the constructed ADM is monotonic increasing in time:
+
+``` {.julia #export-test}
+@testset "ADM Monotonicity" begin
+    sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
+    adm = sac |> age_depth_model
+
+    @test sac.sac1 == adm.adm1
+    @test sac.sac3 == adm.adm3
+    @test sac.sac2 != adm.adm2
+
+    @test all(adm.adm2[2:end] .- adm.adm2[1:end-1] .>= 0.0u"m")
+end
 ```
 
 ## Stratigraphic Column
@@ -122,6 +199,19 @@ function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, fa
     end
 
     sc
+end
+```
+
+The stratigraphic column should sum to the age-depth model.
+
+``` {.julia #export-test}
+@testset "SC sum equals ADM" begin
+    sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
+    adm = sac |> age_depth_model
+    sc = extract_sc(HEADER1, DATA1, GRID_LOCATIONS1)
+    @test cumsum(sc.sc1_f1) ≈ adm.adm1
+    @test cumsum(sc.sc2_f1) ≈ adm.adm2
+    @test cumsum(sc.sc3_f1) ≈ adm.adm3
 end
 ```
 
@@ -310,76 +400,10 @@ using Unitful
 
 const Amount = typeof(1.0u"m")
 
-const AXES1 = Axes(
-    x=[0.0, 1.0, 2.0] * u"m",
-    y=[1.0] * u"m",
-    t=(0.0:0.1:1.0) * u"Myr")
-
-const HEADER1 = Header(
-    axes=AXES1,
-    Δt=0.1u"Myr",
-    time_steps=10,
-    bedrock_elevation=zeros(typeof(1.0u"m"), 3, 3),
-    sea_level=zeros(typeof(1.0u"m"), 10),
-    subsidence_rate=10u"m/Myr")
-
-# 1x3x1x10
-# case1: stable production, no disintegration
-# case2: stable production, top-hat disintegration
-# case3: linear production, no disintegration
-
-const PRODUCTION1 = reshape(
-    hcat(ones(Amount, 10),
-        ones(Amount, 10),
-        cumsum(ones(Amount, 10)) / 5.5)',
-    1, 3, 1, 10)
-
-const DISINTEGRATION1 = reshape(
-    hcat(zeros(Amount, 10),
-        1:10 .|> (x -> x < 4 || x > 6 ? 0.0u"m" : 2.0u"m"),
-        zeros(Amount, 10))',
-    1, 3, 1, 10)
-
-const ELEVATION1 = cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :]
-
-const DATA1 = Data(
-    disintegration=DISINTEGRATION1,
-    production=PRODUCTION1,
-    deposition=PRODUCTION1 .- DISINTEGRATION1,
-    sediment_elevation=ELEVATION1)
-
-const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
+<<export-test-case>>
 
 @testset "Data Export" begin
-    @testset "Hither and Dither" begin
-        buffer = UInt8[]
-        io = IOBuffer(buffer, write=true)
-        data_export(CSVExportTrait{:sediment_accumulation_curve}, io, HEADER1, DATA1, GRID_LOCATIONS1)
-        df = read_csv(IOBuffer(buffer), DataFrame)
-        rename!(df, (n => split(n)[1] for n in names(df))...)
-        @test df.sac1 ≈ ELEVATION1[1, 1, :] / u"m"
-        @test df.sac2 ≈ ELEVATION1[2, 1, :] / u"m"
-        @test df.sac3 ≈ ELEVATION1[3, 1, :] / u"m"
-    end
-
-    @testset "ADM Monotonicity" begin
-        sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
-        adm = sac |> age_depth_model
-        @test sac.sac1 == adm.adm1
-        @test sac.sac3 == adm.adm3
-        @test sac.sac2 != adm.adm2
-
-        @test all(adm.adm2[2:end] .- adm.adm2[1:end-1] .>= 0.0u"m")
-    end
-
-    @testset "SC sum equals ADM" begin
-        sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
-        adm = sac |> age_depth_model
-        sc = extract_sc(HEADER1, DATA1, GRID_LOCATIONS1)
-        @test cumsum(sc.sc1_f1) ≈ adm.adm1
-        @test cumsum(sc.sc2_f1) ≈ adm.adm2
-        @test cumsum(sc.sc3_f1) ≈ adm.adm3
-    end
+    <<export-test>>
 
     @testset "Write to folder" begin
         mktempdir() do path

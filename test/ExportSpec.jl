@@ -8,6 +8,7 @@ using Unitful
 
 const Amount = typeof(1.0u"m")
 
+# ~/~ begin <<docs/src/data-export.md#export-test-case>>[init]
 const AXES1 = Axes(
     x=[0.0, 1.0, 2.0] * u"m",
     y=[1.0] * u"m",
@@ -20,11 +21,6 @@ const HEADER1 = Header(
     bedrock_elevation=zeros(typeof(1.0u"m"), 3, 3),
     sea_level=zeros(typeof(1.0u"m"), 10),
     subsidence_rate=10u"m/Myr")
-
-# 1x3x1x10
-# case1: stable production, no disintegration
-# case2: stable production, top-hat disintegration
-# case3: linear production, no disintegration
 
 const PRODUCTION1 = reshape(
     hcat(ones(Amount, 10),
@@ -47,8 +43,10 @@ const DATA1 = Data(
     sediment_elevation=ELEVATION1)
 
 const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
+# ~/~ end
 
 @testset "Data Export" begin
+    # ~/~ begin <<docs/src/data-export.md#export-test>>[init]
     @testset "Hither and Dither" begin
         buffer = UInt8[]
         io = IOBuffer(buffer, write=true)
@@ -59,17 +57,20 @@ const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
         @test df.sac2 ≈ ELEVATION1[2, 1, :] / u"m"
         @test df.sac3 ≈ ELEVATION1[3, 1, :] / u"m"
     end
-
+    # ~/~ end
+    # ~/~ begin <<docs/src/data-export.md#export-test>>[1]
     @testset "ADM Monotonicity" begin
         sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
         adm = sac |> age_depth_model
+
         @test sac.sac1 == adm.adm1
         @test sac.sac3 == adm.adm3
         @test sac.sac2 != adm.adm2
 
         @test all(adm.adm2[2:end] .- adm.adm2[1:end-1] .>= 0.0u"m")
     end
-
+    # ~/~ end
+    # ~/~ begin <<docs/src/data-export.md#export-test>>[2]
     @testset "SC sum equals ADM" begin
         sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
         adm = sac |> age_depth_model
@@ -78,6 +79,7 @@ const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
         @test cumsum(sc.sc2_f1) ≈ adm.adm2
         @test cumsum(sc.sc3_f1) ≈ adm.adm3
     end
+    # ~/~ end
 
     @testset "Write to folder" begin
         mktempdir() do path

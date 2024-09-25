@@ -11,7 +11,7 @@ module Script
     function main()
         f = Figure()
         plot_crosssection(f[1,1], "data/caps-osc.h5")
-	      save("docs/src/_fig/b13-capsosc-crosssection.png", f)
+       save("docs/src/_fig/b13-capsosc-crosssection.png", f)
     end
 end
 

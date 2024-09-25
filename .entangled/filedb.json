@@ -47,10 +47,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "7288c637779d60468bc59c16ce30b505cb9341e7c3cb3b52bf27ae1bc3e184f6",
-      "modified": "2024-09-23T13:03:26.745527",
+      "hexdigest": "e059a949fe67ca389a5781ffd3295d499d276f95f5484dbf286f7aac5786c7c3",
+      "modified": "2024-09-25T10:28:36.933807",
       "path": "docs/src/ca-with-production.md",
-      "size": 20994
+      "size": 11594
     },
     {
       "deps": null,
@@ -74,11 +74,11 @@
       "size": 6286
     },
     {
-      "deps": null,
-      "hexdigest": "495d1ac806f5ac2422f8f7774ee37f0d1b491972ef6ede5a0198d7d858f3328f",
-      "modified": "2024-09-24T19:06:16.756435",
+      "deps": [],
+      "hexdigest": "50e30d9031c33572a3c4b96eb48e7fb42b8df3e68cacd3050cfd4d11d1e9b29c",
+      "modified": "2024-09-25T13:27:20.646931",
       "path": "docs/src/data-export.md",
-      "size": 13008
+      "size": 13378
     },
     {
       "deps": null,
@@ -116,11 +116,11 @@
       "size": 10828
     },
     {
-      "deps": null,
-      "hexdigest": "d5b1e1f9a2ebafa0c5d109feb9290c736d134111190b5917a0c573de0da8d71a",
-      "modified": "2024-09-11T11:32:34.250195",
+      "deps": [],
+      "hexdigest": "d2ce90735729030e84902d1aa14f30f40f0ecdb7054690e1cb7730873a60cbee",
+      "modified": "2024-09-25T13:27:20.644931",
       "path": "docs/src/model-alcap.md",
-      "size": 13949
+      "size": 14116
     },
     {
       "deps": null,
@@ -158,6 +158,13 @@
       "size": 1202
     },
     {
+      "deps": null,
+      "hexdigest": "9fbf6f302283fd6fc07ca42fb4a31d33fb00db2aa65d0e138ffb24c40037477c",
+      "modified": "2024-09-25T13:25:33.161055",
+      "path": "docs/src/visualization.md",
+      "size": 7713
+    },
+    {
       "deps": [
         "docs/src/bosscher-1992.md"
       ],
@@ -188,10 +195,10 @@
       "deps": [
         "docs/src/model-alcap.md"
       ],
-      "hexdigest": "645102387b09f04717811f869bdb7c898d25619b3ffbb0049d5e3cc2af0e6949",
-      "modified": "2024-09-11T13:21:47.095030",
+      "hexdigest": "1348c1c8ea7ecbf8643e2638a36ad115ef2315d37ea59732324e4ed68a0770b7",
+      "modified": "2024-09-25T13:14:29.266945",
       "path": "examples/alcaps/alternative.jl",
-      "size": 1806
+      "size": 1973
     },
     {
       "deps": [
@@ -269,10 +276,10 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "hexdigest": "ac5f80b26d44813a93cb952e21808efd5c1fa7cc6384b308c07dd8d9f844b79f",
-      "modified": "2024-09-11T13:15:33.511422",
+      "hexdigest": "969799538474e48201e296e3d9e496c83901158a8f3712dd71731d5be0235f15",
+      "modified": "2024-09-25T13:27:08.749834",
       "path": "examples/plot-caps-osc.jl",
-      "size": 498
+      "size": 499
     },
     {
       "deps": [
@@ -357,12 +364,12 @@
     },
     {
       "deps": [
-        "docs/src/ca-with-production.md"
+        "docs/src/visualization.md"
       ],
-      "hexdigest": "864618bf9841a608a84536df13df58ccd0981630e0df0e14df05a2215dcb6ccd",
-      "modified": "2024-09-23T09:20:55.655307",
+      "hexdigest": "1f150275287baf22762d3d595c703894c3cfcb72d259b0da952d4fccc8d30671",
+      "modified": "2024-09-25T13:27:08.750834",
       "path": "ext/VisualizationExt.jl",
-      "size": 8904
+      "size": 5073
     },
     {
       "deps": [
@@ -486,10 +493,10 @@
       "deps": [
         "docs/src/data-export.md"
       ],
-      "hexdigest": "a42ffaffa813c61eb6e93b71c599516fe85a4e3b411bb5ad282c1dfa2a154b22",
-      "modified": "2024-09-24T14:07:28.292516",
+      "hexdigest": "b9ca01257460e7b1aafa4aa1f875d7621576678492bfa76459009aecf0613bcd",
+      "modified": "2024-09-25T13:20:16.286584",
       "path": "src/Export.jl",
-      "size": 8105
+      "size": 8475
     },
     {
       "deps": [
@@ -548,12 +555,12 @@
     },
     {
       "deps": [
-        "docs/src/ca-with-production.md"
+        "docs/src/visualization.md"
       ],
-      "hexdigest": "b6a0bcb1c76d177aa4174c196f7741dc67431dcc99742ff90eac6f18d0df07aa",
-      "modified": "2024-09-11T13:21:47.097030",
+      "hexdigest": "4567108ce65c0564fe45dbdb98c400f16485e396e75bbbd4000640288e6f18a4",
+      "modified": "2024-09-25T13:27:08.747834",
       "path": "src/Visualization.jl",
-      "size": 553
+      "size": 494
     },
     {
       "deps": [

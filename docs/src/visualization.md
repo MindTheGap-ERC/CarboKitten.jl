@@ -43,10 +43,55 @@ module Visualization
 
     print_instructions() = print("This is an extension and only becomes available when you import {Cairo,GL,WGL}Makie before using this.\n")
 
-    plot_facies_production(args...) = print_instructions()
     sediment_profile!(args...) = print_instructions()
     sediment_profile(args...) = print_instructions()
+    wheeler_diagram!(args...) = print_instructions()
+    wheeler_diagram(args...) = print_instructions()
+    production_curve(args...) = print_instructions()
+    production_curve!(args...) = print_instructions()
 end  # module
+```
+
+## Wheeler diagram
+
+``` {.julia file=ext/WheelerDiagram.jl}
+module WheelerDiagram
+
+import CarboKitten.Visualization: wheeler_diagram!, wheeler_diagram
+using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
+using CarboKitten.Utility: in_units_of
+
+
+end
+```
+
+## Production curve
+
+``` {.julia file=ext/ProductionCurve.jl}
+module ProductionCurve
+
+import CarboKitten.Visualization: production_curve!, production_curve
+using CarboKitten.Burgess2013: production_rate
+
+function production_curve!(ax, input; loc=nothing)
+end
+
+function production_curve(input; loc=nothing)
+    fig, loc = isnothing(loc) ? let fig = Figure()
+        (fig, fig[1, 1])
+    end : (nothing, loc)
+    ax = Axis(loc, title="production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))",
+              xlabel="production (m/Myr)", ylabel="depth (m)", yreversed=true)
+    for f in input.facies
+        depth = (0.1:0.1:50.0)u"m"
+        prod = [production_rate(input.insolation, f, d) for d in depth]
+        lines!(ax, prod / u"m/Myr", depth / u"m")
+
+    end
+    fig
+end
+
+end
 ```
 
 ## Sediment profile
@@ -54,7 +99,10 @@ end  # module
 ``` {.julia file=ext/VisualizationExt.jl}
 module VisualizationExt
 
-import CarboKitten.Visualization: plot_facies_production, plot_crosssection, sediment_profile, sediment_profile!
+include("WheelerDiagram")
+include("ProductionCurve")
+
+import CarboKitten.Visualization: plot_facies_production, sediment_profile, sediment_profile!
 
 using CarboKitten
 using CarboKitten.Visualization
@@ -189,18 +237,4 @@ function sediment_profile(filename, y)
     return fig
 end
 
-function plot_facies_production(input; loc=nothing)
-    fig, loc = isnothing(loc) ? let fig = Figure()
-        (fig, fig[1, 1])
-    end : (nothing, loc)
-    ax = Axis(loc, title="production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))",
-              xlabel="production (m/Myr)", ylabel="depth (m)", yreversed=true)
-    for f in input.facies
-        depth = (0.1:0.1:50.0)u"m"
-        prod = [production_rate(input.insolation, f, d) for d in depth]
-        lines!(ax, prod / u"m/Myr", depth / u"m")
-
-    end
-    fig
-end
 ```

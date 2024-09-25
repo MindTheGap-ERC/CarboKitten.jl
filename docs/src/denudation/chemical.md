@@ -36,7 +36,7 @@ Other parameters could be found in the following table by [Kaufmann2001](@cite).
 | $log K_c\ddagger$         | Mass balance coefficient | \[ $mol^2 L^{-2}$ \]      | $-171.9065 - 0.077993T + 2839.319/T + 71.595logT$                      |
 | $log K_H\ddagger$         | Mass balance coefficient | \[ $mol L^{-1} atm^{-1}$ \] | $108.3865 + 0.01985076T - 6919.53/T - 40.45154logT + 669365/T^2$    |
 
-This leads to the following implementation of the ```karst_denudation_parameters``` function to calculate the parameters for the dissolution equation:
+This leads to the following implementation of the `karst_denudation_parameters` function to calculate the parameters for the dissolution equation:
 
 ``` {.julia #karst-parameter-function}
 function karst_denudation_parameters(temp::Float64)

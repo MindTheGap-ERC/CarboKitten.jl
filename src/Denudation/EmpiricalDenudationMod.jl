@@ -19,7 +19,7 @@ end
 # ~/~ end
 # ~/~ begin <<docs/src/denudation/empirical.md#empirical-denudation>>[1]
 @kwdef struct EmpiricalDenudation <: DenudationType
-    precip
+    precip::typeof(1.0u"m")
 end
 # ~/~ end
 # ~/~ begin <<docs/src/denudation/empirical.md#empirical-denudation>>[2]

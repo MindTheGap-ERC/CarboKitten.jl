@@ -85,6 +85,18 @@ function read_data(filename)
     end
 end
 
+function read_slice(filename, slice...)
+    h5open(filename) do fid
+        header = read_header(fid)
+        data = DataSlice(
+            fid["disintegration"][slice...] * u"m",
+            fid["production"][slice...] * u"m",
+            fid["deposition"][slice...] * u"m",
+            fid["sediment_height"][slice[2:end]...] * u"m")
+        header, data
+    end
+end
+
 # ~/~ begin <<docs/src/data-export.md#export-function>>[init]
 """
     unitful_headers(df::DataFrame)

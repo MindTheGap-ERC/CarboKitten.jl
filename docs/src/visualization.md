@@ -39,16 +39,16 @@ The Project Extension requires a front-end where the available methods are expos
 
 ``` {.julia file=src/Visualization.jl}
 module Visualization
-    export plot_crosssection, plot_facies_production, sediment_profile
+export sediment_profile!, sediment_profile, wheeler_diagram!, wheeler_diagram, production_curve!, production_curve
 
-    print_instructions() = print("This is an extension and only becomes available when you import {Cairo,GL,WGL}Makie before using this.\n")
+print_instructions() = print("This is an extension and only becomes available when you import {Cairo,GL,WGL}Makie before using this.\n")
 
-    sediment_profile!(args...) = print_instructions()
-    sediment_profile(args...) = print_instructions()
-    wheeler_diagram!(args...) = print_instructions()
-    wheeler_diagram(args...) = print_instructions()
-    production_curve(args...) = print_instructions()
-    production_curve!(args...) = print_instructions()
+sediment_profile!(args...) = print_instructions()
+sediment_profile(args...) = print_instructions()
+wheeler_diagram!(args...) = print_instructions()
+wheeler_diagram(args...) = print_instructions()
+production_curve(args...) = print_instructions()
+production_curve!(args...) = print_instructions()
 end  # module
 ```
 
@@ -60,7 +60,28 @@ module WheelerDiagram
 import CarboKitten.Visualization: wheeler_diagram!, wheeler_diagram
 using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
 using CarboKitten.Utility: in_units_of
+using Makie
+using Unitful
 
+elevation(h::Header, d::DataSlice) =
+    let bl = h.bedrock_elevation[d.slice..., na],
+        sr = h.axes.t[end] * h.subsidence_rate
+
+        cat(bl, bl .+ d.sediment_elevation; dims=2) .- sr
+    end
+
+function wheeler_diagram!(ax::Axis, header::Header, data_slice::DataSlice)
+    colormax(d) = getindex.(argmax(d; dims=1)[1, :, :], 1)
+    magnitude = sum(data_slice.deposition .- data_slice.disintegration; dims=1)[1, :, :]
+    dominant_facies = colormax(data_slice.deposition)
+
+    ξ = elevation(header, data_slice)  # |> in_units_of(u"m")
+    water_depth = ξ .- (header.subsidence_rate.*(header.axes.t.-header.axes.t[end]).+header.sea_level)[na, :]
+    exposed = water_depth .< 0.0u"m"
+
+    heatmap!(ax, dominant_facies)
+    contourf!(ax, exposed)
+end
 
 end
 ```
@@ -131,8 +152,8 @@ elevation(h::Header, d::Data) =
         cat(bl, bl .+ d.sediment_elevation; dims=3) .- sr
     end
 
-elevation(h::Header, d::DataSlice, y) =
-    let bl = h.bedrock_elevation[:, y, na],
+elevation(h::Header, d::DataSlice) =
+    let bl = h.bedrock_elevation[d.slice..., na],
         sr = h.axes.t[end] * h.subsidence_rate
 
         cat(bl, bl .+ d.sediment_elevation; dims=2) .- sr
@@ -202,8 +223,8 @@ function bean_counter(mask::BitArray{dim}) where {dim}
     return out, group - 1
 end
 
-function sediment_profile!(ax::Axis, filename, y)
-    header, data = read_slice(filename, :, :, y, :)
+function sediment_profile!(ax::Axis, filename::AbstractString, y::Int)
+    header, data = read_slice(filename, :, y)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
     ξ = elevation(header, data, y)  # |> in_units_of(u"m")
@@ -236,5 +257,4 @@ function sediment_profile(filename, y)
     sediment_profile!(ax, filename, y)
     return fig
 end
-
 ```

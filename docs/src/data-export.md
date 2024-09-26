@@ -350,6 +350,7 @@ end
 end
 
 struct DataSlice
+    slice::NTuple{2,Union{Colon,Int}}
     disintegration::Array{Amount,3}
     production::Array{Amount,3}
     deposition::Array{Amount,3}
@@ -389,10 +390,11 @@ function read_slice(filename, slice...)
     h5open(filename) do fid
         header = read_header(fid)
         data = DataSlice(
-            fid["disintegration"][slice...] * u"m",
-            fid["production"][slice...] * u"m",
-            fid["deposition"][slice...] * u"m",
-            fid["sediment_height"][slice[2:end]...] * u"m")
+            slice,
+            fid["disintegration"][:, slice..., :] * u"m",
+            fid["production"][:, slice..., :] * u"m",
+            fid["deposition"][:, slice..., :] * u"m",
+            fid["sediment_height"][slice..., :] * u"m")
         header, data
     end
 end

@@ -1,7 +1,10 @@
 # ~/~ begin <<docs/src/visualization.md#ext/VisualizationExt.jl>>[init]
 module VisualizationExt
 
-import CarboKitten.Visualization: plot_facies_production, plot_crosssection, sediment_profile, sediment_profile!
+include("WheelerDiagram")
+include("ProductionCurve")
+
+import CarboKitten.Visualization: plot_facies_production, sediment_profile, sediment_profile!
 
 using CarboKitten
 using CarboKitten.Visualization
@@ -30,8 +33,8 @@ elevation(h::Header, d::Data) =
         cat(bl, bl .+ d.sediment_elevation; dims=3) .- sr
     end
 
-elevation(h::Header, d::DataSlice, y) =
-    let bl = h.bedrock_elevation[:, y, na],
+elevation(h::Header, d::DataSlice) =
+    let bl = h.bedrock_elevation[d.slice..., na],
         sr = h.axes.t[end] * h.subsidence_rate
 
         cat(bl, bl .+ d.sediment_elevation; dims=2) .- sr
@@ -101,8 +104,8 @@ function bean_counter(mask::BitArray{dim}) where {dim}
     return out, group - 1
 end
 
-function sediment_profile!(ax::Axis, filename, y)
-    header, data = read_slice(filename, :, :, y, :)
+function sediment_profile!(ax::Axis, filename::AbstractString, y::Int)
+    header, data = read_slice(filename, :, y)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
     ξ = elevation(header, data, y)  # |> in_units_of(u"m")
@@ -134,20 +137,5 @@ function sediment_profile(filename, y)
     ax = Axis(fig[1, 1])
     sediment_profile!(ax, filename, y)
     return fig
-end
-
-function plot_facies_production(input; loc=nothing)
-    fig, loc = isnothing(loc) ? let fig = Figure()
-        (fig, fig[1, 1])
-    end : (nothing, loc)
-    ax = Axis(loc, title="production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))",
-              xlabel="production (m/Myr)", ylabel="depth (m)", yreversed=true)
-    for f in input.facies
-        depth = (0.1:0.1:50.0)u"m"
-        prod = [production_rate(input.insolation, f, d) for d in depth]
-        lines!(ax, prod / u"m/Myr", depth / u"m")
-
-    end
-    fig
 end
 # ~/~ end

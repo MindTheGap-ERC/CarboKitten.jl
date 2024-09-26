@@ -1,6 +1,9 @@
 # ~/~ begin <<docs/src/visualization.md#ext/ProductionCurve.jl>>[init]
 module ProductionCurve
 
+using Makie
+using Unitful
+
 import CarboKitten.Visualization: production_curve!, production_curve
 using CarboKitten.Burgess2013: production_rate
 

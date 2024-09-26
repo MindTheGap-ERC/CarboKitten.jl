@@ -1,10 +1,10 @@
 # ~/~ begin <<docs/src/visualization.md#ext/VisualizationExt.jl>>[init]
 module VisualizationExt
 
-include("WheelerDiagram")
-include("ProductionCurve")
+include("WheelerDiagram.jl")
+include("ProductionCurve.jl")
 
-import CarboKitten.Visualization: plot_facies_production, sediment_profile, sediment_profile!
+import CarboKitten.Visualization: sediment_profile, sediment_profile!
 
 using CarboKitten
 using CarboKitten.Visualization
@@ -106,9 +106,14 @@ end
 
 function sediment_profile!(ax::Axis, filename::AbstractString, y::Int)
     header, data = read_slice(filename, :, y)
+    sediment_profile!(ax, header, data)
+end
+
+function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
-    ξ = elevation(header, data, y)  # |> in_units_of(u"m")
+    n_facies = size(data.production)[1]
+    ξ = elevation(header, data)  # |> in_units_of(u"m")
 
     verts = zeros(Float64, length(x), length(t), 2)
     @views verts[:, :, 1] .= x
@@ -118,8 +123,19 @@ function sediment_profile!(ax::Axis, filename::AbstractString, y::Int)
     water_depth = ξ .- (header.subsidence_rate.*(header.axes.t.-header.axes.t[end]).+header.sea_level)[na, :]
     gaps, n_gaps = bean_counter(water_depth .> 0u"m")
 
+    total_subsidence = header.subsidence_rate * header.axes.t[end]
+    bedrock = (header.bedrock_elevation[data.slice...] .- total_subsidence) |> in_units_of(u"m")
+    lower_limit = minimum(bedrock) - 20
+    band!(ax, x, lower_limit, bedrock; color=:gray)
+    lines!(ax, x, bedrock; color=:black)
+    ylims!(ax, lower_limit + 10, nothing)
+    xlims!(ax, x[1], x[end])
+    ax.xlabel = "position [km]"
+    ax.ylabel = "height [m]"
+    ax.title = "sediment profile"
+
     c = reshape(colormax(data)[:, :], length(x) * (length(t) - 1))
-    mesh!(ax, v, f, color=vcat(c, c), alpha=1.0)
+    mesh!(ax, v, f, color=vcat(c, c), alpha=1.0, colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
     for g = 1:n_gaps
         size = sum(gaps .== g)
@@ -132,10 +148,19 @@ function sediment_profile!(ax::Axis, filename::AbstractString, y::Int)
     end
 end
 
+function sediment_profile(header::Header, data_slice::DataSlice)
+    fig = Figure(size=(1000, 600))
+    ax = Axis(fig[1, 1])
+    sediment_profile!(ax, header, data_slice)
+    return fig
+end
+
 function sediment_profile(filename, y)
-    fig = Figure(size=(800, 600))
+    fig = Figure(size=(1000, 600))
     ax = Axis(fig[1, 1])
     sediment_profile!(ax, filename, y)
     return fig
+end
+
 end
 # ~/~ end

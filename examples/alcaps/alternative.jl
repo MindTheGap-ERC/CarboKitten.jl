@@ -55,9 +55,9 @@ const INPUT = Input(
 
 main(INPUT, "$(PATH)/alcaps2.h5")
 
-data_export("$(PATH)/alcaps2.h5", CSV(tuple.(10:20:70, 25),
+data_export(CSV(tuple.(10:20:70, 25),
     :sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
     :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
     :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
-    :metadata => "$(PATH)/$(TAG).toml"))
+    :metadata => "$(PATH)/$(TAG).toml"), "$(PATH)/alcaps2.h5")
 # ~/~ end

@@ -131,7 +131,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     ylims!(ax, lower_limit + 10, nothing)
     xlims!(ax, x[1], x[end])
     ax.xlabel = "position [km]"
-    ax.ylabel = "height [m]"
+    ax.ylabel = "depth [m]"
     ax.title = "sediment profile"
 
     c = reshape(colormax(data)[:, :], length(x) * (length(t) - 1))

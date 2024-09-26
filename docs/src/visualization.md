@@ -41,14 +41,17 @@ The Project Extension requires a front-end where the available methods are expos
 module Visualization
 export sediment_profile!, sediment_profile, wheeler_diagram!, wheeler_diagram, production_curve!, production_curve
 
-print_instructions() = print("This is an extension and only becomes available when you import {Cairo,GL,WGL}Makie before using this.\n")
+function print_instructions(func_name, args)
+    println("Called `$(func_name)` with args `$(typeof.(args))`")
+    println("This is an extension and only becomes available when you import {Cairo,GL,WGL}Makie before using this.")
+end
 
-sediment_profile!(args...) = print_instructions()
-sediment_profile(args...) = print_instructions()
-wheeler_diagram!(args...) = print_instructions()
-wheeler_diagram(args...) = print_instructions()
-production_curve(args...) = print_instructions()
-production_curve!(args...) = print_instructions()
+sediment_profile!(args...) = print_instructions("sediment_profile!", args)
+sediment_profile(args...) = print_instructions("sediment_profile", args)
+wheeler_diagram!(args...) = print_instructions("wheeler_diagram!", args)
+wheeler_diagram(args...) = print_instructions("wheeler_diagram", args)
+production_curve(args...) = print_instructions("production_curve", args)
+production_curve!(args...) = print_instructions("production_curve!", args)
 end  # module
 ```
 
@@ -57,7 +60,7 @@ end  # module
 ``` {.julia file=ext/WheelerDiagram.jl}
 module WheelerDiagram
 
-import CarboKitten.Visualization: wheeler_diagram
+import CarboKitten.Visualization: wheeler_diagram, wheeler_diagram!
 using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
 using CarboKitten.Utility: in_units_of
 using Makie
@@ -113,7 +116,7 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
     colormax(d) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 
 	dominant_facies = colormax(data.deposition)
-	blur = convolution(Shelf, ones(Float64, 3, 11) ./ 33.0)
+    blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
 	wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
 	blur(water_depth(header, data) / u"m", wd)
 
@@ -130,15 +133,26 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
     return ft	
 end
 
-function wheeler_diagram(header::Header, data::DataSlice)
+function wheeler_diagram!(ax1::Axis, ax2::Axis, header::Header, data::DataSlice;
+                          smooth_size::NTuple{2,Int}=(3,11))
+	linkyaxes!(ax1, ax2)
+    sa = sediment_accumulation!(ax1, header, data; smooth_size=smooth_size)
+    ft = dominant_facies!(ax2, header, data; smooth_size=smooth_size)
+    ax2.ylabel = ""
+
+    return sa, ft
+end
+
+function wheeler_diagram(header::Header, data::DataSlice;
+                         smooth_size::NTuple{2,Int}=(3,11))
 	fig = Figure(size=(1000, 600))
 	ax1 = Axis(fig[2,1])
 	ax2 = Axis(fig[2,2])
 
 	linkyaxes!(ax1, ax2)
 
-    sa = sediment_accumulation!(ax1, header, data)
-    ft = dominant_facies!(ax2, header, data)
+    sa = sediment_accumulation!(ax1, header, data; smooth_size=smooth_size)
+    ft = dominant_facies!(ax2, header, data; smooth_size=smooth_size)
     ax2.ylabel = ""
 
 	Colorbar(fig[1,1], sa; vertical=false, label="sediment accumulation [m/Myr]")
@@ -160,21 +174,23 @@ using Unitful
 import CarboKitten.Visualization: production_curve!, production_curve
 using CarboKitten.Burgess2013: production_rate
 
-function production_curve!(ax, input; loc=nothing)
-end
+function production_curve!(ax, input)
+    ax.title = "production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))"
+    ax.xlabel = "production [m/Myr]"
+    ax.ylabel = "depth [m]"
+    ax.yreversed = true
 
-function production_curve(input; loc=nothing)
-    fig, loc = isnothing(loc) ? let fig = Figure()
-        (fig, fig[1, 1])
-    end : (nothing, loc)
-    ax = Axis(loc, title="production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))",
-              xlabel="production (m/Myr)", ylabel="depth (m)", yreversed=true)
     for f in input.facies
         depth = (0.1:0.1:50.0)u"m"
         prod = [production_rate(input.insolation, f, d) for d in depth]
         lines!(ax, prod / u"m/Myr", depth / u"m")
-
     end
+end
+
+function production_curve(input)
+    fig = Figure()
+    ax = Axis(fig[1, 1])
+    production_curve!(ax, input)
     fig
 end
 
@@ -316,7 +332,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     ylims!(ax, lower_limit + 10, nothing)
     xlims!(ax, x[1], x[end])
     ax.xlabel = "position [km]"
-    ax.ylabel = "height [m]"
+    ax.ylabel = "depth [m]"
     ax.title = "sediment profile"
 
     c = reshape(colormax(data)[:, :], length(x) * (length(t) - 1))

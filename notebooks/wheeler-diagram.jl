@@ -55,16 +55,21 @@ water_depth(header::Header, data::DataSlice) =
 colormax(d) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 
 # ╔═╡ 18642e2a-36ed-44f1-9f24-16d3a7428433
-sediment_profile(header, data)
+let
+	fig = sediment_profile(header, data)
+	save("sediment_profile.png", fig)
+	fig
+end
 
 # ╔═╡ cc1f98a9-b689-4ce0-a1f1-9d0263ebec63
 const Depth = typeof(1.0u"m")
 
 # ╔═╡ 01839fae-7756-4be4-8017-c32aa03dba0d
-fig = wheeler_diagram(header, data)
-
-# ╔═╡ d9c7fb5e-175c-4a29-8ff2-0239848a8fec
-save("wheeler_test.png", fig)
+let
+	fig = wheeler_diagram(header, data; smooth_size=(3,11))
+	save("wheeler_test_noblur.png", fig)
+	fig
+end
 
 # ╔═╡ Cell order:
 # ╠═74ccac56-7b4d-11ef-3d4a-01e35a06c040
@@ -83,4 +88,3 @@ save("wheeler_test.png", fig)
 # ╠═18642e2a-36ed-44f1-9f24-16d3a7428433
 # ╠═cc1f98a9-b689-4ce0-a1f1-9d0263ebec63
 # ╠═01839fae-7756-4be4-8017-c32aa03dba0d
-# ╠═d9c7fb5e-175c-4a29-8ff2-0239848a8fec

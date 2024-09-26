@@ -159,10 +159,10 @@
     },
     {
       "deps": [],
-      "hexdigest": "f7b4b7c13947e1f968ce97def48e7039b9bcb8ca2f6628f0c50344655f85c562",
-      "modified": "2024-09-26T15:41:16.452099",
+      "hexdigest": "3fc489d09fcc4923cd3f20c5f80c4181b31bb5d3e5950655b3e100325b39bc9f",
+      "modified": "2024-09-26T21:22:38.075361",
       "path": "docs/src/visualization.md",
-      "size": 12403
+      "size": 13099
     },
     {
       "deps": [
@@ -366,28 +366,28 @@
       "deps": [
         "docs/src/visualization.md"
       ],
-      "hexdigest": "e9840e0c8a85b754c0aae2ebefc166fec86dc9671dba8a422669f038a0386f26",
-      "modified": "2024-09-26T11:01:56.128416",
+      "hexdigest": "2da76c5948ca677e421598d09fadb6645d5ff9228498440b7e0a41b259c8298e",
+      "modified": "2024-09-26T19:59:40.582284",
       "path": "ext/ProductionCurve.jl",
-      "size": 848
+      "size": 797
     },
     {
       "deps": [
         "docs/src/visualization.md"
       ],
-      "hexdigest": "c6ecbd2fe153e855da88ef23a8d5910276df6b3411cad25ae2e5b3e93a59eaa8",
-      "modified": "2024-09-26T14:54:46.920403",
+      "hexdigest": "518588904092144f67483412f88d012d6f8db19ba87f1fe5d4ad8eb098f8ae58",
+      "modified": "2024-09-26T20:13:38.463841",
       "path": "ext/VisualizationExt.jl",
-      "size": 5454
+      "size": 5453
     },
     {
       "deps": [
         "docs/src/visualization.md"
       ],
-      "hexdigest": "1b785656d2471f9b56abb46a33f33d2b433adbc5e3fbf877ece105e4554f6d12",
-      "modified": "2024-09-26T15:36:16.147844",
+      "hexdigest": "a6d210ba9c05d657b618e219b0181d99ce7e4ec90ac9d3999fe2b7a8282ce1b5",
+      "modified": "2024-09-26T20:09:01.205054",
       "path": "ext/WheelerDiagram.jl",
-      "size": 3321
+      "size": 3828
     },
     {
       "deps": [
@@ -575,10 +575,10 @@
       "deps": [
         "docs/src/visualization.md"
       ],
-      "hexdigest": "7034575173132045fab30653227ad5285372ce118bffe90e9a74b3be662e3d91",
-      "modified": "2024-09-26T09:46:06.100483",
+      "hexdigest": "7571e5c4ce4853e9f49f27bc23b9d93725fcc8c044e088f777019f0f7d733903",
+      "modified": "2024-09-26T20:07:52.872852",
       "path": "src/Visualization.jl",
-      "size": 663
+      "size": 904
     },
     {
       "deps": [

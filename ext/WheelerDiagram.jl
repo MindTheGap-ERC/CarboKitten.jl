@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/visualization.md#ext/WheelerDiagram.jl>>[init]
 module WheelerDiagram
 
-import CarboKitten.Visualization: wheeler_diagram
+import CarboKitten.Visualization: wheeler_diagram, wheeler_diagram!
 using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
 using CarboKitten.Utility: in_units_of
 using Makie
@@ -57,7 +57,7 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
     colormax(d) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 
 	dominant_facies = colormax(data.deposition)
-	blur = convolution(Shelf, ones(Float64, 3, 11) ./ 33.0)
+    blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
 	wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
 	blur(water_depth(header, data) / u"m", wd)
 
@@ -74,15 +74,26 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
     return ft	
 end
 
-function wheeler_diagram(header::Header, data::DataSlice)
+function wheeler_diagram!(ax1::Axis, ax2::Axis, header::Header, data::DataSlice;
+                          smooth_size::NTuple{2,Int}=(3,11))
+	linkyaxes!(ax1, ax2)
+    sa = sediment_accumulation!(ax1, header, data; smooth_size=smooth_size)
+    ft = dominant_facies!(ax2, header, data; smooth_size=smooth_size)
+    ax2.ylabel = ""
+
+    return sa, ft
+end
+
+function wheeler_diagram(header::Header, data::DataSlice;
+                         smooth_size::NTuple{2,Int}=(3,11))
 	fig = Figure(size=(1000, 600))
 	ax1 = Axis(fig[2,1])
 	ax2 = Axis(fig[2,2])
 
 	linkyaxes!(ax1, ax2)
 
-    sa = sediment_accumulation!(ax1, header, data)
-    ft = dominant_facies!(ax2, header, data)
+    sa = sediment_accumulation!(ax1, header, data; smooth_size=smooth_size)
+    ft = dominant_facies!(ax2, header, data; smooth_size=smooth_size)
     ax2.ylabel = ""
 
 	Colorbar(fig[1,1], sa; vertical=false, label="sediment accumulation [m/Myr]")

@@ -34,6 +34,7 @@ CSV(grid_locations, kwargs...) = CSV(grid_locations, IdDict(kwargs...))
 end
 
 @kwdef struct Header
+    tag::String
     axes::Axes
     Δt::Time
     time_steps::Int
@@ -66,6 +67,7 @@ function read_header(fid)
         fid["input/t"][] * u"Myr")
 
     return Header(
+        attrs["tag"][],
         axes,
         attrs["delta_t"][] * u"Myr",
         attrs["time_steps"][],
@@ -195,8 +197,10 @@ function data_export(spec::CSV, header::Header, data::Data)
         if key == :metadata
             md = Dict(
                 "global" => Dict(
+                    "tag" => header.tag,
                     "subsidence_rate" => header.subsidence_rate,
-                    "time_steps" => header.time_steps),
+                    "time_steps" => header.time_steps,
+                    "delta_t" => header.Δt),
                 "locations" => [Dict(
                     "number" => i,
                     "x" => header.axes.x[loc[1]],

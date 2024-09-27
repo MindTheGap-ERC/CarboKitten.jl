@@ -39,6 +39,7 @@ const PERIOD = 0.2Myr
 const AMPLITUDE = 4.0m
 
 const INPUT = Input(
+    tag="ALCAPS alternative",
     box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m),
     time=TimeProperties(
         Δt=0.0002Myr,
@@ -55,9 +56,11 @@ const INPUT = Input(
 
 main(INPUT, "$(PATH)/alcaps2.h5")
 
-data_export(CSV(tuple.(10:20:70, 25),
-    :sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
-    :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
-    :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
-    :metadata => "$(PATH)/$(TAG).toml"), "$(PATH)/alcaps2.h5")
+data_export(
+    CSV(tuple.(10:20:70, 25),
+      :sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
+      :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
+      :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
+      :metadata => "$(PATH)/$(TAG).toml"),
+    "$(PATH)/alcaps2.h5")
 # ~/~ end

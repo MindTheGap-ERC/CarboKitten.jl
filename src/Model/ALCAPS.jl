@@ -61,6 +61,7 @@ const AMPLITUDE = 4.0m
 # ~/~ end
 
 @kwdef struct Input
+    tag::String           = "ALCAPS default"
     # ~/~ begin <<docs/src/model-alcap.md#alcaps-input>>[init]
     box::Box              = Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m)
     # ~/~ end
@@ -229,6 +230,7 @@ function main(input::Input, output::String)
         gid["sea_level"] = input.sea_level.(t) .|> in_units_of(u"m")
 
         attr = attributes(gid)
+        attr["tag"] = input.tag
         attr["delta_t"] = input.time.Δt |> in_units_of(u"Myr")
         attr["write_interval"] = input.time.write_interval
         attr["time_steps"] = input.time.steps

@@ -15,6 +15,7 @@ const AXES1 = Axes(
     t=(0.0:0.1:1.0) * u"Myr")
 
 const HEADER1 = Header(
+    tag="test",
     axes=AXES1,
     Δt=0.1u"Myr",
     time_steps=10,

@@ -74,11 +74,11 @@
       "size": 6286
     },
     {
-      "deps": null,
-      "hexdigest": "495d1ac806f5ac2422f8f7774ee37f0d1b491972ef6ede5a0198d7d858f3328f",
-      "modified": "2024-09-27T11:19:44.068841",
+      "deps": [],
+      "hexdigest": "e6c91e4a919e1286af187886c9236e2232c6485e5b40eda61984cfea43c069c9",
+      "modified": "2024-09-27T21:23:13.726173",
       "path": "docs/src/data-export.md",
-      "size": 13008
+      "size": 13105
     },
     {
       "deps": null,
@@ -116,11 +116,11 @@
       "size": 10828
     },
     {
-      "deps": null,
-      "hexdigest": "d5b1e1f9a2ebafa0c5d109feb9290c736d134111190b5917a0c573de0da8d71a",
-      "modified": "2024-09-27T11:01:44.997772",
+      "deps": [],
+      "hexdigest": "1d5dd666f2b7abc85cca20779ed485f2dc78dd5e57197359915d3520f1328b1e",
+      "modified": "2024-09-27T21:23:13.724173",
       "path": "docs/src/model-alcap.md",
-      "size": 13949
+      "size": 14240
     },
     {
       "deps": null,
@@ -188,10 +188,10 @@
       "deps": [
         "docs/src/model-alcap.md"
       ],
-      "hexdigest": "645102387b09f04717811f869bdb7c898d25619b3ffbb0049d5e3cc2af0e6949",
-      "modified": "2024-09-27T11:19:47.793851",
+      "hexdigest": "52b4b2b2919a7ea96c9510e9d851d389f2912b4fbd3b52c1f174281fa5947978",
+      "modified": "2024-09-27T21:21:23.307895",
       "path": "examples/alcaps/alternative.jl",
-      "size": 1805
+      "size": 2020
     },
     {
       "deps": [
@@ -486,19 +486,19 @@
       "deps": [
         "docs/src/data-export.md"
       ],
-      "hexdigest": "a42ffaffa813c61eb6e93b71c599516fe85a4e3b411bb5ad282c1dfa2a154b22",
-      "modified": "2024-09-27T11:19:44.069842",
+      "hexdigest": "77901cb1905090052300c86cf9bdadd1c244829363ed75abedb71373bf4d823c",
+      "modified": "2024-09-27T21:13:36.357476",
       "path": "src/Export.jl",
-      "size": 8105
+      "size": 8186
     },
     {
       "deps": [
         "docs/src/model-alcap.md"
       ],
-      "hexdigest": "55e7ffb0e2c100bd2827d893cb7be9e591f4056bafd9985ba8f7247cbcf1b5f6",
-      "modified": "2024-09-11T13:15:33.529422",
+      "hexdigest": "0a96e6fd5421038af3b10acc8882648849e9b166661a4b67b00daf79439c6f29",
+      "modified": "2024-09-27T21:12:03.690132",
       "path": "src/Model/ALCAPS.jl",
-      "size": 9342
+      "size": 9420
     },
     {
       "deps": [
@@ -577,10 +577,10 @@
       "deps": [
         "docs/src/data-export.md"
       ],
-      "hexdigest": "8d07b8591a9f8aa2c97f2ad9f39370dc4b82d7c2f316f498b405d6cd86a50dfd",
-      "modified": "2024-09-27T11:19:44.070842",
+      "hexdigest": "fa2cbd27abc961b3e95f172c92ab8c03ad5aa6f90259b2e88f05a9dbb329e9b1",
+      "modified": "2024-09-27T21:14:43.009633",
       "path": "test/ExportSpec.jl",
-      "size": 3674
+      "size": 3690
     },
     {
       "deps": [

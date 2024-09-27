@@ -459,10 +459,10 @@
       "deps": [
         "docs/src/denudation/empirical.md"
       ],
-      "hexdigest": "8dff73a7ff82cbbd2eb9fd8d740b0e71706ab6f167166c9ff9b8076747b739c8",
-      "modified": "2024-09-27T11:19:47.794851",
+      "hexdigest": "6272aef1e8f576c84a8e2ca74ae4fa29cdda58816af25ffc9817ce5877ee16bc",
+      "modified": "2024-09-27T15:59:20.310544",
       "path": "src/Denudation/EmpiricalDenudationMod.jl",
-      "size": 1821
+      "size": 1529
     },
     {
       "deps": [

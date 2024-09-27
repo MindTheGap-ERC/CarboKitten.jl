@@ -9,20 +9,20 @@
         "docs/src/stencils.md",
         "docs/src/stencils.md",
         "docs/src/stencils.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
         "docs/src/model-alcap.md",
         "docs/src/model-alcap.md",
         "docs/src/model-alcap.md",
-        "docs/src/model-alcap.md"
+        "docs/src/model-alcap.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md"
       ],
-      "hexdigest": "0e772be36d40fce6c4aacd41cdc6644927364666ac90c51f9fe6c59272ffab06",
-      "modified": "2024-09-25T15:01:57.780108",
+      "hexdigest": "b465f9f26540975a90aa308887e9e1f268f96fe5dc815d1f60bca30f06795858",
+      "modified": "2024-09-27T11:19:44.067842",
       "path": ".entangled/tasks.json",
-      "size": 6518
+      "size": 6519
     },
     {
       "deps": null,
@@ -47,10 +47,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "d60e8d3aeeb0b116936c7f31e55bc07cd5cc3a0073317019a868fc57d1912d58",
-      "modified": "2024-09-25T15:01:57.783108",
+      "hexdigest": "7288c637779d60468bc59c16ce30b505cb9341e7c3cb3b52bf27ae1bc3e184f6",
+      "modified": "2024-09-27T11:19:44.068841",
       "path": "docs/src/ca-with-production.md",
-      "size": 20364
+      "size": 20994
     },
     {
       "deps": null,
@@ -74,30 +74,37 @@
       "size": 6286
     },
     {
+      "deps": [],
+      "hexdigest": "5f8b87dab7170a80d30664c653b53a3837514c065378b1117f0558eb3ac6110b",
+      "modified": "2024-09-27T21:32:08.413807",
+      "path": "docs/src/data-export.md",
+      "size": 13150
+    },
+    {
       "deps": null,
-      "hexdigest": "c582644407976d51e7c73a13e0439891b7788d83e596fdb952d418a06764b24b",
-      "modified": "2024-09-25T15:01:57.783108",
+      "hexdigest": "487eee23d1f98e5b8b6c08b779dd9e0ad83589deda61ab5cec23ee512802adcb",
+      "modified": "2024-09-27T11:19:47.793851",
       "path": "docs/src/denudation/chemical.md",
-      "size": 8785
+      "size": 8781
     },
     {
       "deps": null,
       "hexdigest": "7e8250a44b9d90fde2b677606e57556a707c15c4e4157ca6044b7d08a79157b2",
-      "modified": "2024-09-25T15:20:05.429595",
+      "modified": "2024-09-27T11:19:47.793851",
       "path": "docs/src/denudation/denudation.md",
       "size": 5127
     },
     {
       "deps": null,
-      "hexdigest": "5b79df6fb2baa106ece20873126270d6f58ad2a72dc81083dcac348d541f106f",
-      "modified": "2024-09-25T15:17:42.468744",
+      "hexdigest": "f0a3a9c0380caa1e4c535a772a7a3997bbf91ec83aae3f0e124ef5f2aefaa662",
+      "modified": "2024-09-27T11:19:47.793851",
       "path": "docs/src/denudation/empirical.md",
-      "size": 4671
+      "size": 4324
     },
     {
       "deps": null,
       "hexdigest": "e26dd0fef8116afe4edf300d0a14697fc1c11e5ee62c5d612f1e739b25fea680",
-      "modified": "2024-09-25T15:23:53.574954",
+      "modified": "2024-09-27T11:19:47.793851",
       "path": "docs/src/denudation/physical_erosion.md",
       "size": 4560
     },
@@ -109,11 +116,11 @@
       "size": 10828
     },
     {
-      "deps": null,
-      "hexdigest": "d5b1e1f9a2ebafa0c5d109feb9290c736d134111190b5917a0c573de0da8d71a",
-      "modified": "2024-09-25T15:01:57.784108",
+      "deps": [],
+      "hexdigest": "1d5dd666f2b7abc85cca20779ed485f2dc78dd5e57197359915d3520f1328b1e",
+      "modified": "2024-09-27T21:23:13.724173",
       "path": "docs/src/model-alcap.md",
-      "size": 13949
+      "size": 14240
     },
     {
       "deps": null,
@@ -181,10 +188,10 @@
       "deps": [
         "docs/src/model-alcap.md"
       ],
-      "hexdigest": "645102387b09f04717811f869bdb7c898d25619b3ffbb0049d5e3cc2af0e6949",
-      "modified": "2024-09-25T15:01:57.784108",
+      "hexdigest": "52b4b2b2919a7ea96c9510e9d851d389f2912b4fbd3b52c1f174281fa5947978",
+      "modified": "2024-09-27T21:21:23.307895",
       "path": "examples/alcaps/alternative.jl",
-      "size": 1805
+      "size": 2020
     },
     {
       "deps": [
@@ -209,7 +216,7 @@
         "docs/src/model-alcap.md"
       ],
       "hexdigest": "9f061be6094b2fb5a976b42625ab797e5a8b45775d52e775d744300b5446962a",
-      "modified": "2024-09-25T15:01:57.784108",
+      "modified": "2024-09-27T11:19:47.793851",
       "path": "examples/alcaps/plot-defaults.jl",
       "size": 463
     },
@@ -263,7 +270,7 @@
         "docs/src/ca-with-production.md"
       ],
       "hexdigest": "ac5f80b26d44813a93cb952e21808efd5c1fa7cc6384b308c07dd8d9f844b79f",
-      "modified": "2024-09-25T15:01:57.784108",
+      "modified": "2024-09-27T11:01:44.997772",
       "path": "examples/plot-caps-osc.jl",
       "size": 498
     },
@@ -352,10 +359,10 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "hexdigest": "f7e7346d6e46b79beeb7d84ffa9ba549f14e6575a4b4c667b6e52c6ad58e6f71",
-      "modified": "2024-09-25T15:01:57.784108",
+      "hexdigest": "864618bf9841a608a84536df13df58ccd0981630e0df0e14df05a2215dcb6ccd",
+      "modified": "2024-09-27T11:19:47.793851",
       "path": "ext/VisualizationExt.jl",
-      "size": 8273
+      "size": 8903
     },
     {
       "deps": [
@@ -380,7 +387,7 @@
         "docs/src/carbocat-ca.md"
       ],
       "hexdigest": "e9fb7d809753f98f78759994bde47cc677d94a65690ff5937c3b9ef3e6ae81e0",
-      "modified": "2024-09-25T15:01:57.785108",
+      "modified": "2024-09-27T11:19:47.794851",
       "path": "src/Burgess2013/CA.jl",
       "size": 2178
     },
@@ -389,7 +396,7 @@
         "docs/src/carbocat.md"
       ],
       "hexdigest": "a70799b1030f311838866e4f4cf8e7a79500ed1a325bd93cfab20c487858a30b",
-      "modified": "2024-09-25T15:01:57.785108",
+      "modified": "2024-09-27T11:19:47.794851",
       "path": "src/Burgess2013/Config.jl",
       "size": 1052
     },
@@ -417,7 +424,7 @@
         "docs/src/ca-with-production.md"
       ],
       "hexdigest": "437a58226e031b647229c2e9484a832f4b6c934526e02efee9e42be8acee9850",
-      "modified": "2024-09-25T15:01:57.785108",
+      "modified": "2024-09-27T11:19:47.794851",
       "path": "src/CaProd.jl",
       "size": 4804
     },
@@ -426,7 +433,7 @@
         "docs/src/boxes.md"
       ],
       "hexdigest": "ef9d04f78e7b4909a52c206c8bbd2a8216c493a0ff6f427ec2e9f3c0606ebb26",
-      "modified": "2024-09-25T15:01:57.785108",
+      "modified": "2024-09-27T11:19:47.794851",
       "path": "src/Config.jl",
       "size": 1136
     },
@@ -444,7 +451,7 @@
         "docs/src/denudation/chemical.md"
       ],
       "hexdigest": "c62add322b22f77d995e7b33aa6e5eaf5d9fdcf3c117c6b310aeddc5d4fbce4b",
-      "modified": "2024-09-25T15:01:57.785108",
+      "modified": "2024-09-27T11:19:47.794851",
       "path": "src/Denudation/DissolutionMod.jl",
       "size": 2858
     },
@@ -452,10 +459,10 @@
       "deps": [
         "docs/src/denudation/empirical.md"
       ],
-      "hexdigest": "125b61def6c4142253da49ebce9451d7b71f1258c922c3538992e247dd9e6d8b",
-      "modified": "2024-09-25T15:18:17.031950",
+      "hexdigest": "6272aef1e8f576c84a8e2ca74ae4fa29cdda58816af25ffc9817ce5877ee16bc",
+      "modified": "2024-09-27T15:59:20.310544",
       "path": "src/Denudation/EmpiricalDenudationMod.jl",
-      "size": 1804
+      "size": 1529
     },
     {
       "deps": [
@@ -477,19 +484,28 @@
     },
     {
       "deps": [
+        "docs/src/data-export.md"
+      ],
+      "hexdigest": "5c69ed432ed951e2c3c2ffc4264f8fdb70e72523effd34b0349875436c6488af",
+      "modified": "2024-09-27T21:27:56.077583",
+      "path": "src/Export.jl",
+      "size": 8231
+    },
+    {
+      "deps": [
         "docs/src/model-alcap.md"
       ],
-      "hexdigest": "55e7ffb0e2c100bd2827d893cb7be9e591f4056bafd9985ba8f7247cbcf1b5f6",
-      "modified": "2024-09-11T13:15:33.529422",
+      "hexdigest": "0a96e6fd5421038af3b10acc8882648849e9b166661a4b67b00daf79439c6f29",
+      "modified": "2024-09-27T21:12:03.690132",
       "path": "src/Model/ALCAPS.jl",
-      "size": 9342
+      "size": 9420
     },
     {
       "deps": [
         "docs/src/sediment-buffer.md"
       ],
       "hexdigest": "ce48ceb2c56a93c4c4db23ec053af2e24208e898325eac57ef07bd423539f237",
-      "modified": "2024-09-25T15:01:57.785108",
+      "modified": "2024-09-27T11:19:47.794851",
       "path": "src/SedimentStack.jl",
       "size": 2580
     },
@@ -498,7 +514,7 @@
         "docs/src/stencils.md"
       ],
       "hexdigest": "be21d072b2246ffb4b30b7fb2d608c739761b99a1f0a85966e061f3274c7169e",
-      "modified": "2024-09-25T15:01:57.785108",
+      "modified": "2024-09-27T11:19:47.794851",
       "path": "src/Stencil.jl",
       "size": 1391
     },
@@ -507,14 +523,14 @@
         "docs/src/active-layer-transport.md"
       ],
       "hexdigest": "aa984fe1aa66cb28dc4e78c655d89a847251b5f4473aa602ec7d786f4b59d84d",
-      "modified": "2024-09-25T15:01:57.785108",
+      "modified": "2024-09-27T11:19:47.794851",
       "path": "src/Transport/ActiveLayer.jl",
       "size": 774
     },
     {
       "deps": [
-        "docs/src/utility.md",
-        "docs/src/unitful.md"
+        "docs/src/unitful.md",
+        "docs/src/utility.md"
       ],
       "hexdigest": "66c0ca632edeafb2ee20cb3d713daacc57e9ac79ce8a94c3fa3a30af7ffe7769",
       "modified": "2024-09-11T13:15:33.546422",
@@ -535,7 +551,7 @@
         "docs/src/ca-with-production.md"
       ],
       "hexdigest": "b6a0bcb1c76d177aa4174c196f7741dc67431dcc99742ff90eac6f18d0df07aa",
-      "modified": "2024-09-25T15:01:57.786108",
+      "modified": "2024-09-27T11:19:47.794851",
       "path": "src/Visualization.jl",
       "size": 552
     },
@@ -544,7 +560,7 @@
         "docs/src/carbocat-ca.md"
       ],
       "hexdigest": "fbf04148b59a10285c34e285365cce69b39fdbd4b46976f6149c5cfd8624b292",
-      "modified": "2024-09-25T15:01:57.786108",
+      "modified": "2024-09-27T11:19:47.794851",
       "path": "test/CASpec.jl",
       "size": 826
     },
@@ -559,10 +575,19 @@
     },
     {
       "deps": [
+        "docs/src/data-export.md"
+      ],
+      "hexdigest": "fa2cbd27abc961b3e95f172c92ab8c03ad5aa6f90259b2e88f05a9dbb329e9b1",
+      "modified": "2024-09-27T21:14:43.009633",
+      "path": "test/ExportSpec.jl",
+      "size": 3690
+    },
+    {
+      "deps": [
         "docs/src/sediment-buffer.md"
       ],
       "hexdigest": "30ab51054f97dfbfc51bb6f103c1a9442cd25d02122ae2bf13e46f9ab16574db",
-      "modified": "2024-09-25T15:01:57.786108",
+      "modified": "2024-09-27T11:19:47.794851",
       "path": "test/SedimentStackSpec.jl",
       "size": 910
     },
@@ -615,6 +640,7 @@
     "src/Denudation/EmpiricalDenudationMod.jl",
     "src/Denudation/NoDenudationMod.jl",
     "src/Denudation/PhysicalErosionMod.jl",
+    "src/Export.jl",
     "src/Model/ALCAPS.jl",
     "src/SedimentStack.jl",
     "src/Stencil.jl",
@@ -624,8 +650,9 @@
     "src/Visualization.jl",
     "test/CASpec.jl",
     "test/ConfigSpec.jl",
+    "test/ExportSpec.jl",
     "test/SedimentStackSpec.jl",
     "test/Unitful.jl"
   ],
-  "version": "2.1.7"
+  "version": "2.1.8"
 }

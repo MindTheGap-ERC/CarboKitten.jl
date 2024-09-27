@@ -185,7 +185,8 @@ function data_export(spec::CSV, header::Header, data::Data)
                 "global" => Dict(
                     "tag" => header.tag,
                     "subsidence_rate" => header.subsidence_rate,
-                    "time_steps" => header.time_steps),
+                    "time_steps" => header.time_steps,
+                    "delta_t" => header.Δt),
                 "locations" => [Dict(
                     "number" => i,
                     "x" => header.axes.x[loc[1]],

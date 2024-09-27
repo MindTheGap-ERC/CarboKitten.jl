@@ -1,13 +1,14 @@
 # Emperical denudation
+
 Chlorine(Cl) isotopes are an emerging tool to decipher the denudation rates (chemical dissolution + physical erosion) in carbonate-dominated area.
 
 Research based on the karst region and carbonate platform terrace suggested that the denudation rates are mainly controlled by precipitation and slopes, although the debates about which factor is more important is still ongoing ([yang_combined_2020](@cite), [thomas_limited_2018](@cite)). In general, the precipitation mainly controls the chemical dissolution while the slopes mainly controls the physical ersions. In addition, the type of carbonates may also play an important role ([krklec_long-term_2022](@cite)), but given this feature is studied poorly so we will ditch it for now. We have checked and compiled the denudation rates (mm/kyr) along with precipitation and slopes serve as a starting point to create a function relates denudation rates (mm/kyr) to precipitation and slopes. The compiled data could be found in OSFdatabase. This is an empirical relationship and have a relatively large uncertainty in terms of fitting.
 
-![Precipitation and denudation](../fig/svg/Precipitation-Denudation.svg)
+![Precipitation and denudation](../fig/Precipitation-Denudation.svg)
 
 *Fig 1. The relationship between MAP (mean precipitation per year, mm/y) and denudation rates (mm/ky)*
 
-![Slope denudation data](../fig/svg/Slope-Denudation.svg)
+![Slope denudation data](../fig/Slope-Denudation.svg)
 
 *Fig 2. The relationship between the slope and the denudation rates (mm/ky)*
 
@@ -36,7 +37,6 @@ end
 ```
 
 While the slope for each cell is calculated by comparing the height (or water-depth) with the neighboring 8 cells, and is implemented in function `slope_kernel` . The slope is returned in degrees of inclination. This approach has been widely used in industry and [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm) is an example.
-
 
 ``` {.julia #empirical-denudation}
 function slope_kernel(w::Any, cellsize::Float64)

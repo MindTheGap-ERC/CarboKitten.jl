@@ -60,7 +60,7 @@ function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies) where
 end
 
 function redistribution(box::Box{BT}, p::Dissolution, denudation_mass, water_depth) where {BT<:Boundary}
-    return denudation_mass .* 0
+    return nothing
 end
 
 end

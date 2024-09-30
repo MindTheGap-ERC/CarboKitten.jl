@@ -176,11 +176,21 @@ Compute the Stratigraphic Column for a given grid position `loc` and `facies` in
 Returns an `Array{Quantity, 2}` where the `Quantity` is in units of meters.
 """
 function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
+    dc = DataColumn(
+        loc,
+        data.disintegration[:, loc..., :],
+        data.production[:, loc..., :],
+        data.deposition[:, loc..., :],
+        data.sediment_elevation[loc..., :])
+    return stratigraphic_column(header, dc, facies)
+end
+
+function stratigraphic_column(header::Header, data::DataColumn, facies::Int)
     n_times = length(header.axes.t) - 1
     sc = zeros(typeof(1.0u"m"), n_times)
 
     for ts = 1:n_times
-        acc = data.deposition[facies, loc..., ts] - data.disintegration[facies, loc..., ts]
+        acc = data.deposition[facies, ts] - data.disintegration[facies, ts]
         if acc > 0.0u"m"
             sc[ts] = acc
             continue
@@ -313,6 +323,8 @@ end
 ``` {.julia file=src/Export.jl}
 module Export
 
+export Data, DataSlice, DataColumn, Header, CSV, read_data, read_slice, data_export
+
 using HDF5
 import CSV: write as write_csv
 using TOML
@@ -359,6 +371,14 @@ struct DataSlice
     production::Array{Amount,3}
     deposition::Array{Amount,3}
     sediment_elevation::Array{Amount,2}
+end
+
+struct DataColumn
+    slice::NTuple{2,Int}
+    disintegration::Array{Amount,2}
+    production::Array{Amount,2}
+    deposition::Array{Amount,2}
+    sediment_elevation::Array{Amount,1}
 end
 
 function read_header(fid)

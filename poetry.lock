@@ -96,13 +96,13 @@ packaging = ">=20.9"
 
 [[package]]
 name = "entangled-cli"
-version = "2.1.7"
+version = "2.1.9"
 description = "Literate Programming toolbox"
 optional = false
 python-versions = "<4.0,>=3.11"
 files = [
-    {file = "entangled_cli-2.1.7-py3-none-any.whl", hash = "sha256:a3d55d846a57be80e905b6b1851cafcca7251b503d2b6a65e3099d6b91a0d837"},
-    {file = "entangled_cli-2.1.7.tar.gz", hash = "sha256:360d479d4e88d54412f24443dfc5e3f4dc03c5e98f5f2a22a582c144cde7462c"},
+    {file = "entangled_cli-2.1.9-py3-none-any.whl", hash = "sha256:b4776522853dd7b723ed9872249766bc8965df870cc041caf39a7583fd0e7fcb"},
+    {file = "entangled_cli-2.1.9.tar.gz", hash = "sha256:2bd888ddc3fab75dcf5cc912d069e392a45e0ac3a6389da60bbbe6b3f1789b99"},
 ]
 
 [package.dependencies]

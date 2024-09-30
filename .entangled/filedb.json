@@ -9,18 +9,18 @@
         "docs/src/stencils.md",
         "docs/src/stencils.md",
         "docs/src/stencils.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
-        "docs/src/ca-with-production.md",
         "docs/src/model-alcap.md",
         "docs/src/model-alcap.md",
         "docs/src/model-alcap.md",
-        "docs/src/model-alcap.md"
+        "docs/src/model-alcap.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md",
+        "docs/src/ca-with-production.md"
       ],
-      "hexdigest": "0e772be36d40fce6c4aacd41cdc6644927364666ac90c51f9fe6c59272ffab06",
-      "modified": "2024-09-27T22:06:17.243217",
+      "hexdigest": "b465f9f26540975a90aa308887e9e1f268f96fe5dc815d1f60bca30f06795858",
+      "modified": "2024-09-30T14:49:21.909581",
       "path": ".entangled/tasks.json",
       "size": 6519
     },
@@ -47,10 +47,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "e059a949fe67ca389a5781ffd3295d499d276f95f5484dbf286f7aac5786c7c3",
-      "modified": "2024-09-27T22:06:17.244216",
+      "hexdigest": "fee224c2aa08ae9c69ed4113e2139ce66afc7c9b8b8f7f74940f3d3739041ab4",
+      "modified": "2024-09-30T14:49:25.555615",
       "path": "docs/src/ca-with-production.md",
-      "size": 11594
+      "size": 11659
     },
     {
       "deps": null,
@@ -75,10 +75,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "647099686a099e1136c751133483fdfa8423c7c111e5688cea1b7aa27d680a31",
-      "modified": "2024-09-27T22:06:20.373229",
+      "hexdigest": "a9b279fddb9d292c3daf0af5f02c64d595c8e03944f0d8b1e799cc9eca6cce51",
+      "modified": "2024-09-30T13:18:46.496274",
       "path": "docs/src/data-export.md",
-      "size": 13591
+      "size": 14181
     },
     {
       "deps": null,
@@ -107,6 +107,13 @@
       "modified": "2024-09-27T22:06:20.373229",
       "path": "docs/src/denudation/physical_erosion.md",
       "size": 4560
+    },
+    {
+      "deps": null,
+      "hexdigest": "3b8ba0b14cee35ee58356680f9fe01b974326bbd719621fd19b9c36ad361df29",
+      "modified": "2024-09-30T09:37:38.513844",
+      "path": "docs/src/getting-started.md",
+      "size": 86
     },
     {
       "deps": null,
@@ -159,10 +166,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "3fc489d09fcc4923cd3f20c5f80c4181b31bb5d3e5950655b3e100325b39bc9f",
-      "modified": "2024-09-27T22:06:17.245217",
+      "hexdigest": "57f4c3a5d8197001049cf4a37577b00def1a758bcef1f81076af6f41ad3d2b09",
+      "modified": "2024-09-30T14:35:29.788599",
       "path": "docs/src/visualization.md",
-      "size": 13099
+      "size": 14412
     },
     {
       "deps": [
@@ -321,10 +328,10 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "hexdigest": "dd216984e3afdf1928986e68db5a65e19d7f331347ffc03a53a04e27fcf715c4",
-      "modified": "2024-09-11T13:15:33.527422",
+      "hexdigest": "d40e2d556829bf61801fb9ead78fad572f49d364ef035d2f41ce56c7f1b00192",
+      "modified": "2024-09-30T14:49:25.489615",
       "path": "examples/production-only/plot-cap-slope.jl",
-      "size": 458
+      "size": 524
     },
     {
       "deps": [
@@ -366,8 +373,26 @@
       "deps": [
         "docs/src/visualization.md"
       ],
+      "hexdigest": "403b9456f16f51c4c057966e4d5894a23138deeaaadd495c794220a6b0345343",
+      "modified": "2024-09-30T14:35:12.628459",
+      "path": "examples/visualization/wheeler_diagram.jl",
+      "size": 390
+    },
+    {
+      "deps": [
+        "docs/src/visualization.md"
+      ],
+      "hexdigest": "39ecccc134cf3565ae9faf4bf4d296406f489e0c7ee608997c519033fa27d2fd",
+      "modified": "2024-09-30T14:20:35.256592",
+      "path": "ext/AgeDepthModel.jl",
+      "size": 190
+    },
+    {
+      "deps": [
+        "docs/src/visualization.md"
+      ],
       "hexdigest": "2da76c5948ca677e421598d09fadb6645d5ff9228498440b7e0a41b259c8298e",
-      "modified": "2024-09-27T22:06:17.245217",
+      "modified": "2024-09-30T14:20:35.258592",
       "path": "ext/ProductionCurve.jl",
       "size": 797
     },
@@ -375,19 +400,37 @@
       "deps": [
         "docs/src/visualization.md"
       ],
-      "hexdigest": "518588904092144f67483412f88d012d6f8db19ba87f1fe5d4ad8eb098f8ae58",
-      "modified": "2024-09-27T22:06:20.374229",
-      "path": "ext/VisualizationExt.jl",
-      "size": 5452
+      "hexdigest": "eb5fa17768e7375b3108d14aeaa04f5724b78b99a4ad7f2b21d5ed57465a18d5",
+      "modified": "2024-09-30T14:20:35.260592",
+      "path": "ext/SedimentProfile.jl",
+      "size": 5005
     },
     {
       "deps": [
         "docs/src/visualization.md"
       ],
-      "hexdigest": "a6d210ba9c05d657b618e219b0181d99ce7e4ec90ac9d3999fe2b7a8282ce1b5",
-      "modified": "2024-09-27T22:06:17.246217",
+      "hexdigest": "5116826159ab4353c829a38d16177d93d38208cf6fbf134c5dee872cff185727",
+      "modified": "2024-09-30T14:35:29.723599",
+      "path": "ext/StratigraphicColumn.jl",
+      "size": 920
+    },
+    {
+      "deps": [
+        "docs/src/visualization.md"
+      ],
+      "hexdigest": "6760eb3ccd91c41164d9ff4b07fa5b1b0b8e512ce8d1c40d9e4d35930983f8df",
+      "modified": "2024-09-30T14:20:35.249592",
+      "path": "ext/VisualizationExt.jl",
+      "size": 263
+    },
+    {
+      "deps": [
+        "docs/src/visualization.md"
+      ],
+      "hexdigest": "88968d2b507efd0ffe0466c54b7cd8f74037c233cffc055d9b9d53f00e0237b2",
+      "modified": "2024-09-30T14:20:35.259592",
       "path": "ext/WheelerDiagram.jl",
-      "size": 3828
+      "size": 3727
     },
     {
       "deps": [
@@ -511,10 +554,10 @@
       "deps": [
         "docs/src/data-export.md"
       ],
-      "hexdigest": "53c013a107326930dbc73aa76ab6fd1a2162d27826e2456a05787c0fd066ec01",
-      "modified": "2024-09-27T22:06:20.375229",
+      "hexdigest": "af69c722b99116a57659b7edce3d9d475932c8b2a0c3eda695c6ea4fa89a08f8",
+      "modified": "2024-09-30T13:18:46.434273",
       "path": "src/Export.jl",
-      "size": 8672
+      "size": 9262
     },
     {
       "deps": [
@@ -554,8 +597,8 @@
     },
     {
       "deps": [
-        "docs/src/utility.md",
-        "docs/src/unitful.md"
+        "docs/src/unitful.md",
+        "docs/src/utility.md"
       ],
       "hexdigest": "66c0ca632edeafb2ee20cb3d713daacc57e9ac79ce8a94c3fa3a30af7ffe7769",
       "modified": "2024-09-11T13:15:33.546422",
@@ -575,10 +618,10 @@
       "deps": [
         "docs/src/visualization.md"
       ],
-      "hexdigest": "7571e5c4ce4853e9f49f27bc23b9d93725fcc8c044e088f777019f0f7d733903",
-      "modified": "2024-09-27T22:06:20.375229",
+      "hexdigest": "a42cd56ee46417b52d2229a7741ba7d1e2e855091059a4091f5df976b51cde72",
+      "modified": "2024-09-30T14:20:35.261592",
       "path": "src/Visualization.jl",
-      "size": 903
+      "size": 1057
     },
     {
       "deps": [
@@ -651,7 +694,11 @@
     "examples/transport/active-layer-plot-production.jl",
     "examples/transport/active-layer-plot-result.jl",
     "examples/transport/active-layer.jl",
+    "examples/visualization/wheeler_diagram.jl",
+    "ext/AgeDepthModel.jl",
     "ext/ProductionCurve.jl",
+    "ext/SedimentProfile.jl",
+    "ext/StratigraphicColumn.jl",
     "ext/VisualizationExt.jl",
     "ext/WheelerDiagram.jl",
     "src/BoundaryTrait.jl",
@@ -681,5 +728,5 @@
     "test/SedimentStackSpec.jl",
     "test/Unitful.jl"
   ],
-  "version": "2.1.8"
+  "version": "2.1.9"
 }

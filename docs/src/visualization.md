@@ -33,6 +33,10 @@ Here, we create a figure explicitly, then create a new set of axes somewhere on 
 
 If you like to know more about Makie, their ["Getting started"](https://docs.makie.org/stable/tutorials/getting-started) is a good place to start.
 
+## Colours
+
+We like to use colorblind safe pallete of colours as described on [Paul Tol's website](https://personal.sron.nl/~pault/): '#4477AA', '#EE6677', '#228833', '#CCBB44', '#66CCEE', '#AA3377', '#BBBBBB'.
+
 ## Project Extension
 
 The Project Extension requires a front-end where the available methods are exposed.
@@ -52,10 +56,45 @@ wheeler_diagram!(args...) = print_instructions("wheeler_diagram!", args)
 wheeler_diagram(args...) = print_instructions("wheeler_diagram", args)
 production_curve(args...) = print_instructions("production_curve", args)
 production_curve!(args...) = print_instructions("production_curve!", args)
+stratigraphic_column!(args...) = print_instructions("production_curve!", args)
+age_depth_model!(args...) = print_instructions("age_depth_model!", args)
+
 end  # module
 ```
 
+``` {.julia file=ext/VisualizationExt.jl}
+module VisualizationExt
+
+include("WheelerDiagram.jl")
+include("ProductionCurve.jl")
+include("StratigraphicColumn.jl")
+include("AgeDepthModel.jl")
+include("SedimentProfile.jl")
+
+end
+```
+
 ## Wheeler diagram
+
+![Wheeler diagram](fig/wheeler_diagram)
+
+``` {.julia file=examples/visualization/wheeler_diagram.jl}
+#| creates: docs/src/_fig/wheeler_diagram.png
+#| requires: data/alcaps2.h5
+#| collect: figures
+
+module Script
+
+function main()
+  header, data = read_slice("data/alcaps.h5", :, 25)
+  fig = wheeler_diagram(header, data)
+  save("docs/src/_fig/wheeler_diagram.png", fig)
+end
+
+end
+
+Script.main()
+```
 
 ``` {.julia file=ext/WheelerDiagram.jl}
 module WheelerDiagram
@@ -83,59 +122,59 @@ water_depth(header::Header, data::DataSlice) =
         s = header.subsidence_rate .* (header.axes.t .- header.axes.t[end]),
         l = header.sea_level
 
-        h .- (s .+ l)[na, :]
+        h .- (s.+l)[na, :]
     end
 
 const Rate = typeof(1.0u"m/Myr")
 
 function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
-                                smooth_size::NTuple{2,Int} = (3, 11),
-                                colormap = Reverse(:curl),
-                                range::NTuple{2, Rate} = (-100.0u"m/Myr", 100.0u"m/Myr"))
-	magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ header.Δt
+    smooth_size::NTuple{2,Int}=(3, 11),
+    colormap=Reverse(:curl),
+    range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
+    magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ header.Δt
     blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
-	wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
-	blur(water_depth(header, data) / u"m", wd)
-	mag = zeros(Float64, length(header.axes.x), length(header.axes.t) - 1)
-	blur(magnitude / u"m/Myr", mag)
+    wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
+    blur(water_depth(header, data) / u"m", wd)
+    mag = zeros(Float64, length(header.axes.x), length(header.axes.t) - 1)
+    blur(magnitude / u"m/Myr", mag)
 
-	ax.ylabel = "time [Myr]"
-	ax.xlabel = "position [km]"
+    ax.ylabel = "time [Myr]"
+    ax.xlabel = "position [km]"
 
-	sa = heatmap!(ax, header.axes.x / u"km", header.axes.t / u"Myr", mag;
-        colormap=colormap, colorrange=range./u"m/Myr")
-	contour!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
+    sa = heatmap!(ax, header.axes.x / u"km", header.axes.t / u"Myr", mag;
+        colormap=colormap, colorrange=range ./ u"m/Myr")
+    contour!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
         levels=[0], color=:red, linewidth=2, linestyle=:dash)
     return sa
 end
 
 function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
-                          smooth_size::NTuple{2,Int} = (3, 11),
-                          colors = Makie.wong_colors())
+    smooth_size::NTuple{2,Int}=(3, 11),
+    colors=Makie.wong_colors())
     n_facies = size(data.production)[1]
     colormax(d) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 
-	dominant_facies = colormax(data.deposition)
+    dominant_facies = colormax(data.deposition)
     blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
-	wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
-	blur(water_depth(header, data) / u"m", wd)
+    wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
+    blur(water_depth(header, data) / u"m", wd)
 
-	ax.ylabel = "time [Myr]"
-	ax.xlabel = "position [km]"
+    ax.ylabel = "time [Myr]"
+    ax.xlabel = "position [km]"
 
-	ft = heatmap!(ax, header.axes.x / u"km", header.axes.t / u"Myr", dominant_facies;
-	    colormap = cgrad(colors[1:n_facies], n_facies, categorical=true),
+    ft = heatmap!(ax, header.axes.x / u"km", header.axes.t / u"Myr", dominant_facies;
+        colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
         colorrange=(0.5, n_facies + 0.5))
-	contourf!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
+    contourf!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
         levels=[0.0, 100.0], colormap=Reverse(:grays))
-	contour!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
+    contour!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
         levels=[0], color=:black, linewidth=2)
-    return ft	
+    return ft
 end
 
 function wheeler_diagram!(ax1::Axis, ax2::Axis, header::Header, data::DataSlice;
-                          smooth_size::NTuple{2,Int}=(3,11))
-	linkyaxes!(ax1, ax2)
+    smooth_size::NTuple{2,Int}=(3, 11))
+    linkyaxes!(ax1, ax2)
     sa = sediment_accumulation!(ax1, header, data; smooth_size=smooth_size)
     ft = dominant_facies!(ax2, header, data; smooth_size=smooth_size)
     ax2.ylabel = ""
@@ -144,20 +183,20 @@ function wheeler_diagram!(ax1::Axis, ax2::Axis, header::Header, data::DataSlice;
 end
 
 function wheeler_diagram(header::Header, data::DataSlice;
-                         smooth_size::NTuple{2,Int}=(3,11))
-	fig = Figure(size=(1000, 600))
-	ax1 = Axis(fig[2,1])
-	ax2 = Axis(fig[2,2])
+    smooth_size::NTuple{2,Int}=(3, 11))
+    fig = Figure(size=(1000, 600))
+    ax1 = Axis(fig[2, 1])
+    ax2 = Axis(fig[2, 2])
 
-	linkyaxes!(ax1, ax2)
+    linkyaxes!(ax1, ax2)
 
     sa = sediment_accumulation!(ax1, header, data; smooth_size=smooth_size)
     ft = dominant_facies!(ax2, header, data; smooth_size=smooth_size)
     ax2.ylabel = ""
 
-	Colorbar(fig[1,1], sa; vertical=false, label="sediment accumulation [m/Myr]")
-	Colorbar(fig[1,2], ft; vertical=false, ticks=1:3, label="dominant facies")
-	fig
+    Colorbar(fig[1, 1], sa; vertical=false, label="sediment accumulation [m/Myr]")
+    Colorbar(fig[1, 2], ft; vertical=false, ticks=1:3, label="dominant facies")
+    fig
 end
 
 end
@@ -199,21 +238,15 @@ end
 
 ## Sediment profile
 
-``` {.julia file=ext/VisualizationExt.jl}
-module VisualizationExt
-
-include("WheelerDiagram.jl")
-include("ProductionCurve.jl")
+```{.julia file=ext/SedimentProfile.jl}
+module SedimentProfile
 
 import CarboKitten.Visualization: sediment_profile, sediment_profile!
 
-using CarboKitten
 using CarboKitten.Visualization
-using CarboKitten.Burgess2013: production_rate
 using CarboKitten.Utility: in_units_of
 using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
 
-using HDF5
 using Makie
 using GeometryBasics
 using Unitful
@@ -305,11 +338,6 @@ function bean_counter(mask::BitArray{dim}) where {dim}
     return out, group - 1
 end
 
-function sediment_profile!(ax::Axis, filename::AbstractString, y::Int)
-    header, data = read_slice(filename, :, y)
-    sediment_profile!(ax, header, data)
-end
-
 function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
@@ -356,12 +384,54 @@ function sediment_profile(header::Header, data_slice::DataSlice)
     return fig
 end
 
-function sediment_profile(filename, y)
-    fig = Figure(size=(1000, 600))
-    ax = Axis(fig[1, 1])
-    sediment_profile!(ax, filename, y)
-    return fig
+end  # module
+```
+
+## Stratigraphic Column
+
+``` {.julia file=ext/StratigraphicColumn.jl}
+module StratigraphicColumn
+
+using Makie
+using Unitful
+
+import CarboKitten.Visualization: stratigraphic_column!
+using CarboKitten.Export
+
+
+function scdata(header::Header, data::DataColumn)
+    n_facies = size(data.production)[1]
+    n_times = length(header.axes.t) - 1
+    sc = zeros(Float64, n_facies, n_times)
+    for f = 1:n_facies
+        sc[f, :] = stratigraphic_column(header, data, f) / u"m"
+    end
+
+    colormax(d) = getindex.(argmax(d; dims=1)[1, :], 1)
+    adm = age_depth_model(data.sediment_elevation)
+
+    return (ys_low=adm[1:end-1] / u"m", ys_high=adm[2:end] / u"m", facies=colormax(sc)[1:end-1])
 end
+
+
+function stratigraphic_column!(ax::Axis, header::Header, data::DataColumn; color=Makie.wong_colors())
+    (ys_low, ys_high, facies) = scdata(header, data)
+    hspan!(ax, ys_low, ys_high; color=color[facies])
+end
+
+end
+```
+
+## Age-depth Model
+
+``` {.julia file=ext/AgeDepthModel.jl}
+module AgeDepthModel
+
+using Makie
+using Unitful
+
+using CarboKitten.Visualization
+using CarboKitten.Export
 
 end
 ```

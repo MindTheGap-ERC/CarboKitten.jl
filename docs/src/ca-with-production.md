@@ -370,12 +370,13 @@ Script.CaProd.main(Script.DEFAULT_INPUT, "data/ca-prod-slope.h5")
 
 module Script
 using CairoMakie
+using CairoMakie.Export: read_slice
 using CarboKitten.Visualization
 
 function main()
-    f = Figure()
-    plot_crosssection(f[1, 1], "data/ca-prod-slope.h5")
-    save("docs/src/_fig/b13-crosssection.png", f)
+    header, data = read_slice("data/ca-prod-slope.h5", 25)
+    fig = sediment_profile(header, data)
+    save("docs/src/_fig/b13-crosssection.png", fig)
 end
 end
 

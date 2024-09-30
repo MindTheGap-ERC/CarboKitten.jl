@@ -166,10 +166,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "57f4c3a5d8197001049cf4a37577b00def1a758bcef1f81076af6f41ad3d2b09",
-      "modified": "2024-09-30T14:35:29.788599",
+      "hexdigest": "2cd54054e3258878c58e4b542ccea484031ea8df4c569f32fc363b815ab78d62",
+      "modified": "2024-09-30T16:37:35.089754",
       "path": "docs/src/visualization.md",
-      "size": 14412
+      "size": 15016
     },
     {
       "deps": [
@@ -409,10 +409,10 @@
       "deps": [
         "docs/src/visualization.md"
       ],
-      "hexdigest": "5116826159ab4353c829a38d16177d93d38208cf6fbf134c5dee872cff185727",
-      "modified": "2024-09-30T14:35:29.723599",
+      "hexdigest": "f2057894ba43da0539c277c6f39ea96378992f748c3945507f1236d9f5316fff",
+      "modified": "2024-09-30T16:37:35.000754",
       "path": "ext/StratigraphicColumn.jl",
-      "size": 920
+      "size": 1312
     },
     {
       "deps": [

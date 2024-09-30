@@ -396,7 +396,7 @@ using Makie
 using Unitful
 
 import CarboKitten.Visualization: stratigraphic_column!
-using CarboKitten.Export
+using CarboKitten.Export: stratigraphic_column, age_depth_model
 
 
 function scdata(header::Header, data::DataColumn)
@@ -417,6 +417,14 @@ end
 function stratigraphic_column!(ax::Axis, header::Header, data::DataColumn; color=Makie.wong_colors())
     (ys_low, ys_high, facies) = scdata(header, data)
     hspan!(ax, ys_low, ys_high; color=color[facies])
+end
+
+function stratigraphic_column!(ax::Axis, header::Header, data::Observable{DataColumn}; color=Makie.wong_colors())
+    _scdata = lift(d -> scdata(header, d), data)
+    _ys_low = lift(d -> d.ys_low, _scdata)
+    _ys_high = lift(d -> d.ys_high, _scdata)
+    _color = lift(d -> color[d.facies], _scdata)
+    hspan!(ax, _ys_low, _ys_high; color=_color)
 end
 
 end

@@ -4,7 +4,7 @@ using GLMakie
 using Unitful
 
 using CarboKitten.Export: Header, DataSlice, DataColumn, read_slice, age_depth_model
-using CarboKitten.Visualization: sediment_profile!, production_curve!, wheeler_diagram!
+using CarboKitten.Visualization: sediment_profile!, production_curve!, wheeler_diagram!, stratigraphic_column!
 using CarboKitten.Model.ALCAPS: Input
 
 const INPUT = Input()
@@ -28,13 +28,9 @@ function main(filename)
             data.sediment_elevation[x, :])
     end
 
-    _scdata = lift(c -> scdata(header, c), column)
-    _sc_low = lift(c -> c.ys_low, _scdata)
-    _sc_hig = lift(c -> c.ys_high, _scdata)
-    _sc_col = lift(c -> c.color, _scdata)
+    ax_sc = Axis(fig[4, 4]; width=100)
+    stratigraphic_column!(ax_sc, header, column)
 
-    ax_sc = Axis(fig[4, 4], width=50)
-    hspan!(ax_sc, _sc_low, _sc_hig; color=_sc_col)
     _adm = lift(column) do c
         age_depth_model(c.sediment_elevation) / u"m"
     end

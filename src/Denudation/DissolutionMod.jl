@@ -51,12 +51,22 @@ end
 # ~/~ end
 
 
-function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies) where {BT<:Boundary}
+function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state) where {BT<:Boundary}
     temp = p.temp ./ u"K"
     precip = p.precip ./u"m"
     pco2 = p.pco2 ./1.0u"atm"
     reactionrate = p.reactionrate ./u"m/yr"
-    return (dissolution(temp, precip, pco2, reactionrate, water_depth, facies))
+    denudation_mass = Array{typeof(1.0u"m/kyr"),2}(undef, size(state.ca)...)
+    for idx in CartesianIndices(state.ca)
+        f = state.ca[idx]
+        if f == 0
+            continue
+        end
+    if water_depth[idx] >= 0
+        denudation_mass[idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[f])
+    end
+    end
+    return denudation_mass
 end
 
 function redistribution(box::Box{BT}, p::Dissolution, denudation_mass, water_depth) where {BT<:Boundary}

@@ -12,8 +12,8 @@ using Unitful
 
 struct NoDenudation <: DenudationType end
 
-function denudation(box::Box, p::NoDenudation, water_depth::Any, slope, facies)
-    return nothing
+function denudation(box::Box, p::NoDenudation, water_depth::Any, slope, facies, state)
+    return denudation_mass = nothing
 end
 
 function redistribution(box::Box, p::NoDenudation, denudation_mass, water_depth)

@@ -10,12 +10,12 @@ Suspect or found a bug? To report it, use the GitHub issues [here](https://githu
 
 ### Request features or enhancements
 
-Do you think the codebase is lacking, could use a cool new feature, or should better integrate with existing codebases or packages? Then submit your feature/enhancement request in the [GitHub issues](https://github.com/MindTheGap-ERC/StratPal/issues) using the "enhancement" label. Please describe in detail what the new feature should do, and how it should integrate with the existing codebase or other packages. We will review each enhancement request and decide on a case-by-case basis if we will implement it. Our decision is guided both by the usefulness of the request and available development time.
+Do you think the codebase is lacking, could use a cool new feature, or should better integrate with existing codebases or packages? Then submit your feature/enhancement request in the [GitHub issues](https://github.com/MindTheGap-ERC/CarboKitten.jl/issues) using the "enhancement" label. Please describe in detail what the new feature should do, and how it should integrate with the existing codebase or other packages. We will review each enhancement request and decide on a case-by-case basis if we will implement it. Our decision is guided both by the usefulness of the request and available development time.
 
 ### Improving documentation
 
 Do you think the documentation is lacking? We're always happy to improve! If you want to improve documentation, fork the repository, make your changes, and submit a pull request with the "documentation" label. We will include your improvements into the code base after a review.  
-If you think you found a mistake in the documentation, or are unsure whether your modifications are suitable, please open an [issues](https://github.com/MindTheGap-ERC/StratPal/issues) with the "documentation" label and describe what you found.
+If you think you found a mistake in the documentation, or are unsure whether your modifications are suitable, please open an [issues](https://github.com/MindTheGap-ERC/CarboKitten.jl/issues) with the "documentation" label and describe what you found.
 
 ### Contributing code and features
 

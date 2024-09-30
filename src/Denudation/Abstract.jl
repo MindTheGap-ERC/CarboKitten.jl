@@ -14,7 +14,7 @@ abstract type DenudationType end
 FIXME Computes the denudation for a single time-step, given denudation parameters `param` and a simulation state `state`. `param` should have a `DenudationType` type and `state` should contain the `height` property and `sealevel`.
 """
 function denudation(input)
-    denudation_mass::Union{Array{typeof(1.0u"m/kyr"),2}, Nothing} = Array{typeof(1.0u"m/kyr")}(undef, input.box.grid_size...)
+    denudation_mass::Union{Array{typeof(1.0u"m/kyr"),2}, Nothing} = nothing
 
     function (state, water_depth, slope)
         for idx in CartesianIndices(state.ca)
@@ -24,11 +24,10 @@ function denudation(input)
             end
 
             if water_depth[idx] >= 0
-                
-                if denudation(input.box, input.denudation, water_depth[idx], slope[idx], input.facies[f]) !== nothing
-                   (denudation_mass[idx]) = denudation(input.box, input.denudation, water_depth[idx], slope[idx], input.facies[f])
-                else
-                    denudation_mass = nothing
+                denu_result = denudation(input.box, input.denudation, water_depth[idx], slope[idx], input.facies[f])
+                if denu_result !== nothing
+                    denudation_mass = Array{typeof(denu_result)}(undef, size(state.ca)...)
+                   (denudation_mass[idx]) = denu_result
                 end
 
             end
@@ -52,12 +51,12 @@ end
 FIXME
 """
 function redistribution(input)
-        redistribution_mass::Union{Array{typeof(1.0u"m/kyr"),2}, Nothing} = Array{typeof(1.0u"m/kyr")}(undef, input.box.grid_size...)
+        redistribution_mass::Union{Array{typeof(1.0u"m/kyr"),2}, Nothing} = nothing
     function (state, water_depth, denudation_mass)
-        if redistribution(input.box, input.denudation, denudation_mass, water_depth) !== nothing
-        redistribution_mass = redistribution(input.box, input.denudation, denudation_mass, water_depth)
-        else
-        redistribution_mass = nothing
+        redi_result = redistribution(input.box, input.denudation, denudation_mass, water_depth)
+        if redi_result !== nothing
+            redistribution_mass = Array{typeof(denu_result)}(undef, size(state.ca)...)
+            redistribution_mass = redi_result
         end
         return redistribution_mass
     end

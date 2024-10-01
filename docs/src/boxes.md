@@ -3,7 +3,7 @@
 ``` {.julia file=src/Config.jl}
 module Config
 
-export AbstractBox, Box
+export AbstractBox, Box, TimeProperties, axes
 
 using ..BoundaryTrait
 using ..Vectors

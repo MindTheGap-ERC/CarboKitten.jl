@@ -1,5 +1,7 @@
 docs/build
 data/*.h5
+data/*.csv
+data/*.toml
 .vscode
 docs/transpiled
 !docs/src/_fig

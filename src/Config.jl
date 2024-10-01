@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/boxes.md#src/Config.jl>>[init]
 module Config
 
-export AbstractBox, Box
+export AbstractBox, Box, TimeProperties, axes
 
 using ..BoundaryTrait
 using ..Vectors

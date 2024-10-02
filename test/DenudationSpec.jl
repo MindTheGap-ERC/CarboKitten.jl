@@ -8,7 +8,7 @@ using Unitful
     using CarboKitten.Stencil: Periodic, Reflected, stencil
     using CarboKitten.Config: Box, Vectors, TimeProperties
     using CarboKitten.Burgess2013.CA: step_ca, run_ca
-    using CarboKitten.Model.WithDenudation: Input, Facies, State
+    using CarboKitten.Model.WithDenudation: Input, Facies
     using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpiricalDenudation
 
 

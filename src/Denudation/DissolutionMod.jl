@@ -44,9 +44,9 @@ end
 function dissolution(temp, precip, pco2, alpha, water_depth, facies)
     # TODO not used: I = precip .* facies.infiltration_coefficient #assume vertical infiltration
     reactive_surface =  facies.reactive_surface ./u"m^2/m^3"
-    λ = precip .* facies.infiltration_coefficient ./ (alpha .* reactive_surface)
+    λ = precip * 100 .* facies.infiltration_coefficient ./ (alpha .* reactive_surface)
     eq = equilibrium(temp, pco2, precip, facies) # pass ceq Deq from the last function
-    eq.denudation .* (1 - (λ ./ -water_depth) .* (1 - exp.(water_depth ./ λ))) * u"m/kyr"
+    eq.denudation .* (1 - (λ ./ water_depth) .* (1 - exp.(-water_depth ./ λ))) * u"m/kyr"
 end
 # ~/~ end
 

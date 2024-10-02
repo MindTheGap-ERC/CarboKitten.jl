@@ -25,7 +25,7 @@ end
 
 Computes the amount of denudation. This function is called on a pixel by pixel basis, so all arguments can be assumed to be scalar. The `param` argument should be of a subtype of `DenudationType` containing all the input parameters for this specific denudation model.
 """
-function denudation(box::Box, param::DenudationType, water_depth, slope, facies)
+function denudation(box::Box, param::DenudationType, water_depth, slope, facies, state)
     error("Abstract `denudation` function called.")
 end
 

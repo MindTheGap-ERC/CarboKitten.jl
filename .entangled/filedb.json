@@ -82,10 +82,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "85daf68b70b073889c2ebded03618235bbeb23c365fcf6f54305240296d0ca7f",
-      "modified": "2024-10-04T17:13:49.865892",
+      "hexdigest": "7713bbe29ba7f6dec2111d9294c8987663e241530ccd615b0fdc941bfa391c8f",
+      "modified": "2024-10-04T17:17:13.298373",
       "path": "docs/src/denudation/denudation.md",
-      "size": 4987
+      "size": 4890
     },
     {
       "deps": null,
@@ -434,10 +434,10 @@
       "deps": [
         "docs/src/denudation/denudation.md"
       ],
-      "hexdigest": "eed28c5a6cbbb649bfd81f0a51b6cae653477b5131d6c30e3c6326185ec0bc5d",
-      "modified": "2024-10-04T17:00:44.449457",
+      "hexdigest": "410a47efcc768ecce152dabbed4b9f182c11b7dd4c85561ceea71fce0140ef99",
+      "modified": "2024-10-04T17:17:13.237372",
       "path": "src/Denudation/Abstract.jl",
-      "size": 1947
+      "size": 1850
     },
     {
       "deps": [

@@ -74,7 +74,6 @@ FIXME Computes the denudation for a single time-step, given denudation parameter
 """
 function denudation(input)
     function (state, water_depth, slope)
-        #denu_result = denudation(input.box, input.denudation, water_depth, slope, input.facies)
         return denudation(input.box, input.denudation, water_depth, slope, input.facies,state)
     end
 end

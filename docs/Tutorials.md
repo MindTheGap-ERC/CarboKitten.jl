@@ -36,12 +36,12 @@ enter package mode by:
 
 ```Pluto.run()```
 
-The browser will pop up and you can create a new notebook.
+The browser will pop up and you can create a new notebook. To stop Pluto, please enter `Ctrl + C`.
 
-Make sure you are in the path of cloned repo for Pluto.
+You can run code blocks by clicking the small triangle at the right down side of each block.
 
 ## Clone the repo
-Go to the folder you would like to work on.
+Go to the folder you would like to clone and store the repo locally (in powershell).
 
 ```cd ./your/path```
 
@@ -49,9 +49,19 @@ You can clone the repository from github in powershell:
 
 ```git clone https://github.com/MindTheGap-ERC/CarboKitten.jl.git ```
 
-Next step is to activate environment in Julia REPL (in Package mode):
+```cd CarboKitten.jl```
 
-```activate .``` or ```activate ../workenv```
+Here you can enter `ls` or `tree.` to see the structure of this repo.
+
+Next step is to open julia REPL (as described in above session), and direct to the folder you are working on:
+
+```cd("./your/working/folder")```
+
+Then we have to activate environment in Julia REPL (in Package mode)
+
+```activate .``` 
+
+The `.` here means your project is activated in current directory.
 
 Install all dependencies (still in Package mode):
 
@@ -59,28 +69,28 @@ Install all dependencies (still in Package mode):
 
 Now you are ready to go.
 
+(I think this step is better for people to use if we navigate them to the existing notebook in "./notebooks/examplenotebook.jl"), where all the code is available.
+
 ## Run model Example
 There are few examples were ready for you. 
 
-```include("./examples/production-only/ca-slope.jl")```
+```include("../examples/production-only/ca-slope.jl")```
 
 You can type in julia REPL:
 
-```readdir("./examples")```
+```readdir("../examples")```
 
 to see how many examples we have. You can try to run all examples by changing the `$name.jl`. The details of the examples could be found in xxx.md. 
 
 The results are saved in "./data" as HDF5 file. (we have to correspond the example name before workshop)
 
 ## Visualisation and data extraction
-Visualisation are not included in CarboKitten.jl, and are implemented in a Julia package extension.
 
-Better to have a ready-to-use Pluto notebook?
+(Better to have a ready-to-use Pluto notebook?
 
-- Visualisation of cross-section and wheeler diagram
-Need `Makie`.
+### Visualisation of cross-section and wheeler diagram
 
-in package model, `add GLMakie`.
+In package model (`]`), `add GLMakie`.
 
 `using GLMakie`.
 
@@ -109,33 +119,49 @@ Visualise cross-section:
   save("docs/src/_fig/$example.png", fig)
 ```
 
-- export data
-You can copy paster the following code in Pluto to export data at certain point. In this case, it exported 10, 30, 50 and 70 from the result.
+### export data
+You can copy paster the following code in Pluto to export data at certain point. Herein, in `CSV(tuple.(50,25))`, the `50` means it's 50 km away from the shoal. You can vary this value between 1 and 100 and observe the changes.
 
 ```
 using CarboKitten.Export: CSV, data_export
 
 data_export(
-    CSV(tuple.(10:20:70, 25),
-      :sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
-      :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
-      :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
-      :metadata => "$(PATH)/$(TAG).toml"),
-    "$(PATH)/$example.h5")
+    CSV(tuple.(50, 25),
+      :sediment_accumulation_curve => "$example_sac.csv",
+      :age_depth_model => "$example_adm.csv",
+      :stratigraphic_column => "$example_sc.csv",
+      :metadata => "$example.toml"),
+    "$example.h5")
 ```
 
-- Stratigraphic columns.
+The sediment-accumulation-curve, age-depth model and stratigraphy-columns should now be saved as csv files.
 
-- Age-depth model 
+### Stratigraphic columns
+
+```
+import CarboKitten.Visualization: stratigraphic_column!
+using CarboKitten.Export: stratigraphic_column, age_depth_model
+```
+
+```
+wait for the function is ready
+```
+
+### Age-depth model 
+
+```
+wait for the function is ready
+```
 
 ## Change input
-You could copy one example in Pluto, and try to change the input values and run the new example.
+You could copy one example into Pluto, and try to change the input values and run the new example.
 
-We will take sea-level as an example. The default input sea-level curve -> 0, and it means that sea-level did not change.
+We will take changing sea-level for a instance. The default input sea-level curve -> 0, and it means that sea-level did not change.
 
 You can define your own sea-level curve. For example, replace `sea_level = 0.0u"m"` to `sea_level = t -> AMPLITUDE * sin(2π * t / PERIOD)u"m"`. Where `AMPLITUDE` is the amplitude of sea-level and `PERIOD` is period of the sea-level cycle.
 
-You can also replace the sea-level curve with real data. Herein, we prepare curve from [miller_phanerozoic_2005](@cite) in "./data/millers.csv". This is the observed sea-level curve from last 2Ma, with timestep of 1kyr. You can type this in Pluto:
+You can also replace the sea-level curve with observed data. Herein, we prepare curve from [miller_phanerozoic_2005](@cite) in "./data/millers.csv". This is the observed sea-level curve from last 2Ma, with timestep of 1kyr. You can type this in Pluto:
+Please first add `DataFrames`, `CSV`, `Interpolations` Packages (in package mode, type `add CSV`)
 
 ```
 using DataFrames
@@ -149,6 +175,6 @@ function sealevel_curve(t,filepath)
 end 
 ```
 
-`sea_level = t -> sealevel_curve(t,filepath)`
+`sea_level = t -> sealevel_curve(t,filepath) .* 1.0u"m"`
 
-Remember to add `DataFrames`, `CSV`, `Interpolations` Packages, and change the output name accordingly. 
+Please remember to change the output HDF5 name accordingly. 

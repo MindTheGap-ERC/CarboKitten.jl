@@ -75,10 +75,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "80f022d07bd06ea7cc22a6a26d481f7231537a3199f75a5c05b632faa7e6b937",
-      "modified": "2024-10-04T17:08:58.522908",
+      "hexdigest": "4b6eb60f6d8c3f394e5bc60bf918daa201b026898c2db34ba34a8de036290d56",
+      "modified": "2024-10-04T18:36:29.363281",
       "path": "docs/src/denudation/chemical.md",
-      "size": 9075
+      "size": 9079
     },
     {
       "deps": null,
@@ -443,10 +443,10 @@
       "deps": [
         "docs/src/denudation/chemical.md"
       ],
-      "hexdigest": "0d63c94b81cad93686dd95cfb1d595ec21c116df25be2ffbea69928f46cd7f2d",
-      "modified": "2024-10-04T17:00:44.449457",
+      "hexdigest": "6b74039928de6b168a381b0ec1e9c6d22a7e603a033bc4f02229e1eb92498b94",
+      "modified": "2024-10-04T18:36:29.311280",
       "path": "src/Denudation/DissolutionMod.jl",
-      "size": 3153
+      "size": 3157
     },
     {
       "deps": [

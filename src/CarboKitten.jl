@@ -21,4 +21,6 @@ include("./Model/ALCAPS.jl")
 include("./Model/WithDenudation.jl")
 end
 
+include("./Export.jl")
+
 end # module CarboKitten

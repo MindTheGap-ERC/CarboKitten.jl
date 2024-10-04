@@ -20,7 +20,7 @@
         "docs/src/model-alcap.md"
       ],
       "hexdigest": "1daa1bf70597eefe008a848f09a8939c00e9c765ac84a935053d4b853d16c85a",
-      "modified": "2024-10-04T17:09:23.524336",
+      "modified": "2024-10-04T18:50:32.177523",
       "path": ".entangled/tasks.json",
       "size": 6519
     },
@@ -47,10 +47,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "d60e8d3aeeb0b116936c7f31e55bc07cd5cc3a0073317019a868fc57d1912d58",
-      "modified": "2024-10-04T17:00:44.440456",
+      "hexdigest": "7288c637779d60468bc59c16ce30b505cb9341e7c3cb3b52bf27ae1bc3e184f6",
+      "modified": "2024-10-04T18:48:12.243181",
       "path": "docs/src/ca-with-production.md",
-      "size": 20364
+      "size": 20994
     },
     {
       "deps": null,
@@ -75,6 +75,13 @@
     },
     {
       "deps": null,
+      "hexdigest": "5f8b87dab7170a80d30664c653b53a3837514c065378b1117f0558eb3ac6110b",
+      "modified": "2024-10-04T18:48:12.243181",
+      "path": "docs/src/data-export.md",
+      "size": 13150
+    },
+    {
+      "deps": null,
       "hexdigest": "4b6eb60f6d8c3f394e5bc60bf918daa201b026898c2db34ba34a8de036290d56",
       "modified": "2024-10-04T18:36:29.363281",
       "path": "docs/src/denudation/chemical.md",
@@ -89,10 +96,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "f3a5535640e3207741973ec268f79fb1541a57a7e2db3eaf36db483784cea094",
-      "modified": "2024-10-04T18:44:18.639547",
+      "hexdigest": "4250adadda174cb6ed3c9e719e2f8b9677ac63543a469e6b51866039fc073fa1",
+      "modified": "2024-10-04T18:53:35.807612",
       "path": "docs/src/denudation/empirical.md",
-      "size": 4904
+      "size": 4612
     },
     {
       "deps": null,
@@ -110,10 +117,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "d5b1e1f9a2ebafa0c5d109feb9290c736d134111190b5917a0c573de0da8d71a",
-      "modified": "2024-10-04T17:00:44.441457",
+      "hexdigest": "1d5dd666f2b7abc85cca20779ed485f2dc78dd5e57197359915d3520f1328b1e",
+      "modified": "2024-10-04T18:48:12.243181",
       "path": "docs/src/model-alcap.md",
-      "size": 13949
+      "size": 14240
     },
     {
       "deps": null,
@@ -181,10 +188,10 @@
       "deps": [
         "docs/src/model-alcap.md"
       ],
-      "hexdigest": "645102387b09f04717811f869bdb7c898d25619b3ffbb0049d5e3cc2af0e6949",
-      "modified": "2024-10-04T17:00:44.441457",
+      "hexdigest": "52b4b2b2919a7ea96c9510e9d851d389f2912b4fbd3b52c1f174281fa5947978",
+      "modified": "2024-10-04T18:48:12.243181",
       "path": "examples/alcaps/alternative.jl",
-      "size": 1805
+      "size": 2020
     },
     {
       "deps": [
@@ -352,10 +359,10 @@
       "deps": [
         "docs/src/ca-with-production.md"
       ],
-      "hexdigest": "f7e7346d6e46b79beeb7d84ffa9ba549f14e6575a4b4c667b6e52c6ad58e6f71",
-      "modified": "2024-10-04T17:00:44.449457",
+      "hexdigest": "864618bf9841a608a84536df13df58ccd0981630e0df0e14df05a2215dcb6ccd",
+      "modified": "2024-10-04T18:48:12.243181",
       "path": "ext/VisualizationExt.jl",
-      "size": 8273
+      "size": 8903
     },
     {
       "deps": [
@@ -395,8 +402,8 @@
     },
     {
       "deps": [
-        "docs/src/bosscher-1992.md",
-        "docs/src/carbocat.md"
+        "docs/src/carbocat.md",
+        "docs/src/bosscher-1992.md"
       ],
       "hexdigest": "83b1ba6b3e6bb23c794e68237b7b4edc457aaf72f32fe9101c7fbc02bbab33d7",
       "modified": "2024-09-04T11:57:41.746192",
@@ -452,10 +459,10 @@
       "deps": [
         "docs/src/denudation/empirical.md"
       ],
-      "hexdigest": "822aaa2d47ddab8dac9283faa61e191b3ce71a01c62421a2a3d4f9c53bdf56b1",
-      "modified": "2024-10-04T18:39:30.767758",
+      "hexdigest": "d97637b8b538293c8b7f5e14e1a97919a37c25b2824639a6b8fed6ac883b3fbd",
+      "modified": "2024-10-04T18:54:48.781839",
       "path": "src/Denudation/EmpiricalDenudationMod.jl",
-      "size": 2109
+      "size": 1817
     },
     {
       "deps": [
@@ -477,12 +484,21 @@
     },
     {
       "deps": [
+        "docs/src/data-export.md"
+      ],
+      "hexdigest": "5c69ed432ed951e2c3c2ffc4264f8fdb70e72523effd34b0349875436c6488af",
+      "modified": "2024-10-04T18:48:12.244181",
+      "path": "src/Export.jl",
+      "size": 8231
+    },
+    {
+      "deps": [
         "docs/src/model-alcap.md"
       ],
-      "hexdigest": "55e7ffb0e2c100bd2827d893cb7be9e591f4056bafd9985ba8f7247cbcf1b5f6",
-      "modified": "2024-10-04T17:00:44.449457",
+      "hexdigest": "0a96e6fd5421038af3b10acc8882648849e9b166661a4b67b00daf79439c6f29",
+      "modified": "2024-10-04T18:48:12.244181",
       "path": "src/Model/ALCAPS.jl",
-      "size": 9342
+      "size": 9420
     },
     {
       "deps": [
@@ -513,8 +529,8 @@
     },
     {
       "deps": [
-        "docs/src/utility.md",
-        "docs/src/unitful.md"
+        "docs/src/unitful.md",
+        "docs/src/utility.md"
       ],
       "hexdigest": "66c0ca632edeafb2ee20cb3d713daacc57e9ac79ce8a94c3fa3a30af7ffe7769",
       "modified": "2024-09-04T11:57:41.746192",
@@ -556,6 +572,15 @@
       "modified": "2024-10-04T12:01:24.662931",
       "path": "test/ConfigSpec.jl",
       "size": 358
+    },
+    {
+      "deps": [
+        "docs/src/data-export.md"
+      ],
+      "hexdigest": "fa2cbd27abc961b3e95f172c92ab8c03ad5aa6f90259b2e88f05a9dbb329e9b1",
+      "modified": "2024-10-04T18:48:12.244181",
+      "path": "test/ExportSpec.jl",
+      "size": 3690
     },
     {
       "deps": [
@@ -615,6 +640,7 @@
     "src/Denudation/EmpiricalDenudationMod.jl",
     "src/Denudation/NoDenudationMod.jl",
     "src/Denudation/PhysicalErosionMod.jl",
+    "src/Export.jl",
     "src/Model/ALCAPS.jl",
     "src/SedimentStack.jl",
     "src/Stencil.jl",
@@ -624,6 +650,7 @@
     "src/Visualization.jl",
     "test/CASpec.jl",
     "test/ConfigSpec.jl",
+    "test/ExportSpec.jl",
     "test/SedimentStackSpec.jl",
     "test/Unitful.jl"
   ],

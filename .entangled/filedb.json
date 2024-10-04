@@ -82,10 +82,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "b7873bd823a1f601f9db6f3e9c9d165d673eb7822f7b4ec6062b89b7b691301a",
-      "modified": "2024-10-04T17:08:58.533908",
+      "hexdigest": "85daf68b70b073889c2ebded03618235bbeb23c365fcf6f54305240296d0ca7f",
+      "modified": "2024-10-04T17:13:49.865892",
       "path": "docs/src/denudation/denudation.md",
-      "size": 5005
+      "size": 4987
     },
     {
       "deps": null,
@@ -461,10 +461,10 @@
       "deps": [
         "docs/src/denudation/denudation.md"
       ],
-      "hexdigest": "8588cbaee18f0532464b50c06c6baa84a08b57140cd39536a0bcc11c7a4a3b26",
-      "modified": "2024-10-04T17:00:44.449457",
+      "hexdigest": "233ed6c17596db09c347309bbd4840e8bd844dda2c2bb175b590432aa6fbf11f",
+      "modified": "2024-10-04T17:13:49.801891",
       "path": "src/Denudation/NoDenudationMod.jl",
-      "size": 589
+      "size": 572
     },
     {
       "deps": [
@@ -627,5 +627,5 @@
     "test/SedimentStackSpec.jl",
     "test/Unitful.jl"
   ],
-  "version": "2.1.9"
+  "version": "2.1.10"
 }

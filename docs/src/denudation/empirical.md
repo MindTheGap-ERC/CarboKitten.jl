@@ -39,6 +39,7 @@ While the slope for each cell is calculated by comparing the height (or water-de
 
 
 ``` {.julia #empirical-denudation}
+#calculate planar slopes based on [ARCGIS apporach](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm)
 function slope_kernel(w::Any, cellsize::Float64)
     dzdx = (-w[1, 1] - 2 * w[2, 1] - w[3, 1] + w[1, 3] + 2 * w[2, 3] + w[3, 3]) / (8 * cellsize)
     dzdy = (-w[1, 1] - 2 * w[1, 2] - w[1, 3] + w[3, 1] + 2 * w[3, 2] + w[1, 1]) / (8 * cellsize)
@@ -54,6 +55,7 @@ end
 This mode would only consider the destruction of mass, and will not take the redistribution of mass into account.
 
 ``` {.julia file=src/Denudation/EmpiricalDenudationMod.jl}
+## this code used the emperical equations with form of D = f(precipitation, slope) to estimate the denudation rates on exposed carbonate platform.
 module EmpiricalDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
@@ -62,13 +64,23 @@ using Unitful
 
 <<empirical-denudation>>
 
-function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies)
+function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, state)
     precip = p.precip ./ u"m"
-    return empirical_denudation.(precip, slope)
+    denudation_mass = Array{typeof(1.0u"m/kyr"),2}(undef, size(slope)...)
+    for idx in CartesianIndices(state.ca)
+        f = state.ca[idx]
+        if f == 0
+            continue
+        end
+    if water_depth[idx] >= 0
+    denudation_mass[idx] = empirical_denudation.(precip, slope[idx])
+    end
+    end
+    return denudation_mass
 end
 
 function redistribution(::Box, p::EmpiricalDenudation, denudation_mass, water_depth)
-    return denudation_mass .* 0
+    return nothing
 end
 
 end

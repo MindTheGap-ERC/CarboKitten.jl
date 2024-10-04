@@ -3,35 +3,6 @@
     {
       "description": null,
       "creates": [
-        "data/bs92-sealevel-curve.csv"
-      ],
-      "requires": [
-        "data/bs92-sealevel-input.png"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/BS92/fig8-sealevel.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/bs92-fig8.svg"
-      ],
-      "requires": [
-        "data/bs92-sealevel-curve.csv",
-        "examples/BS92/BS92.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/BS92/fig8.jl"
-    },
-    {
-      "description": null,
-      "creates": [
         "docs/src/_fig/active-layer-production-patch.png"
       ],
       "requires": [
@@ -98,6 +69,35 @@
       "stdin": null,
       "script": "#| creates: docs/src/_fig/boundary_types.png\n#| requires: src/Stencil.jl\n#| collect: figures\n\nmodule Script\n\nusing CarboKitten.BoundaryTrait\nusing CarboKitten.Stencil\nusing CairoMakie\n\nfunction plot_boundary_types()\n    n = 16\n    y0 = zeros(Float64, n, n)\n    y0[1, 1] = 1\n    y0[n, n] = 2\n    x = collect(-2:0.25:2)\n    k = exp.(-(x.^2 .+ x'.^2))\n    k ./= sum(k)\n\n    y_periodic = Array{Float64}(undef, n, n)\n    convolution(Periodic{2}, k)(y0, y_periodic)\n    y_reflected = Array{Float64}(undef, n, n)\n    convolution(Reflected{2}, k)(y0, y_reflected)\n    y_constant = Array{Float64}(undef, n, n)\n    convolution(Constant{2, 0.1}, k)(y0, y_constant)\n\n    fig = Figure(size=(900, 300))\n    for (i, y) in enumerate([y_periodic, y_reflected, y_constant])\n        ax = Axis(fig[1,i]; aspect=1)\n        heatmap!(ax, y; colormap=:viridis)\n    end\n    save(\"docs/src/_fig/boundary_types.png\", fig)\nend\nend \n\nScript.plot_boundary_types()",
       "path": null
+    },
+    {
+      "description": null,
+      "creates": [
+        "data/bs92-sealevel-curve.csv"
+      ],
+      "requires": [
+        "data/bs92-sealevel-input.png"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/BS92/fig8-sealevel.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/bs92-fig8.svg"
+      ],
+      "requires": [
+        "data/bs92-sealevel-curve.csv",
+        "examples/BS92/BS92.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/BS92/fig8.jl"
     },
     {
       "description": null,
@@ -231,12 +231,12 @@
     {
       "name": "figures",
       "requires": [
-        "docs/src/_fig/bs92-fig8.svg",
         "docs/src/_fig/active-layer-production-patch.png",
         "docs/src/_fig/active-layer-test.png",
         "docs/src/_fig/eca.png",
         "docs/src/_fig/life.gif",
         "docs/src/_fig/boundary_types.png",
+        "docs/src/_fig/bs92-fig8.svg",
         "docs/src/_fig/b13-capsosc-crosssection.png",
         "docs/src/_fig/b13-crosssection.png",
         "docs/src/_fig/alcaps_default_profile.png",

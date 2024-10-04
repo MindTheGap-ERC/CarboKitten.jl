@@ -38,7 +38,7 @@ using Unitful
 end
 
 function physical_erosion(slope::Any, inf::Any, erodability::Float64)
-    -1 * -erodability .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3)
+    -1 * -erodability .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3) .* u"m/kyr"
 end
 
 function redistribution_kernel(w::Array{Float64}, cellsize::Float64)
@@ -87,13 +87,22 @@ function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth) w
     return mass
 end
 
-function denudation(::Box, p::PhysicalErosion, water_depth::Any, slope, facies)
+function denudation(::Box, p::PhysicalErosion, water_depth::Any, slope, facies,state)
     # This needs transport feature to be merged so that we know the facies type of the
     # top most layer. What follows should still be regarded as pseudo-code.
     # We need to look into this further.
     erodability = p.erodability ./ u"m/yr"
-    denudation_mass = physical_erosion.(slope, facies.infiltration_coefficient, erodability)
-    return (denudation_mass .* u"m/kyr")
+    denudation_mass = Array{typeof(1.0u"m/kyr"),2}(undef, size(slope)...)
+    for idx in CartesianIndices(state.ca)
+        f = state.ca[idx]
+        if f == 0
+            continue
+        end
+    if water_depth[idx] >= 0
+    denudation_mass[idx] = physical_erosion.(slope[idx], facies[f].infiltration_coefficient, erodability)
+    end
+    end
+    return denudation_mass
 end
 
 function redistribution(box::Box{BT}, p::PhysicalErosion, denudation_mass, water_depth) where {BT<:Boundary}

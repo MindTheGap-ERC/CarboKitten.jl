@@ -93,14 +93,8 @@ end
 FIXME
 """
 function redistribution(input)
-        redistribution_mass::Union{Array{typeof(1.0u"m/kyr"),2}, Nothing} = nothing
     function (state, water_depth, denudation_mass)
-        redi_result = redistribution(input.box, input.denudation, denudation_mass, water_depth)
-        if redi_result !== nothing
-            redistribution_mass = Array{typeof(1.0u"m/kyr")}(undef, size(state.ca)...)
-            redistribution_mass = redi_result
-        end
-        return redistribution_mass
+        return redistribution(input.box, input.denudation, denudation_mass, water_depth)
     end
 end
 

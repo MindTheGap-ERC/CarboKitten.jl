@@ -6,9 +6,10 @@ include("./Vectors.jl")
 include("./Config.jl")
 include("./Stencil.jl")
 include("./SedimentStack.jl")
-include("./Burgess2013.jl")
 include("./Utility.jl")
-# include("./BS92.jl")
+include("./Burgess2013.jl")
+
+include("./Denudation.jl")
 include("./CaProd.jl")
 include("./Visualization.jl")
 
@@ -23,6 +24,7 @@ using CarboKitten.Components
 
 include("./Model/BS92.jl")
 include("./Model/ALCAPS.jl")
+include("./Model/WithDenudation.jl")
 end
 
 include("./Components.jl")

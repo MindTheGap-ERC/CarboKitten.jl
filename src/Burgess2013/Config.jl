@@ -11,6 +11,7 @@ export Facies, MODEL1
     maximum_growth_rate::typeof(1.0u"m/Myr")
     extinction_coefficient::typeof(1.0u"m^-1")
     saturation_intensity::typeof(1.0u"W/m^2")
+
 end
 
 const MODEL1 = [

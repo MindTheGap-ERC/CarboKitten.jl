@@ -3,6 +3,9 @@ data/*.h5
 data/*.csv
 data/*.toml
 .vscode
+data/*.txt
+data/*.csv
+
 docs/transpiled
 !docs/src/_fig
 docs/src/_fig/*.png

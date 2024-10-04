@@ -1,6 +1,5 @@
 module CarboKitten
 
-include("./DSL.jl")
 include("./BoundaryTrait.jl")
 include("./Vectors.jl")
 include("./Config.jl")

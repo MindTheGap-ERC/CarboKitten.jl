@@ -159,13 +159,6 @@
     },
     {
       "deps": null,
-      "hexdigest": "d85edbbc3393fd31a5715522b332ada2d5e5eca583925acd52390c50015c04bc",
-      "modified": "2024-10-04T12:07:39.714314",
-      "path": "docs/src/dsl.md",
-      "size": 20731
-    },
-    {
-      "deps": null,
       "hexdigest": "74e9c83a25ea50b25cf865d8695288f41815126651d9958c7e6aa4cc41d5d0a8",
       "modified": "2024-09-04T11:57:41.743192",
       "path": "docs/src/index.md",
@@ -320,15 +313,6 @@
       "modified": "2024-09-04T11:57:41.743192",
       "path": "examples/ca/long-term.jl",
       "size": 625
-    },
-    {
-      "deps": [
-        "docs/src/dsl.md"
-      ],
-      "hexdigest": "67885ddafde503eed237d12ae1a293a97d1fa3773a7ca8dbbd51d692ed57a948",
-      "modified": "2024-10-04T12:07:39.714314",
-      "path": "examples/dsl/bs92.jl",
-      "size": 5282
     },
     {
       "deps": [
@@ -585,24 +569,6 @@
     },
     {
       "deps": [
-        "docs/src/dsl.md"
-      ],
-      "hexdigest": "6823ef1f1d833ba3bfca0a6540c792ad69e9903559edf714549588435c44179e",
-      "modified": "2024-10-04T12:07:39.715315",
-      "path": "src/DSL.jl",
-      "size": 3538
-    },
-    {
-      "deps": [
-        "docs/src/dsl.md"
-      ],
-      "hexdigest": "3965f387cc819c63ab7a6125c0a67fb3898fa6e8f4aa6d3d46d74b53c95b2997",
-      "modified": "2024-10-04T12:07:39.715315",
-      "path": "src/DSL/Forward.jl",
-      "size": 1941
-    },
-    {
-      "deps": [
         "docs/src/denudation/denudation.md"
       ],
       "hexdigest": "b028353a11c3d8ac9ebdfd36584af23933d20fc61c4077798742cdc73fb569df",
@@ -748,15 +714,6 @@
     },
     {
       "deps": [
-        "docs/src/dsl.md"
-      ],
-      "hexdigest": "fe2ec161a297dda70004335a6703932fd83b0f4cd5cb3d6de35fee9dde0eaf70",
-      "modified": "2024-10-04T12:07:39.716315",
-      "path": "test/DSLSpec.jl",
-      "size": 1388
-    },
-    {
-      "deps": [
         "docs/src/data-export.md"
       ],
       "hexdigest": "fa2cbd27abc961b3e95f172c92ab8c03ad5aa6f90259b2e88f05a9dbb329e9b1",
@@ -798,7 +755,6 @@
     "examples/ca/eca.jl",
     "examples/ca/life.jl",
     "examples/ca/long-term.jl",
-    "examples/dsl/bs92.jl",
     "examples/plot-caps-osc.jl",
     "examples/plot-tanh.gnuplot",
     "examples/production-only/ca-slope.jl",
@@ -827,8 +783,6 @@
     "src/Components/TimeIntegration.jl",
     "src/Components/WaterDepth.jl",
     "src/Config.jl",
-    "src/DSL.jl",
-    "src/DSL/Forward.jl",
     "src/Denudation/Abstract.jl",
     "src/Denudation/DissolutionMod.jl",
     "src/Denudation/EmpiricalDenudationMod.jl",
@@ -845,7 +799,6 @@
     "src/Visualization.jl",
     "test/CASpec.jl",
     "test/ConfigSpec.jl",
-    "test/DSLSpec.jl",
     "test/ExportSpec.jl",
     "test/SedimentStackSpec.jl",
     "test/Unitful.jl"

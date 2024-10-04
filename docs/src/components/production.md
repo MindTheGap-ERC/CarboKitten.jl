@@ -45,7 +45,7 @@ end
 @compose module CAProduction
     @mixin TimeIntegration, CellularAutomaton, Production
     using ..Common
-    using ..UniformProduction: production_rate
+    using ..Production: production_rate
     using ..WaterDepth: water_depth
 
     function production(input::AbstractInput)

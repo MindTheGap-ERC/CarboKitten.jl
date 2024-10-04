@@ -5,6 +5,7 @@ data/*.toml
 .vscode
 data/*.txt
 data/*.csv
+data/*.toml
 
 docs/transpiled
 !docs/src/_fig

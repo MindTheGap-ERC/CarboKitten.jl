@@ -1,8 +1,4 @@
-# Water Depth
-
-The `WaterDepth` module computes the water depth, given the bedrock elevation, sea level curve, subsidence rate and current sediment height.
-
-``` {.julia file=src/Components/WaterDepth.jl}
+# ~/~ begin <<docs/src/components/waterdepth.md#src/Components/WaterDepth.jl>>[init]
 @compose module WaterDepth
     @mixin TimeIntegration, Boxes
     using ..Common
@@ -31,5 +27,4 @@ The `WaterDepth` module computes the water depth, given the bedrock elevation, s
         end
     end
 end
-```
-
+# ~/~ end

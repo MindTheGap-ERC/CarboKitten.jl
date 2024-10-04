@@ -1,12 +1,12 @@
 # ~/~ begin <<docs/src/bosscher-1992.md#src/Model/BS92.jl>>[init]
 @compose module BS92
-    @mixin UniformProduction
+    @mixin Production
 
     using ..Common
     using CSV
     using DataFrames
     using Interpolations
-    using ..UniformProduction: uniform_production
+    using ..Production: uniform_production
     using ..TimeIntegration
     using ..WaterDepth
 

@@ -99,6 +99,9 @@ makedocs(
         "Transport" => [
             "Active Layer" => "active-layer-transport.md",
         ],
+        "Output" => [
+            "CSV Export" => "data-export.md"
+        ],
         "Algorithms" => [
             "Unitful" => "unitful.md",
             "Specs" => "dsl.md",

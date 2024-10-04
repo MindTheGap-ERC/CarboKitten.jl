@@ -9,9 +9,11 @@
     end
 
     mutable struct State <: AbstractState
-        time::Time
+        step::Int
     end
 
-    State(input::AbstractInput) = State(0.0u"Myr")
+    State(input::AbstractInput) = State(0)
+
+    time(input::AbstractInput, state::AbstractState) = state.step * input.time.Δt
 end
 ```

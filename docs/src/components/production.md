@@ -1,7 +1,10 @@
+# Production
+
+The `Production` module specifies the production rate following the model by Bosscher & Schlager 1992 [Bosscher1992](@cite).
 
 ``` {.julia file=src/Components/Production.jl}
-@compose module UniformProduction
-    @mixin WaterDepth, FaciesConcept
+@compose module Production
+    @mixin WaterDepth, FaciesBase
     using ..Common
     using ..WaterDepth: water_depth
 
@@ -34,6 +37,29 @@
             input.facies[:,na,na],
             w(state)[na,:,:])
         end
+    end
+end
+```
+
+``` {.julia file=src/Components/CAProduction.jl}
+@compose module CAProduction
+    @mixin TimeIntegration, CellularAutomaton, Production
+    using ..Common
+    using ..UniformProduction: production_rate
+    using ..WaterDepth: water_depth
+
+    function production(input::AbstractInput)
+        w = water_depth(input)
+        na = [CartesianIndex()]
+        output = zeros(Amount, n_facies(input), input.box.grid_size...)
+
+        return function(state::AbstractState)
+            output[state.ca,:,:] = production_rate.(
+                input.insolation,
+                input.facies[state.ca],
+                w(state))
+            return output
+        end 
     end
 end
 ```

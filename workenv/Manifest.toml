@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.4"
+julia_version = "1.10.5"
 manifest_format = "2.0"
-project_hash = "4181ee0691c74aa6eb8cea90daab673878be1feb"
+project_hash = "36ff205f7196f2614d377eb73ef9fcd69e2ce57d"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "99a6f5d0ce1c7c6afdb759daa30226f71c54f6b0"
@@ -280,7 +280,7 @@ uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 version = "0.5.1"
 
 [[deps.CarboKitten]]
-deps = ["AxisArrays", "HDF5", "MacroTools", "ModuleMixins", "ProgressBars", "Transducers", "Unitful"]
+deps = ["AxisArrays", "HDF5", "MacroTools", "ModuleMixins", "ProgressBars", "Random", "Transducers", "Unitful"]
 path = ".."
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 version = "0.1.0"
@@ -2991,7 +2991,7 @@ version = "0.15.1+0"
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.8.0+1"
+version = "5.11.0+0"
 
 [[deps.libdecor_jll]]
 deps = ["Artifacts", "Dbus_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "Pango_jll", "Wayland_jll", "xkbcommon_jll"]

@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/components/facies.md#src/Components/FaciesConcept.jl>>[init]
+# ~/~ begin <<docs/src/components/facies.md#src/Components/FaciesBase.jl>>[init]
 @compose module FaciesBase
     using ..Common
     export n_facies
@@ -7,7 +7,7 @@
     end
 
     @kwdef struct Input <: AbstractInput
-        facies::Vector{Facies}
+        facies::Vector{Facies} = []
     end
 
     n_facies(input::AbstractInput) = length(input.facies)

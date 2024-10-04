@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/components/production.md#src/Components/Production.jl>>[init]
-@compose module UniformProduction
-    @mixin WaterDepth, FaciesConcept
+@compose module Production
+    @mixin WaterDepth, FaciesBase
     using ..Common
     using ..WaterDepth: water_depth
 

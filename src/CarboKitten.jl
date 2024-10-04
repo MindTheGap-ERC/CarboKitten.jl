@@ -17,7 +17,14 @@ include("./Transport/ActiveLayer.jl")
 end
 
 module Model
+using ModuleMixins: @compose
+using CarboKitten.Components.Common
+using CarboKitten.Components
+
+include("./Model/BS92.jl")
 include("./Model/ALCAPS.jl")
 end
+
+include("./Components.jl")
 
 end # module CarboKitten

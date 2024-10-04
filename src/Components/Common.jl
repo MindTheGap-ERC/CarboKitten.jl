@@ -2,7 +2,7 @@
 module Common
     export @u_str, Amount, Time, Location, Rate, Intensity, Height
     export AbstractFacies, AbstractInput, AbstractState
-    export Box, axes, Boundary, Shelf, Periodic, Reflected
+    export Box, axes, Boundary, Shelf, Periodic, Reflected, TimeProperties
 
     using Unitful
     using CarboKitten.BoundaryTrait

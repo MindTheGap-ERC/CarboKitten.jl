@@ -1,4 +1,8 @@
-``` {.julia file=src/Components/FaciesConcept.jl}
+# Facies Base
+
+Base module for including facies.
+
+``` {.julia file=src/Components/FaciesBase.jl}
 @compose module FaciesBase
     using ..Common
     export n_facies
@@ -7,7 +11,7 @@
     end
 
     @kwdef struct Input <: AbstractInput
-        facies::Vector{Facies}
+        facies::Vector{Facies} = []
     end
 
     n_facies(input::AbstractInput) = length(input.facies)

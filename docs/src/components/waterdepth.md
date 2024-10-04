@@ -1,8 +1,12 @@
+# Water Depth
+
+The `WaterDepth` module computes the water depth, given the bedrock elevation, sea level curve, subsidence rate and current sediment height.
 
 ``` {.julia file=src/Components/WaterDepth.jl}
 @compose module WaterDepth
     @mixin TimeIntegration, Boxes
     using ..Common
+    using CarboKitten.Config: axes
 
     export water_depth
 
@@ -16,16 +20,16 @@
         sediment_height::Matrix{Height}
     end
 
-    State(input::AbstractInput) = State(zeros(Height, input.box.grid_size...))
-
     function water_depth(input::AbstractInput)
         x, y = axes(input.box)
         eta0 = input.bedrock_elevation.(x, y')
 
         return function (state::AbstractState)
-            return input.sea_level(state.time) .- eta0 .+
-                (input.subsidence_rate * state.time) .- state.sediment_height
+            t = TimeIntegration.time(input, state)
+            return input.sea_level(t) .- eta0 .+
+                (input.subsidence_rate * t) .- state.sediment_height
         end
     end
 end
-```
+```:w
+

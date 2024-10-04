@@ -1,5 +1,6 @@
 using Documenter
 using DocumenterCitations
+using DocumenterMermaid
 
 bib = CitationBibliography(joinpath(@__DIR__, "src", "ref.bib"))
 # makedocs(; plugins=[bib], ...)
@@ -30,10 +31,10 @@ module Entangled
         end
     end
 
-    function transpile_file(src, target_path)
-        mkpath(joinpath(target_path, dirname(src)))
-        content = open(readlines, src, "r")
-        open(joinpath(target_path, basename(src)), "w") do fout
+    function transpile_file(srcdir, file, target_path)
+        mkpath(joinpath(target_path, dirname(file)))
+        content = open(readlines, joinpath(srcdir, file), "r")
+        open(joinpath(target_path, file), "w") do fout
             join(fout, transpile_md(content), "\n")
         end
     end
@@ -48,12 +49,19 @@ function copydir(src, dst)
     end
 end
 
-is_markdown(path) = splitext(path)[2] == ".md"
-sources = filter(is_markdown, readdir(joinpath(@__DIR__, "src"), join=true))
+function get_source_files()
+    home = joinpath(@__DIR__, "src")
+    is_markdown(path) = splitext(path)[2] == ".md"
+    files_in_dir(d, _, fs) = (relpath(joinpath(d, f), home) for f in filter(is_markdown, fs))
+    Iterators.flatten(Iterators.map(
+        splat(files_in_dir), walkdir(home))) |> collect
+end
+
+sources = get_source_files()
 path = joinpath(@__DIR__, "transpiled")
 rm(path; force=true, recursive=true)
 mkpath(path)
-Entangled.transpile_file.(sources, path)
+Entangled.transpile_file.(joinpath(@__DIR__, "src"), sources, path)
 copydir(joinpath(@__DIR__, "src/fig"), joinpath(path, "fig"))
 
 makedocs(
@@ -66,6 +74,15 @@ makedocs(
             "Bosscher and Schlager 1992" => "bosscher-1992.md",
             "Model with CA and Production" => "ca-with-production.md",
             "ALCAPS" => "model-alcap.md"
+        ],
+        "Components" => [
+            "Components" => "components/components.md",
+            "Boxes" => "components/boxes.md",
+            "Time" => "components/time.md",
+            "Facies" => "components/facies.md",
+            "Cellular Automata" => "components/cellular-automata.md",
+            "Water Depth" => "components/waterdepth.md",
+            "Production" => "components/production.md",
         ],
         "CarboCAT" => [
             "Summary" => "carbocat.md",

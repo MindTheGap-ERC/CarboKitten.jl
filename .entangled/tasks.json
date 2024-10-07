@@ -145,6 +145,35 @@
     {
       "description": null,
       "creates": [
+        "data/bs92-sealevel-curve.csv"
+      ],
+      "requires": [
+        "data/bs92-sealevel-input.png"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/BS92/fig8-sealevel.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/bs92-fig8.svg"
+      ],
+      "requires": [
+        "data/bs92-sealevel-curve.csv",
+        "examples/BS92/BS92.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/BS92/fig8.jl"
+    },
+    {
+      "description": null,
+      "creates": [
         "data/alcaps_default.h5"
       ],
       "requires": [
@@ -200,35 +229,6 @@
       "path": "examples/alcaps/plot-alternative.jl"
     },
     {
-      "description": null,
-      "creates": [
-        "data/bs92-sealevel-curve.csv"
-      ],
-      "requires": [
-        "data/bs92-sealevel-input.png"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/BS92/fig8-sealevel.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/bs92-fig8.svg"
-      ],
-      "requires": [
-        "data/bs92-sealevel-curve.csv",
-        "examples/BS92/BS92.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/BS92/fig8.jl"
-    },
-    {
       "name": "figures",
       "requires": [
         "docs/src/_fig/active-layer-production-patch.png",
@@ -238,9 +238,9 @@
         "docs/src/_fig/boundary_types.png",
         "docs/src/_fig/b13-capsosc-crosssection.png",
         "docs/src/_fig/b13-crosssection.png",
+        "docs/src/_fig/bs92-fig8.svg",
         "docs/src/_fig/alcaps_default_profile.png",
-        "docs/src/_fig/alcaps-alternative.png",
-        "docs/src/_fig/bs92-fig8.svg"
+        "docs/src/_fig/alcaps-alternative.png"
       ]
     }
   ]

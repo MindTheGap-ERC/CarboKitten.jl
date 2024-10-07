@@ -14,20 +14,8 @@ abstract type DenudationType end
 FIXME Computes the denudation for a single time-step, given denudation parameters `param` and a simulation state `state`. `param` should have a `DenudationType` type and `state` should contain the `height` property and `sealevel`.
 """
 function denudation(input)
-    denudation_mass::Array{typeof(1.0u"m/kyr"),2} = Array{typeof(1.0u"m/kyr")}(undef, input.box.grid_size...)
-
     function (state, water_depth, slope)
-        for idx in CartesianIndices(state.ca)
-            f = state.ca[idx]
-            if f == 0
-                continue
-            end
-
-            if water_depth[idx] >= 0
-                (denudation_mass[idx]) = denudation(input.box, input.denudation, water_depth[idx], slope[idx], input.facies[f])
-            end
-        end
-        return denudation_mass
+        return denudation(input.box, input.denudation, water_depth, slope, input.facies,state)
     end
 end
 
@@ -36,7 +24,7 @@ end
 
 Computes the amount of denudation. This function is called on a pixel by pixel basis, so all arguments can be assumed to be scalar. The `param` argument should be of a subtype of `DenudationType` containing all the input parameters for this specific denudation model.
 """
-function denudation(box::Box, param::DenudationType, water_depth, slope, facies)
+function denudation(box::Box, param::DenudationType, water_depth, slope, facies, state)
     error("Abstract `denudation` function called.")
 end
 
@@ -46,10 +34,8 @@ end
 FIXME
 """
 function redistribution(input)
-    redistribution_mass::Array{typeof(1.0u"m/kyr"),2} = Array{typeof(1.0u"m/kyr")}(undef, input.box.grid_size...)
     function (state, water_depth, denudation_mass)
-        redistribution_mass = redistribution(input.box, input.denudation, denudation_mass, water_depth)
-        return redistribution_mass
+        return redistribution(input.box, input.denudation, denudation_mass, water_depth)
     end
 end
 

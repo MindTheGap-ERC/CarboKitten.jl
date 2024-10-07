@@ -261,6 +261,18 @@ end
 The facies types, similar to values in Burgess 2013: viability range between 4 and 10 and activation range between 6 and 10 live cells. Each facies also has an associated `diffusion_coefficient` in units of meters.
 
 ``` {.julia #alcaps-facies}
+"""
+    Facies
+
+Input structure for facies properties.
+
+## Fields
+
+- `viability_range::Tuple{Int,Int}`, range over which cells in the CA stay alive
+- `activation_range::Tuple{Int,Int}`, range over which cells in the CA become active if dead
+- `maximum_growth_rate`, `extinction_coefficient`, `saturation_intensity`, parameters to the production model [Bosscher1992](@cite)
+- `diffusion_coefficient`,  diffusion coefficient in the transport model
+"""
 @kwdef struct Facies
     viability_range::Tuple{Int,Int}
     activation_range::Tuple{Int,Int}
@@ -304,10 +316,37 @@ const FACIES = [
 The ALCAPS model tracks the CA state, sediment height and keeps a sediment buffer (see [section on sediment buffers](sediment-buffer.md)).
 
 ``` {.julia #alcaps}
+"""
+    State
+
+## Members
+
+- `time`, absolute time of simulation.
+- `ca`, state of the celular automaton.
+- `ca_priority`, rotation of activation priority in ca.
+- `sediment_height`, the height of the sediment
+- `sediment_buffer`, facies composition of sediment
+
+The `sediment_height` ``\\sum_f \\eta`` relates to the water depth ``w`` as follows:
+
+``w = - \\eta_0 + \\sigma t + s(t) - \\sum_f \\eta.``
+"""
 mutable struct State
     time::typeof(1.0u"Myr")
 
-    ca::Array{Int}
+    ca::Matrix{Int}
+    ca_priority::Vector{Int}
+
+    sediment_height::Array{Amount,2}   # x, y
+    # sediment_buffer stores fractions, so no units
+    sediment_buffer::Array{Float64,4}  # z, facies, x, y
+end
+```
+"""
+mutable struct State
+    time::typeof(1.0u"Myr")
+
+    ca::Matrix{Int}
     ca_priority::Vector{Int}
 
     sediment_height::Array{Amount,2}   # x, y
@@ -321,6 +360,11 @@ end
 To construct the initial state, we forward the CA by 20 generations before starting the simulation proper.
 
 ``` {.julia #alcaps}
+"""
+    initial_state(input::Input) -> State
+
+Generate the initial state for the model, given the `input`. Returns a `State`.
+"""
 function initial_state(input)
     sediment_height = zeros(Float64, input.box.grid_size...) * u"m"
     n_facies = length(input.facies)
@@ -340,6 +384,12 @@ end
 ### Disintegration
 
 ``` {.julia #alcaps}
+"""
+    disintegration(input) -> f!
+
+Prepares the disintegration step. Returns a function `f!(state::State)`. The returned function
+modifies the state, popping sediment from the `sediment_buffer` and returns an array of `Amount`.
+"""
 function disintegration(input)
     n_facies = length(input.facies)
     max_h = input.disintegration_rate * input.time.Δt
@@ -359,6 +409,12 @@ end
 Uses production rate function from Bosscher & Schlager 1992.
 
 ``` {.julia #alcaps}
+"""
+    production(input::Input) -> f
+
+Prepares the production step. Returns a function `f(state::State)`. The returned function
+computes the sediment production in an array of `Amount`.
+"""
 function production(input)
     n_facies = length(input.facies)
     x, y = axes(input.box)
@@ -383,6 +439,12 @@ end
 Applies the [Active-Layer transport method](active-layer-transport.md) separately for each facies.
 
 ``` {.julia #alcaps}
+"""
+    transportation(input::Input) -> f
+
+Prepares the transportation step. Returns a function `f(state::State, active_layer)`,
+transporting the active layer, returning a transported `Amount` of sediment.
+"""
 function transportation(input)
     n_facies = length(input.facies)
     x, y = axes(input.box)
@@ -416,6 +478,19 @@ Each iteration we:
 5. Deposit active layer (modifying sediment state)
 
 ``` {.julia #alcaps}
+"""
+    ModelFrame
+
+Output frame of a single iteration of the ALCAPS model.
+
+## Members
+
+- `disintegration`: amount of disintegrated meterial per each facies.
+- `production`: amount of produced material per facies.
+- `deposition`: transported material, i.e. `transport(disintegration .+ production)`.
+- `sediment_height`: resulting sediment height. This is a convenience item, so you don't
+  need to recompute the height in post analysis.
+"""
 struct ModelFrame
     disintegration::Array{Amount,3}    # facies, x, y
     production::Array{Amount,3}
@@ -423,6 +498,11 @@ struct ModelFrame
     sediment_height::Array{Amount,2}
 end
 
+"""
+    run_model(input) -> Channel{ModelFrame}
+
+Runs the ALCAPS model on a given input. Returns a channel of `ModelFrame`.
+"""
 function run_model(input)
     state = initial_state(input)
     step_ca! = step_ca(input.box, input.facies)
@@ -451,6 +531,11 @@ function run_model(input)
     end
 end
 
+"""
+    main(input::Input, output::String)
+
+Runs the ALCAPS model for `input` writing to an HDF5 file given by the `output` path.
+"""
 function main(input::Input, output::String)
     x, y = axes(input.box)
     t = (0:input.time.steps) .* input.time.Δt
@@ -494,4 +579,10 @@ function main(input::Input, output::String)
         end
     end
 end
+```
+
+## API
+
+```@autodocs
+Modules = [CarboKitten.Models.ALCAPS]
 ```

@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-entangled-cli = "^2.1.3"
+entangled-cli = {git = "https://github.com/entangled/entangled.py", rev = "main"}
 
 [build-system]
 requires = ["poetry-core"]

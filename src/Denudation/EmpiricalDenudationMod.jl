@@ -34,13 +34,24 @@ function slope_kernel(w::Any, cellsize::Float64)
 end
 # ~/~ end
 
-function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies)
+function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, state)
     precip = p.precip ./ u"m"
-    return empirical_denudation.(precip, slope)
+    denudation_mass = zeros(typeof(1.0u"m/kyr"), size(slope)...)
+
+    for idx in CartesianIndices(state.ca)
+        f = state.ca[idx]
+        if f == 0
+            continue
+        end
+        if water_depth[idx] >= 0
+            denudation_mass[idx] = empirical_denudation.(precip, slope[idx])
+        end
+    end
+    return denudation_mass
 end
 
 function redistribution(::Box, p::EmpiricalDenudation, denudation_mass, water_depth)
-    return denudation_mass .* 0
+    return nothing
 end
 
 end

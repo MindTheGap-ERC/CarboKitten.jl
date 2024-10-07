@@ -53,8 +53,8 @@ end
 
 struct OutputFrame
     production::Array{typeof(1.0u"m/Myr"),3}
-    denudation::Array{typeof(1.0u"m/Myr"),2}
-    redistribution::Array{typeof(1.0u"m/Myr"),2}
+    denudation::Union{Array{typeof(1.0u"m/Myr"),2},Nothing}
+    redistribution::Union{Array{typeof(1.0u"m/Myr"),2},Nothing}
 end
 # FIXME: deduplicate
 mutable struct State
@@ -138,8 +138,12 @@ function updater(input)
 
     function update(state, Δ::DenudationFrame)
         # FIXME: implement
+        if Δ.denudation !== nothing
         state.height .+= Δ.denudation .* input.time.Δt
+        end
+        if Δ.redistribution !== nothing
         state.height .-= Δ.redistribution .* input.time.Δt
+        end
         state.time += input.time.Δt
     end
 
@@ -187,24 +191,39 @@ function main(input::Input, output::String)
         attr["subsidence_rate"] = input.subsidence_rate |> in_units_of(u"m/Myr")
         println("Subsidence rate saved successfully.")
 
+        box = input.box
+        results = map(stack_frames, partition(run_model(input, box), input.time.write_interval))
+        testframe = first(results)
 
         n_facies = length(input.facies)
         ds = create_dataset(fid, "sediment", datatype(Float64),
             dataspace(input.box.grid_size..., n_facies, input.time.steps),
             chunk=(input.box.grid_size..., n_facies, 1))
-        denudation = create_dataset(fid, "denudation", datatype(Float64),
-            dataspace(input.box.grid_size..., input.time.steps),
-            chunk=(input.box.grid_size..., 1))
-        redistribution = create_dataset(fid, "redistribution", datatype(Float64),
-            dataspace(input.box.grid_size..., input.time.steps),
-            chunk=(input.box.grid_size..., 1))
-        box = input.box
 
-        results = map(stack_frames, partition(run_model(input, box), input.time.write_interval))
+        denudation = nothing
+        if testframe.denudation !== nothing
+            denudation = create_dataset(fid, "denudation", datatype(Float64),
+                dataspace(input.box.grid_size..., input.time.steps),
+                chunk=(input.box.grid_size..., 1))
+        end
+        
+        redistribution = nothing
+        if testframe.redistribution !== nothing
+            redistribution = create_dataset(fid, "redistribution", datatype(Float64),
+                dataspace(input.box.grid_size..., input.time.steps),
+                chunk=(input.box.grid_size..., 1))
+        end
+
         for (step, frame) in enumerate(take(results, n_writes))
             ds[:, :, :, step] = frame.production |> in_units_of(u"m/Myr")
-            denudation[:, :, step] = frame.denudation |> in_units_of(u"m/kyr")
-            redistribution[:, :, step] = frame.redistribution |> in_units_of(u"m/kyr")
+
+            if denudation !== nothing
+                denudation[:, :, step] = frame.denudation |> in_units_of(u"m/kyr")
+            end
+
+            if redistribution !== nothing
+                redistribution[:, :, step] = frame.redistribution |> in_units_of(u"m/kyr")
+            end
         end
     end
 end

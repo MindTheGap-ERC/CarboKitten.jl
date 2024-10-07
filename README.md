@@ -3,6 +3,21 @@
 
 [![Entangled badge](https://img.shields.io/badge/entangled-Use%20the%20source!-%2300aeff)](https://entangled.github.io/)
 
+CarboKitten is a reimplementation of Peter Burgess' CarboCAT, a model for generating carbonate platform stratigraphies. CarboKitten is a three-dimensional model, having two spatial dimensions and one for stored stediment.
+
+Features:
+
+- Cellular Automata to regulate facies type
+- Advection-diffusion based sediment transport
+- Designed with performance in mind
+- Written with Open Science practices in mind
+
+CarboKitten should be easy to get into and extend. All our code is extensively documented.
+
+![Sample output stratigraphy](docs/src/fig/alcaps-alternative.png)
+
+CarboKitten is written in Julia for performance and extensibility.
+
 ## Project layout
 
 ```
@@ -10,7 +25,7 @@
 ├── data                # data files
 ├── docs                # documentation
 │   ├── make.jl         # docs build script
-│   ├── Manifest.toml   # 
+│   ├── Manifest.toml   #
 │   ├── Project.toml    # dependencies for building docs
 │   └── src             # markdown source for docs
 ├── entangled.toml      # entangled config
@@ -19,7 +34,7 @@
 ├── Manifest.toml       #
 ├── Project.toml        # project dependencies
 ├── pyproject.toml      # dependencies for running Entangled
-├── README.md           # 
+├── README.md           #
 ├── src                 # tangled library source
 └── test                # unit tests
 ```
@@ -126,45 +141,45 @@ Code in this repository is based on
 
 ## Authors
 
-Lead engineer: __Johan Hidding__  
-The Netherlands eScience Center  
-email: j.hidding [at] esciencecenter.nl   
-Web page: [www.esciencecenter.nl/team/johan-hidding-msc/](https://www.esciencecenter.nl/team/johan-hidding-msc/)  
+Lead engineer: __Johan Hidding__
+The Netherlands eScience Center
+email: j.hidding [at] esciencecenter.nl
+Web page: [www.esciencecenter.nl/team/johan-hidding-msc/](https://www.esciencecenter.nl/team/johan-hidding-msc/)
 ORCID: [0000-0002-7550-1796](https://orcid.org/0000-0002-7550-1796)
 
-Original author: __Peter Burgess__  
-University of Liverpool  
+Original author: __Peter Burgess__
+University of Liverpool
 Web page: [www.liverpool.ac.uk/environmental-sciences/staff/peter-burgess](https://www.liverpool.ac.uk/environmental-sciences/staff/peter-burgess/)
 
-Project lead: __Emilia Jarochowska__  
-Utrecht University  
-email: e.b.jarochowska [at] uu.nl  
-Web page: [www.uu.nl/staff/EBJarochowska](https://www.uu.nl/staff/EBJarochowska)  
+Project lead: __Emilia Jarochowska__
+Utrecht University
+email: e.b.jarochowska [at] uu.nl
+Web page: [www.uu.nl/staff/EBJarochowska](https://www.uu.nl/staff/EBJarochowska)
 ORCID: [0000-0001-8937-9405](https://orcid.org/0000-0001-8937-9405)
 
 **Other team members:**
 
-__Niklas Hohmann__  
-Utrecht University  
-email: n.h.hohmann [at] uu.nl  
-Web page: [www.uu.nl/staff/NHohmann](https://www.uu.nl/staff/NHHohmann)  
+__Niklas Hohmann__
+Utrecht University
+email: n.h.hohmann [at] uu.nl
+Web page: [www.uu.nl/staff/NHohmann](https://www.uu.nl/staff/NHHohmann)
 ORCID: [0000-0003-1559-1838](https://orcid.org/0000-0003-1559-1838)
 
-__Xianyi Liu__  
-Utrecht University  
-email: x.liu6 [at] uu.nl  
-Web page: [www.uu.nl/staff/XLiu6](https://www.uu.nl/staff/XLiu6)  
-ORCID: 
+__Xianyi Liu__
+Utrecht University
+email: x.liu6 [at] uu.nl
+Web page: [www.uu.nl/staff/XLiu6](https://www.uu.nl/staff/XLiu6)
+ORCID:
 
-__Hanno Spreeuw__  
-The Netherlands eScience Center  
-email: h.spreeuw [at] esciencecenter.nl  
-Web page: [www.esciencecenter.nl/team/dr-hanno-spreeuw/](https://www.esciencecenter.nl/team/dr-hanno-spreeuw)  
+__Hanno Spreeuw__
+The Netherlands eScience Center
+email: h.spreeuw [at] esciencecenter.nl
+Web page: [www.esciencecenter.nl/team/dr-hanno-spreeuw/](https://www.esciencecenter.nl/team/dr-hanno-spreeuw)
 ORCID: [0000-0002-5057-0322](https://orcid.org/0000-0002-5057-0322)
 
-__David De Vleeschouwer__  
-Westfälische Wilhelms-Universität Münster  
-Web page: [www.uni-muenster.de/GeoPalaeontologie/erdsystemforschung/staff/DeVleeschouwer](https://www.uni-muenster.de/GeoPalaeontologie/erdsystemforschung/staff/DeVleeschouwer.html)  
+__David De Vleeschouwer__
+Westfälische Wilhelms-Universität Münster
+Web page: [www.uni-muenster.de/GeoPalaeontologie/erdsystemforschung/staff/DeVleeschouwer](https://www.uni-muenster.de/GeoPalaeontologie/erdsystemforschung/staff/DeVleeschouwer.html)
 ORCID: [0000-0002-3323-807X](https://orcid.org/0000-0002-3323-807X)
 
 ## Copyright
@@ -190,4 +205,3 @@ Copyright 2023-2024 The Netherlands eScience Center and Utrecht University
 ## Funding information
 
 Funded by the European Union (ERC, MindTheGap, StG project no 101041077). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Council. Neither the European Union nor the granting authority can be held responsible for them.
-

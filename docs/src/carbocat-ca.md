@@ -186,6 +186,7 @@ function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
         stencil_op(state.ca, tmp, state.ca_priority)
         state.ca, tmp = tmp, state.ca
         state.ca_priority = circshift(state.ca_priority, 1)
+        return state
     end
 end
 ```

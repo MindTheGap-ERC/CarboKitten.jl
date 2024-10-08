@@ -2,6 +2,7 @@
 @compose module TimeIntegration
 using ..Common
 using HDF5
+export time, n_writes
 
 @kwdef struct Input <: AbstractInput
     time::TimeProperties
@@ -15,8 +16,10 @@ State(input::AbstractInput) = State(0)
 
 time(input::AbstractInput, state::AbstractState) = state.step * input.time.Δt
 
+n_writes(input::AbstractInput) = div(input.time.steps, input.time.write_interval)
+
 function write_header(fid, input::AbstractInput)
-    t = (0:input.time.steps) .* input.time.Δt
+    t = (0:n_writes(input)) .* (input.time.Δt * input.time.write_interval)
     gid = fid["input"]
     attr = attributes(gid)
 
@@ -25,5 +28,6 @@ function write_header(fid, input::AbstractInput)
     attr["write_interval"] = input.time.write_interval
     attr["time_steps"] = input.time.steps
 end
+
 end
 # ~/~ end

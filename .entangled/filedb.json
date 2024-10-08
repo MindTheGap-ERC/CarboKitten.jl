@@ -229,10 +229,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "9865fda88905b597ed7fbde5b2b7fe1d693cf7ea322a71958ec8f4973a0afbd8",
-      "modified": "2024-10-08T23:15:57.890985",
+      "hexdigest": "742bf708bf68531bc025664868c993e2f9fcd4494d6b4f80f5f11a8548c6b71a",
+      "modified": "2024-10-08T23:48:42.393232",
       "path": "docs/src/visualization.md",
-      "size": 15036
+      "size": 14995
     },
     {
       "deps": [

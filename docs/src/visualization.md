@@ -76,8 +76,6 @@ end
 
 ## Wheeler diagram
 
-![Wheeler diagram](fig/wheeler_diagram)
-
 ``` {.julia file=examples/visualization/wheeler_diagram.jl}
 #| creates: docs/src/_fig/wheeler_diagram.png
 #| requires: data/alcaps2.h5

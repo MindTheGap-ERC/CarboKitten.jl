@@ -15,7 +15,7 @@
 		production=zeros(Amount, n_facies(input), input.box.grid_size...),
 		deposition=zeros(Amount, n_facies(input), input.box.grid_size...))
 
-	function Base.:+=(a::DataFrame, b::DataFrame)
+    function increment!(a::DataFrame, b::DataFrame)
 		if !isnothing(b.disintegration)
 			a.disintegration .+= b.disintegration
 		end
@@ -67,7 +67,7 @@
 			for w = 1:n_writes(input)
 				df = zeros(DataFrame, input)
 				for n = 1:input.time.write_interval
-					df += step!(state)
+                    increment!(df, step!(state))
 				end
 				write_frame(fid, w, df)
 				write_state(fid, w+1, state)

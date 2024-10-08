@@ -1,7 +1,8 @@
 # ~/~ begin <<docs/src/components/components.md#src/Components.jl>>[init]
 module Components
 
-export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production, CAProduction, CellularAutomaton
+export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
+    CAProduction, CellularAutomaton, H5Writer
 
 using ModuleMixins: @compose
 
@@ -14,6 +15,7 @@ include("Components/FaciesBase.jl")
 include("Components/Production.jl")
 include("Components/CellularAutomaton.jl")
 include("Components/CAProduction.jl")
+include("Components/H5Writer.jl")
 
 end
 # ~/~ end

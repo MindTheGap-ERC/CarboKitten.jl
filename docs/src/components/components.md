@@ -54,7 +54,10 @@ export @u_str, Amount, Time, Location, Rate, Intensity, Height
 export AbstractFacies, AbstractInput, AbstractState, AbstractFrame
 export Box, axes, Boundary, Shelf, Periodic, Reflected, TimeProperties
 export in_units_of
+export Model
+export @for_each
 
+using ModuleMixins
 using Unitful
 using CarboKitten.BoundaryTrait
 using CarboKitten.Config
@@ -71,13 +74,17 @@ abstract type AbstractFacies end
 abstract type AbstractInput end
 abstract type AbstractState end
 abstract type AbstractFrame end
+
+struct Model{M} end
+
 end
 ```
 
 ``` {.julia file=src/Components.jl}
 module Components
 
-export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production, CAProduction, CellularAutomaton
+export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
+    CAProduction, CellularAutomaton, H5Writer
 
 using ModuleMixins: @compose
 
@@ -90,6 +97,7 @@ include("Components/FaciesBase.jl")
 include("Components/Production.jl")
 include("Components/CellularAutomaton.jl")
 include("Components/CAProduction.jl")
+include("Components/H5Writer.jl")
 
 end
 ```

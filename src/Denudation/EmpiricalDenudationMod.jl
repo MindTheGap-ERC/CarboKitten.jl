@@ -1,5 +1,4 @@
 # ~/~ begin <<docs/src/denudation/empirical.md#src/Denudation/EmpiricalDenudationMod.jl>>[init]
-## this code used the emperical equations with form of D = f(precipitation, slope) to estimate the denudation rates on exposed carbonate platform.
 module EmpiricalDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
@@ -23,7 +22,6 @@ end
 end
 # ~/~ end
 # ~/~ begin <<docs/src/denudation/empirical.md#empirical-denudation>>[2]
-#calculate planar slopes based on [ARCGIS apporach](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm)
 function slope_kernel(w::Any, cellsize::Float64)
     dzdx = (-w[1, 1] - 2 * w[2, 1] - w[3, 1] + w[1, 3] + 2 * w[2, 3] + w[3, 3]) / (8 * cellsize)
     dzdy = (-w[1, 1] - 2 * w[1, 2] - w[1, 3] + w[3, 1] + 2 * w[3, 2] + w[1, 1]) / (8 * cellsize)
@@ -38,15 +36,16 @@ end
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, state)
     precip = p.precip ./ u"m"
-    denudation_mass = Array{typeof(1.0u"m/kyr"),2}(undef, size(slope)...)
+    denudation_mass = zeros(typeof(1.0u"m/kyr"), size(slope)...)
+
     for idx in CartesianIndices(state.ca)
         f = state.ca[idx]
         if f == 0
             continue
         end
-    if water_depth[idx] >= 0
-    denudation_mass[idx] = empirical_denudation.(precip, slope[idx])
-    end
+        if water_depth[idx] >= 0
+            denudation_mass[idx] = empirical_denudation.(precip, slope[idx])
+        end
     end
     return denudation_mass
 end

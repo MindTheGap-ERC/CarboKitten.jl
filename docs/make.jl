@@ -1,5 +1,6 @@
 using Documenter
 using DocumenterCitations
+using DocumenterMermaid
 
 bib = CitationBibliography(joinpath(@__DIR__, "src", "ref.bib"))
 # makedocs(; plugins=[bib], ...)
@@ -75,6 +76,15 @@ makedocs(
             # "With Denudation" => "ca-prod-with-denudation.md",
             "ALCAPS" => "model-alcap.md"
         ],
+        "Components" => [
+            "Components" => "components/components.md",
+            "Boxes" => "components/boxes.md",
+            "Time" => "components/time.md",
+            "Facies" => "components/facies.md",
+            "Cellular Automata" => "components/cellular-automata.md",
+            "Water Depth" => "components/waterdepth.md",
+            "Production" => "components/production.md",
+        ],
         "CarboCAT" => [
             "Summary" => "carbocat.md",
             "Cellular Automaton" => "carbocat-ca.md",
@@ -88,6 +98,9 @@ makedocs(
         ],
         "Transport" => [
             "Active Layer" => "active-layer-transport.md",
+        ],
+        "Output" => [
+            "CSV Export" => "data-export.md"
         ],
         "Algorithms" => [
             "Unitful" => "unitful.md",

@@ -102,9 +102,9 @@ These equations are implemented as ```dissolution``` function:
 function dissolution(temp, precip, pco2, alpha, water_depth, facies)
     # TODO not used: I = precip .* facies.infiltration_coefficient #assume vertical infiltration
     reactive_surface =  facies.reactive_surface ./u"m^2/m^3"
-    λ = precip .* facies.infiltration_coefficient ./ (alpha .* reactive_surface)
+    λ = precip * 100 .* facies.infiltration_coefficient ./ (alpha .* reactive_surface)
     eq = equilibrium(temp, pco2, precip, facies) # pass ceq Deq from the last function
-    eq.denudation .* (1 - (λ ./ -water_depth) .* (1 - exp.(water_depth ./ λ))) * u"m/kyr"
+    eq.denudation .* (1 - (λ ./ water_depth) .* (1 - exp.(-water_depth ./ λ))) * u"m/kyr"
 end
 ```
 
@@ -134,16 +134,27 @@ end
 <<karst-dissolution-function>>
 
 
-function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies) where {BT<:Boundary}
+function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state) where {BT<:Boundary}
     temp = p.temp ./ u"K"
     precip = p.precip ./u"m"
     pco2 = p.pco2 ./1.0u"atm"
     reactionrate = p.reactionrate ./u"m/yr"
-    return (dissolution(temp, precip, pco2, reactionrate, water_depth, facies))
+    denudation_mass = zeros(typeof(1.0u"m/kyr"), size(state.ca)...)
+
+    for idx in CartesianIndices(state.ca)
+        f = state.ca[idx]
+        if f == 0
+            continue
+        end
+        if water_depth[idx] >= 0
+            denudation_mass[idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[f])
+        end
+    end
+    return denudation_mass
 end
 
 function redistribution(box::Box{BT}, p::Dissolution, denudation_mass, water_depth) where {BT<:Boundary}
-    return denudation_mass .* 0
+    return nothing
 end
 
 end

@@ -15,7 +15,6 @@ FIXME Computes the denudation for a single time-step, given denudation parameter
 """
 function denudation(input)
     function (state, water_depth, slope)
-        #denu_result = denudation(input.box, input.denudation, water_depth, slope, input.facies)
         return denudation(input.box, input.denudation, water_depth, slope, input.facies,state)
     end
 end
@@ -35,14 +34,8 @@ end
 FIXME
 """
 function redistribution(input)
-        redistribution_mass::Union{Array{typeof(1.0u"m/kyr"),2}, Nothing} = nothing
     function (state, water_depth, denudation_mass)
-        redi_result = redistribution(input.box, input.denudation, denudation_mass, water_depth)
-        if redi_result !== nothing
-            redistribution_mass = Array{typeof(1.0u"m/kyr")}(undef, size(state.ca)...)
-            redistribution_mass = redi_result
-        end
-        return redistribution_mass
+        return redistribution(input.box, input.denudation, denudation_mass, water_depth)
     end
 end
 

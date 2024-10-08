@@ -18,6 +18,18 @@ const Myr = u"Myr"
 const m = u"m"
 
 # ~/~ begin <<docs/src/model-alcap.md#alcaps-facies>>[init]
+"""
+    Facies
+
+Input structure for facies properties.
+
+## Fields
+
+- `viability_range::Tuple{Int,Int}`, range over which cells in the CA stay alive
+- `activation_range::Tuple{Int,Int}`, range over which cells in the CA become active if dead
+- `maximum_growth_rate`, `extinction_coefficient`, `saturation_intensity`, parameters to the production model [Bosscher1992](@cite)
+- `diffusion_coefficient`,  diffusion coefficient in the transport model
+"""
 @kwdef struct Facies
     viability_range::Tuple{Int,Int}
     activation_range::Tuple{Int,Int}
@@ -61,6 +73,7 @@ const AMPLITUDE = 4.0m
 # ~/~ end
 
 @kwdef struct Input
+    tag::String           = "ALCAPS default"
     # ~/~ begin <<docs/src/model-alcap.md#alcaps-input>>[init]
     box::Box              = Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m)
     # ~/~ end
@@ -98,10 +111,25 @@ const AMPLITUDE = 4.0m
 end
 # ~/~ end
 # ~/~ begin <<docs/src/model-alcap.md#alcaps>>[1]
+"""
+    State
+
+## Members
+
+- `time`, absolute time of simulation.
+- `ca`, state of the celular automaton.
+- `ca_priority`, rotation of activation priority in ca.
+- `sediment_height`, the height of the sediment
+- `sediment_buffer`, facies composition of sediment
+
+The `sediment_height` ``\\sum_f \\eta`` relates to the water depth ``w`` as follows:
+
+``w = - \\eta_0 + \\sigma t + s(t) - \\sum_f \\eta.``
+"""
 mutable struct State
     time::typeof(1.0u"Myr")
 
-    ca::Array{Int}
+    ca::Matrix{Int}
     ca_priority::Vector{Int}
 
     sediment_height::Array{Amount,2}   # x, y
@@ -110,6 +138,11 @@ mutable struct State
 end
 # ~/~ end
 # ~/~ begin <<docs/src/model-alcap.md#alcaps>>[2]
+"""
+    initial_state(input::Input) -> State
+
+Generate the initial state for the model, given the `input`. Returns a `State`.
+"""
 function initial_state(input)
     sediment_height = zeros(Float64, input.box.grid_size...) * u"m"
     n_facies = length(input.facies)
@@ -126,6 +159,12 @@ function initial_state(input)
 end
 # ~/~ end
 # ~/~ begin <<docs/src/model-alcap.md#alcaps>>[3]
+"""
+    disintegration(input) -> f!
+
+Prepares the disintegration step. Returns a function `f!(state::State)`. The returned function
+modifies the state, popping sediment from the `sediment_buffer` and returns an array of `Amount`.
+"""
 function disintegration(input)
     n_facies = length(input.facies)
     max_h = input.disintegration_rate * input.time.Δt
@@ -140,6 +179,12 @@ function disintegration(input)
 end
 # ~/~ end
 # ~/~ begin <<docs/src/model-alcap.md#alcaps>>[4]
+"""
+    production(input::Input) -> f
+
+Prepares the production step. Returns a function `f(state::State)`. The returned function
+computes the sediment production in an array of `Amount`.
+"""
 function production(input)
     n_facies = length(input.facies)
     x, y = axes(input.box)
@@ -159,6 +204,12 @@ function production(input)
 end
 # ~/~ end
 # ~/~ begin <<docs/src/model-alcap.md#alcaps>>[5]
+"""
+    transportation(input::Input) -> f
+
+Prepares the transportation step. Returns a function `f(state::State, active_layer)`,
+transporting the active layer, returning a transported `Amount` of sediment.
+"""
 function transportation(input)
     n_facies = length(input.facies)
     x, y = axes(input.box)
@@ -181,6 +232,19 @@ function transportation(input)
 end
 # ~/~ end
 # ~/~ begin <<docs/src/model-alcap.md#alcaps>>[6]
+"""
+    ModelFrame
+
+Output frame of a single iteration of the ALCAPS model.
+
+## Members
+
+- `disintegration`: amount of disintegrated meterial per each facies.
+- `production`: amount of produced material per facies.
+- `deposition`: transported material, i.e. `transport(disintegration .+ production)`.
+- `sediment_height`: resulting sediment height. This is a convenience item, so you don't
+  need to recompute the height in post analysis.
+"""
 struct ModelFrame
     disintegration::Array{Amount,3}    # facies, x, y
     production::Array{Amount,3}
@@ -188,6 +252,11 @@ struct ModelFrame
     sediment_height::Array{Amount,2}
 end
 
+"""
+    run_model(input) -> Channel{ModelFrame}
+
+Runs the ALCAPS model on a given input. Returns a channel of `ModelFrame`.
+"""
 function run_model(input)
     state = initial_state(input)
     step_ca! = step_ca(input.box, input.facies)
@@ -216,6 +285,11 @@ function run_model(input)
     end
 end
 
+"""
+    main(input::Input, output::String)
+
+Runs the ALCAPS model for `input` writing to an HDF5 file given by the `output` path.
+"""
 function main(input::Input, output::String)
     x, y = axes(input.box)
     t = (0:input.time.steps) .* input.time.Δt
@@ -229,6 +303,7 @@ function main(input::Input, output::String)
         gid["sea_level"] = input.sea_level.(t) .|> in_units_of(u"m")
 
         attr = attributes(gid)
+        attr["tag"] = input.tag
         attr["delta_t"] = input.time.Δt |> in_units_of(u"Myr")
         attr["write_interval"] = input.time.write_interval
         attr["time_steps"] = input.time.steps

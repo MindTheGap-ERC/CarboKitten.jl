@@ -15,3 +15,5 @@ docs:
 test:
 	julia --project=. -e 'using Pkg; Pkg.test()'
 
+pluto:
+	julia --project=workenv -e 'using Pluto; Pluto.run()'

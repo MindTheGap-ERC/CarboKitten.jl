@@ -396,7 +396,7 @@ using Makie
 using Unitful
 
 import CarboKitten.Visualization: stratigraphic_column!
-using CarboKitten.Export: stratigraphic_column, age_depth_model
+using CarboKitten.Export: Header, DataColumn, stratigraphic_column, age_depth_model
 
 
 function scdata(header::Header, data::DataColumn)

@@ -6,6 +6,7 @@ using ..Common
 using ..Production: uniform_production
 using ..TimeIntegration
 using ..WaterDepth
+using ModuleMixins: @for_each
 
 export Input, Facies, run
 

@@ -33,10 +33,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "5960dcdf789a1edcf0790ac20bf01529aec9b32fd8566b3ebfa6d3672750d328",
-      "modified": "2024-10-08T20:04:58.095052",
+      "hexdigest": "a1835e66ed983ab729ff8cab0956da703e850cabd8589399b593f47fa2214973",
+      "modified": "2024-10-08T23:09:44.868119",
       "path": "docs/src/bosscher-1992.md",
-      "size": 10701
+      "size": 10731
     },
     {
       "deps": null,
@@ -229,10 +229,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "2cd54054e3258878c58e4b542ccea484031ea8df4c569f32fc363b815ab78d62",
-      "modified": "2024-10-07T13:35:02.217603",
+      "hexdigest": "9865fda88905b597ed7fbde5b2b7fe1d693cf7ea322a71958ec8f4973a0afbd8",
+      "modified": "2024-10-08T23:15:57.890985",
       "path": "docs/src/visualization.md",
-      "size": 15016
+      "size": 15036
     },
     {
       "deps": [
@@ -481,10 +481,10 @@
       "deps": [
         "docs/src/visualization.md"
       ],
-      "hexdigest": "f2057894ba43da0539c277c6f39ea96378992f748c3945507f1236d9f5316fff",
-      "modified": "2024-10-07T13:35:02.218603",
+      "hexdigest": "d8cbff75ba58240e46d5af7668e322f8e8a6e918aaf2d51696d14430b1cdae8c",
+      "modified": "2024-10-08T23:15:57.820985",
       "path": "ext/StratigraphicColumn.jl",
-      "size": 1312
+      "size": 1332
     },
     {
       "deps": [
@@ -743,10 +743,10 @@
       "deps": [
         "docs/src/bosscher-1992.md"
       ],
-      "hexdigest": "03878ea456c1c72967839c1293842fc7250a9bf9a2bad5039bf2126a56076625",
-      "modified": "2024-10-08T20:04:58.097052",
+      "hexdigest": "494610dd6877f83d46a62b45fe144c749bb1b9b64c5db15f8b0e7d0735c379a2",
+      "modified": "2024-10-08T23:09:44.781119",
       "path": "src/Model/BS92.jl",
-      "size": 854
+      "size": 884
     },
     {
       "deps": [

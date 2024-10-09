@@ -2,6 +2,8 @@ using Documenter
 using DocumenterCitations
 using DocumenterMermaid
 
+using CarboKitten
+
 bib = CitationBibliography(joinpath(@__DIR__, "src", "ref.bib"))
 # makedocs(; plugins=[bib], ...)
 

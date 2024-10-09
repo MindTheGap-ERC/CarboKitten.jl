@@ -316,33 +316,6 @@ const FACIES = [
 The ALCAPS model tracks the CA state, sediment height and keeps a sediment buffer (see [section on sediment buffers](sediment-buffer.md)).
 
 ``` {.julia #alcaps}
-"""
-    State
-
-## Members
-
-- `time`, absolute time of simulation.
-- `ca`, state of the celular automaton.
-- `ca_priority`, rotation of activation priority in ca.
-- `sediment_height`, the height of the sediment
-- `sediment_buffer`, facies composition of sediment
-
-The `sediment_height` ``\\sum_f \\eta`` relates to the water depth ``w`` as follows:
-
-``w = - \\eta_0 + \\sigma t + s(t) - \\sum_f \\eta.``
-"""
-mutable struct State
-    time::typeof(1.0u"Myr")
-
-    ca::Matrix{Int}
-    ca_priority::Vector{Int}
-
-    sediment_height::Array{Amount,2}   # x, y
-    # sediment_buffer stores fractions, so no units
-    sediment_buffer::Array{Float64,4}  # z, facies, x, y
-end
-```
-"""
 mutable struct State
     time::typeof(1.0u"Myr")
 
@@ -581,8 +554,61 @@ function main(input::Input, output::String)
 end
 ```
 
+## Modular Implementation
+
+``` {.julia file=src/Model/ALCAP2.jl}
+# FIXME: rename this to ALCAP and remove old code
+@compose module ALCAP2
+@mixin Tag, H5Writer, CAProduction
+
+using ..Common
+using ..CAProduction: production
+using ..TimeIntegration
+using ..WaterDepth
+using ModuleMixins: @for_each
+
+export Input, Facies, run
+
+function initial_state(input::Input)
+    ca_state = CellularAutomaton.initial_state(input)
+    for _ in 1:20
+        CellularAutomaton.stepper(input)(ca_state)
+    end
+
+    sediment_height = zeros(Height, input.box.grid_size...)
+    return State(
+        step=0, sediment_height=sediment_height,
+        ca=ca_state.ca, ca_priority=ca_state.ca_priority)
+end
+
+function step!(input::Input)
+    τ = production(input)
+    step_ca = CellularAutomaton.stepper(input)
+
+    function (state::State)
+        if mod(state.step, input.ca_interval) == 0
+            step_ca(state)
+        end
+
+        prod = τ(state)
+        Δη = sum(prod; dims=1)[1, :, :]
+        state.sediment_height .+= Δη
+        state.step += 1
+
+        return H5Writer.DataFrame(
+            production = prod,
+            deposition = prod)
+    end
+end
+
+function write_header(fid, input::AbstractInput)
+    @for_each(P -> P.write_header(fid, input), PARENTS)
+end
+end
+```
+
 ## API
 
 ```@autodocs
-Modules = [CarboKitten.Models.ALCAPS]
+Modules = [CarboKitten.Model.ALCAPS]
 ```

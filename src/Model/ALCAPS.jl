@@ -111,21 +111,6 @@ const AMPLITUDE = 4.0m
 end
 # ~/~ end
 # ~/~ begin <<docs/src/model-alcap.md#alcaps>>[1]
-"""
-    State
-
-## Members
-
-- `time`, absolute time of simulation.
-- `ca`, state of the celular automaton.
-- `ca_priority`, rotation of activation priority in ca.
-- `sediment_height`, the height of the sediment
-- `sediment_buffer`, facies composition of sediment
-
-The `sediment_height` ``\\sum_f \\eta`` relates to the water depth ``w`` as follows:
-
-``w = - \\eta_0 + \\sigma t + s(t) - \\sum_f \\eta.``
-"""
 mutable struct State
     time::typeof(1.0u"Myr")
 

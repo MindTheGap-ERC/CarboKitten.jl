@@ -115,10 +115,10 @@ We may test that writing and reading the CSV back, gives the same result:
 
 ``` {.julia #export-test}
 @testset "Hither and Dither" begin
-    buffer = UInt8[]
-    io = IOBuffer(buffer, write=true)
+    io = IOBuffer(UInt8[], read=true, write=true)
     data_export(CSVExportTrait{:sediment_accumulation_curve}, io, HEADER1, DATA1, GRID_LOCATIONS1)
-    df = read_csv(IOBuffer(buffer), DataFrame)
+    seek(io, 0)
+    df = read_csv(io, DataFrame)
     rename!(df, (n => split(n)[1] for n in names(df))...)
     @test df.sac1 ≈ ELEVATION1[1, 1, :] / u"m"
     @test df.sac2 ≈ ELEVATION1[2, 1, :] / u"m"

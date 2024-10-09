@@ -138,10 +138,10 @@
     },
     {
       "deps": null,
-      "hexdigest": "a9b279fddb9d292c3daf0af5f02c64d595c8e03944f0d8b1e799cc9eca6cce51",
-      "modified": "2024-10-07T13:35:02.215603",
+      "hexdigest": "b4b9c8644132bbffcfbef076a3db928eb3fdb4e8d8f60a175954b04efc84895f",
+      "modified": "2024-10-09T10:11:20.143720",
       "path": "docs/src/data-export.md",
-      "size": 14181
+      "size": 14174
     },
     {
       "deps": null,
@@ -482,7 +482,7 @@
         "docs/src/visualization.md"
       ],
       "hexdigest": "d8cbff75ba58240e46d5af7668e322f8e8a6e918aaf2d51696d14430b1cdae8c",
-      "modified": "2024-10-08T23:15:57.820985",
+      "modified": "2024-10-08T23:17:57.432263",
       "path": "ext/StratigraphicColumn.jl",
       "size": 1332
     },
@@ -825,10 +825,10 @@
       "deps": [
         "docs/src/data-export.md"
       ],
-      "hexdigest": "fa2cbd27abc961b3e95f172c92ab8c03ad5aa6f90259b2e88f05a9dbb329e9b1",
-      "modified": "2024-10-07T11:19:54.782660",
+      "hexdigest": "94c4cf83f05dff7c800639a4476e1433094c31dd801b691460bbde412b60195f",
+      "modified": "2024-10-09T10:11:20.013719",
       "path": "test/ExportSpec.jl",
-      "size": 3690
+      "size": 3683
     },
     {
       "deps": [

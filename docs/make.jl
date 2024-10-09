@@ -92,7 +92,6 @@ makedocs(
         "CarboCAT" => [
             "Summary" => "carbocat.md",
             "Cellular Automaton" => "carbocat-ca.md",
-            "Sediment Transport" => "carbocat-transport.md"
         ],
         "Denudation" => [
             "Denudation" => "denudation/denudation.md",

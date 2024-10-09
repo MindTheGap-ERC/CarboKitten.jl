@@ -13,6 +13,8 @@ graph TD;
     uniform_production[Production]
     cellular_automaton[Cellular Automaton]
     ca_production[CA Production]
+    h5writer[HDF5 Writer]
+    tag[Tagged Output]
 
     sediment_buffer[Sediment Buffer]
     active_layer_transport[Active Layer Transport]
@@ -36,6 +38,11 @@ graph TD;
     water_depth --> active_layer_transport
     sediment_buffer --> denudation
     water_depth --> denudation
+
+    box --> h5writer
+    facies --> h5writer
+    time --> h5writer
+    water_depth --> h5writer
 ```
 
 ## Contents

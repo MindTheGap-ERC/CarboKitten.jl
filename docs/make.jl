@@ -78,12 +78,14 @@ makedocs(
         ],
         "Components" => [
             "Components" => "components/components.md",
+            "Tags" => "components/tag.md",
             "Boxes" => "components/boxes.md",
             "Time" => "components/time.md",
             "Facies" => "components/facies.md",
             "Cellular Automata" => "components/cellular-automata.md",
             "Water Depth" => "components/waterdepth.md",
             "Production" => "components/production.md",
+            "HDF5 Writer" => "components/hdf5.md",
         ],
         "CarboCAT" => [
             "Summary" => "carbocat.md",

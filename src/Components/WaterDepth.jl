@@ -36,7 +36,7 @@ function write_header(fid, input::AbstractInput)
     gid = fid["input"]
     attr = attributes(gid)
     x, y = Common.axes(input.box)
-    t = (0:input.time.steps) .* input.time.Δt
+    t = (0:n_writes(input)) .* (input.time.Δt * input.time.write_interval)
 
     gid["bedrock_elevation"] = input.bedrock_elevation.(x, y') |> in_units_of(u"m")
     gid["sea_level"] = input.sea_level.(t) .|> in_units_of(u"m")

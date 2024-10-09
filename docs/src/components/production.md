@@ -51,13 +51,15 @@ end
     function production(input::AbstractInput)
         w = water_depth(input)
         na = [CartesianIndex()]
-        output = zeros(Amount, n_facies(input), input.box.grid_size...)
+        output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
+
+        w = water_depth(input)
+        p(f, w) = production_rate(input.insolation, input.facies[f], w) .* input.time.Δt
 
         return function(state::AbstractState)
-            output[state.ca,:,:] = production_rate.(
-                input.insolation,
-                input.facies[state.ca],
-                w(state))
+            for f = 1:n_facies(input)
+                output[f, :, :] = ifelse.(state.ca .== f, p.(f, w(state)), 0.0u"m")
+            end
             return output
         end 
     end

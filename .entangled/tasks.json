@@ -73,78 +73,6 @@
     {
       "description": null,
       "creates": [
-        "data/caps-osc.h5"
-      ],
-      "requires": [
-        "src/CaProd.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/production-only/caps-osc.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/b13-capsosc-crosssection.png"
-      ],
-      "requires": [
-        "data/caps-osc.h5",
-        "ext/VisualizationExt.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/plot-caps-osc.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "data/ca-prod.h5"
-      ],
-      "requires": [
-        "src/CaProd.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/production-only/ca-uniform.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "data/ca-prod-slope.h5"
-      ],
-      "requires": [
-        "src/CaProd.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/production-only/ca-slope.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/b13-crosssection.png"
-      ],
-      "requires": [
-        "data/ca-prod-slope.h5",
-        "ext/VisualizationExt.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/production-only/plot-cap-slope.jl"
-    },
-    {
-      "description": null,
-      "creates": [
         "data/alcaps_default.h5"
       ],
       "requires": [
@@ -229,6 +157,78 @@
       "path": "examples/BS92/fig8.jl"
     },
     {
+      "description": null,
+      "creates": [
+        "data/caps-osc.h5"
+      ],
+      "requires": [
+        "src/CaProd.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/production-only/caps-osc.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/b13-capsosc-crosssection.png"
+      ],
+      "requires": [
+        "data/caps-osc.h5",
+        "ext/VisualizationExt.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/plot-caps-osc.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "data/ca-prod.h5"
+      ],
+      "requires": [
+        "src/CaProd.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/production-only/ca-uniform.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "data/ca-prod-slope.h5"
+      ],
+      "requires": [
+        "src/CaProd.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/production-only/ca-slope.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/b13-crosssection.png"
+      ],
+      "requires": [
+        "data/ca-prod-slope.h5",
+        "ext/VisualizationExt.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/production-only/plot-cap-slope.jl"
+    },
+    {
       "name": "figures",
       "requires": [
         "docs/src/_fig/active-layer-production-patch.png",
@@ -236,11 +236,11 @@
         "docs/src/_fig/eca.png",
         "docs/src/_fig/life.gif",
         "docs/src/_fig/boundary_types.png",
-        "docs/src/_fig/b13-capsosc-crosssection.png",
-        "docs/src/_fig/b13-crosssection.png",
         "docs/src/_fig/alcaps_default_profile.png",
         "docs/src/_fig/alcaps-alternative.png",
-        "docs/src/_fig/bs92-fig8.svg"
+        "docs/src/_fig/bs92-fig8.svg",
+        "docs/src/_fig/b13-capsosc-crosssection.png",
+        "docs/src/_fig/b13-crosssection.png"
       ]
     }
   ]

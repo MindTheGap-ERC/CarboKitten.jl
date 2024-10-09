@@ -10,7 +10,7 @@ export @for_each
 using ModuleMixins
 using Unitful
 using CarboKitten.BoundaryTrait
-using CarboKitten.Config
+using CarboKitten.Config: Box, axes, TimeProperties
 using CarboKitten.Utility: in_units_of
 
 const Amount = typeof(1.0u"m")

@@ -23,6 +23,7 @@ using CarboKitten.Components.Common
 using CarboKitten.Components
 
 include("./Model/BS92.jl")
+include("./Model/CAP.jl")
 include("./Model/ALCAPS.jl")
 include("./Model/WithDenudation.jl")
 end

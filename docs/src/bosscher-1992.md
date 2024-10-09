@@ -218,7 +218,7 @@ Within the CarboKitten design, we can express the BS92 model a bit more succinct
 
 ``` {.julia file=src/Model/BS92.jl}
 @compose module BS92
-@mixin H5Writer, Production
+@mixin Tag, H5Writer, Production
 
 using ..Common
 using ..Production: uniform_production
@@ -257,14 +257,16 @@ end
 module Script
 
 using CarboKitten.Components
+using CarboKitten.Components.Common
 using CarboKitten.Model.BS92
 
 using CSV
 using DataFrames
 using Interpolations
+using Unitful
 
 function sealevel_curve()
-    data = DataFrame(CSV.File("../data/bs92-sealevel-curve.csv"))
+    data = DataFrame(CSV.File("data/bs92-sealevel-curve.csv"))
     linear_interpolation(data.time, data.depth)
 end
 
@@ -275,7 +277,7 @@ const INPUT = Input(
       Δt = 10.0u"yr",
       steps = 8000,
       write_interval = 100),
-    sea_level = let sc = BS92.sealevel_curve()
+    sea_level = let sc = sealevel_curve()
       t -> -sc(t / u"yr") * u"m"
     end,
     bedrock_elevation = (x, y) -> - x / 300.0,
@@ -288,7 +290,7 @@ const INPUT = Input(
     )])
 
 function main()
-    run(Model{BS92}, INPUT, "data/output/bs92.h5")
+    H5Writer.run(Model{BS92}, INPUT, "data/output/bs92.h5")
 end
 
 end

@@ -262,14 +262,14 @@ elevation(h::Header, d::Data) =
     let bl = h.bedrock_elevation[:, :, na],
         sr = h.axes.t[end] * h.subsidence_rate
 
-        cat(bl, bl .+ d.sediment_elevation; dims=3) .- sr
+        bl .+ d.sediment_elevation .- sr
     end
 
 elevation(h::Header, d::DataSlice) =
     let bl = h.bedrock_elevation[d.slice..., na],
         sr = h.axes.t[end] * h.subsidence_rate
 
-        cat(bl, bl .+ d.sediment_elevation; dims=2) .- sr
+        bl .+ d.sediment_elevation .- sr
     end
 
 colormax(d::Data) = getindex.(argmax(d.deposition; dims=1)[1, :, :, :], 1)

@@ -5,7 +5,9 @@ We write output to HDF5.
 ``` {.julia file=src/Components/H5Writer.jl}
 @compose module H5Writer
     using ..Common
-    using HDF5 
+    using HDF5
+    using ProgressLogging
+
     @mixin Boxes, TimeIntegration, FaciesBase, WaterDepth
 
     @kwdef struct DataFrame
@@ -59,16 +61,17 @@ We write output to HDF5.
         fid["deposition"][:, :, :, idx] = frame.deposition |> in_units_of(u"m")
     end
 
-    function run(::Type{Model}, input::AbstractInput, filename::AbstractString)
-        state = Model.initial_state(input)
-        step! = Model.step!(input)
+    function run(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
+        state = M.initial_state(input)
+        step! = M.step!(input)
 
         h5open(filename, "w") do fid
             create_group(fid, "input")
-            Model.write_header(fid, input)
+            M.write_header(fid, input)
 
-            write_state(fid, state)
-            for w = 1:n_writes(input)
+            create_dataset(fid, input)
+            write_state(fid, 1, state)
+            @progress for w = 1:n_writes(input)
                 df = zeros(DataFrame, input)
                 for n = 1:input.time.write_interval
                     increment!(df, step!(state))

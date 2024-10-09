@@ -8,7 +8,7 @@ export time, n_writes
     time::TimeProperties
 end
 
-mutable struct State <: AbstractState
+@kwdef mutable struct State <: AbstractState
     step::Int
 end
 

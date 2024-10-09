@@ -91,7 +91,7 @@ end
 module Components
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
-    CAProduction, CellularAutomaton, H5Writer
+    CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer
 
 using ModuleMixins: @compose
 
@@ -104,6 +104,10 @@ include("Components/FaciesBase.jl")
 include("Components/Production.jl")
 include("Components/CellularAutomaton.jl")
 include("Components/CAProduction.jl")
+
+include("Components/SedimentBuffer.jl")
+include("Components/ActiveLayer.jl")
+
 include("Components/H5Writer.jl")
 
 end

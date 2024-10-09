@@ -22,11 +22,8 @@ using CarboKitten.Utility: in_units_of
 # ╔═╡ eb89211f-64d2-4cf7-a6ef-671dfabd4cc0
 using CarboKitten.Components.Common
 
-# ╔═╡ c9ae02f4-fee6-4742-88ae-c590fab8e03c
-using CarboKitten.Model.BS92
-
-# ╔═╡ 8c831d6f-bf47-4f4f-b2e7-12fe76776b39
-using CarboKitten.Model.CAP
+# ╔═╡ bc3cc455-f7cb-4c57-9e7a-f78ae55afe14
+using CarboKitten.Model: ALCAP2, CAP, BS92
 
 # ╔═╡ 89854ba4-10b9-4250-a26a-676f4012a540
 using CarboKitten.Components
@@ -225,6 +222,70 @@ let
 	sediment_profile(header, data)
 end
 
+# ╔═╡ 72e1d116-06f0-4623-b068-9dd32c6f0eba
+md"""
+# Active Layer Transport
+"""
+
+# ╔═╡ c3b7220f-49f4-42a2-bd2a-1c554e86d3c8
+let
+	facies = [
+    	ALCAP2.Facies(
+			viability_range = (4, 10),
+            activation_range = (6, 10),
+            maximum_growth_rate = 500u"m/Myr",
+            extinction_coefficient = 0.8u"m^-1",
+            saturation_intensity = 60u"W/m^2",
+            diffusion_coefficient = 10000u"m"),
+
+     	ALCAP2.Facies(
+			viability_range = (4, 10),
+            activation_range = (6, 10),
+            maximum_growth_rate = 400u"m/Myr",
+            extinction_coefficient = 0.1u"m^-1",
+            saturation_intensity = 60u"W/m^2",
+            diffusion_coefficient = 5000u"m"),
+
+    	ALCAP2.Facies(
+			viability_range = (4, 10),
+            activation_range = (6, 10),
+            maximum_growth_rate = 100u"m/Myr",
+            extinction_coefficient = 0.005u"m^-1",
+            saturation_intensity = 60u"W/m^2",
+            diffusion_coefficient = 7000u"m")]
+
+	input = ALCAP2.Input(
+		tag = "ALCAP model",
+		box = Common.Box{Shelf}(grid_size=(100, 50), phys_scale=150.0u"m"),
+		time = TimeProperties(
+			Δt = 200.0u"yr",
+			steps = 5000,
+			write_interval = 10),
+		sea_level = t -> 4.0u"m" * sin(2π * t / 0.2u"Myr"),
+		bedrock_elevation = (x, y) -> - x / 300.0,
+		subsidence_rate = 50.0u"m/Myr",
+		insolation = 400.0u"W/m^2",
+
+    	disintegration_rate = 500.0u"m/Myr",
+    	sediment_buffer_size = 50,
+    	depositional_resolution = 0.5u"m",
+		ca_interval = 1,
+
+		facies = facies
+	)
+
+	H5Writer.run(Model{ALCAP2}, input, "../data/output/alcap1.h5")
+end
+
+# ╔═╡ 11fdbaa7-b4e1-4e41-9da2-c334f86e78ea
+let
+	header, data = read_slice("../data/output/alcap1.h5", :, 25)
+	fig = Figure(size=(1000, 700))
+	ax = Axis(fig[1,1])
+	sediment_profile!(ax, header, data)
+	fig
+end
+
 # ╔═╡ Cell order:
 # ╠═aa4723a2-8038-11ef-0a4b-a59fbd03c3ef
 # ╠═19aca91a-f9af-4539-a91d-15923127cf9e
@@ -232,8 +293,7 @@ end
 # ╠═0c903628-0d63-4fcd-8e48-7351387f998b
 # ╠═08c22253-a895-4d5f-93b1-74f628bd6b1b
 # ╠═eb89211f-64d2-4cf7-a6ef-671dfabd4cc0
-# ╠═c9ae02f4-fee6-4742-88ae-c590fab8e03c
-# ╠═8c831d6f-bf47-4f4f-b2e7-12fe76776b39
+# ╠═bc3cc455-f7cb-4c57-9e7a-f78ae55afe14
 # ╠═89854ba4-10b9-4250-a26a-676f4012a540
 # ╠═47dbe7a8-78ba-4929-8ca9-14f14883fc89
 # ╠═ca639885-179c-4c04-9ddc-80de6d5503ec
@@ -254,3 +314,6 @@ end
 # ╟─20901dd1-ce07-4dd0-aa1f-3673a8012da3
 # ╠═a864d6ea-99bf-4513-9f44-f15b1d19d6af
 # ╠═b523780a-7841-4f89-b144-f7b277bec831
+# ╟─72e1d116-06f0-4623-b068-9dd32c6f0eba
+# ╠═c3b7220f-49f4-42a2-bd2a-1c554e86d3c8
+# ╠═11fdbaa7-b4e1-4e41-9da2-c334f86e78ea

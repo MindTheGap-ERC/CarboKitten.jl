@@ -5,7 +5,9 @@
 @mixin Boxes
 
 using ..Common
-using CarboKitten.SedimentStack
+using CarboKitten.SedimentStack: pop_sediment!, push_sediment!, peek_sediment
+
+export pop_sediment!, push_sediment!, peek_sediment
 
 @kwdef struct Input <: AbstractInput
     sediment_buffer_size::Int = 50
@@ -15,8 +17,6 @@ end
 @kwdef mutable struct State <: AbstractState
     sediment_buffer::Array{Float64,4}
 end
-
-
 
 end
 ```

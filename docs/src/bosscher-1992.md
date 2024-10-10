@@ -218,57 +218,83 @@ Within the CarboKitten design, we can express the BS92 model a bit more succinct
 
 ``` {.julia file=src/Model/BS92.jl}
 @compose module BS92
-    @mixin Production
+@mixin Tag, H5Writer, Production
 
-    using ..Common
-    using CSV
-    using DataFrames
-    using Interpolations
-    using ..Production: uniform_production
-    using ..TimeIntegration
-    using ..WaterDepth
+using ..Common
+using ..Production: uniform_production
+using ..TimeIntegration
+using ..WaterDepth
+using ModuleMixins: @for_each
 
-    function State(input::Input)
-        ti_state = TimeIntegration.State(input)
-        sediment_height = zeros(Height, input.box.grid_size...)
-        return State(0, sediment_height)
-    end
+export Input, Facies, run
 
-    function step(input::Input)
-        τ = uniform_production(input)
-        function (state::State)
-            prod = τ(state) .* input.time.Δt
-            Δη = sum(prod; dims=1)[1,:,:]
-            state.sediment_height .+= Δη
-            state.step += 1
-            return prod
-        end
-    end
+function initial_state(input::Input)
+    sediment_height = zeros(Height, input.box.grid_size...)
+    return State(0, sediment_height)
+end
 
-    function sealevel_curve()
-        data = DataFrame(CSV.File("../data/bs92-sealevel-curve.csv"))
-        linear_interpolation(data.time, data.depth)
-    end
-
-    struct Frame
-        deposition::Array{Amount, 3}
-        sediment_height::Array{Amount, 2}
-    end
-
-    function run(input::Input)
-        step! = step(input)
-        state = State(input)
-
-        n_writes = input.time.steps ÷ input.time.write_interval
-        Channel{Frame}() do ch
-            for i = 1:n_writes
-                prod = zeros(Amount, n_facies(input), input.box.grid_size...)
-                for _ = 1:input.time.write_interval
-                    prod .+= step!(state)
-                end
-                put!(ch, Frame(prod, copy(state.sediment_height)))
-            end
-        end
+function step!(input::Input)
+    τ = uniform_production(input)
+    function (state::State)
+        prod = τ(state) .* input.time.Δt
+        Δη = sum(prod; dims=1)[1, :, :]
+        state.sediment_height .+= Δη
+        state.step += 1
+        return H5Writer.DataFrame(
+            production = prod,
+            deposition = prod)
     end
 end
+
+function write_header(fid, input::AbstractInput)
+    @for_each(P -> P.write_header(fid, input), PARENTS)
+end
+
+end
 ```
+
+``` {.julia file=examples/models/bs92.jl}
+module Script
+
+using CarboKitten.Components
+using CarboKitten.Components.Common
+using CarboKitten.Model.BS92
+
+using CSV
+using DataFrames
+using Interpolations
+using Unitful
+
+function sealevel_curve()
+    data = DataFrame(CSV.File("data/bs92-sealevel-curve.csv"))
+    linear_interpolation(data.time, data.depth)
+end
+
+const INPUT = Input(
+    tag = "example model BS92",
+    box = Common.Box{Shelf}(grid_size=(100, 1), phys_scale=600.0u"m"),
+    time = TimeProperties(
+      Δt = 10.0u"yr",
+      steps = 8000,
+      write_interval = 100),
+    sea_level = let sc = sealevel_curve()
+      t -> -sc(t / u"yr") * u"m"
+    end,
+    bedrock_elevation = (x, y) -> - x / 300.0,
+    subsidence_rate = 0.0u"m/yr",
+    insolation = 400.0u"W/m^2",
+    facies = [Facies(
+      maximum_growth_rate = 0.005u"m/yr",
+      saturation_intensity = 50.0u"W/m^2",
+      extinction_coefficient = 0.05u"m^-1"
+    )])
+
+function main()
+    H5Writer.run(Model{BS92}, INPUT, "data/output/bs92.h5")
+end
+
+end
+
+Script.main()
+```
+

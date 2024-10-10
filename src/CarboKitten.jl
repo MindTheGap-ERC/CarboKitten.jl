@@ -6,10 +6,11 @@ include("./Config.jl")
 include("./Stencil.jl")
 include("./SedimentStack.jl")
 include("./Utility.jl")
+include("./Skeleton.jl")
+
 include("./Burgess2013.jl")
 
 include("./Denudation.jl")
-include("./CaProd.jl")
 
 module Transport
 include("./Transport/ActiveLayer.jl")
@@ -20,10 +21,11 @@ include("./Components.jl")
 module Model
 using ModuleMixins: @compose
 using CarboKitten.Components.Common
-using CarboKitten.Components: Production, WaterDepth, TimeIntegration, Boxes, FaciesBase
+using CarboKitten.Components
 
 include("./Model/BS92.jl")
-include("./Model/ALCAPS.jl")
+include("./Model/CAP.jl")
+include("./Model/ALCAP2.jl")
 include("./Model/WithDenudation.jl")
 end
 

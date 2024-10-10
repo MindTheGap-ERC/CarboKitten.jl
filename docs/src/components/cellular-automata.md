@@ -17,7 +17,7 @@
         ca_random_seed::Int   = 0
     end
 
-    mutable struct State <: AbstractState
+    @kwdef mutable struct State <: AbstractState
         ca::Matrix{Int}
         ca_priority::Vector{Int}
     end

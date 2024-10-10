@@ -47,6 +47,7 @@ const AXES1 = Axes(
 const HEADER1 = Header(
     tag="test",
     axes=AXES1,
+    write_interval=1,
     Δt=0.1u"Myr",
     time_steps=10,
     bedrock_elevation=zeros(typeof(1.0u"m"), 3, 3),
@@ -115,10 +116,10 @@ We may test that writing and reading the CSV back, gives the same result:
 
 ``` {.julia #export-test}
 @testset "Hither and Dither" begin
-    buffer = UInt8[]
-    io = IOBuffer(buffer, write=true)
+    io = IOBuffer(UInt8[], read=true, write=true)
     data_export(CSVExportTrait{:sediment_accumulation_curve}, io, HEADER1, DATA1, GRID_LOCATIONS1)
-    df = read_csv(IOBuffer(buffer), DataFrame)
+    seek(io, 0)
+    df = read_csv(io, DataFrame)
     rename!(df, (n => split(n)[1] for n in names(df))...)
     @test df.sac1 ≈ ELEVATION1[1, 1, :] / u"m"
     @test df.sac2 ≈ ELEVATION1[2, 1, :] / u"m"
@@ -176,11 +177,21 @@ Compute the Stratigraphic Column for a given grid position `loc` and `facies` in
 Returns an `Array{Quantity, 2}` where the `Quantity` is in units of meters.
 """
 function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
+    dc = DataColumn(
+        loc,
+        data.disintegration[:, loc..., :],
+        data.production[:, loc..., :],
+        data.deposition[:, loc..., :],
+        data.sediment_elevation[loc..., :])
+    return stratigraphic_column(header, dc, facies)
+end
+
+function stratigraphic_column(header::Header, data::DataColumn, facies::Int)
     n_times = length(header.axes.t) - 1
     sc = zeros(typeof(1.0u"m"), n_times)
 
     for ts = 1:n_times
-        acc = data.deposition[facies, loc..., ts] - data.disintegration[facies, loc..., ts]
+        acc = data.deposition[facies, ts] - data.disintegration[facies, ts]
         if acc > 0.0u"m"
             sc[ts] = acc
             continue
@@ -313,6 +324,8 @@ end
 ``` {.julia file=src/Export.jl}
 module Export
 
+export Data, DataSlice, DataColumn, Header, CSV, read_data, read_slice, data_export
+
 using HDF5
 import CSV: write as write_csv
 using TOML
@@ -340,6 +353,7 @@ end
     tag::String
     axes::Axes
     Δt::Time
+    write_interval::Int
     time_steps::Int
     bedrock_elevation::Matrix{Amount}
     sea_level::Vector{Length}
@@ -354,10 +368,19 @@ end
 end
 
 struct DataSlice
+    slice::NTuple{2,Union{Colon,Int}}
     disintegration::Array{Amount,3}
     production::Array{Amount,3}
     deposition::Array{Amount,3}
     sediment_elevation::Array{Amount,2}
+end
+
+struct DataColumn
+    slice::NTuple{2,Int}
+    disintegration::Array{Amount,2}
+    production::Array{Amount,2}
+    deposition::Array{Amount,2}
+    sediment_elevation::Array{Amount,1}
 end
 
 function read_header(fid)
@@ -372,6 +395,7 @@ function read_header(fid)
         attrs["tag"][],
         axes,
         attrs["delta_t"][] * u"Myr",
+        attrs["write_interval"][],
         attrs["time_steps"][],
         fid["input/bedrock_elevation"][] * u"m",
         fid["input/sea_level"][] * u"m",
@@ -386,6 +410,19 @@ function read_data(filename)
             fid["production"][] * u"m",
             fid["deposition"][] * u"m",
             fid["sediment_height"][] * u"m")
+        header, data
+    end
+end
+
+function read_slice(filename, slice...)
+    h5open(filename) do fid
+        header = read_header(fid)
+        data = DataSlice(
+            slice,
+            fid["disintegration"][:, slice..., :] * u"m",
+            fid["production"][:, slice..., :] * u"m",
+            fid["deposition"][:, slice..., :] * u"m",
+            fid["sediment_height"][slice..., :] * u"m")
         header, data
     end
 end

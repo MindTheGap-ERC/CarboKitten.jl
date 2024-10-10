@@ -27,40 +27,40 @@ function initial_sediment(x, y)
 end
 
 const INPUT = ActiveLayer.Input(
-	box                   = Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),
-	Δt                    = 0.001u"Myr",
-	t_end                 = 1.0u"Myr",
+    box                   = Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),
+    Δt                    = 0.001u"Myr",
+    t_end                 = 1.0u"Myr",
 
-	bedrock_elevation     = (x, y) -> -30.0u"m",
-	initial_sediment      = initial_sediment,
-	production            = (x, y) -> 0.0u"m/Myr",
+    bedrock_elevation     = (x, y) -> -30.0u"m",
+    initial_sediment      = initial_sediment,
+    production            = (x, y) -> 0.0u"m/Myr",
 
-	disintegration_rate   = 50.0u"m/Myr",
-	subsidence_rate       = 50.0u"m/Myr",
-	diffusion_coefficient = 10000.0u"m")
+    disintegration_rate   = 50.0u"m/Myr",
+    subsidence_rate       = 50.0u"m/Myr",
+    diffusion_coefficient = 10000.0u"m")
 # ~/~ end
 
 function main(input)
     y_idx = 1
     result = Iterators.map(deepcopy,
-  	    Iterators.filter(x -> mod(x[1]-1, 400) == 0, enumerate(ActiveLayer.run_model(input)))) |> collect
+          Iterators.filter(x -> mod(x[1]-1, 400) == 0, enumerate(ActiveLayer.run_model(input)))) |> collect
 
-	(x, y) = axes(input.box)
-	# p = input.production.(x, y')
+    (x, y) = axes(input.box)
+    # p = input.production.(x, y')
 
-	fig = Figure(size=(800, 600))
-	# ax = Axis3(fig[1:2,1], xlabel="x (km)", ylabel="y (km)", zlabel="η (m)", azimuth=5π/3)
-	# surface!(ax, x |> in_units_of(u"km"), y |> in_units_of(u"km"), η |> in_units_of(u"m"))
+    fig = Figure(size=(800, 600))
+    # ax = Axis3(fig[1:2,1], xlabel="x (km)", ylabel="y (km)", zlabel="η (m)", azimuth=5π/3)
+    # surface!(ax, x |> in_units_of(u"km"), y |> in_units_of(u"km"), η |> in_units_of(u"m"))
 
-	ax2 = Axis(fig[1,1], xlabel="x (km)", ylabel="η (m)")
+    ax2 = Axis(fig[1,1], xlabel="x (km)", ylabel="η (m)")
 
-	for r in result
-		η = input.bedrock_elevation.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
+    for r in result
+        η = input.bedrock_elevation.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
 
-		lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"))
-	end
+        lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"))
+    end
 
-	save("docs/src/_fig/active-layer-erosion.png", fig)
+    save("docs/src/_fig/active-layer-erosion.png", fig)
 end
 
 end

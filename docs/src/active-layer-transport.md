@@ -73,15 +73,15 @@ Our input structure facilitates a single facies, specifying an initial bedrock e
 
 ``` {.julia #example-active-layer}
 @kwdef struct Input
-	box
-	Δt::typeof(1.0u"Myr")
-	t_end::typeof(1.0u"Myr")
-	bedrock_elevation   # function (x::u"m", y::u"m") -> u"m"
-	initial_sediment    # function (x::u"m", y::u"m") -> u"m"
-	production          # function (x::u"m", y::u"m") -> u"m/s"
-	disintegration_rate::typeof(1.0u"m/Myr")
-	subsidence_rate::typeof(1.0u"m/Myr")
-	diffusion_coefficient::typeof(1.0u"m")
+    box
+    Δt::typeof(1.0u"Myr")
+    t_end::typeof(1.0u"Myr")
+    bedrock_elevation   # function (x::u"m", y::u"m") -> u"m"
+    initial_sediment    # function (x::u"m", y::u"m") -> u"m"
+    production          # function (x::u"m", y::u"m") -> u"m/s"
+    disintegration_rate::typeof(1.0u"m/Myr")
+    subsidence_rate::typeof(1.0u"m/Myr")
+    diffusion_coefficient::typeof(1.0u"m")
 end
 ```
 
@@ -90,29 +90,29 @@ Establish a grid of 100x50, 15km on each side, dropping from 0 to 50m depth. Kee
 
 ``` {.julia #example-active-layer}
 production_patch(center, radius, rate) = function(x, y)
-	(pcx, pcy) = center
-	(x - pcx)^2 + (y - pcy)^2 < radius^2 ?
-		rate :
-		0.0u"m/Myr"
+    (pcx, pcy) = center
+    (x - pcx)^2 + (y - pcy)^2 < radius^2 ?
+        rate :
+        0.0u"m/Myr"
 end
 
 const input = Input(
-	box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0u"m"),
-	Δt=0.001u"Myr",
-	t_end=1.0u"Myr",
+    box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    Δt=0.001u"Myr",
+    t_end=1.0u"Myr",
 
-	bedrock_elevation = (x, y) -> -x / 300.0,
-	initial_sediment = (x, y) -> 0.0u"m",
+    bedrock_elevation = (x, y) -> -x / 300.0,
+    initial_sediment = (x, y) -> 0.0u"m",
 
-	production = production_patch(
-		(5000.0u"m", 3750.0u"m"),
-		2.0u"km",
-		50.0u"m/Myr"),
+    production = production_patch(
+        (5000.0u"m", 3750.0u"m"),
+        2.0u"km",
+        50.0u"m/Myr"),
 
-	disintegration_rate = 50.0u"m/Myr",
-	subsidence_rate = 50.0u"m/Myr",
+    disintegration_rate = 50.0u"m/Myr",
+    subsidence_rate = 50.0u"m/Myr",
 
-	diffusion_coefficient = 10000.0u"m"
+    diffusion_coefficient = 10000.0u"m"
 )
 ```
 
@@ -172,22 +172,22 @@ const Rate = typeof(1.0u"m/Myr")
 const Amount = typeof(1.0u"m")
 
 function pde_stencil(box::Box{BT}, ν) where {BT <: Boundary{2}}
-	Δx = box.phys_scale
+    Δx = box.phys_scale
 
-	function kernel(x)
-		adv = ν * ((x[3, 2][1] - x[1, 2][1]) * (x[3, 2][2] - x[1, 2][2]) +
-     			   (x[2, 3][1] - x[2, 1][1]) * (x[2, 3][2] - x[2, 1][2])) /
-			      (2Δx)^2
+    function kernel(x)
+        adv = ν * ((x[3, 2][1] - x[1, 2][1]) * (x[3, 2][2] - x[1, 2][2]) +
+                    (x[2, 3][1] - x[2, 1][1]) * (x[2, 3][2] - x[2, 1][2])) /
+                  (2Δx)^2
 
-		dif = ν * x[2, 2][2] * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
-				  x[2, 1][1] - 4*x[2, 2][1]) / (Δx)^2
+        dif = ν * x[2, 2][2] * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
+                  x[2, 1][1] - 4*x[2, 2][1]) / (Δx)^2
 
-		prd = x[2, 2][2]
+        prd = x[2, 2][2]
 
-		return max(0.0u"m", adv + dif + prd)
-	end
+        return max(0.0u"m", adv + dif + prd)
+    end
 
-	stencil(Tuple{Amount, Amount}, Amount, BT, (3, 3), kernel)
+    stencil(Tuple{Amount, Amount}, Amount, BT, (3, 3), kernel)
 end
 
 end
@@ -199,55 +199,55 @@ Every iteration we determine the maximum disintegrated sediment. If the total am
 
 ``` {.julia #example-active-layer}
 mutable struct State
-	time::typeof(1.0u"Myr")
-	sediment::Matrix{typeof(1.0u"m")}
+    time::typeof(1.0u"Myr")
+    sediment::Matrix{typeof(1.0u"m")}
 end
 
 function initial_state(input)
     x, y = axes(input.box)
-	State(0.0u"Myr", input.initial_sediment.(x, y'))
+    State(0.0u"Myr", input.initial_sediment.(x, y'))
 end
 
 struct Frame
-	t::typeof(1.0u"Myr")
-	δ::Matrix{Amount}
+    t::typeof(1.0u"Myr")
+    δ::Matrix{Amount}
 end
 
 function propagator(input)
-	δ = Matrix{Amount}(undef, input.box.grid_size...)
-	x, y = axes(input.box)
-	μ0 = input.bedrock_elevation.(x, y')
+    δ = Matrix{Amount}(undef, input.box.grid_size...)
+    x, y = axes(input.box)
+    μ0 = input.bedrock_elevation.(x, y')
 
-	function active_layer(state)
-		max_amount = input.disintegration_rate * input.Δt
-		amount = min.(max_amount, state.sediment)
-		state.sediment .-= amount
+    function active_layer(state)
+        max_amount = input.disintegration_rate * input.Δt
+        amount = min.(max_amount, state.sediment)
+        state.sediment .-= amount
 
-		input.production.(x, y') * input.Δt .+ amount
-	end
+        input.production.(x, y') * input.Δt .+ amount
+    end
 
-	stc = pde_stencil(input.box, input.diffusion_coefficient)
-	apply_pde(μ::Matrix{Amount}, p::Matrix{Amount}) = stc(tuple.(μ, p), δ)
+    stc = pde_stencil(input.box, input.diffusion_coefficient)
+    apply_pde(μ::Matrix{Amount}, p::Matrix{Amount}) = stc(tuple.(μ, p), δ)
 
-	function (state)
-		p = active_layer(state)
-		apply_pde(state.sediment .+ μ0, p)
-		return Frame(state.time, δ)
-	end
+    function (state)
+        p = active_layer(state)
+        apply_pde(state.sediment .+ μ0, p)
+        return Frame(state.time, δ)
+    end
 end
 
 function run_model(input)
-	state = initial_state(input)
-	prop = propagator(input)
+    state = initial_state(input)
+    prop = propagator(input)
 
-	Channel{State}() do ch
-		while state.time < input.t_end
-			Δ = prop(state)
-			state.sediment .+= Δ.δ
-			state.time += input.Δt
-			put!(ch, state)
-		end
-	end
+    Channel{State}() do ch
+        while state.time < input.t_end
+            Δ = prop(state)
+            state.sediment .+= Δ.δ
+            state.time += input.Δt
+            put!(ch, state)
+        end
+    end
 end
 ```
 
@@ -266,6 +266,8 @@ We run the model with 1000 time steps but only inspect one in every 100.
 #| creates: docs/src/_fig/active-layer-test.png
 #| collect: figures
 
+module ActiveLayerPlot
+
 include("active-layer.jl")
 using CairoMakie
 using Unitful
@@ -275,28 +277,30 @@ using .ActiveLayer: input, run_model
 
 function main()
   result = Iterators.map(deepcopy,
-  	Iterators.filter(x -> mod(x[1], 100) == 0, enumerate(run_model(input)))) |> collect
+      Iterators.filter(x -> mod(x[1], 100) == 0, enumerate(run_model(input)))) |> collect
 
-	(x, y) = axes(input.box)
-	η = input.bedrock_elevation.(x, y') .+ result[10][2].sediment .- input.subsidence_rate * result[10][2].time
-	# p = input.production.(x, y')
+    (x, y) = axes(input.box)
+    η = input.bedrock_elevation.(x, y') .+ result[10][2].sediment .- input.subsidence_rate * result[10][2].time
+    # p = input.production.(x, y')
 
-	fig = Figure(size=(800, 1000))
-	ax = Axis3(fig[1:2,1], xlabel="x (km)", ylabel="y (km)", zlabel="η (m)", azimuth=5π/3)
-	surface!(ax, x |> in_units_of(u"km"), y |> in_units_of(u"km"), η |> in_units_of(u"m"))
+    fig = Figure(size=(800, 1000))
+    ax = Axis3(fig[1:2,1], xlabel="x (km)", ylabel="y (km)", zlabel="η (m)", azimuth=5π/3)
+    surface!(ax, x |> in_units_of(u"km"), y |> in_units_of(u"km"), η |> in_units_of(u"m"))
 
-	ax2 = Axis(fig[3,1], xlabel="x (km)", ylabel="η (m)")
+    ax2 = Axis(fig[3,1], xlabel="x (km)", ylabel="η (m)")
 
-	for i in 1:10
-		η = input.bedrock_elevation.(x, y') .+ result[i][2].sediment .- input.subsidence_rate * result[i][2].time
+    for i in 1:10
+        η = input.bedrock_elevation.(x, y') .+ result[i][2].sediment .- input.subsidence_rate * result[i][2].time
 
-		lines!(ax2, x |> in_units_of(u"km"), η[:, 25] |> in_units_of(u"m"))
-	end
+        lines!(ax2, x |> in_units_of(u"km"), η[:, 25] |> in_units_of(u"m"))
+    end
 
-	save("docs/src/_fig/active-layer-test.png", fig)
+    save("docs/src/_fig/active-layer-test.png", fig)
 end
 
-main()
+end
+
+ActiveLayerPlot.main()
 ```
 
 ```@raw html
@@ -327,17 +331,17 @@ function initial_sediment(x, y)
 end
 
 const INPUT = ActiveLayer.Input(
-	box                   = Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),
-	Δt                    = 0.001u"Myr",
-	t_end                 = 1.0u"Myr",
+    box                   = Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),
+    Δt                    = 0.001u"Myr",
+    t_end                 = 1.0u"Myr",
 
-	bedrock_elevation     = (x, y) -> -30.0u"m",
-	initial_sediment      = initial_sediment,
-	production            = (x, y) -> 0.0u"m/Myr",
+    bedrock_elevation     = (x, y) -> -30.0u"m",
+    initial_sediment      = initial_sediment,
+    production            = (x, y) -> 0.0u"m/Myr",
 
-	disintegration_rate   = 50.0u"m/Myr",
-	subsidence_rate       = 50.0u"m/Myr",
-	diffusion_coefficient = 10000.0u"m")
+    disintegration_rate   = 50.0u"m/Myr",
+    subsidence_rate       = 50.0u"m/Myr",
+    diffusion_coefficient = 10000.0u"m")
 ```
 
 ![Active layer erosion test](fig/active-layer-erosion.png)
@@ -366,24 +370,24 @@ using CairoMakie
 function main(input)
     y_idx = 1
     result = Iterators.map(deepcopy,
-  	    Iterators.filter(x -> mod(x[1]-1, 400) == 0, enumerate(ActiveLayer.run_model(input)))) |> collect
+          Iterators.filter(x -> mod(x[1]-1, 400) == 0, enumerate(ActiveLayer.run_model(input)))) |> collect
 
-	(x, y) = axes(input.box)
-	# p = input.production.(x, y')
+    (x, y) = axes(input.box)
+    # p = input.production.(x, y')
 
-	fig = Figure(size=(800, 600))
-	# ax = Axis3(fig[1:2,1], xlabel="x (km)", ylabel="y (km)", zlabel="η (m)", azimuth=5π/3)
-	# surface!(ax, x |> in_units_of(u"km"), y |> in_units_of(u"km"), η |> in_units_of(u"m"))
+    fig = Figure(size=(800, 600))
+    # ax = Axis3(fig[1:2,1], xlabel="x (km)", ylabel="y (km)", zlabel="η (m)", azimuth=5π/3)
+    # surface!(ax, x |> in_units_of(u"km"), y |> in_units_of(u"km"), η |> in_units_of(u"m"))
 
-	ax2 = Axis(fig[1,1], xlabel="x (km)", ylabel="η (m)")
+    ax2 = Axis(fig[1,1], xlabel="x (km)", ylabel="η (m)")
 
-	for r in result
-		η = input.bedrock_elevation.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
+    for r in result
+        η = input.bedrock_elevation.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
 
-		lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"))
-	end
+        lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"))
+    end
 
-	save("docs/src/_fig/active-layer-erosion.png", fig)
+    save("docs/src/_fig/active-layer-erosion.png", fig)
 end
 
 end
@@ -393,4 +397,71 @@ ActiveLayerErosion.main(ActiveLayerErosion.INPUT)
 
 ```@raw html
 </details>
+```
+
+## Active Layer Component
+
+``` {.julia file=src/Components/ActiveLayer.jl}
+@compose module ActiveLayer
+@mixin WaterDepth, FaciesBase, SedimentBuffer
+
+export disintegration, transportation
+
+using ..Common
+using CarboKitten.Transport.ActiveLayer: pde_stencil
+using Unitful
+
+@kwdef struct Facies <: AbstractFacies
+    diffusion_coefficient::typeof(1.0u"m")
+end
+
+@kwdef struct Input <: AbstractInput
+    disintegration_rate::Rate = 50.0u"m/Myr"
+end
+
+"""
+    disintegration(input) -> f!
+
+Prepares the disintegration step. Returns a function `f!(state::State)`. The returned function
+modifies the state, popping sediment from the `sediment_buffer` and returns an array of `Amount`.
+"""
+function disintegration(input)
+    max_h = input.disintegration_rate * input.time.Δt
+    output = Array{Float64, 3}(undef, n_facies(input), input.box.grid_size...)
+
+    return function(state)
+        h = min.(max_h, state.sediment_height)
+        state.sediment_height .-= h
+        pop_sediment!(state.sediment_buffer, h ./ input.depositional_resolution .|> NoUnits, output)
+        return output .* input.depositional_resolution
+    end
+end
+
+"""
+    transportation(input::Input) -> f
+
+Prepares the transportation step. Returns a function `f(state::State, active_layer)`,
+transporting the active layer, returning a transported `Amount` of sediment.
+"""
+function transportation(input)
+    x, y = axes(input.box)
+    μ0 = input.bedrock_elevation.(x, y')
+    # We always return this array
+    transported_output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
+    stencils = [
+        let stc = pde_stencil(input.box, f.diffusion_coefficient)
+            (μ, p) -> @views stc(tuple.(μ, p[i,:,:]), transported_output[i,:,:])
+        end for (i, f) in enumerate(input.facies) ]
+
+    return function(state, active_layer::Array{Amount, 3})
+        μ = state.sediment_height .+ μ0
+        for stc in stencils
+            stc(μ, active_layer)
+        end
+
+        return transported_output
+    end
+end
+
+end
 ```

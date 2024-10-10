@@ -6,13 +6,13 @@ using ...Utility
 using ...BoundaryTrait: Boundary
 using ...Denudation: denudation, redistribution
 using ...Denudation.EmpiricalDenudationMod: slope_kernel
-using ...Burgess2013
 using ...Burgess2013.CA: step_ca, run_ca
 using ...Config: Box, TimeProperties
 using Unitful
 using HDF5
 using .Iterators: drop, peel, partition, map, take
 using ...Denudation.Abstract: DenudationType
+
 @kwdef struct Facies
     viability_range::Tuple{Int,Int}
     activation_range::Tuple{Int,Int}
@@ -139,10 +139,10 @@ function updater(input)
     function update(state, Δ::DenudationFrame)
         # FIXME: implement
         if Δ.denudation !== nothing
-        state.height .+= Δ.denudation .* input.time.Δt
+            state.height .+= Δ.denudation .* input.time.Δt
         end
         if Δ.redistribution !== nothing
-        state.height .-= Δ.redistribution .* input.time.Δt
+            state.height .-= Δ.redistribution .* input.time.Δt
         end
         state.time += input.time.Δt
     end
@@ -206,7 +206,7 @@ function main(input::Input, output::String)
                 dataspace(input.box.grid_size..., input.time.steps),
                 chunk=(input.box.grid_size..., 1))
         end
-        
+
         redistribution = nothing
         if testframe.redistribution !== nothing
             redistribution = create_dataset(fid, "redistribution", datatype(Float64),

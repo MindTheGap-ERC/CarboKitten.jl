@@ -125,6 +125,18 @@ let
 	fig
 end
 
+# ╔═╡ ae356c01-2520-4bdf-8555-8b465040e494
+let
+	header, data = read_slice("../data/output/bs92.h5", :, 1)
+	sediment_profile(header, data)
+end
+
+# ╔═╡ c954e223-fb91-4f86-8199-f91f39156773
+let
+	header, data = read_slice("../data/output/bs92.h5", :, 1)
+	wheeler_diagram(header, data; smooth_size=(1,1), range=(-5000.0u"m/Myr", 5000.0u"m/Myr"))
+end
+
 # ╔═╡ e93b7ac8-dcf9-4ca1-8d1b-01d6dd139930
 md"""
 # Multiple facies
@@ -316,6 +328,8 @@ end
 # ╟─f6025f38-9417-43bd-ae48-f0528eb7025c
 # ╠═c9cffcba-a08e-4769-a947-39aaf9cc1d6e
 # ╠═f23fa7c3-8bdd-43af-af1a-f6fb36bdd92f
+# ╠═ae356c01-2520-4bdf-8555-8b465040e494
+# ╠═c954e223-fb91-4f86-8199-f91f39156773
 # ╟─e93b7ac8-dcf9-4ca1-8d1b-01d6dd139930
 # ╠═bac48b9d-46d0-44a4-9e9f-7fa32b8fc75d
 # ╠═79b3c99b-0691-405c-8ed8-1da6d25cb9a8

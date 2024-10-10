@@ -47,6 +47,7 @@ const AXES1 = Axes(
 const HEADER1 = Header(
     tag="test",
     axes=AXES1,
+    write_interval=1,
     Δt=0.1u"Myr",
     time_steps=10,
     bedrock_elevation=zeros(typeof(1.0u"m"), 3, 3),

@@ -301,6 +301,9 @@ let
 	fig
 end
 
+# ╔═╡ 4b8fa62e-ca50-4908-888e-6718ea6f5bf0
+length(4:10)
+
 # ╔═╡ 538cd660-aab5-409d-a508-89cfd62c128d
 let
 	header, data = read_slice("../data/output/alcap1.h5", :, 25)
@@ -341,4 +344,5 @@ end
 # ╟─72e1d116-06f0-4623-b068-9dd32c6f0eba
 # ╠═c3b7220f-49f4-42a2-bd2a-1c554e86d3c8
 # ╠═11fdbaa7-b4e1-4e41-9da2-c334f86e78ea
+# ╠═4b8fa62e-ca50-4908-888e-6718ea6f5bf0
 # ╠═538cd660-aab5-409d-a508-89cfd62c128d

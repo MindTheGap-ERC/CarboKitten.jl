@@ -244,6 +244,7 @@ import CarboKitten.Visualization: sediment_profile, sediment_profile!
 using CarboKitten.Visualization
 using CarboKitten.Utility: in_units_of
 using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
+using CarboKitten.Skeleton: skeleton
 
 using Makie
 using GeometryBasics
@@ -300,42 +301,6 @@ function explode_quad_vertices(v::Array{Float64,3})
     vcat(hcat(vtx1, vtx2, vtx3), hcat(vtx1, vtx3, vtx4))
 end
 
-"""
-    bean_counter(mask)
-
-Given a mask (array of binary values), performs a floodfill on all connected components,
-giving each an integer identifier.
-
-Returns the array of integers identifying each group and the number of groups.
-"""
-function bean_counter(mask::BitArray{dim}) where {dim}
-    visited = BitArray{dim}(undef, size(mask)...)
-    visited .= false
-    out = zeros(Int, size(mask)...)
-    dxs = CartesianIndices(ntuple(_ -> 3, dim)) .|> (x -> x - CartesianIndex(ntuple(_ -> 2, dim))) |> filter(x -> x != CartesianIndex(ntuple(_ -> 0, dim)...))
-    group = 1
-
-    for idx in CartesianIndices(mask)
-        visited[idx] && continue
-        visited[idx] = true
-        mask[idx] || continue
-        out[idx] = group
-
-        stack = idx .+ dxs
-        while !isempty(stack)
-            jdx = pop!(stack)
-            checkbounds(Bool, mask, jdx) || continue
-            visited[jdx] && continue
-            visited[jdx] = true
-            mask[jdx] || continue
-            out[jdx] = group
-            append!(stack, jdx .+ dxs)
-        end
-        group += 1
-    end
-    return out, group - 1
-end
-
 function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
@@ -348,7 +313,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     v, f = explode_quad_vertices(verts)
 
     water_depth = ξ .- (header.subsidence_rate.*(header.axes.t.-header.axes.t[end]).+header.sea_level)[na, :]
-    gaps, n_gaps = bean_counter(water_depth .> 0u"m")
+    hiatus = skeleton(water_depth .> 0.0u"m")
 
     total_subsidence = header.subsidence_rate * header.axes.t[end]
     bedrock = (header.bedrock_elevation[data.slice...] .- total_subsidence) |> in_units_of(u"m")
@@ -364,15 +329,8 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     c = reshape(colormax(data)[:, :], length(x) * (length(t) - 1))
     mesh!(ax, v, f, color=vcat(c, c), alpha=1.0, colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
-    for g = 1:n_gaps
-        size = sum(gaps .== g)
-        if size < 1000
-            continue
-        end
-        # compute the mean z-value for a gap
-        gap = mean.(skipmissing.(eachslice(CartesianIndices(ξ) .|> (i -> gaps[i] == g ? ξ[i] : missing), dims=(1,))))
-        lines!(ax, x, gap |> in_units_of(u"m"), color=:white, linewidth=2, linestyle=:dash)
-    end
+    verts = [(x[pt[1]], ξ[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
+    linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
 end
 
 function sediment_profile(header::Header, data_slice::DataSlice)
@@ -423,6 +381,43 @@ function stratigraphic_column!(ax::Axis, header::Header, data::Observable{DataCo
     _ys_high = lift(d -> d.ys_high, _scdata)
     _color = lift(d -> color[d.facies], _scdata)
     hspan!(ax, _ys_low, _ys_high; color=_color)
+end
+
+end
+```
+
+## Skeleton
+
+``` {.julia file=src/Skeleton.jl}
+module Skeleton
+
+using .Iterators: filter, map as imap, product, flatten, drop
+using ..Utility: enumerate_seq, find_ranges
+
+const Vertex = Tuple{Int, UnitRange{Int}}
+
+pairs(it) = zip(it, drop(it, 1))
+edge(a::Vertex, b::Vertex) = isempty(a[2] ∩ b[2]) ? nothing : (a[1], b[1])
+edges_between(a, b) = filter(!isnothing, imap(splat(edge), product(a, b)))
+middle(a::UnitRange{Int}) = (a.start + a.stop) ÷ 2
+
+"""
+    skeleton(bitmap::AbstractMatrix{Bool})
+
+Computes the skeleton of a bitmap, i.e. reduces features with some thickness to
+a set of line segments. This function is designed with stratigraphic application
+in mind: we scan each row in the bitmap for connected regions, then link neighbouring
+regions when they overlap. The result is a graph that represents hiatus in the sediment
+accumulation.
+
+Returns a tuple of `vertices` and `edges`, where `vertices` is a vector of 2-tuples and
+`edges` is a nx2 matrix of indices into the `vertices`.
+"""
+function skeleton(bitmap::AbstractMatrix{Bool}; minwidth=10)
+    vertex_rows = (filter(r->length(r)>=minwidth, find_ranges(row)) for row in eachrow(bitmap))
+    edges = flatten(map(splat(edges_between), pairs(enumerate_seq(vertex_rows))))
+    vertices = flatten(((i, middle(v)) for v in vs) for (i, vs) in enumerate(vertex_rows))
+    return collect(vertices), reshape(reinterpret(Int, collect(edges)), (2,:))'
 end
 
 end

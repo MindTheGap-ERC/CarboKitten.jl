@@ -7,6 +7,9 @@ using InteractiveUtils
 # ╔═╡ 51490338-86e9-11ef-106c-5bede5bc2b64
 using Pkg; Pkg.activate("../workenv")
 
+# ╔═╡ b080be45-7979-4214-b64e-a0fbed0ec93b
+using Revise
+
 # ╔═╡ a46f4043-f471-41d5-9c81-2396031f9a89
 using GLMakie
 
@@ -108,7 +111,7 @@ Base.IteratorSize(::Type{RangeFinder}) = Base.SizeUnknown()
 # ╔═╡ c0dc5de7-70f7-4384-b730-9aa19aef1301
 RangeFinder(dry[50,:]) |> collect
 
-# ╔═╡ 8dfc1419-9956-4c42-8406-fbc4b9b147ea
+# ╔═╡ 1c0867c2-ea0c-46e8-8ab3-24e98d764ee0
 struct TagVectors{T}
 	vectors::T
 end
@@ -190,6 +193,12 @@ Base.IteratorSize(::Type{TagVectors{T}}) where T = Base.IteratorSize(T)
 # ╔═╡ a9136d78-35be-4d46-999f-8e9238abdf79
 Pairs([1, 2, 3]) |> collect
 
+# ╔═╡ 1ab6b19b-6684-4aae-80b5-f5c8107ae25f
+pairs(it) = zip(it, Iterators.drop(it, 1))
+
+# ╔═╡ 575243e0-6f89-4f1f-b278-d39bf1715b9b
+pairs([1, 2, 3]) |> collect
+
 # ╔═╡ 1f69a952-3899-410d-80a1-2955b3d1d99d
 const Vertex = Tuple{Int, UnitRange{Int}}
 
@@ -227,6 +236,7 @@ end
 
 # ╔═╡ Cell order:
 # ╠═51490338-86e9-11ef-106c-5bede5bc2b64
+# ╠═b080be45-7979-4214-b64e-a0fbed0ec93b
 # ╠═a46f4043-f471-41d5-9c81-2396031f9a89
 # ╠═bc4fd4d7-5b16-4efa-9e9f-a1ec96ebc9af
 # ╠═4bdc4267-5c95-4d9a-ae61-2a98ddd6717b
@@ -234,7 +244,7 @@ end
 # ╟─359483a3-f2f9-4470-ba11-730fc9bf8b46
 # ╟─5db8cfd7-7d45-4d77-abf8-ac0e1270d04a
 # ╟─49404961-56c5-455e-810e-afc59ede0148
-# ╟─dbce83bb-066d-41ee-a60d-5455c33b337f
+# ╠═dbce83bb-066d-41ee-a60d-5455c33b337f
 # ╟─a7f7077f-751d-4377-b43b-c9520fa4f768
 # ╟─2ea5a1c8-2bf5-4f59-8bb7-0f2d06370812
 # ╠═eddc0e5e-65f0-4420-905a-59660d4aec4f
@@ -250,7 +260,7 @@ end
 # ╠═26021a8e-8e0c-4fba-a3f0-247e1fbc99d9
 # ╠═657c153a-b8e7-478f-9120-a14a95fae771
 # ╠═c0dc5de7-70f7-4384-b730-9aa19aef1301
-# ╠═8dfc1419-9956-4c42-8406-fbc4b9b147ea
+# ╠═1c0867c2-ea0c-46e8-8ab3-24e98d764ee0
 # ╠═20fe3b99-77c1-4ff5-93ac-8bd1fe55b7d6
 # ╠═6db7d714-1982-419e-98b9-ff86b2f0a127
 # ╠═96edc0b3-1b96-430d-9821-a00ffbe34ad1
@@ -259,6 +269,8 @@ end
 # ╠═031fcdfb-7191-4eb6-af7a-f9c5c6864b25
 # ╠═2fd0599c-b87c-47b5-8bd6-bb51eeb0af7e
 # ╠═a9136d78-35be-4d46-999f-8e9238abdf79
+# ╠═1ab6b19b-6684-4aae-80b5-f5c8107ae25f
+# ╠═575243e0-6f89-4f1f-b278-d39bf1715b9b
 # ╠═1f69a952-3899-410d-80a1-2955b3d1d99d
 # ╠═1116dad5-9c32-4d81-b8eb-2c5eb6fe06fe
 # ╠═b32736e5-bc0b-463a-8eb5-5099df519217

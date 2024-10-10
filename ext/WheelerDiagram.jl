@@ -16,7 +16,7 @@ elevation(h::Header, d::DataSlice) =
     let bl = h.bedrock_elevation[d.slice..., na],
         sr = h.axes.t[end] * h.subsidence_rate
 
-        cat(bl, bl .+ d.sediment_elevation; dims=2) .- sr
+        bl .+ d.sediment_elevation .- sr
     end
 
 water_depth(header::Header, data::DataSlice) =
@@ -33,7 +33,7 @@ function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
     smooth_size::NTuple{2,Int}=(3, 11),
     colormap=Reverse(:curl),
     range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
-    magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ header.Δt
+    magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ (header.Δt * header.write_interval)
     blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
     wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
     blur(water_depth(header, data) / u"m", wd)
@@ -75,9 +75,11 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
 end
 
 function wheeler_diagram!(ax1::Axis, ax2::Axis, header::Header, data::DataSlice;
-    smooth_size::NTuple{2,Int}=(3, 11))
+    smooth_size::NTuple{2,Int}=(3, 11),
+    range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
+
     linkyaxes!(ax1, ax2)
-    sa = sediment_accumulation!(ax1, header, data; smooth_size=smooth_size)
+    sa = sediment_accumulation!(ax1, header, data; smooth_size=smooth_size, range=range)
     ft = dominant_facies!(ax2, header, data; smooth_size=smooth_size)
     ax2.ylabel = ""
 
@@ -85,16 +87,14 @@ function wheeler_diagram!(ax1::Axis, ax2::Axis, header::Header, data::DataSlice;
 end
 
 function wheeler_diagram(header::Header, data::DataSlice;
-    smooth_size::NTuple{2,Int}=(3, 11))
+    smooth_size::NTuple{2,Int}=(3, 11),
+    range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
+
     fig = Figure(size=(1000, 600))
     ax1 = Axis(fig[2, 1])
     ax2 = Axis(fig[2, 2])
 
-    linkyaxes!(ax1, ax2)
-
-    sa = sediment_accumulation!(ax1, header, data; smooth_size=smooth_size)
-    ft = dominant_facies!(ax2, header, data; smooth_size=smooth_size)
-    ax2.ylabel = ""
+    sa, ft = wheeler_diagram!(ax1, ax2, header, data; smooth_size=smooth_size, range=range)
 
     Colorbar(fig[1, 1], sa; vertical=false, label="sediment accumulation [m/Myr]")
     Colorbar(fig[1, 2], ft; vertical=false, ticks=1:3, label="dominant facies")

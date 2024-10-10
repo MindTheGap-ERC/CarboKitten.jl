@@ -5,7 +5,7 @@ using Makie
 using Unitful
 
 import CarboKitten.Visualization: production_curve!, production_curve
-using CarboKitten.Burgess2013: production_rate
+using CarboKitten.Components.Production: production_rate
 
 function production_curve!(ax, input)
     ax.title = "production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))"

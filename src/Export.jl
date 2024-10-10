@@ -39,6 +39,7 @@ end
     tag::String
     axes::Axes
     Δt::Time
+    write_interval::Int
     time_steps::Int
     bedrock_elevation::Matrix{Amount}
     sea_level::Vector{Length}
@@ -80,6 +81,7 @@ function read_header(fid)
         attrs["tag"][],
         axes,
         attrs["delta_t"][] * u"Myr",
+        attrs["write_interval"][],
         attrs["time_steps"][],
         fid["input/bedrock_elevation"][] * u"m",
         fid["input/sea_level"][] * u"m",

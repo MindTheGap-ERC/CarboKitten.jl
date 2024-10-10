@@ -2,6 +2,8 @@
 
 Each model in CarboKitten is composed out of elementary parts. These form a hierarchy of modules that inherit from each other.
 
+<!-- FIXME: auto-generate this graph -->
+
 ```mermaid
 graph TD;
     classDef nyi fill:#888;
@@ -19,7 +21,7 @@ graph TD;
     sediment_buffer[Sediment Buffer]
     active_layer_transport[Active Layer Transport]
     denudation[Denudation]
-    class sediment_buffer,active_layer_transport,denudation nyi;
+    class denudation nyi;
 
     time --> water_depth
     box --> water_depth
@@ -45,11 +47,14 @@ graph TD;
     water_depth --> h5writer
 ```
 
+Not all of these are equally important. The `H5Writer` implements the core simulation loop and writing a simulation to HDF5 files. For a `Model` to work with `H5Writer` it needs to have `initial_state`, `step!`, and `write_header` functions implemented. Each component can have its own `write_header` implementation. Those are joined together with a special `@for_each(P->P.write_header(fid, input), PARENTS)` call.
+
 ## Contents
 
 ```@contents
-Pages = ["boxes.md", "time.md", "facies.md",
-         "production.md", "cellular-automata.md", "waterdepth.md"]
+Pages = ["tag.md", "boxes.md", "time.md", "facies.md",
+         "production.md", "cellular-automata.md", "waterdepth.md", "hdf5.md",
+         "sediment_buffer.md"]
 Depth = 1
 ```
 

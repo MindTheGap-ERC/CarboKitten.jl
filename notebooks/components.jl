@@ -170,6 +170,9 @@ let
 	sediment_profile(header, data)
 end
 
+# ╔═╡ c8fbbf2a-de9e-4e88-b3bd-201091e8d869
+
+
 # ╔═╡ 20901dd1-ce07-4dd0-aa1f-3673a8012da3
 md"""
 # Production + CA
@@ -236,7 +239,7 @@ let
             maximum_growth_rate = 500u"m/Myr",
             extinction_coefficient = 0.8u"m^-1",
             saturation_intensity = 60u"W/m^2",
-            diffusion_coefficient = 10000u"m"),
+            diffusion_coefficient = 1000u"m"),
 
      	ALCAP2.Facies(
 			viability_range = (4, 10),
@@ -252,7 +255,7 @@ let
             maximum_growth_rate = 100u"m/Myr",
             extinction_coefficient = 0.005u"m^-1",
             saturation_intensity = 60u"W/m^2",
-            diffusion_coefficient = 7000u"m")]
+            diffusion_coefficient = 10000u"m")]
 
 	input = ALCAP2.Input(
 		tag = "ALCAP model",
@@ -260,7 +263,7 @@ let
 		time = TimeProperties(
 			Δt = 200.0u"yr",
 			steps = 5000,
-			write_interval = 10),
+			write_interval = 1),
 		sea_level = t -> 4.0u"m" * sin(2π * t / 0.2u"Myr"),
 		bedrock_elevation = (x, y) -> - x / 300.0,
 		subsidence_rate = 50.0u"m/Myr",
@@ -284,6 +287,12 @@ let
 	ax = Axis(fig[1,1])
 	sediment_profile!(ax, header, data)
 	fig
+end
+
+# ╔═╡ 538cd660-aab5-409d-a508-89cfd62c128d
+let
+	header, data = read_slice("../data/output/alcap1.h5", :, 25)
+	wheeler_diagram(header, data; smooth_size=(3,11), range=(-100.0u"m/Myr", 100.0u"m/Myr"))
 end
 
 # ╔═╡ Cell order:
@@ -311,9 +320,11 @@ end
 # ╠═bac48b9d-46d0-44a4-9e9f-7fa32b8fc75d
 # ╠═79b3c99b-0691-405c-8ed8-1da6d25cb9a8
 # ╠═67f405a6-1252-4fc8-9c70-0d97dd4437ae
+# ╠═c8fbbf2a-de9e-4e88-b3bd-201091e8d869
 # ╟─20901dd1-ce07-4dd0-aa1f-3673a8012da3
 # ╠═a864d6ea-99bf-4513-9f44-f15b1d19d6af
 # ╠═b523780a-7841-4f89-b144-f7b277bec831
 # ╟─72e1d116-06f0-4623-b068-9dd32c6f0eba
 # ╠═c3b7220f-49f4-42a2-bd2a-1c554e86d3c8
 # ╠═11fdbaa7-b4e1-4e41-9da2-c334f86e78ea
+# ╠═538cd660-aab5-409d-a508-89cfd62c128d

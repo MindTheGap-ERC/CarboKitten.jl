@@ -88,6 +88,7 @@ makedocs(
             "Water Depth" => "components/waterdepth.md",
             "Production" => "components/production.md",
             "HDF5 Writer" => "components/hdf5.md",
+            "Active Layer Transport" => "active-layer-transport.md",
         ],
         "CarboCAT" => [
             "Summary" => "carbocat.md",
@@ -98,9 +99,6 @@ makedocs(
             "Empirical Denudation" => "denudation/empirical.md",
             "Chemical Dissolution" => "denudation/chemical.md",
             "Physical Erosion" => "denudation/physical_erosion.md"
-        ],
-        "Transport" => [
-            "Active Layer" => "active-layer-transport.md",
         ],
         "Output" => [
             "CSV Export" => "data-export.md"

@@ -266,6 +266,8 @@ We run the model with 1000 time steps but only inspect one in every 100.
 #| creates: docs/src/_fig/active-layer-test.png
 #| collect: figures
 
+module ActiveLayerPlot
+
 include("active-layer.jl")
 using CairoMakie
 using Unitful
@@ -296,7 +298,9 @@ function main()
     save("docs/src/_fig/active-layer-test.png", fig)
 end
 
-main()
+end
+
+ActiveLayerPlot.main()
 ```
 
 ```@raw html

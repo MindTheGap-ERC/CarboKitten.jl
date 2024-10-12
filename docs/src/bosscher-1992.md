@@ -1,8 +1,8 @@
 # Carbonate Production
 
-## reproducing Bosscher & Schlager 1992
+The paper by Bosscher and Schlager (1992) [Bosscher1992](@cite) is an early computer model for simulating reef growth. This paper contains some of the essential ingredients that we find back in CarboKitten. We reproduce their results within the framework of CarboKitten's larger design.
 
-The paper by [Bosscher1992](@cite) is an early computer model for simulating reef growth. This paper contains some of the essential ingredients that we find back in CarboCAT. Here we will try to reproduce their results.
+The BS92 model assumes a direct relation between water depth and sediment accumulation rate. That way we can model reef growth by integrating an Ordinary Differential Equation (ODE). The [`Production` component](./components/production.md) provides this model
 
 ## Parameters
 
@@ -14,7 +14,7 @@ The paper by [Bosscher1992](@cite) is an early computer model for simulating ree
 
 ## Growth Rate
 
-The growth rate is
+The growth rate is given as
 
 $$g(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right),$$
 
@@ -85,7 +85,7 @@ plot 500*tanh(6.7 * exp(-0.8 * t)), t title 'Carbonate factory 1', \
 
 The use of water depth in both BS92 and B13 can be a bit confusing. Plots are shown up-side-down and little is done to disambiguate depth with sea level rising or lowering, or sediment accreting. Growth in deposition should give shallower sea bed. BS92 write $w = (h_0 + h(t)) - (s_0 + s(t))$. Actually $s_0$ is best set to 0, or simply included into $s(t)$ and $h_0$ can be replaced with setting $h(t=0) = h_0$. Then, as we have the growth rate as a function of water depth $g(w)$, we can say
 
-[$$\partial_t h = -g_m {\rm tanh}\left[\frac{I_0}{I_k} \exp(-k (h - s(t)))\right].$$]{#eq:growth-eqn}
+$$\partial_t h = -g_m {\rm tanh}\left[\frac{I_0}{I_k} \exp(-k (h - s(t)))\right].$$
 
 ``` {.julia #b92-model}
 function model(p::Parameters, s, t_end::Float64, h₀::Float64)
@@ -107,7 +107,7 @@ The most impressive result in BS92 is the last figure. They show an input curve 
 <details><summary>Extracting Sealevel Curve from an image</summary>
 ```
 
-``` {.julia .task file=examples/BS92/fig8-sealevel.jl}
+``` {.julia .task file=examples/bs92/fig8-sealevel.jl}
 #| creates: data/bs92-sealevel-curve.csv
 #| requires: data/bs92-sealevel-input.png
 
@@ -139,7 +139,7 @@ Script.main()
 
 Using `DifferentialEquations.jl` we can integrate Equation @eq:growth-eqn. Interestingly, the only integrator that gave me noise free results is `Euler`. This may be due to the sudden shut-down of production at $w = 0$.
 
-``` {.julia file=examples/BS92/BS92.jl}
+``` {.julia file=examples/bs92/bs92.jl}
 module BS92
 
 using DifferentialEquations
@@ -180,13 +180,13 @@ Note the simplicity of this result: there is no dependency on space, only on the
 <details><summary>Plotting code</summary>
 ```
 
-``` {.julia .task file=examples/BS92/fig8.jl}
+``` {.julia .task file=examples/bs92/fig8.jl}
 #| creates: docs/src/_fig/bs92-fig8.svg
-#| requires: data/bs92-sealevel-curve.csv examples/BS92/BS92.jl
+#| requires: data/bs92-sealevel-curve.csv examples/bs92/bs92.jl
 #| collect: figures
 
 module Script
-     include("BS92.jl")
+     include("bs92.jl")
      using CairoMakie
 
      function main()
@@ -214,7 +214,8 @@ Script.main()
 ```
 
 ## BS92 in CarboKitten stack
-Within the CarboKitten design, we can express the BS92 model a bit more succinctly. The following produces output that is fully compatible with other CarboKitten models and the included post processing and visualization stack.
+
+Within the CarboKitten design, we can express the BS92 model a bit more succinctly. The following produces output that is fully compatible with other CarboKitten models and the included post processing and visualization stack. The `H5Writer` module provides a `run` method that expects the `initial_state`, `step!` and `write_header` methods to be available.
 
 ``` {.julia file=src/Model/BS92.jl}
 @compose module BS92
@@ -253,8 +254,14 @@ end
 end
 ```
 
-``` {.julia file=examples/models/bs92.jl}
+``` {.julia .task file=examples/models/bs92.jl}
+#| creates: data/output/bs92.h5
+#| requires: data/bs92-sealevel-curve.csv
+
 module Script
+using Logging
+using TerminalLoggers
+global_logger(TerminalLogger(right_justify=80))
 
 using CarboKitten.Components
 using CarboKitten.Components.Common
@@ -297,4 +304,3 @@ end
 
 Script.main()
 ```
-

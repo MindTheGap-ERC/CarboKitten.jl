@@ -1,5 +1,13 @@
 module CarboKitten
 
+using TerminalLoggers: TerminalLogger
+using Logging
+
+global_logger(TerminalLogger(right_justify=80))
+@info """
+# Welcome to CarboKitten!
+"""
+
 include("./BoundaryTrait.jl")
 include("./Vectors.jl")
 include("./Config.jl")

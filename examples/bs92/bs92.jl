@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/bosscher-1992.md#examples/BS92/BS92.jl>>[init]
+# ~/~ begin <<docs/src/bosscher-1992.md#examples/bs92/bs92.jl>>[init]
 module BS92
 
 using DifferentialEquations

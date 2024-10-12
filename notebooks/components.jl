@@ -46,6 +46,15 @@ using DataFrames
 # ╔═╡ 2a161920-6fab-4204-ad24-b921702bbe81
 using Interpolations: linear_interpolation
 
+# ╔═╡ 375c2e46-7363-4a5e-b4ca-c60e60f34e9e
+using TerminalLoggers: TerminalLogger
+
+# ╔═╡ a7932700-4d90-4120-b79f-0daf29560833
+using Logging: global_logger
+
+# ╔═╡ a7ed3cc8-aaaf-4071-8d2b-e720819df58c
+global_logger(TerminalLogger(right_justify=80))
+
 # ╔═╡ 3adfb906-aef1-4262-89e0-ba6c318c1ebc
 md"""
 # Cellular Automaton
@@ -159,6 +168,8 @@ facies = [
 ]
 
 # ╔═╡ 79b3c99b-0691-405c-8ed8-1da6d25cb9a8
+# ╠═╡ disabled = true
+#=╠═╡
 let
 	input = BS92.Input(
 	    tag = "example model BS92",
@@ -175,6 +186,7 @@ let
 
 	H5Writer.run(Model{BS92}, input, "../data/output/bs92-3facies.h5")
 end
+  ╠═╡ =#
 
 # ╔═╡ 67f405a6-1252-4fc8-9c70-0d97dd4437ae
 let
@@ -191,6 +203,8 @@ md"""
 """
 
 # ╔═╡ a864d6ea-99bf-4513-9f44-f15b1d19d6af
+# ╠═╡ disabled = true
+#=╠═╡
 let
 	cap_facies = [
 	    CAP.Facies(
@@ -230,6 +244,7 @@ let
 
 	H5Writer.run(Model{CAP}, input, "../data/output/cap1.h5")
 end
+  ╠═╡ =#
 
 # ╔═╡ b523780a-7841-4f89-b144-f7b277bec831
 let
@@ -301,9 +316,6 @@ let
 	fig
 end
 
-# ╔═╡ 4b8fa62e-ca50-4908-888e-6718ea6f5bf0
-length(4:10)
-
 # ╔═╡ 538cd660-aab5-409d-a508-89cfd62c128d
 let
 	header, data = read_slice("../data/output/alcap1.h5", :, 25)
@@ -325,6 +337,9 @@ end
 # ╠═deba67a0-c237-4eb3-8eb3-6594da9d03a5
 # ╠═7f91c2b5-e556-4d41-bd16-cacf5ec5545e
 # ╠═2a161920-6fab-4204-ad24-b921702bbe81
+# ╠═375c2e46-7363-4a5e-b4ca-c60e60f34e9e
+# ╠═a7932700-4d90-4120-b79f-0daf29560833
+# ╠═a7ed3cc8-aaaf-4071-8d2b-e720819df58c
 # ╟─3adfb906-aef1-4262-89e0-ba6c318c1ebc
 # ╠═e486467a-af3c-4735-b336-d989fc31f355
 # ╠═54b3f849-2b3d-4c8b-b932-a4980e54c354
@@ -344,5 +359,4 @@ end
 # ╟─72e1d116-06f0-4623-b068-9dd32c6f0eba
 # ╠═c3b7220f-49f4-42a2-bd2a-1c554e86d3c8
 # ╠═11fdbaa7-b4e1-4e41-9da2-c334f86e78ea
-# ╠═4b8fa62e-ca50-4908-888e-6718ea6f5bf0
 # ╠═538cd660-aab5-409d-a508-89cfd62c128d

@@ -2,77 +2,45 @@
 
 The following **S**edimentation model includes the Burgess 2013 **C**ellular **A**utomaton, Bosscher & Schlager 1992 **P**roduction curves and an **A**ctive **L**ayer transport model, based on Paola 1992, henceforth ALCAPS.
 
-![Result of default ALCAPS run](fig/alcaps_default_profile.png)
-
-```@raw html
-<details><summary>Default ALCAPS code</summary>
-```
-
-``` {.julia .task file=examples/alcaps/defaults.jl}
-#| requires: src/Model/ALCAPS.jl
-#| creates: data/alcaps_default.h5
-
-using CarboKitten.Model.ALCAPS
-
-ALCAPS.main(ALCAPS.Input(), "data/alcaps_default.h5")
-```
-
-``` {.julia .task file=examples/alcaps/plot-defaults.jl}
-#| requires: ext/VisualizationExt.jl data/alcaps_default.h5
-#| creates: docs/src/_fig/alcaps_default_profile.png
-#| collect: figures
-
-using CairoMakie
-using Statistics
-using GeometryBasics
-using CarboKitten.Visualization
-
-function main()
-  fig = Visualization.sediment_profile("data/alcaps_default.h5", 25)
-  save("docs/src/_fig/alcaps_default_profile.png", fig)
-end
-
-main()
-```
-
-```@raw html
-</details>
-```
-
 ## Example Input
 
 The following is a complete example input.
 
-``` {.julia .task file=examples/alcaps/alternative.jl}
-#| requires: src/Model/ALCAPS.jl
-#| creates: data/alcaps2.h5
+``` {.julia .task file=examples/model/alcap/run.jl}
+#| requires: src/Model/ALCAP2.jl
+#| creates: data/output/alcap2.h5
+
+module Script
 
 using Unitful
-using CarboKitten.BoundaryTrait: Shelf
-using CarboKitten.Config: Box, TimeProperties
-using CarboKitten.Model.ALCAPS: Facies, Input, main
+using CarboKitten.Components
+using CarboKitten.Components.Common
+using CarboKitten.Model: ALCAP2 as ALCAP
 using CarboKitten.Export: data_export, CSV
 
 const m = u"m"
 const Myr = u"Myr"
 
-const PATH = "data"
-const TAG = "alcaps2"
+const PATH = "data/output"
+const TAG = "alcap2"
 
 const FACIES = [
-    Facies(viability_range=(4, 10),
+    ALCAP.Facies(
+        viability_range=(4, 10),
         activation_range=(6, 10),
         maximum_growth_rate=500u"m/Myr",
         extinction_coefficient=0.8u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=10000u"m"),
-    Facies(viability_range=(4, 10),
+    ALCAP.Facies(
+        viability_range=(4, 10),
         activation_range=(6, 10),
         maximum_growth_rate=400u"m/Myr",
         extinction_coefficient=0.1u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=5000u"m"),
-    Facies(viability_range=(4, 10),
+    ALCAP.Facies(
+        viability_range=(4, 10),
         activation_range=(6, 10),
         maximum_growth_rate=100u"m/Myr",
         extinction_coefficient=0.005u"m^-1",
@@ -83,14 +51,15 @@ const FACIES = [
 const PERIOD = 0.2Myr
 const AMPLITUDE = 4.0m
 
-const INPUT = Input(
-    tag="ALCAPS alternative",
+const INPUT = ALCAP.Input(
+    tag="$TAG",
     box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m),
     time=TimeProperties(
         Δt=0.0002Myr,
         steps=5000,
         write_interval=1),
-    ca_interval=1, bedrock_elevation=(x, y) -> -x / 300.0,
+    ca_interval=1,
+    bedrock_elevation=(x, y) -> -x / 300.0,
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
     subsidence_rate=50.0m / Myr,
     disintegration_rate=500.0m / Myr,
@@ -99,15 +68,21 @@ const INPUT = Input(
     depositional_resolution=0.5m,
     facies=FACIES)
 
-main(INPUT, "$(PATH)/alcaps2.h5")
+function main()
+    H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
 
-data_export(
-    CSV(tuple.(10:20:70, 25),
-      :sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
-      :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
-      :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
-      :metadata => "$(PATH)/$(TAG).toml"),
-    "$(PATH)/alcaps2.h5")
+    data_export(
+        CSV(tuple.(10:20:70, 25),
+          :sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
+          :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
+          :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
+          :metadata => "$(PATH)/$(TAG).toml"),
+        "$(PATH)/$(TAG).h5")
+end
+
+end
+
+Script.main()
 ```
 
 ![Result from alternative input](fig/alcaps-alternative.png)
@@ -116,18 +91,16 @@ data_export(
 <details><summary>Plotting code</summary>
 ```
 
-``` {.julia .task file=examples/alcaps/plot-alternative.jl}
+``` {.julia .task file=examples/model/alcap/plot.jl}
 #| creates: docs/src/_fig/alcaps-alternative.png
-#| requires: data/alcaps2.h5
+#| requires: data/output/alcap2.h5
 #| collect: figures
 
 using CairoMakie
-using Statistics
-using GeometryBasics
 using CarboKitten.Visualization
 
 function main()
-  fig = Visualization.sediment_profile("data/alcaps2.h5", 25)
+  sediment_profile("data/output/alcaps2.h5", 25)
   save("docs/src/_fig/alcaps-alternative.png", fig)
 end
 

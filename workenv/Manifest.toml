@@ -2,7 +2,7 @@
 
 julia_version = "1.10.5"
 manifest_format = "2.0"
-project_hash = "fc538943e387eadbac4c173d29e2df57aabb623c"
+project_hash = "002dcbc137500ee8906c99f494adb5e5674e6202"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "eea5d80188827b35333801ef97a40c2ed653b081"
@@ -278,7 +278,7 @@ uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.2+1"
 
 [[deps.CarboKitten]]
-deps = ["AxisArrays", "CSV", "DataFrames", "HDF5", "Interpolations", "MacroTools", "ModuleMixins", "ProgressBars", "ProgressLogging", "Random", "TOML", "TerminalLoggers", "Transducers", "Unitful"]
+deps = ["AxisArrays", "CSV", "DataFrames", "HDF5", "Interpolations", "Logging", "MacroTools", "ModuleMixins", "ProgressBars", "ProgressLogging", "Random", "TOML", "TerminalLoggers", "Transducers", "Unitful"]
 path = ".."
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 version = "0.1.0"

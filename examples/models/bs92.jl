@@ -1,5 +1,11 @@
 # ~/~ begin <<docs/src/bosscher-1992.md#examples/models/bs92.jl>>[init]
+#| creates: data/output/bs92.h5
+#| requires: data/bs92-sealevel-curve.csv
+
 module Script
+using Logging
+using TerminalLoggers
+global_logger(TerminalLogger(right_justify=80))
 
 using CarboKitten.Components
 using CarboKitten.Components.Common

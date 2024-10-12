@@ -132,7 +132,7 @@ uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 version = "0.10.14"
 
 [[deps.CarboKitten]]
-deps = ["AxisArrays", "CSV", "DataFrames", "HDF5", "Interpolations", "MacroTools", "ModuleMixins", "ProgressBars", "ProgressLogging", "Random", "TOML", "TerminalLoggers", "Transducers", "Unitful"]
+deps = ["AxisArrays", "CSV", "DataFrames", "HDF5", "Interpolations", "Logging", "MacroTools", "ModuleMixins", "ProgressBars", "ProgressLogging", "Random", "TOML", "TerminalLoggers", "Transducers", "Unitful"]
 path = ".."
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 version = "0.1.0"
@@ -429,9 +429,9 @@ version = "1.0.0"
 
 [[deps.JLLWrappers]]
 deps = ["Artifacts", "Preferences"]
-git-tree-sha1 = "f389674c99bfcde17dc57454011aa44d5a260a40"
+git-tree-sha1 = "be3dc50a92e5a386872a493a10050136d4703f9b"
 uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
-version = "1.6.0"
+version = "1.6.1"
 
 [[deps.JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]

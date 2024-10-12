@@ -68,7 +68,7 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
         colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
         colorrange=(0.5, n_facies + 0.5))
     contourf!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
-        levels=[0.0, 100.0], colormap=Reverse(:grays))
+        levels=[0.0, 10000.0], colormap=Reverse(:grays))
     contour!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
         levels=[0], color=:black, linewidth=2)
     return ft

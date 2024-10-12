@@ -38,10 +38,11 @@ end
 end
 
 function write_header(fid, input::AbstractInput)
+    attributes(fid["input"])["insolation"] = input.insolation |> in_units_of(u"W/m^2")
     for (i, f) in enumerate(input.facies)
         attr = attributes(fid["input/facies$(i)"])
         attr["maximum_growth_rate"] = f.maximum_growth_rate |> in_units_of(u"m/Myr")
-        attr["extincition_coefficient"] = f.extinction_coefficient |> in_units_of(u"m^-1")
+        attr["extinction_coefficient"] = f.extinction_coefficient |> in_units_of(u"m^-1")
         attr["saturation_intensity"] = f.saturation_intensity |> in_units_of(u"W/m^2")
     end
 end

@@ -258,6 +258,8 @@ md"""
 """
 
 # ╔═╡ c3b7220f-49f4-42a2-bd2a-1c554e86d3c8
+# ╠═╡ disabled = true
+#=╠═╡
 let
 	facies = [
     	ALCAP2.Facies(
@@ -306,6 +308,7 @@ let
 
 	H5Writer.run(Model{ALCAP2}, input, "../data/output/alcap1.h5")
 end
+  ╠═╡ =#
 
 # ╔═╡ 11fdbaa7-b4e1-4e41-9da2-c334f86e78ea
 let

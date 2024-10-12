@@ -28,24 +28,23 @@ function production_curve(input)
     fig
 end
 
-function production_curve!(ax, g::HDF5.Group)
-    ax.title = "production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))"
+function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")
+    a = HDF5.attributes(g)
+    insolation = a["insolation"][] * u"W/m^2"
+
+    ax.title = "production at $(sprint(show, insolation; context=:fancy_exponent=>true))"
     ax.xlabel = "production [m/Myr]"
     ax.ylabel = "depth [m]"
-    ax.yreversed = true
-
-    a = attributes(g)
-    insolation = a["insolation"][]
 
     for i in 1:a["n_facies"][]
-        fa = attributes(g["facies$(i)"])
+        fa = HDF5.attributes(g["facies$(i)"])
         f = Facies(
             fa["maximum_growth_rate"][] * u"m/Myr",
             fa["extinction_coefficient"][] * u"m^-1",
             fa["saturation_intensity"][] * u"W/m^2")
-        depth = (0.1:0.1:50.0)u"m"
+        depth = (0.1u"m":0.1u"m":-max_depth)
         prod = [production_rate(insolation, f, d) for d in depth]
-        lines!(ax, prod / u"m/Myr", depth / u"m")
+        lines!(ax, prod / u"m/Myr", - depth / u"m")
     end
 end
 

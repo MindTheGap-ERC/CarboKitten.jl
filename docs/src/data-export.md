@@ -302,7 +302,7 @@ Extract Sediment Accumumlation Curve (SAC) from the data. The SAC is directly co
 is in the range `1:length(grid_locations)`.
 """
 function extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-    DataFrame(:time => header.axes.t[1:end-1],
+    DataFrame(:time => header.axes.t[1:end],
         (Symbol("sac$(i)") => data.sediment_elevation[loc..., :]
          for (i, loc) in enumerate(grid_locations))...)
 end
@@ -414,15 +414,17 @@ function read_data(filename)
     end
 end
 
+read_slice(fid::HDF5.File, slice...) = DataSlice(
+    slice,
+    fid["disintegration"][:, slice..., :] * u"m",
+    fid["production"][:, slice..., :] * u"m",
+    fid["deposition"][:, slice..., :] * u"m",
+    fid["sediment_height"][slice..., :] * u"m")
+
 function read_slice(filename, slice...)
     h5open(filename) do fid
         header = read_header(fid)
-        data = DataSlice(
-            slice,
-            fid["disintegration"][:, slice..., :] * u"m",
-            fid["production"][:, slice..., :] * u"m",
-            fid["deposition"][:, slice..., :] * u"m",
-            fid["sediment_height"][slice..., :] * u"m")
+        data = read_slice(fid, slice...)
         header, data
     end
 end

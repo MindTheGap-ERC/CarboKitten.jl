@@ -43,7 +43,8 @@ The Project Extension requires a front-end where the available methods are expos
 
 ``` {.julia file=src/Visualization.jl}
 module Visualization
-export sediment_profile!, sediment_profile, wheeler_diagram!, wheeler_diagram, production_curve!, production_curve
+export sediment_profile!, sediment_profile, wheeler_diagram!, wheeler_diagram, production_curve!,
+       production_curve, glamour_view!, summary_plot
 
 function print_instructions(func_name, args)
     println("Called `$(func_name)` with args `$(typeof.(args))`")
@@ -58,6 +59,8 @@ production_curve(args...) = print_instructions("production_curve", args)
 production_curve!(args...) = print_instructions("production_curve!", args)
 stratigraphic_column!(args...) = print_instructions("production_curve!", args)
 age_depth_model!(args...) = print_instructions("age_depth_model!", args)
+glamour_view!(args...) = print_instructions("glamour_view!", args)
+summary_plot(args...) = print_instructions("summary_plot", args)
 
 end  # module
 ```
@@ -70,6 +73,59 @@ include("ProductionCurve.jl")
 include("StratigraphicColumn.jl")
 include("AgeDepthModel.jl")
 include("SedimentProfile.jl")
+include("GlamourView.jl")
+include("SummaryPlot.jl")
+
+end
+```
+
+## Summary collage
+
+``` {.julia file=ext/SummaryPlot.jl}
+module SummaryPlot
+
+using CarboKitten.Visualization
+import CarboKitten.Visualization: summary_plot
+using CarboKitten.Export: read_header, read_slice
+using CarboKitten.Utility: in_units_of
+using HDF5
+using Unitful
+using Makie
+
+summary_plot(filename::AbstractString; kwargs...) = h5open(fid->summary_plot(fid; kwargs...), filename, "r")
+
+function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
+	header = read_header(fid)
+    y_slice = div(length(header.axes.y), 2) + 1
+    max_depth = minimum(header.bedrock_elevation)
+	data = read_slice(fid, :, y_slice)
+
+	n_facies = size(data.production)[1]
+	fig = Figure(size=(1200, 1000), backgroundcolor=:gray80)
+
+	ax1 = Axis(fig[1:2,1:2])
+	sediment_profile!(ax1, header, data)
+
+	ax2 = Axis(fig[4,1])
+	ax3 = Axis(fig[4,2])
+	sm, df = wheeler_diagram!(ax2, ax3, header, data; smooth_size=wheeler_smooth)
+	Colorbar(fig[3,1], sm; vertical=false, label="sediment accumulation [m/Myr]")
+	Colorbar(fig[3,2], df; vertical=false, label="dominant facies", ticks=1:n_facies)
+
+	ax4 = Axis(fig[4,3], title="sealevel curve", xlabel="sealevel [m]",
+        limits=(nothing, (0.0, header.axes.t[end] |> in_units_of(u"Myr"))))
+	lines!(ax4, header.sea_level |> in_units_of(u"m"), header.axes.t |> in_units_of(u"Myr"))
+
+	ax5 = Axis(fig[2,3])
+	production_curve!(ax5, fid["input"], max_depth=max_depth)
+
+	linkyaxes!(ax2, ax3, ax4)
+
+	ax = Axis3(fig[1, 3]; zlabel="depth [m]", xlabel="x [km]", ylabel="y [km]")
+	glamour_view!(ax, fid)
+
+	fig
+end
 
 end
 ```
@@ -164,7 +220,7 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
         colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
         colorrange=(0.5, n_facies + 0.5))
     contourf!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
-        levels=[0.0, 100.0], colormap=Reverse(:grays))
+        levels=[0.0, 10000.0], colormap=Reverse(:grays))
     contour!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
         levels=[0], color=:black, linewidth=2)
     return ft
@@ -232,24 +288,23 @@ function production_curve(input)
     fig
 end
 
-function production_curve!(ax, g::HDF5.Group)
-    ax.title = "production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))"
+function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")
+    a = HDF5.attributes(g)
+    insolation = a["insolation"][] * u"W/m^2"
+
+    ax.title = "production at $(sprint(show, insolation; context=:fancy_exponent=>true))"
     ax.xlabel = "production [m/Myr]"
     ax.ylabel = "depth [m]"
-    ax.yreversed = true
-
-    a = attributes(g)
-    insolation = a["insolation"][]
 
     for i in 1:a["n_facies"][]
-        fa = attributes(g["facies$(i)"])
+        fa = HDF5.attributes(g["facies$(i)"])
         f = Facies(
             fa["maximum_growth_rate"][] * u"m/Myr",
             fa["extinction_coefficient"][] * u"m^-1",
             fa["saturation_intensity"][] * u"W/m^2")
-        depth = (0.1:0.1:50.0)u"m"
+        depth = (0.1u"m":0.1u"m":-max_depth)
         prod = [production_rate(insolation, f, d) for d in depth]
-        lines!(ax, prod / u"m/Myr", depth / u"m")
+        lines!(ax, prod / u"m/Myr", - depth / u"m")
     end
 end
 
@@ -440,6 +495,56 @@ function skeleton(bitmap::AbstractMatrix{Bool}; minwidth=10)
     edges = flatten(map(splat(edges_between), pairs(enumerate_seq(vertex_rows))))
     vertices = flatten(((i, middle(v)) for v in vs) for (i, vs) in enumerate(vertex_rows))
     return collect(vertices), reshape(reinterpret(Int, collect(edges)), (2,:))'
+end
+
+end
+```
+
+## Glamour View (3D)
+
+``` {.julia file=ext/GlamourView.jl}
+module GlamourView
+
+import CarboKitten.Visualization: glamour_view!
+using CarboKitten.Utility: in_units_of
+using CarboKitten.Export: read_header
+using Makie
+using HDF5
+using Unitful
+
+function glamour_view!(ax::Makie.Axis3, fid::HDF5.File; colormap=Reverse(:speed))
+	header = read_header(fid)
+	x = header.axes.x |> in_units_of(u"km")
+	y = header.axes.y |> in_units_of(u"km")
+	xy_aspect = x[end] / y[end]
+
+	ax.aspect = (xy_aspect, 1, 1)
+	ax.azimuth = -π/3
+
+	n_steps = length(header.axes.t)
+	grid_size = (length(x), length(y))
+	steps_between = 2
+	selected_steps = [1, ((1:steps_between) .* n_steps .÷ (steps_between + 1))..., n_steps]
+	bedrock = header.bedrock_elevation .- header.axes.t[end] * header.subsidence_rate
+
+	result = Array{Float64, 3}(undef, grid_size..., length(selected_steps))
+	for (i, j) in enumerate(selected_steps)
+		result[:, :, i] = fid["sediment_height"][:,:,j] .+ bedrock / u"m"
+	end
+
+	surface!(ax, x, y, result[:,:,1];
+		color=ones(grid_size),
+		colormap=:grays)
+
+	for s in eachslice(result[:,:,2:end-1], dims=3)
+		surface!(ax, x, y, s;
+			colormap=(colormap, 0.7))		
+	end
+
+	surface!(ax, x, y, result[:,:,end];
+		colormap=colormap)
+	lines!(ax, x, zeros(grid_size[1]), result[:, 1, end]; color=(:white, 0.5), linewidth=1)
+	lines!(ax, fill(x[end], grid_size[2]), y, result[end, :, end]; color=(:white, 0.5), linewidth=1)
 end
 
 end

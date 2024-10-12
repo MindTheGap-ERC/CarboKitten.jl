@@ -66,7 +66,10 @@ const DISINTEGRATION1 = reshape(
         zeros(Amount, 10))',
     1, 3, 1, 10)
 
-const ELEVATION1 = cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :]
+const ELEVATION1 = cat(
+    [0.0, 0.0, 0.0]u"m",
+    cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :];
+    dims=3)
 
 const DATA1 = Data(
     disintegration=DISINTEGRATION1,
@@ -221,9 +224,9 @@ The stratigraphic column should sum to the age-depth model.
     sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
     adm = sac |> age_depth_model
     sc = extract_sc(HEADER1, DATA1, GRID_LOCATIONS1)
-    @test cumsum(sc.sc1_f1) ≈ adm.adm1
-    @test cumsum(sc.sc2_f1) ≈ adm.adm2
-    @test cumsum(sc.sc3_f1) ≈ adm.adm3
+    @test [0.0u"m"; cumsum(sc.sc1_f1)] ≈ adm.adm1
+    @test [0.0u"m"; cumsum(sc.sc2_f1)] ≈ adm.adm2
+    @test [0.0u"m"; cumsum(sc.sc3_f1)] ≈ adm.adm3
 end
 ```
 

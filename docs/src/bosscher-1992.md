@@ -4,7 +4,7 @@ The paper by Bosscher and Schlager (1992) [Bosscher1992](@cite) is an early comp
 
 The BS92 model assumes a direct relation between water depth and sediment accumulation rate. That way we can model reef growth by integrating an Ordinary Differential Equation (ODE). The [`Production` component](./components/production.md) provides this model for the rest of CarboKitten.
 
-
+![summary plot](fig/bs92-summary.png)
 
 ## Parameters
 
@@ -188,7 +188,7 @@ Note the simplicity of this result: there is no dependency on space, only on the
 #| collect: figures
 
 module Script
-     include("bs92.jl")
+     include("using_ode.jl")
      using CairoMakie
 
      function main()
@@ -229,7 +229,7 @@ using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
 
-export Input, Facies, run
+export Input, Facies
 
 function initial_state(input::Input)
     sediment_height = zeros(Height, input.box.grid_size...)
@@ -313,5 +313,6 @@ Script.main()
 #| collect: figures
 
 using GLMakie
+using CarboKitten.Visualization
 save("docs/src/_fig/bs92-summary.png", summary_plot("data/output/bs92.h5"))
 ```

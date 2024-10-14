@@ -4,7 +4,7 @@
 #| collect: figures
 
 module Script
-     include("bs92.jl")
+     include("using_ode.jl")
      using CairoMakie
 
      function main()

@@ -3,10 +3,12 @@ module CarboKitten
 using TerminalLoggers: TerminalLogger
 using Logging
 
-global_logger(TerminalLogger(right_justify=80))
-@info """
-# Welcome to CarboKitten!
-"""
+function init()
+    global_logger(TerminalLogger(right_justify=80))
+    @info """
+    # Welcome to CarboKitten!
+    """
+end
 
 include("./BoundaryTrait.jl")
 include("./Vectors.jl")
@@ -39,5 +41,7 @@ end
 
 include("./Export.jl")
 include("./Visualization.jl")
+
+const run = Components.H5Writer.run
 
 end # module CarboKitten

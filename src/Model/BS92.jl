@@ -8,7 +8,7 @@ using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
 
-export Input, Facies, run
+export Input, Facies
 
 function initial_state(input::Input)
     sediment_height = zeros(Height, input.box.grid_size...)

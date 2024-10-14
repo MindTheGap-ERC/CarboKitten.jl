@@ -4,6 +4,7 @@
 
 module Script
 
+using CarboKitten
 using CarboKitten.Model.CAP
 using CarboKitten.Components.Common
 using Unitful
@@ -47,7 +48,7 @@ const FACIES = [
 		insolation = 400.0u"W/m^2",
 		facies = FACIES)
 
-	main() = H5Writer.run(Model{CAP}, input, "../data/output/cap1.h5")
+	main() = CarboKitten.run(Model{CAP}, INPUT, "data/output/cap1.h5")
 end
 
 Script.main()

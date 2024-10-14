@@ -17,10 +17,6 @@ end
     sediment_height::Matrix{Height}
 end
 
-@kwdef struct Frame <: AbstractFrame
-    sediment_height::Matrix{Height}
-end
-
 function water_depth(input::AbstractInput)
     x, y = axes(input.box)
     eta0 = input.bedrock_elevation.(x, y')
@@ -47,11 +43,6 @@ function create_dataset(fid, input::AbstractInput)
     return HDF5.create_dataset(fid, "sediment_height", datatype(Float64),
         dataspace(input.box.grid_size..., input.time.steps),
         chunk=(input.box.grid_size..., 1))
-end
-
-function write_frame(fid, state::AbstractState, frame::AbstractFrame)
-    dataset = fid["sediment_height"]
-    dataset[:, :, state.step] = frame.sediment_height
 end
 
 end

@@ -2,6 +2,8 @@
 
 The following **S**edimentation model includes the Burgess 2013 **C**ellular **A**utomaton, Bosscher & Schlager 1992 **P**roduction curves and an **A**ctive **L**ayer transport model, based on Paola 1992, henceforth ALCAPS.
 
+![Result from alternative input](fig/alcaps-alternative.png)
+
 ## Example Input
 
 The following is a complete example input.
@@ -85,8 +87,6 @@ end
 Script.main()
 ```
 
-![Result from alternative input](fig/alcaps-alternative.png)
-
 ```@raw html
 <details><summary>Plotting code</summary>
 ```
@@ -96,15 +96,10 @@ Script.main()
 #| requires: data/output/alcap2.h5
 #| collect: figures
 
-using CairoMakie
+using GLMakie
 using CarboKitten.Visualization
 
-function main()
-  sediment_profile("data/output/alcaps2.h5", 25)
-  save("docs/src/_fig/alcaps-alternative.png", fig)
-end
-
-main()
+save("docs/src/_fig/alcaps-alternative.png", summary_plot("data/output/alcap2.h5"))
 ```
 
 ```@raw html
@@ -124,7 +119,7 @@ using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
 
-export Input, Facies, run
+export Input, Facies
 
 function initial_state(input::Input)
     ca_state = CellularAutomaton.initial_state(input)

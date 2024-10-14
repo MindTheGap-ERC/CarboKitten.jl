@@ -3,13 +3,8 @@
 #| requires: data/output/alcap2.h5
 #| collect: figures
 
-using CairoMakie
+using GLMakie
 using CarboKitten.Visualization
 
-function main()
-  sediment_profile("data/output/alcaps2.h5", 25)
-  save("docs/src/_fig/alcaps-alternative.png", fig)
-end
-
-main()
+save("docs/src/_fig/alcaps-alternative.png", summary_plot("data/output/alcap2.h5"))
 # ~/~ end

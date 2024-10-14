@@ -2,6 +2,8 @@
 
 This model combines BS92 production with the B13 cellular automaton. This production model is implemented in the [`CAProduction` component](components/production.md).
 
+![Stratigraphy, production and subsidence under oscillating sea level.](fig/cap1-summary.png)
+
 ## Complete example
 
 This example is running for 10000 steps to 1Myr on a 100 $\times$ 50 grid, starting with a sloped height down to 50m. The `sea_level`, and `initial_depth` arguments are functions. The `phys_scale` argument translate pixels on the grid into physical metres. The `write_interval` indicates to write output every 10 iterations, summing the production over that range.
@@ -12,6 +14,7 @@ This example is running for 10000 steps to 1Myr on a 100 $\times$ 50 grid, start
 
 module Script
 
+using CarboKitten
 using CarboKitten.Model.CAP
 using CarboKitten.Components.Common
 using Unitful
@@ -55,7 +58,7 @@ const FACIES = [
 		insolation = 400.0u"W/m^2",
 		facies = FACIES)
 
-	main() = H5Writer.run(Model{CAP}, input, "../data/output/cap1.h5")
+	main() = CarboKitten.run(Model{CAP}, INPUT, "data/output/cap1.h5")
 end
 
 Script.main()
@@ -73,8 +76,6 @@ using CarboKitten.Visualization
 save("docs/src/_fig/cap1-summary.png", summary_plot("data/output/cap1.h5"))
 ```
 
-![Stratigraphy, production and subsidence under oscillating sea level.](fig/cap1-summary.png)
-
 ## Implementation
 
 ``` {.julia file=src/Model/CAP.jl}
@@ -87,7 +88,7 @@ using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
 
-export Input, Facies, run
+export Input, Facies
 
 function initial_state(input::Input)
     ca_state = CellularAutomaton.initial_state(input)

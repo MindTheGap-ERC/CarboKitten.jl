@@ -151,26 +151,25 @@ md"""
 # Multiple facies
 """
 
-# ╔═╡ bac48b9d-46d0-44a4-9e9f-7fa32b8fc75d
-facies = [
-	BS92.Facies(
-        maximum_growth_rate=500u"m/Myr"/4,
-        extinction_coefficient=0.8u"m^-1",
-        saturation_intensity=60u"W/m^2"),
-    BS92.Facies(
-        maximum_growth_rate=400u"m/Myr"/4,
-        extinction_coefficient=0.1u"m^-1",
-        saturation_intensity=60u"W/m^2"),
-    BS92.Facies(
-        maximum_growth_rate=100u"m/Myr"/4,
-        extinction_coefficient=0.005u"m^-1",
-        saturation_intensity=60u"W/m^2")
-]
-
 # ╔═╡ 79b3c99b-0691-405c-8ed8-1da6d25cb9a8
 # ╠═╡ disabled = true
 #=╠═╡
 let
+	facies = [
+		BS92.Facies(
+	        maximum_growth_rate=500u"m/Myr"/4,
+	        extinction_coefficient=0.8u"m^-1",
+	        saturation_intensity=60u"W/m^2"),
+	    BS92.Facies(
+	        maximum_growth_rate=400u"m/Myr"/4,
+	        extinction_coefficient=0.1u"m^-1",
+	        saturation_intensity=60u"W/m^2"),
+	    BS92.Facies(
+	        maximum_growth_rate=100u"m/Myr"/4,
+	        extinction_coefficient=0.005u"m^-1",
+	        saturation_intensity=60u"W/m^2")
+	]
+	
 	input = BS92.Input(
 	    tag = "example model BS92",
 	    box = Common.Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),
@@ -352,7 +351,6 @@ end
 # ╠═ae356c01-2520-4bdf-8555-8b465040e494
 # ╠═c954e223-fb91-4f86-8199-f91f39156773
 # ╟─e93b7ac8-dcf9-4ca1-8d1b-01d6dd139930
-# ╠═bac48b9d-46d0-44a4-9e9f-7fa32b8fc75d
 # ╠═79b3c99b-0691-405c-8ed8-1da6d25cb9a8
 # ╠═67f405a6-1252-4fc8-9c70-0d97dd4437ae
 # ╠═c8fbbf2a-de9e-4e88-b3bd-201091e8d869

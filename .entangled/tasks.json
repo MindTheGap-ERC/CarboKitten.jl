@@ -45,78 +45,6 @@
     {
       "description": null,
       "creates": [
-        "data/caps-osc.h5"
-      ],
-      "requires": [
-        "src/CaProd.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/production-only/caps-osc.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/b13-capsosc-crosssection.png"
-      ],
-      "requires": [
-        "data/caps-osc.h5",
-        "ext/VisualizationExt.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/plot-caps-osc.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "data/ca-prod.h5"
-      ],
-      "requires": [
-        "src/CaProd.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/production-only/ca-uniform.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "data/ca-prod-slope.h5"
-      ],
-      "requires": [
-        "src/CaProd.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/production-only/ca-slope.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/b13-crosssection.png"
-      ],
-      "requires": [
-        "data/ca-prod-slope.h5",
-        "ext/VisualizationExt.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/production-only/plot-cap-slope.jl"
-    },
-    {
-      "description": null,
-      "creates": [
         "docs/src/_fig/active-layer-production-patch.png"
       ],
       "requires": [
@@ -154,7 +82,7 @@
       "stdout": null,
       "stdin": null,
       "script": null,
-      "path": "examples/bs92/fig8-sealevel.jl"
+      "path": "examples/model/bs92/fig8-sealevel.jl"
     },
     {
       "description": null,
@@ -163,13 +91,13 @@
       ],
       "requires": [
         "data/bs92-sealevel-curve.csv",
-        "examples/bs92/bs92.jl"
+        "examples/model/bs92/using_ode.jl"
       ],
       "runner": "julia",
       "stdout": null,
       "stdin": null,
       "script": null,
-      "path": "examples/bs92/fig8.jl"
+      "path": "examples/model/bs92/fig8.jl"
     },
     {
       "description": null,
@@ -183,7 +111,21 @@
       "stdout": null,
       "stdin": null,
       "script": null,
-      "path": "examples/models/bs92.jl"
+      "path": "examples/model/bs92/run.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/bs92-summary.png"
+      ],
+      "requires": [
+        "data/output/bs92.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/bs92/plot.jl"
     },
     {
       "description": null,
@@ -214,17 +156,45 @@
       "path": "examples/model/alcap/plot.jl"
     },
     {
+      "description": null,
+      "creates": [
+        "data/output/cap1.h5"
+      ],
+      "requires": [
+        "src/Model/CAP.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/cap/run.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/cap1-summary.png"
+      ],
+      "requires": [
+        "data/output/cap1.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/cap/plot.jl"
+    },
+    {
       "name": "figures",
       "requires": [
         "docs/src/_fig/eca.png",
         "docs/src/_fig/life.gif",
         "docs/src/_fig/boundary_types.png",
-        "docs/src/_fig/b13-capsosc-crosssection.png",
-        "docs/src/_fig/b13-crosssection.png",
         "docs/src/_fig/active-layer-production-patch.png",
         "docs/src/_fig/active-layer-test.png",
         "docs/src/_fig/bs92-fig8.svg",
-        "docs/src/_fig/alcaps-alternative.png"
+        "docs/src/_fig/bs92-summary.png",
+        "docs/src/_fig/alcaps-alternative.png",
+        "docs/src/_fig/cap1-summary.png"
       ]
     }
   ]

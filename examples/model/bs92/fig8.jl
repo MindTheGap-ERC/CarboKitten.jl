@@ -1,6 +1,6 @@
-# ~/~ begin <<docs/src/bosscher-1992.md#examples/bs92/fig8.jl>>[init]
+# ~/~ begin <<docs/src/bosscher-1992.md#examples/model/bs92/fig8.jl>>[init]
 #| creates: docs/src/_fig/bs92-fig8.svg
-#| requires: data/bs92-sealevel-curve.csv examples/bs92/bs92.jl
+#| requires: data/bs92-sealevel-curve.csv examples/model/bs92/using_ode.jl
 #| collect: figures
 
 module Script

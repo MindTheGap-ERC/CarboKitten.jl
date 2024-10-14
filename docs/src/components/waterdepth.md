@@ -2,6 +2,18 @@
 
 The `WaterDepth` module computes the water depth, given the bedrock elevation, sea level curve, subsidence rate and current sediment height.
 
+## Input
+
+- `bedrock_elevation(x, y)` (a.k.a. initial depth) should be a function taking two coordinates in units of meters, returning an elevation also in meters.
+- `sea_level(t)` should be a function taking a time in millions of years (Myr) returning the eustatic sealevel. This could also be an interpolated table.
+- `subsidence_rate` a constant rate of subsidence in m/Myr.
+
+The signs of these quantities should be such that the following equation holds:
+
+$$T + E = S + W,$$
+
+saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation plus change in Water depth.
+
 ``` {.julia file=src/Components/WaterDepth.jl}
 @compose module WaterDepth
 @mixin TimeIntegration, Boxes

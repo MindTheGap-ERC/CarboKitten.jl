@@ -10,6 +10,8 @@ We write output to HDF5.
 
     @mixin Boxes, TimeIntegration, FaciesBase, WaterDepth
 
+    export run
+
     @kwdef struct DataFrame
         disintegration::Union{Array{Amount,3},Nothing} = nothing   # facies, x, y
         production::Union{Array{Amount,3},Nothing} = nothing

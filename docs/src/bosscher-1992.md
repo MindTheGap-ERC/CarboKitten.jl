@@ -2,7 +2,9 @@
 
 The paper by Bosscher and Schlager (1992) [Bosscher1992](@cite) is an early computer model for simulating reef growth. This paper contains some of the essential ingredients that we find back in CarboKitten. We reproduce their results within the framework of CarboKitten's larger design.
 
-The BS92 model assumes a direct relation between water depth and sediment accumulation rate. That way we can model reef growth by integrating an Ordinary Differential Equation (ODE). The [`Production` component](./components/production.md) provides this model
+The BS92 model assumes a direct relation between water depth and sediment accumulation rate. That way we can model reef growth by integrating an Ordinary Differential Equation (ODE). The [`Production` component](./components/production.md) provides this model for the rest of CarboKitten.
+
+
 
 ## Parameters
 
@@ -107,7 +109,7 @@ The most impressive result in BS92 is the last figure. They show an input curve 
 <details><summary>Extracting Sealevel Curve from an image</summary>
 ```
 
-``` {.julia .task file=examples/bs92/fig8-sealevel.jl}
+``` {.julia .task file=examples/model/bs92/fig8-sealevel.jl}
 #| creates: data/bs92-sealevel-curve.csv
 #| requires: data/bs92-sealevel-input.png
 
@@ -139,7 +141,7 @@ Script.main()
 
 Using `DifferentialEquations.jl` we can integrate Equation @eq:growth-eqn. Interestingly, the only integrator that gave me noise free results is `Euler`. This may be due to the sudden shut-down of production at $w = 0$.
 
-``` {.julia file=examples/bs92/bs92.jl}
+``` {.julia file=examples/model/bs92/using_ode.jl}
 module BS92
 
 using DifferentialEquations
@@ -180,9 +182,9 @@ Note the simplicity of this result: there is no dependency on space, only on the
 <details><summary>Plotting code</summary>
 ```
 
-``` {.julia .task file=examples/bs92/fig8.jl}
+``` {.julia .task file=examples/model/bs92/fig8.jl}
 #| creates: docs/src/_fig/bs92-fig8.svg
-#| requires: data/bs92-sealevel-curve.csv examples/bs92/bs92.jl
+#| requires: data/bs92-sealevel-curve.csv examples/model/bs92/using_ode.jl
 #| collect: figures
 
 module Script
@@ -254,7 +256,7 @@ end
 end
 ```
 
-``` {.julia .task file=examples/models/bs92.jl}
+``` {.julia .task file=examples/model/bs92/run.jl}
 #| creates: data/output/bs92.h5
 #| requires: data/bs92-sealevel-curve.csv
 
@@ -303,4 +305,13 @@ end
 end
 
 Script.main()
+```
+
+``` {.julia .task file=examples/model/bs92/plot.jl}
+#| creates: docs/src/_fig/bs92-summary.png
+#| requires: data/output/bs92.h5
+#| collect: figures
+
+using GLMakie
+save("docs/src/_fig/bs92-summary.png", summary_plot("data/output/bs92.h5"))
 ```

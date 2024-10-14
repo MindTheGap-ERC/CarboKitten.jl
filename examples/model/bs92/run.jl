@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/bosscher-1992.md#examples/models/bs92.jl>>[init]
+# ~/~ begin <<docs/src/bosscher-1992.md#examples/model/bs92/run.jl>>[init]
 #| creates: data/output/bs92.h5
 #| requires: data/bs92-sealevel-curve.csv
 

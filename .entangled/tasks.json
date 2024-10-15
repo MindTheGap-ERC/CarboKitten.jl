@@ -101,6 +101,34 @@
     {
       "description": null,
       "creates": [
+        "data/output/cap1.h5"
+      ],
+      "requires": [
+        "src/Model/CAP.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/cap/run.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/cap1-summary.png"
+      ],
+      "requires": [
+        "data/output/cap1.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/cap/plot.jl"
+    },
+    {
+      "description": null,
+      "creates": [
         "data/bs92-sealevel-curve.csv"
       ],
       "requires": [
@@ -156,34 +184,6 @@
       "path": "examples/model/bs92/plot.jl"
     },
     {
-      "description": null,
-      "creates": [
-        "data/output/cap1.h5"
-      ],
-      "requires": [
-        "src/Model/CAP.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/model/cap/run.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/cap1-summary.png"
-      ],
-      "requires": [
-        "data/output/cap1.h5"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/model/cap/plot.jl"
-    },
-    {
       "name": "figures",
       "requires": [
         "docs/src/_fig/eca.png",
@@ -192,9 +192,9 @@
         "docs/src/_fig/active-layer-production-patch.png",
         "docs/src/_fig/active-layer-test.png",
         "docs/src/_fig/alcaps-alternative.png",
+        "docs/src/_fig/cap1-summary.png",
         "docs/src/_fig/bs92-fig8.svg",
-        "docs/src/_fig/bs92-summary.png",
-        "docs/src/_fig/cap1-summary.png"
+        "docs/src/_fig/bs92-summary.png"
       ]
     }
   ]

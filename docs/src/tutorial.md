@@ -8,7 +8,9 @@ This project is written with `Julia`, an open-source and free language. For more
 ## Install Julia
 Details of downloading and installing `Julia` could be find [here](https://julialang.org/downloads/). For example, if you are using Windows, please type the following command in command prompt:
 
-```winget install julia -s msstore``` 
+```shell
+winget install julia -s msstore
+``` 
 
 Alternatively, the you could use `juliaup` from [here](github.com/JuliaLang/juliaup) to download julia.
 
@@ -23,18 +25,16 @@ VScode is an integrated development environment that supports many mainstream la
 
 Download VSCode from https://code.visualstudio.com/. after installing it, find 'extension' tab at the left bar, and type in julia, added this extension. The it should good to go. You can start a julia REPL by `Ctrl + Shft + P`. 
 
-### Pluto (I think for workshop, this is the best option)
+### Pluto (We will stick to Pluto in the workshop)
 If you don't want to install too many things on your computer, you can try Pluto notebook, similar to Jupyter notebook.
 
 enter package mode by:
 
- ```]```
-
-```add Pluto```
-
-```import Pluto```
-
-```Pluto.run()```
+```juliarepl
+julia> using Pluto
+# answer question [y]
+julia> Pluto.run()
+```
 
 The browser will pop up and you can create a new notebook. To stop Pluto, please enter `Ctrl + C`.
 
@@ -89,8 +89,6 @@ The results are saved in "./data" as HDF5 file. (we have to correspond the examp
 (Better to have a ready-to-use Pluto notebook?
 
 ### Visualisation of cross-section and wheeler diagram
-
-In package model (`]`), `add GLMakie`.
 
 `using GLMakie`.
 

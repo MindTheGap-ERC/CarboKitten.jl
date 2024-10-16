@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/bosscher-1992.md#examples/BS92/fig8-sealevel.jl>>[init]
+# ~/~ begin <<docs/src/bosscher-1992.md#examples/model/bs92/fig8-sealevel.jl>>[init]
 #| creates: data/bs92-sealevel-curve.csv
 #| requires: data/bs92-sealevel-input.png
 

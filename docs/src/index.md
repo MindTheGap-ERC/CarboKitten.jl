@@ -104,7 +104,7 @@ Input datastructures are always `@kwdef`. This makes it easier to understand and
 Different components of CarboKitten can work a variety of input types, as long as their expected data members are present. TODO: systematically document type requirements for each component.
 
 #### Output data
-All output is written to HDF5 files.
+All output is written to HDF5 files. Optionally, you may export parts of the output data to CSV files for further analysis.
 
 #### Partial functions
 Most of the model code is written in the following particular pattern:

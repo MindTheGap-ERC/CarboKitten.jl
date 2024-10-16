@@ -2,6 +2,8 @@ using Documenter
 using DocumenterCitations
 using DocumenterMermaid
 
+using CarboKitten
+
 bib = CitationBibliography(joinpath(@__DIR__, "src", "ref.bib"))
 # makedocs(; plugins=[bib], ...)
 
@@ -78,26 +80,25 @@ makedocs(
         ],
         "Components" => [
             "Components" => "components/components.md",
+            "Tags" => "components/tag.md",
             "Boxes" => "components/boxes.md",
             "Time" => "components/time.md",
             "Facies" => "components/facies.md",
             "Cellular Automata" => "components/cellular-automata.md",
             "Water Depth" => "components/waterdepth.md",
             "Production" => "components/production.md",
+            "HDF5 Writer" => "components/hdf5.md",
+            "Active Layer Transport" => "active-layer-transport.md",
         ],
         "CarboCAT" => [
             "Summary" => "carbocat.md",
             "Cellular Automaton" => "carbocat-ca.md",
-            "Sediment Transport" => "carbocat-transport.md"
         ],
         "Denudation" => [
             "Denudation" => "denudation/denudation.md",
             "Empirical Denudation" => "denudation/empirical.md",
             "Chemical Dissolution" => "denudation/chemical.md",
             "Physical Erosion" => "denudation/physical_erosion.md"
-        ],
-        "Transport" => [
-            "Active Layer" => "active-layer-transport.md",
         ],
         "Output" => [
             "CSV Export" => "data-export.md"

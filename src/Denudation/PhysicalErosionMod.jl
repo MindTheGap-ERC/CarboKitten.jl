@@ -2,7 +2,6 @@
 module PhysicalErosionMod
 
 import ..Abstract: DenudationType, denudation, redistribution
-using ...Burgess2013: Facies
 using ...Stencil: Boundary, Periodic, offset_value, offset_index, stencil
 using ...BoundaryTrait
 using ...Config: Box
@@ -63,7 +62,7 @@ function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth) w
     return mass
 end
 
-function denudation(::Box, p::PhysicalErosion, water_depth::Any, slope, facies,state)
+function denudation(::Box, p::PhysicalErosion, water_depth::Any, slope, facies, state)
     erodability = p.erodability ./ u"m/yr"
     denudation_mass = zeros(typeof(1.0u"m/kyr"), size(slope)...)
     for idx in CartesianIndices(state.ca)

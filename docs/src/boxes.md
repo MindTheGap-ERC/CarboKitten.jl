@@ -90,7 +90,7 @@ abstract type AbstractTimeProperties end
     t0::typeof(1.0u"Myr") = 0.0u"Myr"
     Δt::typeof(1.0u"Myr")
     steps::Int
-    write_interval::Int
+    write_interval::Int = 1
 end
 ```
 

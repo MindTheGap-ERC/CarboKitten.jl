@@ -13,5 +13,8 @@ include("Unitful.jl")
     include("CASpec.jl")
     include("DenudationSpec.jl")
     include("SedimentStackSpec.jl")
+
+    include("Components/TimeIntegrationSpec.jl")
+
     include("ExportSpec.jl")
 end

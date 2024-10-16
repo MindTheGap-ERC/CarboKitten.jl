@@ -12,11 +12,11 @@ end
     step::Int
 end
 
-State(input::AbstractInput) = State(0)
+State(_::AbstractInput) = State(0)
 
 time(input::AbstractInput, state::AbstractState) = input.time.t0 + state.step * input.time.Δt
 
-write_times(input::AbstractInput) = (0:n_writes(input)) .* (input.time.Δt * input.write_interval) .+ input.time.t0
+write_times(input::AbstractInput) = (0:n_writes(input)) .* (input.time.Δt * input.time.write_interval) .+ input.time.t0
 
 n_writes(input::AbstractInput) = div(input.time.steps, input.time.write_interval)
 

@@ -25,11 +25,16 @@ function model(p::Parameters, s, t_end::Float64, h₀::Float64)
           w >= 0.0 ? -g(p, h - s(t)) : 0.0
      end
 
-     times = 0.0:10.0:t_end
+     dt = 1000.0
+     times = 0.0:dt:t_end
      result = zeros(Float64, length(times))
      result[1] = h₀
-     for (i, t) in enumerate(times[2:end])
-          result[i+1] = result[i] + ∂h(result[i], t)
+     for (i, t) in enumerate(times[1:end-1])
+          h = result[i]
+          for j = 0:99
+               h += ∂h(h, t + j * dt/100) * (dt/100)
+          end
+          result[i+1] = h
      end
      return result
 end

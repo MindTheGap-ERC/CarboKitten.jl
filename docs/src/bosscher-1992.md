@@ -91,11 +91,22 @@ $$\partial_t h = -g_m {\rm tanh}\left[\frac{I_0}{I_k} \exp(-k (h - s(t)))\right]
 
 ``` {.julia #b92-model}
 function model(p::Parameters, s, t_end::Float64, h₀::Float64)
-     ∂h(h::Float64, _, t::Float64) = let w = h - s(t)
+     ∂h(h::Float64, t::Float64) = let w = h - s(t)
           w >= 0.0 ? -g(p, h - s(t)) : 0.0
      end
-     ode = ODEProblem(∂h, h₀, (0.0, t_end), Nothing)
-     solve(ode, Euler(), dt=10.0, reltol=1e-6, saveat=1000.0)
+
+     dt = 1000.0
+     times = 0.0:dt:t_end
+     result = zeros(Float64, length(times))
+     result[1] = h₀
+     for (i, t) in enumerate(times[1:end-1])
+          h = result[i]
+          for j = 0:99
+               h += ∂h(h, t + j * dt/100) * (dt/100)
+          end
+          result[i+1] = h
+     end
+     return result
 end
 ```
 
@@ -144,7 +155,6 @@ Using `DifferentialEquations.jl` we can integrate Equation @eq:growth-eqn. Inter
 ``` {.julia file=examples/model/bs92/using_ode.jl}
 module BS92
 
-using DifferentialEquations
 using CSV
 using DataFrames
 using Interpolations
@@ -193,7 +203,7 @@ module Script
 
      function main()
           h0 = LinRange(0, 200, 101)
-          result = hcat([BS92.model(BS92.SCENARIO_A, h).u for h in h0]...)
+          result = hcat([BS92.model(BS92.SCENARIO_A, h) for h in h0]...)
           t = LinRange(0, 80_000, 81)
 
           fig = Figure(resolution=(600,900))
@@ -261,9 +271,6 @@ end
 #| requires: data/bs92-sealevel-curve.csv
 
 module Script
-using Logging
-using TerminalLoggers
-global_logger(TerminalLogger(right_justify=80))
 
 using CarboKitten.Components
 using CarboKitten.Components.Common

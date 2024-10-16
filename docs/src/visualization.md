@@ -81,6 +81,8 @@ end
 
 ## Summary collage
 
+![Collage](fig/alcaps-alternative.png)
+
 ``` {.julia file=ext/SummaryPlot.jl}
 module SummaryPlot
 
@@ -132,15 +134,21 @@ end
 
 ## Wheeler diagram
 
-``` {.julia file=examples/visualization/wheeler_diagram.jl}
+![Wheeler diagram](fig/wheeler_diagram.png)
+
+``` {.julia .task file=examples/visualization/wheeler_diagram.jl}
 #| creates: docs/src/_fig/wheeler_diagram.png
-#| requires: data/output/alcap1.h5
+#| requires: data/output/alcap2.h5
 #| collect: figures
 
 module Script
 
+using CairoMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: wheeler_diagram
+
 function main()
-  header, data = read_slice("data/output/alcap1.h5", :, 25)
+  header, data = read_slice("data/output/alcap2.h5", :, 25)
   fig = wheeler_diagram(header, data)
   save("docs/src/_fig/wheeler_diagram.png", fig)
 end
@@ -258,6 +266,19 @@ end
 
 ## Production curve
 
+![Production curve](fig/production_curve.svg)
+
+``` {.julia .task file=examples/visualization/production_curve.jl}
+#| creates: docs/src/_fig/production_curve.svg
+#| requires: data/output/alcap2.h5
+#| collect: figures
+
+using CairoMakie
+using CarboKitten.Visualization: production_curve
+
+save("docs/src/_fig/production_curve.svg", production_curve("data/output/alcap2.h5"))
+```
+
 ``` {.julia file=ext/ProductionCurve.jl}
 module ProductionCurve
 
@@ -265,10 +286,11 @@ using Makie
 using Unitful
 using HDF5
 
+import CarboKitten.Components.Common: AbstractInput
 import CarboKitten.Visualization: production_curve!, production_curve
 using CarboKitten.Components.Production: Facies, production_rate
 
-function production_curve!(ax, input)
+function production_curve!(ax, input::I) where I <: AbstractInput
     ax.title = "production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))"
     ax.xlabel = "production [m/Myr]"
     ax.ylabel = "depth [m]"
@@ -281,11 +303,20 @@ function production_curve!(ax, input)
     end
 end
 
-function production_curve(input)
+function production_curve(input::I) where I <: AbstractInput
     fig = Figure()
     ax = Axis(fig[1, 1])
     production_curve!(ax, input)
     fig
+end
+
+function production_curve(filename::AbstractString)
+    h5open(filename, "r") do fid
+        fig = Figure()
+        ax = Axis(fig[1, 1])
+        production_curve!(ax, fid["input"])
+        fig
+    end
 end
 
 function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")
@@ -312,6 +343,21 @@ end
 ```
 
 ## Sediment profile
+
+![Sediment profile](fig/sediment_profile.png)
+
+``` {.julia .task file=examples/visualization/sediment_profile.jl}
+#| creates: docs/src/_fig/sediment_profile.png
+#| requires: data/output/alcap2.h5
+#| collect: figures
+
+using CairoMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: sediment_profile
+
+save("docs/src/_fig/sediment_profile.png",
+    sediment_profile(read_slice("data/output/alcap2.h5", :, 25)...))
+```
 
 ```{.julia file=ext/SedimentProfile.jl}
 module SedimentProfile
@@ -501,6 +547,35 @@ end
 ```
 
 ## Glamour View (3D)
+
+Not very useful but highly glamourous.
+
+![Glamour view](fig/glamour_view.png)
+
+``` {.julia .task file=examples/visualization/glamour_view.jl}
+#| creates: docs/src/_fig/glamour_view.png
+#| requires: data/output/cap1.h5
+#| collect: figures
+
+module Script
+
+using GLMakie
+using CarboKitten.Visualization: glamour_view!
+using HDF5
+
+function main()
+    fig = Figure()
+    ax = Axis3(fig[1,1])
+    h5open("data/output/cap1.h5", "r") do fid
+        glamour_view!(ax, fid)
+    end
+    save("docs/src/_fig/glamour_view.png", fig)
+end
+
+end
+
+Script.main()
+```
 
 ``` {.julia file=ext/GlamourView.jl}
 module GlamourView

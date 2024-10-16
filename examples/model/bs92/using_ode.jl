@@ -1,7 +1,6 @@
 # ~/~ begin <<docs/src/bosscher-1992.md#examples/model/bs92/using_ode.jl>>[init]
 module BS92
 
-using DifferentialEquations
 using CSV
 using DataFrames
 using Interpolations
@@ -22,11 +21,17 @@ g(p::Parameters, w) = g(p.gₘ, p.I₀, p.Iₖ, p.k, w)
 # ~/~ end
 # ~/~ begin <<docs/src/bosscher-1992.md#b92-model>>[1]
 function model(p::Parameters, s, t_end::Float64, h₀::Float64)
-     ∂h(h::Float64, _, t::Float64) = let w = h - s(t)
+     ∂h(h::Float64, t::Float64) = let w = h - s(t)
           w >= 0.0 ? -g(p, h - s(t)) : 0.0
      end
-     ode = ODEProblem(∂h, h₀, (0.0, t_end), Nothing)
-     solve(ode, Euler(), dt=10.0, reltol=1e-6, saveat=1000.0)
+
+     times = 0.0:10.0:t_end
+     result = zeros(Float64, length(times))
+     result[1] = h₀
+     for (i, t) in enumerate(times[2:end])
+          result[i+1] = result[i] + ∂h(result[i], t)
+     end
+     return result
 end
 # ~/~ end
 

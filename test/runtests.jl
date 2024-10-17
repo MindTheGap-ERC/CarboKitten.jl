@@ -15,6 +15,9 @@ include("Unitful.jl")
     include("SedimentStackSpec.jl")
 
     include("Components/TimeIntegrationSpec.jl")
+    include("Components/FaciesBaseSpec.jl")
+    include("Components/TimeIntegrationSpec.jl")
+    include("Components/BoxesSpec.jl")
 
     include("ExportSpec.jl")
 end

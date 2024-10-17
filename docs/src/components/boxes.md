@@ -4,6 +4,7 @@ This module makes sure we have access to box properties.
 
 ``` {.julia file=test/Components/BoxesSpec.jl}
 module BoxesSpec
+    using Test
     using CarboKitten.Components.Common
     using CarboKitten.Components.Boxes
 

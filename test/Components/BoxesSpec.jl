@@ -1,5 +1,6 @@
 # ~/~ begin <<docs/src/components/boxes.md#test/Components/BoxesSpec.jl>>[init]
 module BoxesSpec
+    using Test
     using CarboKitten.Components.Common
     using CarboKitten.Components.Boxes
 

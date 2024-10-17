@@ -26,7 +26,7 @@
         return State(ca, 1:n_facies |> collect)
     end
 
-    function stepper(input::AbstractInput)
+    function step!(input::AbstractInput)
         return step_ca(input.box, input.facies)
     end
 end

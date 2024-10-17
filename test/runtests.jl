@@ -18,6 +18,7 @@ include("Unitful.jl")
     include("Components/FaciesBaseSpec.jl")
     include("Components/TimeIntegrationSpec.jl")
     include("Components/BoxesSpec.jl")
+    include("Components/ProductionSpec.jl")
 
     include("ExportSpec.jl")
 end

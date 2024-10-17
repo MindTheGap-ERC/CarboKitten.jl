@@ -73,6 +73,63 @@
     {
       "description": null,
       "creates": [
+        "data/bs92-sealevel-curve.csv"
+      ],
+      "requires": [
+        "data/bs92-sealevel-input.png"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/bs92/fig8-sealevel.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/bs92-fig8.svg"
+      ],
+      "requires": [
+        "data/bs92-sealevel-curve.csv",
+        "examples/model/bs92/using_ode.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/bs92/fig8.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "data/output/bs92.h5"
+      ],
+      "requires": [
+        "data/bs92-sealevel-curve.csv"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/bs92/run.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/bs92-summary.png"
+      ],
+      "requires": [
+        "data/output/bs92.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/bs92/plot.jl"
+    },
+    {
+      "description": null,
+      "creates": [
         "data/output/cap1.h5"
       ],
       "requires": [
@@ -183,63 +240,6 @@
       "path": "examples/visualization/glamour_view.jl"
     },
     {
-      "description": null,
-      "creates": [
-        "data/bs92-sealevel-curve.csv"
-      ],
-      "requires": [
-        "data/bs92-sealevel-input.png"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/model/bs92/fig8-sealevel.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/bs92-fig8.svg"
-      ],
-      "requires": [
-        "data/bs92-sealevel-curve.csv",
-        "examples/model/bs92/using_ode.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/model/bs92/fig8.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "data/output/bs92.h5"
-      ],
-      "requires": [
-        "data/bs92-sealevel-curve.csv"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/model/bs92/run.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/bs92-summary.png"
-      ],
-      "requires": [
-        "data/output/bs92.h5"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/model/bs92/plot.jl"
-    },
-    {
       "name": "figures",
       "requires": [
         "docs/src/_fig/eca.png",
@@ -247,14 +247,14 @@
         "docs/src/_fig/boundary_types.png",
         "docs/src/_fig/active-layer-production-patch.png",
         "docs/src/_fig/active-layer-test.png",
+        "docs/src/_fig/bs92-fig8.svg",
+        "docs/src/_fig/bs92-summary.png",
         "docs/src/_fig/cap1-summary.png",
         "docs/src/_fig/alcaps-alternative.png",
         "docs/src/_fig/wheeler_diagram.png",
         "docs/src/_fig/production_curve.svg",
         "docs/src/_fig/sediment_profile.png",
-        "docs/src/_fig/glamour_view.png",
-        "docs/src/_fig/bs92-fig8.svg",
-        "docs/src/_fig/bs92-summary.png"
+        "docs/src/_fig/glamour_view.png"
       ]
     }
   ]

@@ -71,6 +71,8 @@ abstract type DenudationType end
     denudation(box, param, state)
 
 FIXME Computes the denudation for a single time-step, given denudation parameters `param` and a simulation state `state`. `param` should have a `DenudationType` type and `state` should contain the `height` property and `sealevel`.
+
+Returns denudation mass in units of meters.
 """
 function denudation(input)
     function (state, water_depth, slope)
@@ -90,7 +92,7 @@ end
 """
     redistribution()
 
-FIXME
+Takes `state`, `water_depth` in meters and `denudation_mass` as a 3D array (facies, x and y coordinates) in units of meters.
 """
 function redistribution(input)
     function (state, water_depth, denudation_mass)

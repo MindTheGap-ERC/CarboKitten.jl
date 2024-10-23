@@ -14,6 +14,8 @@ We choose to have the head of our sediment stack always be at the first row. Whe
 
 ![sediment buffer diagram](fig/sediment-buffer.svg)
 
+Above we see a buffer. First we push a parcel of size $3/4$, then we pop an amount of $1/2$. This popped parcel will have different fractions from the pushed one, since it also draws from the half filled row that was in the stack before pushing. In this sense, a small amount of facies mixing will take place, depending on the depositional resolution chosen.
+
 Our implementation is such that each cell in the buffer is contiguous in memory. Thus, copying rows of unstrided memory should be very efficient, although the performance remains to be tested.
 
 ## Implementation

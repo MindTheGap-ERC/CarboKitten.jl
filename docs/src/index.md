@@ -186,7 +186,13 @@ email: j.hidding [at] esciencecenter.nl
 Web page: [www.esciencecenter.nl/team/johan-hidding-msc/](https://www.esciencecenter.nl/team/johan-hidding-msc/)
 ORCID: [0000-0002-7550-1796](https://orcid.org/0000-0002-7550-1796)
 
-Original author: **Peter Burgess**
+Denudation modelling: **Xianyi Liu**
+Utrecht University
+email: x.liu6 [at] uu.nl
+Web page: [www.uu.nl/staff/XLiu6](https://www.uu.nl/staff/XLiu6)
+ORCID:
+
+Original CarboCAT author: **Peter Burgess**
 University of Liverpool
 Web page: [www.liverpool.ac.uk/environmental-sciences/staff/peter-burgess](https://www.liverpool.ac.uk/environmental-sciences/staff/peter-burgess/)
 
@@ -203,12 +209,6 @@ Utrecht University
 email: n.h.hohmann [at] uu.nl
 Web page: [www.uu.nl/staff/NHohmann](https://www.uu.nl/staff/NHHohmann)
 ORCID: [0000-0003-1559-1838](https://orcid.org/0000-0003-1559-1838)
-
-**Xianyi Liu**
-Utrecht University
-email: x.liu6 [at] uu.nl
-Web page: [www.uu.nl/staff/XLiu6](https://www.uu.nl/staff/XLiu6)
-ORCID:
 
 **Hanno Spreeuw**
 Netherlands eScience Center

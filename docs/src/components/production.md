@@ -1,5 +1,9 @@
 # Production
 
+```component-dag
+CarboKitten.Components.Production
+```
+
 The `Production` module specifies the production rate following the model by Bosscher & Schlager 1992 [Bosscher1992](@cite).
 The growth rate is given as
 
@@ -93,6 +97,10 @@ end
 ```
 
 ## CA Production
+
+```component-dag
+CarboKitten.Components.CAProduction
+```
 
 The `CAProduction` component gives production that depends on the provided CA.
 

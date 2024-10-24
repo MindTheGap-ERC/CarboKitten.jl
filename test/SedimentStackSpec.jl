@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/sediment-buffer.md#test/SedimentStackSpec.jl>>[init]
+# ~/~ begin <<docs/src/components/sediment_buffer.md#test/SedimentStackSpec.jl>>[init]
 @testset "SedimentStack" begin
   using CarboKitten.SedimentStack: push_sediment!, pop_sediment!
   stack = zeros(Float64, 10, 3)

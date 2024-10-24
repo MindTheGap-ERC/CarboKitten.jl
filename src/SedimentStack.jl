@@ -1,28 +1,28 @@
-# ~/~ begin <<docs/src/sediment-buffer.md#src/SedimentStack.jl>>[init]
+# ~/~ begin <<docs/src/components/sediment_buffer.md#src/SedimentStack.jl>>[init]
 module SedimentStack
 
 export push_sediment!, pop_sediment!, peek_sediment
 
-# ~/~ begin <<docs/src/sediment-buffer.md#sediment-stack-impl>>[init]
+# ~/~ begin <<docs/src/components/sediment_buffer.md#sediment-stack-impl>>[init]
 function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
-  # ~/~ begin <<docs/src/sediment-buffer.md#push-sediment>>[init]
+  # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[init]
   Δ = sum(parcel)
   bucket = sum(col[1, :])
   # ~/~ end
-  # ~/~ begin <<docs/src/sediment-buffer.md#push-sediment>>[1]
+  # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[1]
   if bucket + Δ < 1.0
     col[1,:] .+= parcel
     return
   end
   # ~/~ end
-  # ~/~ begin <<docs/src/sediment-buffer.md#push-sediment>>[2]
+  # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[2]
   frac = parcel ./ Δ
   col[1,:] .+= frac .* (1.0 - bucket)
   Δ -= (1.0 - bucket)
   n = floor(Int64, Δ)
   col[n+2:end,:] = col[1:end-n-1,:]
   # ~/~ end
-  # ~/~ begin <<docs/src/sediment-buffer.md#push-sediment>>[3]
+  # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[3]
   na = [CartesianIndex()]
   col[2:n+1,:] .= frac[na,:]
   Δ -= n
@@ -30,7 +30,7 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
   # ~/~ end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/sediment-buffer.md#sediment-stack-impl>>[1]
+# ~/~ begin <<docs/src/components/sediment_buffer.md#sediment-stack-impl>>[1]
 @inline function pop_fraction(col::AbstractMatrix{F}, Δ::F) where F <: Real
   bucket = sum(col[1,:])
   if Δ == 0 || bucket == 0
@@ -44,13 +44,13 @@ end
 end
 
 function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
-  # ~/~ begin <<docs/src/sediment-buffer.md#pop-sediment>>[init]
+  # ~/~ begin <<docs/src/components/sediment_buffer.md#pop-sediment>>[init]
   bucket = sum(col[1,:])
   if Δ < bucket
     return pop_fraction(col, Δ)
   end
   # ~/~ end
-  # ~/~ begin <<docs/src/sediment-buffer.md#pop-sediment>>[1]
+  # ~/~ begin <<docs/src/components/sediment_buffer.md#pop-sediment>>[1]
   parcel = copy(col[1,:])
   Δ -= bucket
   n = floor(Int64, Δ)

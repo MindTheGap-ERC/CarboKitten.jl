@@ -1,5 +1,9 @@
 # Water Depth
 
+```component-dag
+CarboKitten.Components.WaterDepth
+```
+
 The `WaterDepth` module computes the water depth, given the bedrock elevation, sea level curve, subsidence rate and current sediment height.
 
 ## Input

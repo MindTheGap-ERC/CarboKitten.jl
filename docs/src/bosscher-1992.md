@@ -227,6 +227,10 @@ Script.main()
 
 ## BS92 in CarboKitten stack
 
+```component-dag
+CarboKitten.Model.BS92
+```
+
 Within the CarboKitten design, we can express the BS92 model a bit more succinctly. The following produces output that is fully compatible with other CarboKitten models and the included post processing and visualization stack. The `H5Writer` module provides a `run` method that expects the `initial_state`, `step!` and `write_header` methods to be available.
 
 ``` {.julia file=src/Model/BS92.jl}
@@ -323,3 +327,68 @@ using GLMakie
 using CarboKitten.Visualization
 save("docs/src/_fig/bs92-summary.png", summary_plot("data/output/bs92.h5"))
 ```
+
+## Multiple facies
+
+Using the above implementation of the model by Bosscher and Schlager, we can run the same model with multiple facies. We use the same parameters as Burgess2013, but divide the `maximum_growth_rate` by four, since we have no CA running and all facies produce at the same time.
+
+
+``` {.julia .task file=examples/model/bs92/multi-facies-run.jl}
+#| creates: data/output/bs92-multi-facies.h5
+#| requires: data/bs92-sealevel-curve.csv
+
+module Script
+
+using CarboKitten.Components
+using CarboKitten.Components.Common
+using CarboKitten.Model.BS92
+
+using Unitful
+
+const FACIES = [
+    BS92.Facies(
+         maximum_growth_rate=500u"m/Myr"/4,
+         extinction_coefficient=0.8u"m^-1",
+         saturation_intensity=60u"W/m^2"),
+    BS92.Facies(
+         maximum_growth_rate=400u"m/Myr"/4,
+         extinction_coefficient=0.1u"m^-1",
+         saturation_intensity=60u"W/m^2"),
+    BS92.Facies(
+         maximum_growth_rate=100u"m/Myr"/4,
+         extinction_coefficient=0.005u"m^-1",
+         saturation_intensity=60u"W/m^2")]
+	
+const INPUT = BS92.Input(
+    tag = "example model BS92",
+    box = Common.Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),
+    time = TimeProperties(
+        Δt = 200.0u"yr",
+        steps = 5000,
+        write_interval = 1),
+    sea_level = t -> 4.0u"m" * sin(2π * t / 0.2u"Myr"),
+    bedrock_elevation = (x, y) -> - x / 300.0,
+    subsidence_rate = 50.0u"m/Myr",
+    insolation = 400.0u"W/m^2",
+    facies = FACIES)
+
+function main()
+    H5Writer.run(Model{BS92}, INPUT, "data/output/bs92-multi-facies.h5")
+end
+
+end
+
+Script.main()
+```
+
+``` {.julia .task file=examples/model/bs92/multi-facies-plot.jl}
+#| creates: docs/src/_fig/bs92-multi-facies.png
+#| requires: data/output/bs92-multi-facies.h5
+#| collect: figures
+
+using GLMakie
+using CarboKitten.Visualization
+save("docs/src/_fig/bs92-multi-facies.png", summary_plot("data/output/bs92-multi-facies.h5", wheeler_smooth=(3, 5)))
+```
+
+![BS92 with multiple facies](fig/bs92-multi-facies.png)

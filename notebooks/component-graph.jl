@@ -7,6 +7,9 @@ using InteractiveUtils
 # ╔═╡ df819cda-91e5-11ef-3664-4b441f84e147
 using Pkg; Pkg.activate("../workenv")
 
+# ╔═╡ d5b9a415-89fe-458f-9741-91cb245584f7
+using Revise
+
 # ╔═╡ 14c04a84-f0fb-48dd-a7f8-fd20b118ce6d
 using GraphvizDotLang: digraph, node, edge, HTML
 
@@ -19,8 +22,14 @@ using CarboKitten.Model: ALCAP2, BS92
 # ╔═╡ dd686918-b698-4923-8f1e-b9b500142450
 using MacroTools: @capture
 
+# ╔═╡ 446fc567-a46e-4e66-aba5-106f189dcea8
+include("../docs/component_graphs.jl")
+
 # ╔═╡ 15e12c85-f4c4-4cb3-ab42-f3412bc967ee
 g = digraph() |> edge("a", "b", "c")
+
+# ╔═╡ c6d713d7-5c0b-49be-9c13-81f438ca35dd
+ComponentGraphs.dependency_graph(ALCAP2)
 
 # ╔═╡ 52be2bfb-fa87-41a9-8854-5fcbeecdd4b5
 
@@ -101,16 +110,37 @@ function get_field_name(expr)
 	@capture(expr, fname_) && return fname
 end
 
-# ╔═╡ 70c36a1d-ecd6-4fcd-98cb-b2cbdf55d897
+# ╔═╡ 7d9e95e7-425c-4559-b1aa-d56573264af4
+table_row(a, b, c) = """
+<tr><td align="left" border="1" sides="R"><font face="monospace" point-size="10">
+$(get_field_name(a))
+</font></td>
+<td align="left" border="1" sides="R"><font face="monospace" point-size="10" >
+$(get_field_name(b))
+</font></td>
+<td align="left"><font face="monospace" point-size="10">
+$(get_field_name(c))
+</font></td></tr>"""
 
+# ╔═╡ 65756fee-c451-407b-8632-8083459a2e59
+format_table(n, rows) = """
+<table border="0" title="$(n)" cellspacing="0" cellpadding="3">
+<tr><td colspan="3" border="1" sides="B"><b>$(n)</b></td></tr>
+<tr><td align="left" border="1" sides="RBT" bgcolor="gray80">Input</td>
+    <td align="left" border="1" sides="LRBT" bgcolor="gray80">Facies</td>
+	<td align="left" border="1" sides="LBT" bgcolor="gray80">State</td>
+</tr>
+$(join(rows,""))
+</table>
+"""
 
 # ╔═╡ 1c07f758-d042-4210-80ee-1a21397be622
 function record_label(n, fields)
-	:Input ∉ keys(fields) && :State ∉ keys(fields) && :Facies ∉ keys(fields) && return "<b>$(n)</b>"
-	rows = [
-		"<tr><td align=\"left\"><font face=\"monospace\" point-size=\"10\">$(get_field_name(a))</font></td><td align=\"left\"><font face=\"monospace\" point-size=\"10\">$(get_field_name(c))</font></td><td align=\"left\"><font face=\"monospace\" point-size=\"10\">$(get_field_name(b))</font></td></tr>" 
-		for (a, b, c) in zip_default(get(fields, :Input, []), get(fields, :State, []), get(fields, :Facies, []), default=" ")]
-	"<table border=\"0\" title=\"$(n)\"><tr><td colspan=\"3\" border=\"1\" sides=\"B\"><b>$(n)</b></td></tr><tr><td align=\"left\"><i>Input</i></td><td align=\"left\"><i>Facies</i></td><td align=\"left\"><i>State</i></td></tr>$(join(rows,""))</table>"
+	structs = [:Input, :Facies, :State]
+	all(f->f ∉ keys(fields), structs) && return "<b>$(n)</b>"
+	rows = splat(table_row).(zip_default(
+		(get(fields, s, []) for s in structs)..., default=" "))
+	format_table(n, rows)
 end
 
 # ╔═╡ ae751874-3d96-409e-839c-a86b07764857
@@ -118,7 +148,7 @@ function tree_graph(m)
 	t = m.MIXIN_TREE
 	g = digraph(rankdir="LR")
 	for n in nodes(t)
-		g |> node(string(n); shape="rect", style="rounded", margin="0.07,0.07", label=HTML(record_label(n, getfield(m, n).FIELDS)))
+		g |> node(string(n); shape="rect", style="rounded", margin="0.1,0.1", label=HTML(record_label(n, getfield(m, n).FIELDS)))
 	end
 	for (k, v) in pairs(t)
 		for n in v
@@ -145,8 +175,11 @@ tree_graph(BS92)
 
 # ╔═╡ Cell order:
 # ╠═df819cda-91e5-11ef-3664-4b441f84e147
+# ╠═d5b9a415-89fe-458f-9741-91cb245584f7
 # ╠═14c04a84-f0fb-48dd-a7f8-fd20b118ce6d
 # ╠═15e12c85-f4c4-4cb3-ab42-f3412bc967ee
+# ╠═446fc567-a46e-4e66-aba5-106f189dcea8
+# ╠═c6d713d7-5c0b-49be-9c13-81f438ca35dd
 # ╠═20cab817-02e3-4658-a344-6ac8f79bcc77
 # ╠═fd12ee16-146a-4c6b-8a44-033067a65c00
 # ╠═52be2bfb-fa87-41a9-8854-5fcbeecdd4b5
@@ -169,7 +202,8 @@ tree_graph(BS92)
 # ╠═b5e08186-08ee-44b8-a2f4-2627b7ebb8f5
 # ╠═dd686918-b698-4923-8f1e-b9b500142450
 # ╠═5e49f617-7529-4d97-9a0c-ed03bb3d7db0
-# ╠═70c36a1d-ecd6-4fcd-98cb-b2cbdf55d897
+# ╠═7d9e95e7-425c-4559-b1aa-d56573264af4
+# ╠═65756fee-c451-407b-8632-8083459a2e59
 # ╠═1c07f758-d042-4210-80ee-1a21397be622
 # ╠═ae751874-3d96-409e-839c-a86b07764857
 # ╠═ed64dc59-8143-4e89-821c-a94a532ad97c

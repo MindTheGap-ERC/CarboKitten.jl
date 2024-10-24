@@ -730,11 +730,9 @@ version = "1.12.0"
 
 [[deps.GraphvizDotLang]]
 deps = ["Graphviz_jll"]
-git-tree-sha1 = "37c6688b7ccdc447f15ee2fd918856cd94159a0e"
-repo-rev = "main"
-repo-url = "../../GraphvizDotLang.jl"
+path = "../../GraphvizDotLang.jl"
 uuid = "6039e64d-d8b8-4c93-8e43-7efd2f757352"
-version = "0.2.0"
+version = "0.2.1"
 
 [[deps.Graphviz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Expat_jll", "JLLWrappers", "Libdl", "Pango_jll", "Pkg"]

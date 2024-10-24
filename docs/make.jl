@@ -7,6 +7,8 @@ using CarboKitten
 bib = CitationBibliography(joinpath(@__DIR__, "src", "ref.bib"))
 # makedocs(; plugins=[bib], ...)
 
+include("component_graphs.jl")
+
 module Entangled
 using DataStructures: DefaultDict
 

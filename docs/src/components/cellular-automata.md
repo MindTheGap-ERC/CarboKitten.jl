@@ -1,5 +1,9 @@
 # Cellular Automata
 
+```component-dag
+CarboKitten.Components.CellularAutomaton
+```
+
 ``` {.julia file=test/Components/CellularAutomatonSpec.jl}
 module CellularAutomatonSpec
 

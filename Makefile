@@ -7,7 +7,7 @@ run-daemon:
 	julia --project=. --startup-file=no -e 'using Revise; using DaemonMode; serve()'
 
 serve-docs:
-	julia +1.10 --project=docs -e 'using Pkg; Pkg.instantiate(); using LiveServer; servedocs()'
+	julia +1.10 --project=docs -e 'using Pkg; Pkg.instantiate(); using Revise; using LiveServer; servedocs()'
 
 docs:
 	julia +1.10 --project=docs -e 'using Pkg; Pkg.instantiate(); include("docs/make.jl")'

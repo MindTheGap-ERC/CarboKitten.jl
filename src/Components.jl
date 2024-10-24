@@ -21,5 +21,9 @@ include("Components/ActiveLayer.jl")
 
 include("Components/H5Writer.jl")
 
+list_components() = filter(
+    c->:AST in names(c, all=true),
+    map(eval, names(Components)))
+
 end
 # ~/~ end

@@ -7,6 +7,8 @@ using CarboKitten
 bib = CitationBibliography(joinpath(@__DIR__, "src", "ref.bib"))
 # makedocs(; plugins=[bib], ...)
 
+include("component_graphs.jl")
+
 module Entangled
 using DataStructures: DefaultDict
 
@@ -89,7 +91,7 @@ makedocs(
             "Water Depth" => "components/waterdepth.md",
             "Production" => "components/production.md",
             "HDF5 Writer" => "components/hdf5.md",
-            "Sediment Buffer" => "components/sediment_buffer.md",
+            "Sediment Buffers" => "components/sediment_buffer.md",
             "Active Layer Transport" => "active-layer-transport.md",
         ],
         "Visualizations" => "visualization.md",
@@ -109,7 +111,6 @@ makedocs(
         "Algorithms" => [
             "Unitful" => "unitful.md",
             "Boxes" => "boxes.md",
-            "Sediment Buffers" => "sediment-buffer.md",
             "Stencils" => "stencils.md",
             "Utility" => "utility.md"
         ],

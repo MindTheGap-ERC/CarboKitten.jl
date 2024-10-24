@@ -1,5 +1,9 @@
 # Box
 
+```component-dag
+CarboKitten.Components.Boxes
+```
+
 This module makes sure we have access to box properties.
 
 ``` {.julia file=test/Components/BoxesSpec.jl}

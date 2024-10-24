@@ -66,4 +66,4 @@ We can run that model as follows:
 H5Writer.run(Model{MyModel}, MyModel.Input(), "output.h5")
 ```
 
-This will call `MyModel.initial_state` first, then repeatedly `MyModel.step!`, which should return a `H5Writer.DataFrame` for writing to HDF5.
+This will call `MyModel.initial_state` first, then repeatedly `MyModel.step!`, which should return a `H5Writer.DataFrame` for writing to HDF5. Here `Model` is a [value type](https://docs.julialang.org/en/v1/manual/types/#%22Value-types%22) (defined in `CarboKitten.Components.Common`).

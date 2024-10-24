@@ -87,9 +87,10 @@ Time stepping is specified in `TimeProperties`. We'll have `time_steps` number o
 abstract type AbstractTimeProperties end
 
 @kwdef struct TimeProperties <: AbstractTimeProperties
+    t0::typeof(1.0u"Myr") = 0.0u"Myr"
     Δt::typeof(1.0u"Myr")
     steps::Int
-    write_interval::Int
+    write_interval::Int = 1
 end
 ```
 

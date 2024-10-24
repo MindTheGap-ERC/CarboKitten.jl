@@ -5,10 +5,11 @@ using Makie
 using Unitful
 using HDF5
 
+import CarboKitten.Components.Common: AbstractInput
 import CarboKitten.Visualization: production_curve!, production_curve
 using CarboKitten.Components.Production: Facies, production_rate
 
-function production_curve!(ax, input)
+function production_curve!(ax, input::I) where I <: AbstractInput
     ax.title = "production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))"
     ax.xlabel = "production [m/Myr]"
     ax.ylabel = "depth [m]"
@@ -21,11 +22,20 @@ function production_curve!(ax, input)
     end
 end
 
-function production_curve(input)
+function production_curve(input::I) where I <: AbstractInput
     fig = Figure()
     ax = Axis(fig[1, 1])
     production_curve!(ax, input)
     fig
+end
+
+function production_curve(filename::AbstractString)
+    h5open(filename, "r") do fid
+        fig = Figure()
+        ax = Axis(fig[1, 1])
+        production_curve!(ax, fid["input"])
+        fig
+    end
 end
 
 function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")

@@ -13,7 +13,7 @@ export Input, Facies
 function initial_state(input::Input)
     ca_state = CellularAutomaton.initial_state(input)
     for _ in 1:20
-        CellularAutomaton.stepper(input)(ca_state)
+        CellularAutomaton.step!(input)(ca_state)
     end
 
     sediment_height = zeros(Height, input.box.grid_size...)
@@ -24,7 +24,7 @@ end
 
 function step!(input::Input)
     τ = production(input)
-    step_ca = CellularAutomaton.stepper(input)
+    step_ca = CellularAutomaton.step!(input)
 
     function (state::State)
         if mod(state.step, input.ca_interval) == 0

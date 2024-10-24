@@ -3,9 +3,6 @@
 #| requires: data/bs92-sealevel-curve.csv
 
 module Script
-# using Logging
-# using TerminalLoggers
-# global_logger(TerminalLogger(right_justify=80))
 
 using CarboKitten.Components
 using CarboKitten.Components.Common

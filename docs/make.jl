@@ -78,6 +78,7 @@ makedocs(
             # "With Denudation" => "ca-prod-with-denudation.md",
             "ALCAPS" => "model-alcap.md"
         ],
+        "Architecture" => "architecture.md",
         "Components" => [
             "Components" => "components/components.md",
             "Tags" => "components/tag.md",
@@ -88,8 +89,10 @@ makedocs(
             "Water Depth" => "components/waterdepth.md",
             "Production" => "components/production.md",
             "HDF5 Writer" => "components/hdf5.md",
+            "Sediment Buffer" => "components/sediment_buffer.md",
             "Active Layer Transport" => "active-layer-transport.md",
         ],
+        "Visualizations" => "visualization.md",
         "CarboCAT" => [
             "Summary" => "carbocat.md",
             "Cellular Automaton" => "carbocat-ca.md",

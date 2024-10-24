@@ -1,16 +1,24 @@
 # Sediment Buffers
 
-FIXME: Needs some graphics to explain concepts
+For our models of transport and denudation it is important to remember the facies of the sediment for some time into the past. One way to do this, is to remember all contributions of sediment in a stack. Every time we transport or erode sediment, we can pop parcels from this stack. In a three-dimensional model, we need a 2d grid of stacks. Each stack would have its own memory management (which is computationally expensive), and most resources are spent on areas with very little accretion. (In fact, this is what CarboCAT does. We believe this design choice is the main contributor to the difference in run-time between CarboCAT and CarboKitten).
 
-In some models of transport it is important to remember the type of sediment facies some time in the past. Suppose sedimented material is loosened again due to submarine erosion processes. Particle sizes may depend on the sediment facies.
+Instead, we choose a fixed size sediment buffer. Each cell in the buffer represents a parcel of sediment, where we store the relative fractions of each contributing facies. This buffer is only used to determine the facies of disintegrated sediment. The output of the overal model is still the amount of sediment for each iteration.
 
-To compute such models efficiently we need to store the sedimentation history in a buffer. One approach is to remember several iterations into the past, but then there will be areas where sedimentation is slow and fast, and soon you'll find you have to store the entire simulation for retrieval.
+We can't stress this enough: any inaccuracy in using a fixed size buffer with a chosen granularity only impacts the precision of the composition of transported sediment. Even then, the schema is conservative: no sediment is lost unless erosion is so rampant that it eats through the entire sediment stack. In that case, a simulation should be run with a larger buffer.
 
-The proposed data structure is one that stores the history discretized in depth. We loose a bit of precision on the thinnest sedimentation layers, but we can freely mix older and younger sediments when needed.
+## Data structure
 
-There are several choices on how to structure the sediment buffer. We can grow sediment from the bottom of the buffer, but that requires keeping an array of pointers to the bottom depth where new material is deposited.
+While the sediment buffer is allocated as a single 4-dimensional array (depth, facies, $x$, $y$), it is best to explain its functioning from the perspective of a single cell in our model. We are left with two dimensions: depth (rows) and facies (columns).
 
-Another choice is to keep the sea floor in the same layer of the buffer, and copy down sediment when a layer is full. We may need to implement both to see which is more efficient.
+We choose to have the head of our sediment stack always be at the first row. When sediment out-grows the buffer, the deepenst layers are dropped from memory. The head can contain an incomplete amount of sediment, while all rows below the head are either full or empty. When sediment is pushed to the stack and the head row overflows, all rows are copied down one row and the surplus is assigned to the now empty head row. The inverse happens when removing (popping) material from the stack (in computer science stacks are pushed on and popped from). This process is illustrated below.
+
+![sediment buffer diagram](fig/sediment-buffer.svg)
+
+Above we see a buffer. First we push a parcel of size $3/4$, then we pop an amount of $1/2$. This popped parcel will have different fractions from the pushed one, since it also draws from the half filled row that was in the stack before pushing. In this sense, a small amount of facies mixing will take place, depending on the depositional resolution chosen.
+
+Our implementation is such that each cell in the buffer is contiguous in memory. Thus, copying rows of unstrided memory should be very efficient, although the performance remains to be tested.
+
+## Implementation
 
 We define two functions `push_sediment!` and `pop_sediment!`. Given a $s \times n$ matrix, where $n$ is the number of facies types and $s$ is the depth of the stack, we can grow and shrink sediment. These functions are unit-free, setting $\Delta z$ to be equal to 1.
 
@@ -39,44 +47,56 @@ end
 end
 ```
 
-```@raw html
-<details><summary>SedimentStack impl</summary>
+### Pushing sediment
+
+The single-cell version of `push_sediment!` takes as argument `col` a column (physically speaking a column of sediment) represented by a $s \times n$-matrix and a parcel a $n$-vector.
+
+``` {.julia #sediment-stack-impl}
+function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
+  <<push-sediment>>
+end
 ```
 
-``` {.julia file=src/SedimentStack.jl}
-module SedimentStack
+First we determine the total sediment amount $\Delta$, being the sum of the parcel, as well as the amount of sediment in our *bucket*, the head row.
 
-export push_sediment!, pop_sediment!, peek_sediment
+``` {.julia #push-sediment}
+Δ = sum(parcel)
+bucket = sum(col[1, :])
+```
 
-function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
-  Δ = sum(parcel)
-  bucket = sum(col[1, :])
+If the bucket has enough space left for the parcel, we can just add the parcel to the bucket and return.
 
-  if bucket + Δ < 1.0
-    col[1,:] .+= parcel
-    return
-  end
-
-  frac = parcel ./ Δ
-  col[1,:] .+= frac .* (1.0 - bucket)
-  Δ -= (1.0 - bucket)
-  n = floor(Int64, Δ)
-
-  col[n+2:end,:] = col[1:end-n-1,:]
-  na = [CartesianIndex()]
-  col[2:n+1,:] .= frac[na,:]
-  Δ -= n
-
-  col[1,:] .= frac .* Δ
+``` {.julia #push-sediment}
+if bucket + Δ < 1.0
+  col[1,:] .+= parcel
+  return
 end
+```
 
-function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) where F <: Real
-  _, x, y = size(p)
-  @views for i in CartesianIndices((x, y))
-    push_sediment!(sediment[:, :, i[1], i[2]], p[:, i[1], i[2]])
-  end
-end
+Otherwise, we compute the normalized fractions `frac` of facies in the parcel. We add as much sediment as we can to fill the bucket and copy rows down as far as needed.
 
+``` {.julia #push-sediment}
+frac = parcel ./ Δ
+col[1,:] .+= frac .* (1.0 - bucket)
+Δ -= (1.0 - bucket)
+n = floor(Int64, Δ)
+col[n+2:end,:] = col[1:end-n-1,:]
+```
+
+If the parcel has enough material left to fill more rows, those are all filled with the fractions in `frac`. The head row is assigned whatever is left.
+
+``` {.julia #push-sediment}
+na = [CartesianIndex()]
+col[2:n+1,:] .= frac[na,:]
+Δ -= n
+col[1,:] .= frac .* Δ
+```
+
+### Popping sediment
+
+Similar to `push_sediment!` we have `pop_sediment!`. We give `pop_sediment!` the sedimentary column `col` and the total amount of sediment we require. There is a bit that we will reuse called `pop_fraction`, which only works if the amount of popped sediment is lower than the contents of the bucket.
+
+``` {.julia #sediment-stack-impl}
 @inline function pop_fraction(col::AbstractMatrix{F}, Δ::F) where F <: Real
   bucket = sum(col[1,:])
   if Δ == 0 || bucket == 0
@@ -88,6 +108,59 @@ end
   col[1,:] .-= parcel
   return parcel
 end
+
+function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
+  <<pop-sediment>>
+end
+```
+
+We start by computing the bucket size again. If it is greater than the required amount, we call `pop_fraction`.
+
+``` {.julia #pop-sediment}
+bucket = sum(col[1,:])
+if Δ < bucket
+  return pop_fraction(col, Δ)
+end
+```
+
+Otherwise, we start a parcel with the contents of the bucket. Add to that the remaining material in rows below. Now we copy rows from below, setting the bottom $n$ rows to 0. The last step is to call `pop_fraction` one more time with the remaining required amount.
+
+``` {.julia #pop-sediment}
+parcel = copy(col[1,:])
+Δ -= bucket
+n = floor(Int64, Δ)
+
+parcel .+= sum(col[2:n+1,:]; dims=1)'
+col[1:end-n-1, :] = col[n+2:end, :]
+col[end-n-1:end, :] .= 0
+Δ -= n
+
+parcel .+= pop_fraction(col, Δ)
+return parcel
+```
+
+### Peeking
+
+Instead of popping sediment, we can also *peek* at the stack with `peek_sediment!`, which is a non-destructive way to inspect what the returned parcel would be if we were to call `pop_sediment!` with the same arguments.
+
+```@raw html
+<details><summary>SedimentStack impl</summary>
+```
+
+``` {.julia file=src/SedimentStack.jl}
+module SedimentStack
+
+export push_sediment!, pop_sediment!, peek_sediment
+
+<<sediment-stack-impl>>
+
+function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) where F <: Real
+  _, x, y = size(p)
+  @views for i in CartesianIndices((x, y))
+    push_sediment!(sediment[:, :, i[1], i[2]], p[:, i[1], i[2]])
+  end
+end
+
 
 function peek_sediment(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
   if Δ == 0
@@ -120,25 +193,6 @@ function peek_sediment(sediment::AbstractArray{F,4}, Δ::F) where F <: Real
     out[:, i[1], i[2]] = peek_sediment(@view(sediment[:, :, i[1], i[2]]), Δ)
   end
   return out
-end
-
-function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
-  bucket = sum(col[1,:])
-  if Δ < bucket
-    return pop_fraction(col, Δ)
-  end
-
-  parcel = copy(col[1,:])
-  Δ -= bucket
-  n = floor(Int64, Δ)
-
-  parcel .+= sum(col[2:n+1,:]; dims=1)'
-  col[1:end-n-1, :] = col[n+2:end, :]
-  col[end-n-1:end, :] .= 0
-  Δ -= n
-
-  parcel .+= pop_fraction(col, Δ)
-  return parcel
 end
 
 function pop_sediment!(cols::AbstractArray{F, 4}, amount::AbstractArray{F, 2}, out::AbstractArray{F, 3}) where F <: Real

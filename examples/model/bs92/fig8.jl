@@ -9,7 +9,7 @@ module Script
 
      function main()
           h0 = LinRange(0, 200, 101)
-          result = hcat([BS92.model(BS92.SCENARIO_A, h).u for h in h0]...)
+          result = hcat([BS92.model(BS92.SCENARIO_A, h) for h in h0]...)
           t = LinRange(0, 80_000, 81)
 
           fig = Figure(resolution=(600,900))

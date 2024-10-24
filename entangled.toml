@@ -1,4 +1,4 @@
 version="2.0"
 watch_list=["docs/src/**/*.md"]
-ignore_list=["docs/**/.*.md"]
+ignore_list=[".*.md"]
 hooks=["quarto_attributes", "brei"]

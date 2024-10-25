@@ -108,6 +108,10 @@ save("docs/src/_fig/alcaps-alternative.png", summary_plot("data/output/alcap2.h5
 
 ## Modular Implementation
 
+```component-dag
+CarboKitten.Model.ALCAP2
+```
+
 ``` {.julia file=src/Model/ALCAP2.jl}
 # FIXME: rename this to ALCAP and remove old code
 @compose module ALCAP2
@@ -124,7 +128,7 @@ export Input, Facies
 function initial_state(input::Input)
     ca_state = CellularAutomaton.initial_state(input)
     for _ in 1:20
-        CellularAutomaton.stepper(input)(ca_state)
+        CellularAutomaton.step!(input)(ca_state)
     end
 
     sediment_height = zeros(Height, input.box.grid_size...)
@@ -137,7 +141,7 @@ function initial_state(input::Input)
 end
 
 function step!(input::Input)
-    step_ca! = CellularAutomaton.stepper(input)
+    step_ca! = CellularAutomaton.step!(input)
     disintegrate! = disintegration(input)
     produce = production(input)
     transport = transportation(input)

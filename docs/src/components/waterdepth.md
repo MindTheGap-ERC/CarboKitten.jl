@@ -1,5 +1,9 @@
 # Water Depth
 
+```component-dag
+CarboKitten.Components.WaterDepth
+```
+
 The `WaterDepth` module computes the water depth, given the bedrock elevation, sea level curve, subsidence rate and current sediment height.
 
 ## Input
@@ -33,6 +37,10 @@ end
     sediment_height::Matrix{Height}
 end
 
+function initial_state(input::AbstractInput)
+    return State(step=0, sediment_height=zeros(Height, input.box.grid_size...))
+end
+
 function water_depth(input::AbstractInput)
     x, y = axes(input.box)
     eta0 = input.bedrock_elevation.(x, y')
@@ -48,7 +56,7 @@ function write_header(fid, input::AbstractInput)
     gid = fid["input"]
     attr = attributes(gid)
     x, y = Common.axes(input.box)
-    t = (0:n_writes(input)) .* (input.time.Δt * input.time.write_interval)
+    t = TimeIntegration.write_times(input)
 
     gid["bedrock_elevation"] = input.bedrock_elevation.(x, y') |> in_units_of(u"m")
     gid["sea_level"] = input.sea_level.(t) .|> in_units_of(u"m")

@@ -1,5 +1,9 @@
 # HDF5 Output
 
+```component-dag
+CarboKitten.Components.H5Writer
+```
+
 We write output to HDF5.
 
 ``` {.julia file=src/Components/H5Writer.jl}

@@ -91,11 +91,22 @@ $$\partial_t h = -g_m {\rm tanh}\left[\frac{I_0}{I_k} \exp(-k (h - s(t)))\right]
 
 ``` {.julia #b92-model}
 function model(p::Parameters, s, t_end::Float64, h₀::Float64)
-     ∂h(h::Float64, _, t::Float64) = let w = h - s(t)
+     ∂h(h::Float64, t::Float64) = let w = h - s(t)
           w >= 0.0 ? -g(p, h - s(t)) : 0.0
      end
-     ode = ODEProblem(∂h, h₀, (0.0, t_end), Nothing)
-     solve(ode, Euler(), dt=10.0, reltol=1e-6, saveat=1000.0)
+
+     dt = 1000.0
+     times = 0.0:dt:t_end
+     result = zeros(Float64, length(times))
+     result[1] = h₀
+     for (i, t) in enumerate(times[1:end-1])
+          h = result[i]
+          for j = 0:99
+               h += ∂h(h, t + j * dt/100) * (dt/100)
+          end
+          result[i+1] = h
+     end
+     return result
 end
 ```
 
@@ -144,7 +155,6 @@ Using `DifferentialEquations.jl` we can integrate Equation @eq:growth-eqn. Inter
 ``` {.julia file=examples/model/bs92/using_ode.jl}
 module BS92
 
-using DifferentialEquations
 using CSV
 using DataFrames
 using Interpolations
@@ -193,7 +203,7 @@ module Script
 
      function main()
           h0 = LinRange(0, 200, 101)
-          result = hcat([BS92.model(BS92.SCENARIO_A, h).u for h in h0]...)
+          result = hcat([BS92.model(BS92.SCENARIO_A, h) for h in h0]...)
           t = LinRange(0, 80_000, 81)
 
           fig = Figure(resolution=(600,900))
@@ -216,6 +226,10 @@ Script.main()
 ```
 
 ## BS92 in CarboKitten stack
+
+```component-dag
+CarboKitten.Model.BS92
+```
 
 Within the CarboKitten design, we can express the BS92 model a bit more succinctly. The following produces output that is fully compatible with other CarboKitten models and the included post processing and visualization stack. The `H5Writer` module provides a `run` method that expects the `initial_state`, `step!` and `write_header` methods to be available.
 
@@ -261,9 +275,6 @@ end
 #| requires: data/bs92-sealevel-curve.csv
 
 module Script
-# using Logging
-# using TerminalLoggers
-# global_logger(TerminalLogger(right_justify=80))
 
 using CarboKitten.Components
 using CarboKitten.Components.Common
@@ -316,3 +327,68 @@ using GLMakie
 using CarboKitten.Visualization
 save("docs/src/_fig/bs92-summary.png", summary_plot("data/output/bs92.h5"))
 ```
+
+## Multiple facies
+
+Using the above implementation of the model by Bosscher and Schlager, we can run the same model with multiple facies. We use the same parameters as Burgess2013, but divide the `maximum_growth_rate` by four, since we have no CA running and all facies produce at the same time.
+
+
+``` {.julia .task file=examples/model/bs92/multi-facies-run.jl}
+#| creates: data/output/bs92-multi-facies.h5
+#| requires: data/bs92-sealevel-curve.csv
+
+module Script
+
+using CarboKitten.Components
+using CarboKitten.Components.Common
+using CarboKitten.Model.BS92
+
+using Unitful
+
+const FACIES = [
+    BS92.Facies(
+         maximum_growth_rate=500u"m/Myr"/4,
+         extinction_coefficient=0.8u"m^-1",
+         saturation_intensity=60u"W/m^2"),
+    BS92.Facies(
+         maximum_growth_rate=400u"m/Myr"/4,
+         extinction_coefficient=0.1u"m^-1",
+         saturation_intensity=60u"W/m^2"),
+    BS92.Facies(
+         maximum_growth_rate=100u"m/Myr"/4,
+         extinction_coefficient=0.005u"m^-1",
+         saturation_intensity=60u"W/m^2")]
+	
+const INPUT = BS92.Input(
+    tag = "example model BS92",
+    box = Common.Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),
+    time = TimeProperties(
+        Δt = 200.0u"yr",
+        steps = 5000,
+        write_interval = 1),
+    sea_level = t -> 4.0u"m" * sin(2π * t / 0.2u"Myr"),
+    bedrock_elevation = (x, y) -> - x / 300.0,
+    subsidence_rate = 50.0u"m/Myr",
+    insolation = 400.0u"W/m^2",
+    facies = FACIES)
+
+function main()
+    H5Writer.run(Model{BS92}, INPUT, "data/output/bs92-multi-facies.h5")
+end
+
+end
+
+Script.main()
+```
+
+``` {.julia .task file=examples/model/bs92/multi-facies-plot.jl}
+#| creates: docs/src/_fig/bs92-multi-facies.png
+#| requires: data/output/bs92-multi-facies.h5
+#| collect: figures
+
+using GLMakie
+using CarboKitten.Visualization
+save("docs/src/_fig/bs92-multi-facies.png", summary_plot("data/output/bs92-multi-facies.h5", wheeler_smooth=(3, 5)))
+```
+
+![BS92 with multiple facies](fig/bs92-multi-facies.png)

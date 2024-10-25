@@ -78,6 +78,10 @@ save("docs/src/_fig/cap1-summary.png", summary_plot("data/output/cap1.h5"))
 
 ## Implementation
 
+```component-dag
+CarboKitten.Model.CAP
+```
+
 ``` {.julia file=src/Model/CAP.jl}
 @compose module CAP
 @mixin Tag, H5Writer, CAProduction
@@ -93,7 +97,7 @@ export Input, Facies
 function initial_state(input::Input)
     ca_state = CellularAutomaton.initial_state(input)
     for _ in 1:20
-        CellularAutomaton.stepper(input)(ca_state)
+        CellularAutomaton.step!(input)(ca_state)
     end
 
     sediment_height = zeros(Height, input.box.grid_size...)
@@ -104,7 +108,7 @@ end
 
 function step!(input::Input)
     τ = production(input)
-    step_ca = CellularAutomaton.stepper(input)
+    step_ca = CellularAutomaton.step!(input)
 
     function (state::State)
         if mod(state.step, input.ca_interval) == 0

@@ -115,7 +115,7 @@ module DissolutionMod
 
 import ..Abstract: DenudationType, denudation, redistribution
 using ...BoundaryTrait: Boundary
-using ...Config: Box
+using ...Boxes: Box
 export Dissolution
 using Unitful
 

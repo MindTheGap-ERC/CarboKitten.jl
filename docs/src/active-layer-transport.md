@@ -165,7 +165,7 @@ module ActiveLayer
 
 using Unitful
 using ...BoundaryTrait
-using ...Config: Box
+using ...Boxes: Box
 using ...Stencil: stencil
 
 const Rate = typeof(1.0u"m/Myr")

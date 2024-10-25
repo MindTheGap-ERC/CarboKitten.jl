@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/stencils.md#src/Stencil.jl>>[init]
 module Stencil
 
-using ..Config: AbstractBox
+using ..Boxes: AbstractBox
 using ..BoundaryTrait
 
 export stencil, convolution

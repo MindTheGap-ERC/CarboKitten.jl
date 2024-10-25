@@ -3,7 +3,7 @@
 @mixin TimeIntegration, Boxes
 using ..Common
 using HDF5
-using CarboKitten.Config: axes
+using CarboKitten.Boxes: axes
 
 export water_depth
 

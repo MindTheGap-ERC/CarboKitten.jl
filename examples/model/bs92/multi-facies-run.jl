@@ -23,7 +23,7 @@ const FACIES = [
          maximum_growth_rate=100u"m/Myr"/4,
          extinction_coefficient=0.005u"m^-1",
          saturation_intensity=60u"W/m^2")]
-	
+
 const INPUT = BS92.Input(
     tag = "example model BS92",
     box = Common.Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),

@@ -6,7 +6,8 @@ using Unitful
     import CarboKitten.Denudation.EmpiricalDenudationMod: empirical_denudation, slope_kernel
     import CarboKitten.Denudation.PhysicalErosionMod: physical_erosion, mass_erosion, total_mass_redistribution
     using CarboKitten.Stencil: Periodic, Reflected, stencil
-    using CarboKitten.Config: Box, Vectors, TimeProperties
+    using CarboKitten.Config: Vectors, TimeProperties
+    using CarboKitten.Boxes: Box
     using CarboKitten.Burgess2013.CA: step_ca, run_ca
     using CarboKitten.Model.WithDenudation: Input, Facies
     using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpiricalDenudation

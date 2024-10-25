@@ -1,16 +1,19 @@
-# ~/~ begin <<docs/src/boxes.md#src/BoundaryTrait.jl>>[init]
+# ~/~ begin <<docs/src/components/boxes.md#src/BoundaryTrait.jl>>[init]
+# FIXME: Rename this module
 module BoundaryTrait
 
-export Boundary, Reflected, Periodic, Constant, Shelf, offset_index, offset_value, canonical
+export Boundary, Reflected, Periodic, Constant, Coast, Shelf, offset_index, offset_value, canonical
 
-# ~/~ begin <<docs/src/boxes.md#boundary-types>>[init]
+# ~/~ begin <<docs/src/components/boxes.md#boundary-types>>[init]
 abstract type Boundary{dim} end
 struct Reflected{dim} <: Boundary{dim} end
 struct Periodic{dim} <: Boundary{dim} end
 struct Constant{dim,value} <: Boundary{dim} end
-struct Shelf <: Boundary{2} end
+struct Coast <: Boundary{2} end
+
+const Shelf = Coast  # FIXME: Old name, should be removed
 # ~/~ end
-# ~/~ begin <<docs/src/boxes.md#offset-indexing>>[init]
+# ~/~ begin <<docs/src/components/boxes.md#offset-indexing>>[init]
 function offset_index(::Type{BT}, shape::NTuple{dim,Int}, i::CartesianIndex, Δi::CartesianIndex) where {dim, BT <: Boundary{dim}}
     canonical(BT, shape, i + Δi)
 end
@@ -24,15 +27,15 @@ function offset_value(::Type{Constant{dim,value}}, z::AbstractArray, i::Cartesia
     (checkbounds(Bool, z, j) ? z[j] : value)
 end
 # ~/~ end
-# ~/~ begin <<docs/src/boxes.md#offset-indexing>>[1]
-function canonical(::Type{Shelf}, shape::NTuple{2, Int}, i::CartesianIndex)
+# ~/~ begin <<docs/src/components/boxes.md#offset-indexing>>[1]
+function canonical(::Type{Coast}, shape::NTuple{2, Int}, i::CartesianIndex)
     if i[1] < 1 || i[1] > shape[1]
         return nothing
     end
     return CartesianIndex(i[1], mod1(i[2], shape[2]))
 end
 
-function offset_value(::Type{Shelf}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex)
+function offset_value(::Type{Coast}, z::AbstractArray, i::CartesianIndex, Δi::CartesianIndex)
     j = i + Δi
     shape = size(z)
     if j[1] < 1
@@ -44,7 +47,7 @@ function offset_value(::Type{Shelf}, z::AbstractArray, i::CartesianIndex, Δi::C
     end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/boxes.md#canonical-coordinates>>[init]
+# ~/~ begin <<docs/src/components/boxes.md#canonical-coordinates>>[init]
 function canonical(::Type{Periodic{dim}}, shape::NTuple{dim,Int}, i::CartesianIndex) where {dim}
     CartesianIndex(mod1.(Tuple(i), shape)...)
 end

@@ -7,7 +7,8 @@ using ...BoundaryTrait: Boundary
 using ...Denudation: denudation, redistribution
 using ...Denudation.EmpiricalDenudationMod: slope_kernel
 using ...Burgess2013.CA: step_ca, run_ca
-using ...Config: Box, TimeProperties
+using ...Config: TimeProperties
+using ...Boxes: Box
 using Unitful
 using HDF5
 using .Iterators: drop, peel, partition, map, take

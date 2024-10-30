@@ -57,7 +57,7 @@ This mode would only consider the destruction of mass, and will not take the red
 module EmpiricalDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
-using ...Config: Box
+using ...Boxes: Box
 using Unitful
 
 <<empirical-denudation>>

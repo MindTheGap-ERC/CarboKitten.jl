@@ -56,5 +56,5 @@ end
 
 end
 
-Explorer.main("data/output/bs92.h5")
+Explorer.main("data/output/alcap2.h5")
 

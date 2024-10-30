@@ -16,8 +16,9 @@ FIXME Computes the denudation for a single time-step, given denudation parameter
 Returns denudation mass in units of meters.
 """
 function denudation(input)
+    num_facies = n_facies(input)
     function (state, water_depth, slope)
-        return denudation(input.box, input.denudation, water_depth, slope, input.facies,state)
+        return denudation(input.box, input.denudation, water_depth, slope, input.facies,state) .* input.time.Δt
     end
 end
 
@@ -37,7 +38,7 @@ Takes `state`, `water_depth` in meters and `denudation_mass` as a 3D array (faci
 """
 function redistribution(input)
     function (state, water_depth, denudation_mass)
-        return redistribution(input.box, input.denudation, denudation_mass, water_depth)
+        return redistribution(input.box, input.denudation, denudation_mass, water_depth) .* input.time.Δt
     end
 end
 

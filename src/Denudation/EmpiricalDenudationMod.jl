@@ -13,7 +13,7 @@ function empirical_denudation(precip::Float64, slope::Any)
     local d = 9.0156
     local e = -0.1245
     local f = 4.91086
-    (a ./ (1 .+ exp.(b .* (precip .* 1000 .- c)))) .* (d ./ (1 .+ exp.(e .* (slope .- f)))) .* u"m/kyr"
+    (a ./ (1 .+ exp.(b .* (precip .* 1000 .- c)))) .* (d ./ (1 .+ exp.(e .* (slope .- f)))) .* u"mm/kyr"
 end
 # ~/~ end
 # ~/~ begin <<docs/src/denudation/empirical.md#empirical-denudation>>[1]
@@ -36,7 +36,7 @@ end
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, state)
     precip = p.precip ./ u"m"
-    denudation_mass = zeros(typeof(1.0u"m/kyr"), size(slope)...)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(slope)...)
 
     for idx in CartesianIndices(state.ca)
         f = state.ca[idx]
@@ -44,10 +44,10 @@ function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, s
             continue
         end
         if water_depth[idx] >= 0
-            denudation_mass[idx] = empirical_denudation.(precip, slope[idx])
+            denudation_rate[idx] = empirical_denudation.(precip, slope[idx])
         end
     end
-    return denudation_mass
+    return denudation_rate
 end
 
 function redistribution(::Box, p::EmpiricalDenudation, denudation_mass, water_depth)

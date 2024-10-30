@@ -1,0 +1,7 @@
+[data]
+git-tree-sha1 = "84b13df39fd18b96f0a2b7ca6e1531598c1e8dba"
+
+    [[data.download]]
+    url = "https://github.com/MindTheGap-ERC/CarboKittenData/archive/refs/tags/v1.0.tar.gz"
+    sha256 = "86b6168db3908a40636adc14eca692ad47f53c8f7a6bbd5c83ed3566487c7278"
+

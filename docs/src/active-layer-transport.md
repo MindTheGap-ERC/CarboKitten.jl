@@ -401,6 +401,10 @@ ActiveLayerErosion.main(ActiveLayerErosion.INPUT)
 
 ## Active Layer Component
 
+```component-dag
+CarboKitten.Components.ActiveLayer
+```
+
 ``` {.julia file=src/Components/ActiveLayer.jl}
 @compose module ActiveLayer
 @mixin WaterDepth, FaciesBase, SedimentBuffer

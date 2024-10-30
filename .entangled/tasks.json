@@ -87,24 +87,9 @@
     {
       "description": null,
       "creates": [
-        "data/bs92-sealevel-curve.csv"
-      ],
-      "requires": [
-        "data/bs92-sealevel-input.png"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/model/bs92/fig8-sealevel.jl"
-    },
-    {
-      "description": null,
-      "creates": [
         "docs/src/_fig/bs92-fig8.svg"
       ],
       "requires": [
-        "data/bs92-sealevel-curve.csv",
         "examples/model/bs92/using_ode.jl"
       ],
       "runner": "julia",
@@ -118,9 +103,7 @@
       "creates": [
         "data/output/bs92.h5"
       ],
-      "requires": [
-        "data/bs92-sealevel-curve.csv"
-      ],
+      "requires": [],
       "runner": "julia",
       "stdout": null,
       "stdin": null,
@@ -146,9 +129,7 @@
       "creates": [
         "data/output/bs92-multi-facies.h5"
       ],
-      "requires": [
-        "data/bs92-sealevel-curve.csv"
-      ],
+      "requires": [],
       "runner": "julia",
       "stdout": null,
       "stdin": null,

@@ -17,6 +17,7 @@ include("./Boxes.jl")
 include("./Stencil.jl")
 include("./SedimentStack.jl")
 include("./Utility.jl")
+include("./DataSets.jl")
 include("./Skeleton.jl")
 
 include("./Burgess2013.jl")

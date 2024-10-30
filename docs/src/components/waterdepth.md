@@ -1,5 +1,9 @@
 # Water Depth
 
+```component-dag
+CarboKitten.Components.WaterDepth
+```
+
 The `WaterDepth` module computes the water depth, given the bedrock elevation, sea level curve, subsidence rate and current sediment height.
 
 ## Input
@@ -19,7 +23,7 @@ saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation p
 @mixin TimeIntegration, Boxes
 using ..Common
 using HDF5
-using CarboKitten.Config: axes
+using CarboKitten.Boxes: axes
 
 export water_depth
 

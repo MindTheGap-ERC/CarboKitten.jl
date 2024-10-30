@@ -1,5 +1,9 @@
 # Facies Base
 
+```component-dag
+CarboKitten.Components.FaciesBase
+```
+
 Base module for including facies.
 
 ``` {.julia file=test/Components/FaciesBaseSpec.jl}

@@ -144,6 +144,34 @@
     {
       "description": null,
       "creates": [
+        "data/output/bs92-multi-facies.h5"
+      ],
+      "requires": [
+        "data/bs92-sealevel-curve.csv"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/bs92/multi-facies-run.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/bs92-multi-facies.png"
+      ],
+      "requires": [
+        "data/output/bs92-multi-facies.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/bs92/multi-facies-plot.jl"
+    },
+    {
+      "description": null,
+      "creates": [
         "data/output/cap1.h5"
       ],
       "requires": [
@@ -250,6 +278,7 @@
         "docs/src/_fig/active-layer-test.png",
         "docs/src/_fig/bs92-fig8.svg",
         "docs/src/_fig/bs92-summary.png",
+        "docs/src/_fig/bs92-multi-facies.png",
         "docs/src/_fig/cap1-summary.png",
         "docs/src/_fig/alcaps-alternative.png",
         "docs/src/_fig/eca.png",

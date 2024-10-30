@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/carbocat-ca.md#test/CASpec.jl>>[init]
 @testset "CA" begin
     using CarboKitten.BoundaryTrait: Periodic
-    using CarboKitten.Config: Box
+    using CarboKitten.Boxes: Box
     using CarboKitten.Burgess2013.CA: step_ca, run_ca
     using Unitful
 

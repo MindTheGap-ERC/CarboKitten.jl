@@ -78,6 +78,10 @@ save("docs/src/_fig/cap1-summary.png", summary_plot("data/output/cap1.h5"))
 
 ## Implementation
 
+```component-dag
+CarboKitten.Model.CAP
+```
+
 ``` {.julia file=src/Model/CAP.jl}
 @compose module CAP
 @mixin Tag, H5Writer, CAProduction

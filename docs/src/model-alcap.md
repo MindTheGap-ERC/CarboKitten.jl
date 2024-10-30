@@ -108,6 +108,10 @@ save("docs/src/_fig/alcaps-alternative.png", summary_plot("data/output/alcap2.h5
 
 ## Modular Implementation
 
+```component-dag
+CarboKitten.Model.ALCAP2
+```
+
 ``` {.julia file=src/Model/ALCAP2.jl}
 # FIXME: rename this to ALCAP and remove old code
 @compose module ALCAP2

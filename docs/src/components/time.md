@@ -1,5 +1,9 @@
 # Time
 
+```component-dag
+CarboKitten.Components.TimeIntegration
+```
+
 ``` {.julia file=test/Components/TimeIntegrationSpec.jl}
 module TimeIntegrationSpec
 using Test

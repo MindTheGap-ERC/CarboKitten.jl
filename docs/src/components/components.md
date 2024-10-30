@@ -72,7 +72,8 @@ export @for_each
 using ModuleMixins
 using Unitful
 using CarboKitten.BoundaryTrait
-using CarboKitten.Config: Box, axes, TimeProperties
+using CarboKitten.Config: TimeProperties
+using CarboKitten.Boxes: Box, axes
 using CarboKitten.Utility: in_units_of
 
 const Amount = typeof(1.0u"m")
@@ -114,6 +115,10 @@ include("Components/SedimentBuffer.jl")
 include("Components/ActiveLayer.jl")
 
 include("Components/H5Writer.jl")
+
+list_components() = filter(
+    c->:AST in names(c, all=true),
+    map(eval, names(Components)))
 
 end
 ```

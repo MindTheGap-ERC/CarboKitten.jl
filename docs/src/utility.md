@@ -82,6 +82,13 @@ export find_ranges
 
 ## Tagging a sequence of vectors
 
+The `enumerate_seq` iterator is also used in the algorithm to trace hiatus in sediment accumulation. Here the task is to enumerate a nested sequence while preserving the nested structure.
+
+``` {.julia #utility-spec}
+a = [[:a, :b], [:c]]
+@test collect(enumerate_seq(a)) == [[(1, :a), (2, :b)], [(3, :c)]]
+```
+
 ``` {.julia #utility}
 struct TagVectors{T}
 	vectors::T
@@ -125,5 +132,15 @@ holds:
     enumerate(flatten(s)) == flatten(enumerate_seq(s))
 """
 enumerate_seq(s::T) where T = TagVectors{T}(s)
+
+export enumerate_seq
+```
+
+``` {.julia file=test/UtilitySpec.jl}
+@testset "CarboKitten.Utility" begin
+    using CarboKitten.Utility
+
+    <<utility-spec>>
+end
 ```
 

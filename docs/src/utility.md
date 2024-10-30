@@ -50,6 +50,11 @@ end
 
 The `RangeFinder` iterator is used in our algorithm to trace hiatus in the sediment history. This iterator consumes an iterator of booleans and yields values of type `UnitRange`, giving all ranges for which the input sequence is true consecutively.
 
+``` {.julia #utility-spec}
+a = [false, true, true, false, true]
+@test collect(find_ranges(a)) == [2:3, 5:5]
+```
+
 ``` {.julia #utility}
 struct RangeFinder
 	v::AbstractVector{Bool}

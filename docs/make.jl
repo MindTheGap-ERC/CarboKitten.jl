@@ -80,6 +80,9 @@ makedocs(
             # "With Denudation" => "ca-prod-with-denudation.md",
             "ALCAPS" => "model-alcap.md"
         ],
+        "Examples" => [
+            "Tabular Sea Levels" => "cases/tabular-sea-level.md"
+        ],
         "Architecture" => "architecture.md",
         "Components" => [
             "Components" => "components/components.md",

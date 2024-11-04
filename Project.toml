@@ -20,3 +20,8 @@ VisualizationExt = ["Makie", "Statistics", "GeometryBasics"]
 
 [compat]
 julia = "1.10"
+AxisArrays = "0.4"
+HDF5 = "0.17"
+ProgressBars = "1.5"
+Transducers = "0.4"
+Unitful = "1"

@@ -16,7 +16,7 @@ FIXME Computes the denudation for a single time-step, given denudation parameter
 Returns denudation mass in units of meters.
 """
 function denudation(input)
-    num_facies = n_facies(input)
+
     function (state, water_depth, slope)
         return denudation(input.box, input.denudation, water_depth, slope, input.facies,state) .* input.time.Δt
     end

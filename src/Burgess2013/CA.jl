@@ -3,8 +3,7 @@ module CA
 
 using ...BoundaryTrait
 using ...Stencil
-using ..Config: Facies
-using ...Config: Box
+using ...Boxes: Box
 
 export run_ca
 
@@ -53,7 +52,7 @@ function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
 end
 # ~/~ end
 
-function run_ca(::Type{B}, facies::Vector{F}, init::Matrix{Int}, n_species::Int) where {B<:Boundary{2}, F}
+function run_ca(::Type{B}, facies::Vector{F}, init::Matrix{Int}, n_species::Int) where {B<:Boundary{2},F}
     r = rules(facies)
     Channel{Matrix{Int}}() do ch
         target = Matrix{Int}(undef, size(init))

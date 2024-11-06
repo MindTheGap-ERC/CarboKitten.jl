@@ -2,8 +2,12 @@ using Documenter
 using DocumenterCitations
 using DocumenterMermaid
 
+using CarboKitten
+
 bib = CitationBibliography(joinpath(@__DIR__, "src", "ref.bib"))
 # makedocs(; plugins=[bib], ...)
+
+include("component_graphs.jl")
 
 module Entangled
 using DataStructures: DefaultDict
@@ -76,19 +80,27 @@ makedocs(
             # "With Denudation" => "ca-prod-with-denudation.md",
             "ALCAPS" => "model-alcap.md"
         ],
+        "Examples" => [
+            "Tabular Sea Levels" => "cases/tabular-sea-level.md"
+        ],
+        "Architecture" => "architecture.md",
         "Components" => [
             "Components" => "components/components.md",
+            "Tags" => "components/tag.md",
             "Boxes" => "components/boxes.md",
             "Time" => "components/time.md",
             "Facies" => "components/facies.md",
             "Cellular Automata" => "components/cellular-automata.md",
             "Water Depth" => "components/waterdepth.md",
             "Production" => "components/production.md",
+            "HDF5 Writer" => "components/hdf5.md",
+            "Sediment Buffers" => "components/sediment_buffer.md",
+            "Active Layer Transport" => "active-layer-transport.md",
         ],
+        "Visualizations" => "visualization.md",
         "CarboCAT" => [
             "Summary" => "carbocat.md",
             "Cellular Automaton" => "carbocat-ca.md",
-            "Sediment Transport" => "carbocat-transport.md"
         ],
         "Denudation" => [
             "Denudation" => "denudation/denudation.md",
@@ -96,16 +108,12 @@ makedocs(
             "Chemical Dissolution" => "denudation/chemical.md",
             "Physical Erosion" => "denudation/physical_erosion.md"
         ],
-        "Transport" => [
-            "Active Layer" => "active-layer-transport.md",
-        ],
         "Output" => [
             "CSV Export" => "data-export.md"
         ],
         "Algorithms" => [
             "Unitful" => "unitful.md",
             "Boxes" => "boxes.md",
-            "Sediment Buffers" => "sediment-buffer.md",
             "Stencils" => "stencils.md",
             "Utility" => "utility.md"
         ],

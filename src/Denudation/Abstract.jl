@@ -2,7 +2,7 @@
 module Abstract
 
 using ...BoundaryTrait: Boundary
-using ...Config: Box
+using ...Boxes: Box
 
 using Unitful
 

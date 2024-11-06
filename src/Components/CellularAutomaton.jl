@@ -15,7 +15,7 @@
         ca_random_seed::Int   = 0
     end
 
-    mutable struct State <: AbstractState
+    @kwdef mutable struct State <: AbstractState
         ca::Matrix{Int}
         ca_priority::Vector{Int}
     end
@@ -26,7 +26,7 @@
         return State(ca, 1:n_facies |> collect)
     end
 
-    function stepper(input::AbstractInput)
+    function step!(input::AbstractInput)
         return step_ca(input.box, input.facies)
     end
 end

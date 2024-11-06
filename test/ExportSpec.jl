@@ -17,6 +17,7 @@ const AXES1 = Axes(
 const HEADER1 = Header(
     tag="test",
     axes=AXES1,
+    write_interval=1,
     Δt=0.1u"Myr",
     time_steps=10,
     bedrock_elevation=zeros(typeof(1.0u"m"), 3, 3),
@@ -35,7 +36,10 @@ const DISINTEGRATION1 = reshape(
         zeros(Amount, 10))',
     1, 3, 1, 10)
 
-const ELEVATION1 = cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :]
+const ELEVATION1 = cat(
+    [0.0, 0.0, 0.0]u"m",
+    cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :];
+    dims=3)
 
 const DATA1 = Data(
     disintegration=DISINTEGRATION1,
@@ -49,10 +53,10 @@ const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
 @testset "Data Export" begin
     # ~/~ begin <<docs/src/data-export.md#export-test>>[init]
     @testset "Hither and Dither" begin
-        buffer = UInt8[]
-        io = IOBuffer(buffer, write=true)
+        io = IOBuffer(UInt8[], read=true, write=true)
         data_export(CSVExportTrait{:sediment_accumulation_curve}, io, HEADER1, DATA1, GRID_LOCATIONS1)
-        df = read_csv(IOBuffer(buffer), DataFrame)
+        seek(io, 0)
+        df = read_csv(io, DataFrame)
         rename!(df, (n => split(n)[1] for n in names(df))...)
         @test df.sac1 ≈ ELEVATION1[1, 1, :] / u"m"
         @test df.sac2 ≈ ELEVATION1[2, 1, :] / u"m"
@@ -76,9 +80,9 @@ const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
         sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
         adm = sac |> age_depth_model
         sc = extract_sc(HEADER1, DATA1, GRID_LOCATIONS1)
-        @test cumsum(sc.sc1_f1) ≈ adm.adm1
-        @test cumsum(sc.sc2_f1) ≈ adm.adm2
-        @test cumsum(sc.sc3_f1) ≈ adm.adm3
+        @test [0.0u"m"; cumsum(sc.sc1_f1)] ≈ adm.adm1
+        @test [0.0u"m"; cumsum(sc.sc2_f1)] ≈ adm.adm2
+        @test [0.0u"m"; cumsum(sc.sc3_f1)] ≈ adm.adm3
     end
     # ~/~ end
 

@@ -1,28 +1,32 @@
-# Tabular sea levels
+# ~/~ begin <<docs/src/cases/tabular-sea-level.md#examples/tabular-sea-level/plot.jl>>[init]
+#| requires: data/output/lisiecki-sea-level.h5
+#| creates:
+#|      - docs/src/_fig/miller-sea-level.svg
+#|      - docs/src/_fig/lisiecki-selection.svg
+#|      - docs/src/_fig/lisiecki-sea-level-summary.png
+#| collect: figures
 
-In CarboKitten, the sea-level curve is given as a function of time. This means you can generate sea levels automatically, or if you like interpolate them on a table. In this demo, we show how we can read values from a file and interpolate those for input into the CarboKitten ALCAP model.
+module PlotTabularSeaLevel
 
-``` {.julia #tabular-sea-level}
+using CarboKitten.Components.Common
+using CarboKitten.DataSets: artifact_dir
+using CarboKitten.Components.TimeIntegration: write_times
+using CarboKitten.Visualization: summary_plot
+using CarboKitten.Model: ALCAP2 as ALCAP
+using CarboKitten.Boxes: Box
+
+using DelimitedFiles: readdlm
+using CairoMakie
+using DataFrames
+using Unitful
+using Interpolations
+using CategoricalArrays
+
+# ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[init]
 using CarboKitten.Components.Common
 using CarboKitten.Model.ALCAP2
-```
-
-CarboKitten has convenience functions for reading tabular data, both TSV and CSV are supported.
-
-## The data
-
-In this example we load the sea level data compilation from Miller 2020 [Miller2020Data](@cite).
-
-![Miller 2020 sea level data](../fig/miller-sea-level.svg)
-
-
-## Loading
-
-For this example we have a tab-separated data file, that is distributed with CarboKitten. However, you can have `filename` point to any tabular data on your filesystem. 
-
-You can use the `readdlm` function in `DelimitedFiles` to read most text based table formats. See the [`DataFrames` documentation](https://dataframes.juliadata.org/stable/man/importing_and_exporting/) to find out how to read from most popular data file formats.
-
-``` {.julia #tabular-sea-level}
+# ~/~ end
+# ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[1]
 function miller_2020()
     dir = artifact_dir()
     filename = joinpath(dir, "Miller2020", "Cenozoic_sea_level_reconstruction.tab")
@@ -34,23 +38,8 @@ function miller_2020()
         refkey=categorical(data[:,2]),
         reference=categorical(data[:,3]))
 end
-```
-
-In this example we'll only use the Lisiecky data set.
-
-```@example
-using CarboKitten.DataSets: miller_2020
-using DataFrames
-
-df = miller_2020()
-levels(df.refkey)
-```
-
-## Interpolating
-
-There are many ways to interpolate the data we have. We will now stick to the package `Interpolations` and use the linear interpolator in there. 
-
-``` {.julia #tabular-sea-level}
+# ~/~ end
+# ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[2]
 function sea_level()
     df = miller_2020()
     lisiecki_df = df[df.refkey .== "846 Lisiecki", :]
@@ -60,26 +49,15 @@ function sea_level()
         lisiecki_df.time,
         lisiecki_df.sealevel)
 end
-```
-
-## Inspecting our interval
-
-We will be running a simulation from 2 million years BA, to 1 million years BA with a time step of 200 years.
-
-``` {.julia #tabular-sea-level}
+# ~/~ end
+# ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[3]
 const TIME_PROPERTIES = TimeProperties(
     t0 = -2.0u"Myr", 
     Δt = 200.0u"yr",
     steps = 5000
 )
-```
-
-![Our selection from the Miller/Lisiecki dataset](../fig/lisiecki-selection.svg)
-
-## Other parameters
-We keep the facies parameters the same as in our other examples. However, because the sea level is fluctuating quite a bit more than in our other examples, we increased the slope two-fold so that the resulting platform fits in our box.
-
-``` {.julia #tabular-sea-level}
+# ~/~ end
+# ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[4]
 const PATH = "data/output"
 const TAG = "lisiecki-sea-level"
 
@@ -125,60 +103,7 @@ function main()
     CarboKitten.init()
     H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
 end
-```
-
-![Summary plot](../fig/lisiecki-sea-level-summary.png)
-
-## Running the model
-
-``` {.julia .task file=examples/tabular-sea-level/run.jl}
-#| creates: data/output/lisiecki-sea-level.h5
-
-module TabularSeaLevel
-
-using CarboKitten
-using CarboKitten.Model: H5Writer, ALCAP2 as ALCAP
-
-using DelimitedFiles: readdlm
-using DataFrames
-using CarboKitten.DataSets: artifact_dir
-using Interpolations
-using CategoricalArrays
-
-<<tabular-sea-level>>
-
-end
-
-TabularSeaLevel.main()
-```
-
-## Plotting code
-
-``` {.julia .task file=examples/tabular-sea-level/plot.jl}
-#| requires: data/output/lisiecki-sea-level.h5
-#| creates:
-#|      - docs/src/_fig/miller-sea-level.svg
-#|      - docs/src/_fig/lisiecki-selection.svg
-#|      - docs/src/_fig/lisiecki-sea-level-summary.png
-#| collect: figures
-
-module PlotTabularSeaLevel
-
-using CarboKitten.Components.Common
-using CarboKitten.DataSets: artifact_dir
-using CarboKitten.Components.TimeIntegration: write_times
-using CarboKitten.Visualization: summary_plot
-using CarboKitten.Model: ALCAP2 as ALCAP
-using CarboKitten.Boxes: Box
-
-using DelimitedFiles: readdlm
-using CairoMakie
-using DataFrames
-using Unitful
-using Interpolations
-using CategoricalArrays
-
-<<tabular-sea-level>>
+# ~/~ end
 
 function plot_miller_data()
     df = miller_2020()
@@ -226,4 +151,4 @@ end
 PlotTabularSeaLevel.plot_miller_data()
 PlotTabularSeaLevel.plot_lisiecki_data()
 PlotTabularSeaLevel.plot_result()
-```
+# ~/~ end

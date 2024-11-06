@@ -16,9 +16,11 @@ State(_::AbstractInput) = State(0)
 
 time(input::AbstractInput, state::AbstractState) = input.time.t0 + state.step * input.time.Δt
 
-write_times(input::AbstractInput) = (0:n_writes(input)) .* (input.time.Δt * input.time.write_interval) .+ input.time.t0
+write_times(input::AbstractInput) = write_times(input.time)
+write_times(time::TimeProperties) = (0:n_writes(time)) .* (time.Δt * time.write_interval) .+ time.t0
 
-n_writes(input::AbstractInput) = div(input.time.steps, input.time.write_interval)
+n_writes(input::AbstractInput) = n_writes(input.time)
+n_writes(time::TimeProperties) = div(time.steps, time.write_interval)
 
 function write_header(fid, input::AbstractInput)
     gid = fid["input"]

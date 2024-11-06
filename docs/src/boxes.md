@@ -8,6 +8,9 @@ export TimeProperties
 using ..BoundaryTrait
 using ..Vectors
 
+using ..Boxes: Box, axes
+export Box, axes
+
 using Unitful
 using Unitful.DefaultSymbols
 

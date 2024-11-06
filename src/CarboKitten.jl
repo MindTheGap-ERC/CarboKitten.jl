@@ -12,8 +12,8 @@ end
 
 include("./BoundaryTrait.jl")
 include("./Vectors.jl")
-include("./Config.jl")
 include("./Boxes.jl")
+include("./Config.jl")
 include("./Stencil.jl")
 include("./SedimentStack.jl")
 include("./Utility.jl")

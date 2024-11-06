@@ -38,6 +38,7 @@ function miller_2020()
     return DataFrame(
         time=-df[!,4] * u"kyr",
         sealevel=df[!,7] * u"m",
+        refkey=categorical(df[!,2]),
         reference=categorical(df[!,3]))
 end
 

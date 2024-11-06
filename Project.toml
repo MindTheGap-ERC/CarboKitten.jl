@@ -1,7 +1,7 @@
 name = "CarboKitten"
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 authors = ["Johan Hidding <j.hidding@esciencecenter.nl>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
@@ -30,5 +30,9 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 VisualizationExt = ["Makie", "Statistics", "GeometryBasics"]
 
 [compat]
-TerminalLoggers = "0.1.7"
 julia = "1.10"
+TerminalLoggers = "0.1.7"
+AxisArrays = "0.4"
+HDF5 = "0.17"
+Transducers = "0.4"
+Unitful = "1"

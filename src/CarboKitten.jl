@@ -19,7 +19,6 @@ include("./Utility.jl")
 include("./Skeleton.jl")
 
 include("./Burgess2013.jl")
-
 include("./Denudation.jl")
 
 module Transport
@@ -27,7 +26,6 @@ include("./Transport/ActiveLayer.jl")
 end
 
 include("./Components.jl")
-
 module Model
 using ModuleMixins: @compose
 using CarboKitten.Components.Common

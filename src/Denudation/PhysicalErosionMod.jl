@@ -6,14 +6,15 @@ using ...Stencil: Boundary, Periodic, offset_value, offset_index, stencil
 using ...BoundaryTrait
 using ...Config: Box
 
+
 using Unitful
 
-@kwdef struct PhysicalErosion <: DenudationType
-    erodability::typeof((1.0u"m/yr"))
-end
+@kwdef struct PhysicalErosion <: DenudationType end
 
-function physical_erosion(slope::Any, inf::Any, erodability::Float64)
-    -1 * -erodability .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3) .* u"m/kyr"
+const Amount = typeof(1.0u"m")
+
+function physical_erosion(slope::Float64, inf::Float64, erodability::Any)
+    -1 * -erodability .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3)
 end
 
 function redistribution_kernel(w::Array{Float64}, cellsize::Float64)
@@ -44,41 +45,49 @@ function mass_erosion(box::Box{BT}, denudation_mass, water_depth::Array{Float64}
         wd[k] = offset_value(BT, water_depth, i, Δi)
     end
     cell_size = box.phys_scale ./ u"m"
-    return redistribution_kernel(wd, cell_size) .* denudation_mass[i]
+    
+    return (redistribution_kernel(wd, cell_size) .* denudation_mass[i])
 end
 
-function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth) where {BT<:Boundary{2}}
-    mass = zeros(typeof(0.0u"m/kyr"), box.grid_size...)
-    for i in CartesianIndices(mass)
-        redis = mass_erosion(box, denudation_mass, water_depth, i)
-        for subidx in CartesianIndices((-1:1, -1:1))
-            target = offset_index(BT, size(water_depth), i, subidx)
-            if target === nothing
-                continue
+function total_mass_redistribution(box::Box{BT}, denudation_mass::A, water_depth, mass) where {BT<:Boundary{2}, A<:AbstractArray{Amount, 2}}
+        for i in CartesianIndices(mass[1,:,:])
+            redis = mass_erosion(box, denudation_mass, water_depth, i)
+            for subidx in CartesianIndices((-1:1, -1:1))
+                target = offset_index(BT, size(water_depth), i, subidx)
+                if target === nothing
+                    continue
+                end
+                mass[target] += redis[2+subidx[1], 2+subidx[2]]
             end
-            mass[target] += redis[2+subidx[1], 2+subidx[2]]
         end
+    return mass
+end
+
+function total_mass_redistribution(box::Box{BT}, denudation_mass::A, water_depth) where {BT<:Boundary{2}, A<:AbstractArray{Amount, 3}}
+    mass = Array{Amount, 2}(undef, n_facies(input), input.box.grid_size...)
+    @views for f in 1:n_facies(input)
+        total_mass_redistribution(box, denudation_mass[i,:,:], water_depth, mass[i,:,:])
     end
     return mass
 end
 
 function denudation(::Box, p::PhysicalErosion, water_depth::Any, slope, facies, state)
-    erodability = p.erodability ./ u"m/yr"
-    denudation_mass = zeros(typeof(1.0u"m/kyr"), size(slope)...)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), n_facies(input), size(slope)...)
     for idx in CartesianIndices(state.ca)
         f = state.ca[idx]
         if f == 0
             continue
         end
         if water_depth[idx] >= 0
-            denudation_mass[idx] = physical_erosion.(slope[idx], facies[f].infiltration_coefficient, erodability)
+            denudation_rate[f, idx[1], idx[2]] = physical_erosion.(slope[idx], facies[f].infiltration_coefficient, facies[f].infiltration_coefficient.erodability)
         end
     end
-    return denudation_mass
+    return denudation_rate
 end
 
-function redistribution(box::Box{BT}, p::PhysicalErosion, denudation_mass, water_depth) where {BT<:Boundary}
-    return total_mass_redistribution(box, denudation_mass, water_depth)
+function redistribution(box::Box{BT}, p::PhysicalErosion, denudation_rate, water_depth) where {BT<:Boundary}
+
+    return total_mass_redistribution(box, denudation_rate, water_depth)
 end
 
 end

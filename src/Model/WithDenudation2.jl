@@ -1,13 +1,17 @@
 # ~/~ begin <<docs/src/models/with-denudation.md#src/Model/WithDenudation2.jl>>[init]
 @compose module WithDenudation2
-@mixin Tag, H5Writer, CAProduction, ActiveLayer, Denudation
+@mixin Tag, H5Writer, CAProduction, ActiveLayer, DenudationConfig
 
 using ..Common
 using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
-
+using ..DenudationConfig
+using ...Denudation
+using ...Stencil
+using ...BoundaryTrait
+using ...Denudation.EmpiricalDenudationMod: slope_kernel
 export Input, Facies
 
 function initial_state(input::Input)
@@ -33,10 +37,12 @@ function step!(input::Input)
     denudate = denudation(input)
     redistribute = redistribution(input)
     water_depth_fn = water_depth(input)
-
+    slopefn = slope_function(input,input.box)
     # Somehow deal with the units here
+
     slope = zeros(Float64, box.grid_size...)
-    slopefn = stencil(Float64, BT, (3, 3), slope_kernel)
+    #slopefn = stencil(Float64, BT, (3, 3), slope_kernel) 
+    
 
     denuded_sediment = Array{Float64}(undef, n_facies(input), input.box.grid_size...)
 

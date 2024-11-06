@@ -7,8 +7,11 @@ module Script
 using Unitful
 using CarboKitten.Components
 using CarboKitten.Components.Common
+using CarboKitten.Components.DenudationConfig
 using CarboKitten.Model: ALCAP2 as ALCAP
+using CarboKitten.Model: WithDenudation2 as WDn
 using CarboKitten.Export: data_export, CSV
+using CarboKitten.Denudation
 
 const m = u"m"
 const Myr = u"Myr"
@@ -17,7 +20,7 @@ const PATH = "data/output"
 const TAG = "dissolution"
 
 const FACIES = [
-    WithDenudation.Facies(
+    WDn.Facies(
         viability_range=(4, 10),
         activation_range=(6, 10),
         maximum_growth_rate=500u"m/Myr",
@@ -29,7 +32,7 @@ const FACIES = [
         infiltration_coefficient=0.5,
         erodability = 0.23u"m/yr"
         ),
-    WithDenudation.Facies(
+    WDn.Facies(
         viability_range=(4, 10),
         activation_range=(6, 10),
         maximum_growth_rate=400u"m/Myr",
@@ -41,7 +44,7 @@ const FACIES = [
         infiltration_coefficient=0.5,
         erodability = 0.23u"m/yr"
         ),
-    WithDenudation.Facies(
+    WDn.Facies(
         viability_range=(4, 10),
         activation_range=(6, 10),
         maximum_growth_rate=100u"m/Myr",
@@ -60,7 +63,7 @@ const AMPLITUDE = 4.0m
 const DENUDATION = Dissolution(temp=273.0u"K", precip=1.0u"m", pco2=10^(-1.5) * u"atm", reactionrate=2e-3u"m/yr")
 
 
-const INPUT = WithDenudation.Input(
+const INPUT = WDn.Input(
     tag="$TAG",
     box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m),
     time=TimeProperties(
@@ -79,7 +82,7 @@ const INPUT = WithDenudation.Input(
     denudation = DENUDATION)
 
 function main()
-    H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+    H5Writer.run(Model{WDn}, INPUT, "$(PATH)/$(TAG).h5")
 
     data_export(
         CSV(tuple.(10:20:70, 25),

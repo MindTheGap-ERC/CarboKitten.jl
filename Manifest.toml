@@ -2,7 +2,7 @@
 
 julia_version = "1.10.5"
 manifest_format = "2.0"
-project_hash = "f6811de92d1b6d4180b66b9c709972347243b139"
+project_hash = "0bce968423dad1d1f12c5fbf906cccf7b7275187"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
@@ -104,6 +104,24 @@ git-tree-sha1 = "6c834533dc1fabd820c1db03c839bf97e45a3fab"
 uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 version = "0.10.14"
 
+[[deps.CategoricalArrays]]
+deps = ["DataAPI", "Future", "Missings", "Printf", "Requires", "Statistics", "Unicode"]
+git-tree-sha1 = "1568b28f91293458345dabba6a5ea3f183250a61"
+uuid = "324d7699-5711-5eae-9e2f-1d82baa6b597"
+version = "0.10.8"
+
+    [deps.CategoricalArrays.extensions]
+    CategoricalArraysJSONExt = "JSON"
+    CategoricalArraysRecipesBaseExt = "RecipesBase"
+    CategoricalArraysSentinelArraysExt = "SentinelArrays"
+    CategoricalArraysStructTypesExt = "StructTypes"
+
+    [deps.CategoricalArrays.weakdeps]
+    JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+    SentinelArrays = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
+    StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
+
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra"]
 git-tree-sha1 = "3e4b134270b372f2ed4d4d0e936aabaefc1802bc"
@@ -190,6 +208,12 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 git-tree-sha1 = "0fba8b706d0178b4dc7fd44a96a92382c9065c2c"
 uuid = "244e2a9f-e319-4986-a169-4d1fe445cd52"
 version = "0.1.2"
+
+[[deps.DelimitedFiles]]
+deps = ["Mmap"]
+git-tree-sha1 = "9e2f36d3c96a820c678f2f1f1782582fcf685bae"
+uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+version = "1.9.1"
 
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]

@@ -1,9 +1,9 @@
 # ~/~ begin <<docs/src/bosscher-1992.md#examples/model/bs92/using_ode.jl>>[init]
 module BS92
 
-using CSV
-using DataFrames
+using CarboKitten.DataSets: bosscher_schlager_1992
 using Interpolations
+using Unitful
 
 # ~/~ begin <<docs/src/bosscher-1992.md#b92-model>>[init]
 # ~/~ begin <<docs/src/bosscher-1992.md#carbonate-production>>[init]
@@ -41,8 +41,8 @@ end
 # ~/~ end
 
 function sealevel_curve()
-     data = DataFrame(CSV.File("data/bs92-sealevel-curve.csv"))
-     linear_interpolation(data.time, data.depth)
+     data = bosscher_schlager_1992()
+     linear_interpolation(data.time / u"yr", data.sealevel / u"m")
 end
 
 struct Scenario

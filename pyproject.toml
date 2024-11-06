@@ -5,6 +5,7 @@ description = "Development environment for CarboKitten. This is not an actual Py
 authors = ["Johan Hidding <j.hidding@esciencecenter.nl>"]
 license = "Apache-2"
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"

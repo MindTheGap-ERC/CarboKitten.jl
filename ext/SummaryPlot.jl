@@ -30,7 +30,8 @@ function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
 	Colorbar(fig[3,2], df; vertical=false, label="dominant facies", ticks=1:n_facies)
 
 	ax4 = Axis(fig[4,3], title="sealevel curve", xlabel="sealevel [m]",
-        limits=(nothing, (0.0, header.axes.t[end] |> in_units_of(u"Myr"))))
+        limits=(nothing, (header.axes.t[1] |> in_units_of(u"Myr"),
+						  header.axes.t[end] |> in_units_of(u"Myr"))))
 	lines!(ax4, header.sea_level |> in_units_of(u"m"), header.axes.t |> in_units_of(u"Myr"))
 
 	ax5 = Axis(fig[2,3])

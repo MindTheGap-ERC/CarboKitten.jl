@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.45
+# v0.20.3
 
 using Markdown
 using InteractiveUtils
@@ -235,6 +235,19 @@ begin
     facies=FACIES)
 end
 
+# ╔═╡ f6776dbe-8dc5-4c01-a034-cc47d0c34e8a
+begin 
+const PERIOD = 0.2
+const AMPLITUDE = 4.0
+t = collect(0:0.002:1)
+sea_level= AMPLITUDE .* sin.(2π .* t ./ PERIOD)
+fig1 = lines(t, sea_level, color = :blue, linewidth = 2)
+fig1
+end
+
+# ╔═╡ 08d1bf20-83b3-4275-a090-edeb207034a1
+using GLMakie
+
 # ╔═╡ 2d6569d2-f191-49ce-893c-7a4beaed0c96
 begin
 using DataFrames, CSV 
@@ -251,9 +264,6 @@ fig5
 end
 
 
-# ╔═╡ 08d1bf20-83b3-4275-a090-edeb207034a1
-using GLMakie
-
 # ╔═╡ adda3ee8-c461-40e6-bf4e-ca676942ce3b
 begin
 using GLMakie
@@ -263,18 +273,7 @@ save("docs/alcaps2_exmaple.png", summary_plot("data/output/alcap2.h5"))
 # need to change the relative path after the simple example is done
 end
 
-# ╔═╡ f6776dbe-8dc5-4c01-a034-cc47d0c34e8a
-begin 
-const PERIOD = 0.2
-const AMPLITUDE = 4.0
-t = collect(0:0.002:1)
-sea_level= AMPLITUDE .* sin.(2π .* t ./ PERIOD)
-fig1 = lines(t, sea_level, color = :blue, linewidth = 2)
-fig1
-end
-
 # ╔═╡ 3cc4223e-7ae0-4c42-aca1-14d86cb32a5d
-#=╠═╡
 begin
 using Unitful
 using CarboKitten.Components
@@ -289,7 +288,6 @@ const PATH = "data/output"
 const TAG = "alcap2"
 end
 
-  ╠═╡ =#
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

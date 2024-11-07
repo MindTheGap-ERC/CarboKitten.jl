@@ -1,16 +1,10 @@
-# ~/~ begin <<docs/src/model-alcap.md#examples/model/alcap/run.jl>>[init]
-#| requires: src/Model/ALCAP2.jl
-#| creates: data/output/alcap-example.h5
-
-module Script
+# ~/~ begin <<docs/src/model-alcap.md#src/Model/ALCAP/Example.jl>>[init]
+module Example
 
 using Unitful
-using CarboKitten.Components
-using CarboKitten.Components.Common
 using CarboKitten.Model: ALCAP2 as ALCAP
-using CarboKitten.Export: data_export, CSV
-
-const PATH = "data/output"
+using CarboKitten.Boxes: Box, Coast
+using CarboKitten.Config: TimeProperties
 
 # ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]
 const TAG = "alcap-example"
@@ -60,19 +54,5 @@ const INPUT = ALCAP.Input(
     facies=FACIES)
 # ~/~ end
 
-function main()
-    H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
-
-    data_export(
-        CSV(tuple.(10:20:70, 25),
-          :sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
-          :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
-          :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
-          :metadata => "$(PATH)/$(TAG).toml"),
-        "$(PATH)/$(TAG).h5")
 end
-
-end
-
-Script.main()
 # ~/~ end

@@ -26,6 +26,24 @@ using GLMakie
 # ╔═╡ 5432b762-50fa-4ac4-97e6-0477236cb94a
 using CarboKitten.Visualization: summary_plot
 
+# ╔═╡ 51f2b3db-7b2d-4d62-8c3a-6608c01bffb7
+using Unitful
+
+# ╔═╡ b6ae4907-ac04-4a37-975f-42d85d572f91
+using CarboKitten.Boxes: Box, Coast
+
+# ╔═╡ 37cacf0c-c33a-4a11-b47e-fe2dc24d4eff
+using CarboKitten.Config: TimeProperties
+
+# ╔═╡ 90fdaca0-2efa-4230-8af3-177a6d94639c
+using CarboKitten.Components.TimeIntegration: write_times
+
+# ╔═╡ d0bfae1a-deef-4625-a242-0a9b899bf83d
+using CarboKitten.Model.ALCAP2: Facies
+
+# ╔═╡ facfe3ea-5716-493a-8052-26cf6a237beb
+using CarboKitten.Model.ALCAP2: Input
+
 # ╔═╡ 9babc2b0-9c26-11ef-3459-0d113ec3c402
 md"""
 # Install Julia and Pluto
@@ -98,84 +116,201 @@ All packages used and their versions are stored inside the notebooks. When you r
 # ╔═╡ 68fac1d8-f402-429e-90a4-25fcfa188c2e
 md"# A first example"
 
+# ╔═╡ bb5e8dd7-8d1c-41e2-a5e4-ef4575cfd29b
+md"""
+!!! tip "HDF5"
+	Output is written to HDF5 files, a broadly used and supported data format for binary scientific data.
+
+	After the simulation is done, we can read the HDF5 file for further analysis and visualization.
+"""
+
 # ╔═╡ 74f4674f-dbea-44ad-8d54-9861b35139cd
+# ╠═╡ disabled = true
+#=╠═╡
 run_model(Model{ALCAP}, Example.INPUT, "../../data/output/tutorial.h5")
+  ╠═╡ =#
+
+# ╔═╡ 66e30189-ae72-4ec1-b7bd-1136ddfce2ee
+md"""
+!!! tip "Makie"
+	We will be using [Makie](https://makie.org) to do our plotting.
+"""
 
 # ╔═╡ e118a117-9a00-4589-906d-c31d2057bcef
 summary_plot("../../data/output/tutorial.h5")
 
 # ╔═╡ 8f883ea5-d90e-41e7-9809-3f170183a640
+md"""
+# A second example
 
+In our second example we walk through the entire configuration. We start by defining the shape of our box.
 
-# ╔═╡ 69f42696-654e-4a82-b2de-a8a30fed22fb
-md"The planview of the model is a 'chessboard' with 50 (along shore) × 100 (perpendicular to the shore) grids. The grid size is 150× 150m. With time, the produced carbonate would be added vertically to the 'chessboard'"
+## Simulation box
+"""
 
-# ╔═╡ 25f1664e-a20e-4700-97f3-22e42bd6e3e7
-md"`box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m)`"
+# ╔═╡ 342490a7-685f-47f4-9889-a56927713f85
+box = Box{Coast}(grid_size = (50, 50), phys_scale = 300.0u"m")
 
-# ╔═╡ 5426d044-7f3c-4ae6-b9c3-a82982f56f3c
-md"This example assumes sea-level to be a sine curve"
+# ╔═╡ 5e914211-fd1f-45e0-9ecd-442d819684a2
+md"""
+There is a lot to unpack here: `Coast` indicates a box topology that is periodic in the y-direction and mirrored in the x-direction, which is ideal for simulating a strip of coast-line. Other choices could be `Periodic{2}` or `Reflected{2}`. The `grid_size` argument is the size of our box in pixels, and `phys_scale` is the size of one pixel with dimensions of length.
+"""
 
-# ╔═╡ abb330a5-b1d4-4b3d-8493-436ed96428c7
-md" 'sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD)', where PERIOD is period of the curve = 0.2Myr in this case"
+# ╔═╡ a39a9476-6a7f-435a-b882-36ecf618369e
+md"""
+!!! info "Exercise: Units"
+	To indicate units, we use the [Unitful package](https://painterqubits.github.io/Unitful.jl/stable/). This allows us to be free in our choice of units, as long as dimensions are in order.
 
-# ╔═╡ 08d1bf20-83b3-4275-a090-edeb207034a1
-# ╠═╡ disabled = true
-#=╠═╡
-using GLMakie
-  ╠═╡ =#
+	Try adding a quantity in light years to one in kilometers:
+
+	```julia
+	1.0u"yr" * 3e8u"m/s" + 150.0e6u"km"
+	```
+
+	Try adding a quantity in meters to one in years:
+
+	```julia
+	2.0u"m" + 3.0u"yr"
+	```
+"""
+
+# ╔═╡ 620627e8-4bf6-400d-ab6f-9a7a9a6ec040
+md"""
+## Simulation time
+Next, we define our simulation time and time step."""
+
+# ╔═╡ 281df21c-aa0a-41fb-a20d-45f7b4eb3532
+time = TimeProperties(
+	Δt = 500u"yr",
+	steps = 2000
+)
+
+# ╔═╡ a2689006-cb86-4956-999a-7adea546abdd
+md"""Notice that the Δt property was automatically coneverted to Myr, which is the unit that we use internally.
+"""
+
+# ╔═╡ a81dba9b-8f12-4b72-9ea8-993d6c5e501b
+md"""
+## Sea level
+
+Sea level is given as a function. The function should take quantities of time and return a quantity of length.
+
+!!! tip "Functions in Julia"
+	There are several ways to define functions in Julia. The most readable is as follows:
+
+	```julia
+	function some_function_name(arg1, arg2, etc...)
+		# computations
+		...
+		return result
+	end
+	```
+
+Here, we define the `sea_level` as a sine wave with fixed amplitude and period.
+"""
+
+# ╔═╡ 7d72a3bb-5ed8-4ebf-a45d-59e1bb267e9a
+function sea_level(t)
+	amplitude = 4.0u"m"
+	period = 0.2u"Myr"
+	return amplitude * sin(2π * t / period)
+end
+
+# ╔═╡ 30245436-9731-4cae-a150-fcba4360527e
+let
+	t = write_times(time)
+	sl = sea_level.(t)
+	lines(t, sl)
+end
 
 # ╔═╡ f6776dbe-8dc5-4c01-a034-cc47d0c34e8a
-# ╠═╡ disabled = true
-#=╠═╡
-begin 
-const PERIOD = 0.2
-const AMPLITUDE = 4.0
-t = collect(0:0.002:1)
-sea_level= AMPLITUDE .* sin.(2π .* t ./ PERIOD)
-fig1 = lines(t, sea_level, color = :blue, linewidth = 2)
-fig1
-end
-  ╠═╡ =#
+md"""
+!!! info "Exercise: expand the `sea_level` function"
+	Try to add a second mode of oscillation into the sea level curve. Choose your own amplitude and period.
+"""
 
 # ╔═╡ 5c90b464-858a-4a5d-a2c7-fda775057ef6
-md"The initial topography is a ramp"
+md"""
+## Initial topography
+In CarboKitten, the initial topography is also known as *bedrock elevation*. This quantity needs to be given as a function of both `x` and `y`. Here our initial topography is a ramp.
+"""
 
-# ╔═╡ b4b13d2f-9920-4327-a9c2-893661744085
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-x = collect(0:150:15000)
-bedrock_elevation= -x / 300.0
-fig2 = lines(x, bedrock_elevation, color = :black, linewidth = 2)
-fig2
+# ╔═╡ 68f2dd79-6777-4267-ae67-5167f764b7b9
+function bedrock_elevation(x, y)
+	return -x / 300.0
 end
-  ╠═╡ =#
 
-# ╔═╡ a6d2e583-8469-43af-a50a-6b3dc7fbfe40
-md"The subsidence_rate=50.0m / Myr, and insolation is a constant =400.0W/m^2"
+# ╔═╡ 2e168646-5b9e-437b-b0b2-d637a4beb577
+md"""
+## Facies definitions
 
-# ╔═╡ 7829da51-0ff4-43c3-9a06-1fe7484c3a1a
-md"Three biological facies are considered in this case, including: 
+Three biological facies are considered in this case, including:
+
 - T(Tropical) factory (max growth rate = 500.0m/Myr)
 - M(Mounds) factory (max growth rate = 400.0m/Myr)
 - C(Cool water) factory (max growth rate = 100.0m/Myr)
-and their growth rates depends on the water depth (light penetration)"
 
-# ╔═╡ 119c0993-4028-4d08-9e83-6d1d3683f93d
-md"Let's first see how the cross-sections look like"
+Their growth rates depend on the water depth, as parametrized by the Bosscher & Schlager 1992 model,
 
-# ╔═╡ adda3ee8-c461-40e6-bf4e-ca676942ce3b
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-using GLMakie
-using CarboKitten.Visualization
+$$g(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right),$$
 
-save("docs/alcaps2_exmaple.png", summary_plot("data/output/alcap2.h5"))
-# need to change the relative path after the simple example is done
-end
-  ╠═╡ =#
+where $g_m$ is the maximum growth rate, $I_0$ is the insolation, $I_k$ the saturation intensity, $k$ the extinction coefficient, and $w$ the water depth.
+
+Because our model also includes diffusive transport, we also specify a diffusion coefficient for each facies type. The units are a bit weird, but the intuition should be: larger values for smaller particle size.
+
+When we inpsect the displayed `Facies` values, we see that also the default viability and activation ranges are set to govern the cellular automaton, following Burgess 2013.
+"""
+
+# ╔═╡ 68ab2b1c-67fb-48f1-ac81-c7efac04d96a
+facies = [
+	Facies(
+		maximum_growth_rate = 500.0u"m/Myr",
+		extinction_coefficient = 0.8u"m^-1",
+		saturation_intensity = 60.0u"W/m^2",
+		diffusion_coefficient = 500u"m"
+	),
+	Facies(
+		maximum_growth_rate = 400.0u"m/Myr",
+		extinction_coefficient = 0.1u"m^-1",
+		saturation_intensity = 60.0u"W/m^2",
+		diffusion_coefficient = 5000u"m"
+	),
+	Facies(
+		maximum_growth_rate = 100.0u"m/Myr",
+		extinction_coefficient = 0.005u"m^-1",
+		saturation_intensity = 60.0u"W/m^2",
+		diffusion_coefficient = 3000u"m"
+	)]
+
+# ╔═╡ 43405e49-2739-4e79-8204-e489db6c1fd5
+md"""
+## Other parameters
+
+The subsidence rate is set to a constant 50m/Myr and insolation to 400W/m^2. The other parameters are related to the transport model.
+"""
+
+# ╔═╡ ae3a74ea-f6b5-442c-973b-1cec48627968
+input = Input(
+	time = time,
+	box = box,
+	facies = facies,
+	sea_level = sea_level,
+	bedrock_elevation = bedrock_elevation,
+	
+	subsidence_rate = 50.0u"m/Myr",
+	insolation = 400.0u"W/m^2",
+	
+	sediment_buffer_size = 50,
+	depositional_resolution = 0.5u"m",
+	
+	disintegration_rate = 50.0u"m/Myr"
+)
+
+# ╔═╡ 8946d268-4407-4fe4-86ae-67b3a37b34be
+run_model(Model{ALCAP}, input, "../../data/output/tutorial2.h5")
+
+# ╔═╡ 0fd7ea33-ff06-4355-9278-125c8ed66df4
+summary_plot("../../data/output/tutorial2.h5")
 
 # ╔═╡ 7ff4d3e4-670f-4cab-9220-d1f8471efb50
 md"The model would store the results in a HDF5 file, and automatically helps you extract age-depth model from locations from land towards sea"
@@ -378,26 +513,40 @@ md"You can now replace the sea-level curve with: `sea_level = t -> sealevel_curv
 # ╟─3b7fef8b-efb9-467d-b6db-f7cfa132be69
 # ╠═bcea7127-3c21-4c35-af42-3d2c71464409
 # ╟─cf61bc3f-a20a-45b7-a885-22b70075fc42
-# ╠═68fac1d8-f402-429e-90a4-25fcfa188c2e
+# ╟─68fac1d8-f402-429e-90a4-25fcfa188c2e
 # ╠═d72d7e42-8392-44a0-a8b3-d59475be8dc7
 # ╠═325e3d04-2ff2-4c27-91bf-265820ac6763
+# ╟─bb5e8dd7-8d1c-41e2-a5e4-ef4575cfd29b
 # ╠═74f4674f-dbea-44ad-8d54-9861b35139cd
+# ╟─66e30189-ae72-4ec1-b7bd-1136ddfce2ee
 # ╠═4fe0f485-2db0-4685-b5b9-e9ba6009e4a6
 # ╠═5432b762-50fa-4ac4-97e6-0477236cb94a
 # ╠═e118a117-9a00-4589-906d-c31d2057bcef
-# ╠═8f883ea5-d90e-41e7-9809-3f170183a640
-# ╠═69f42696-654e-4a82-b2de-a8a30fed22fb
-# ╠═25f1664e-a20e-4700-97f3-22e42bd6e3e7
-# ╠═5426d044-7f3c-4ae6-b9c3-a82982f56f3c
-# ╠═abb330a5-b1d4-4b3d-8493-436ed96428c7
-# ╠═08d1bf20-83b3-4275-a090-edeb207034a1
-# ╠═f6776dbe-8dc5-4c01-a034-cc47d0c34e8a
-# ╠═5c90b464-858a-4a5d-a2c7-fda775057ef6
-# ╠═b4b13d2f-9920-4327-a9c2-893661744085
-# ╠═a6d2e583-8469-43af-a50a-6b3dc7fbfe40
-# ╠═7829da51-0ff4-43c3-9a06-1fe7484c3a1a
-# ╠═119c0993-4028-4d08-9e83-6d1d3683f93d
-# ╠═adda3ee8-c461-40e6-bf4e-ca676942ce3b
+# ╟─8f883ea5-d90e-41e7-9809-3f170183a640
+# ╠═51f2b3db-7b2d-4d62-8c3a-6608c01bffb7
+# ╠═b6ae4907-ac04-4a37-975f-42d85d572f91
+# ╠═342490a7-685f-47f4-9889-a56927713f85
+# ╟─5e914211-fd1f-45e0-9ecd-442d819684a2
+# ╟─a39a9476-6a7f-435a-b882-36ecf618369e
+# ╟─620627e8-4bf6-400d-ab6f-9a7a9a6ec040
+# ╠═37cacf0c-c33a-4a11-b47e-fe2dc24d4eff
+# ╠═90fdaca0-2efa-4230-8af3-177a6d94639c
+# ╠═281df21c-aa0a-41fb-a20d-45f7b4eb3532
+# ╟─a2689006-cb86-4956-999a-7adea546abdd
+# ╟─a81dba9b-8f12-4b72-9ea8-993d6c5e501b
+# ╠═7d72a3bb-5ed8-4ebf-a45d-59e1bb267e9a
+# ╠═30245436-9731-4cae-a150-fcba4360527e
+# ╟─f6776dbe-8dc5-4c01-a034-cc47d0c34e8a
+# ╟─5c90b464-858a-4a5d-a2c7-fda775057ef6
+# ╠═68f2dd79-6777-4267-ae67-5167f764b7b9
+# ╟─2e168646-5b9e-437b-b0b2-d637a4beb577
+# ╠═d0bfae1a-deef-4625-a242-0a9b899bf83d
+# ╠═68ab2b1c-67fb-48f1-ac81-c7efac04d96a
+# ╟─43405e49-2739-4e79-8204-e489db6c1fd5
+# ╠═facfe3ea-5716-493a-8052-26cf6a237beb
+# ╠═ae3a74ea-f6b5-442c-973b-1cec48627968
+# ╠═8946d268-4407-4fe4-86ae-67b3a37b34be
+# ╠═0fd7ea33-ff06-4355-9278-125c8ed66df4
 # ╠═7ff4d3e4-670f-4cab-9220-d1f8471efb50
 # ╠═cf65176e-1c3f-4059-897f-de645d72cd29
 # ╠═5987c45f-bf4d-40f5-99b9-0ab9b2f25ada

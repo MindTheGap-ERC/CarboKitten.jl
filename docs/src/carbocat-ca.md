@@ -37,7 +37,7 @@ end
 
 <<ca-stateful>>
 
-function run_ca(::Type{B}, facies::Vector{F}, init::Matrix{Int}, n_species::Int) where {B<:Boundary{2}, F}
+function run_ca(::Type{B}, facies::Vector{F}, init::Matrix{Int}, n_species::Int) where {B<:Boundary{2},F}
     r = rules(facies)
     Channel{Matrix{Int}}() do ch
         target = Matrix{Int}(undef, size(init))
@@ -61,8 +61,7 @@ module CA
 
 using ...BoundaryTrait
 using ...Stencil
-using ..Config: Facies
-using ...Config: Box
+using ...Boxes: Box
 
 export run_ca
 
@@ -186,6 +185,7 @@ function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
         stencil_op(state.ca, tmp, state.ca_priority)
         state.ca, tmp = tmp, state.ca
         state.ca_priority = circshift(state.ca_priority, 1)
+        return state
     end
 end
 ```
@@ -195,15 +195,16 @@ We may test that running the above function ten times gives the same result as t
 ``` {.julia file=test/CASpec.jl}
 @testset "CA" begin
     using CarboKitten.BoundaryTrait: Periodic
-    using CarboKitten.Config: Box
-    using CarboKitten.Burgess2013.Config: MODEL1
+    using CarboKitten.Boxes: Box
     using CarboKitten.Burgess2013.CA: step_ca, run_ca
     using Unitful
 
-    mutable struct State
-        ca::Matrix{Int}
-        ca_priority::Vector{Int}
-    end
+    using CarboKitten.Components: CellularAutomaton as CA
+
+    MODEL1 = [
+        CA.Facies(viability_range=(4, 10), activation_range=(6, 10)),
+        CA.Facies(viability_range=(4, 10), activation_range=(6, 10)),
+        CA.Facies(viability_range=(4, 10), activation_range=(6, 10))]
 
     n_facies = length(MODEL1)
     box = Box{Periodic{2}}(grid_size=(50, 50), phys_scale=100.0u"m")
@@ -212,7 +213,7 @@ We may test that running the above function ten times gives the same result as t
     item1, _ = Iterators.peel(Iterators.drop(ca_channel, 20))
 
     ca_step = step_ca(box, MODEL1)
-    state = State(copy(ca_init), 1:n_facies)
+    state = CA.State(copy(ca_init), 1:n_facies)
     for _ in 1:20
         ca_step(state)
     end

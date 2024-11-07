@@ -1,4 +1,5 @@
 # About
+
 CarboCAT is primarily based on a very simple cellular automaton (CA). We may explore this CA as a first step in implementing the model in Julia.
 
 # Overview
@@ -35,100 +36,20 @@ An interesting question is under what rules is this CA stable (i.e. keeps evolvi
 
 The minimal Carbocat model would consist of only species habitation and production.
 
-
-
 :::details
+
 ### Some submodules
 
 ``` {.julia file=src/Burgess2013.jl}
 module Burgess2013
 
-include("Burgess2013/Config.jl")
 include("Burgess2013/CA.jl")
-include("Burgess2013/Production.jl")
-include("Burgess2013/Transport.jl")
-
-using .CA
-using .Config
-using .Production
-
-export production_rate, run_ca, Facies, MODEL1
-
-end
-```
-
-``` {.julia #ck-types}
-export Product
-
-struct Product
-    species::Int
-    amount::Float64
-end
-
-Base.zero(::Type{Product}) = Product(0, 0.0)
-```
-
-``` {.julia file=src/Burgess2013/Config.jl}
-module Config
-
-using Unitful
-export Facies, MODEL1
-
-@kwdef struct Facies
-    viability_range::Tuple{Int, Int}
-    activation_range::Tuple{Int, Int}
-
-    maximum_growth_rate::typeof(1.0u"m/Myr")
-    extinction_coefficient::typeof(1.0u"m^-1")
-    saturation_intensity::typeof(1.0u"W/m^2")
-end
-
-const MODEL1 = [
-    Facies(viability_range = (4, 10),
-           activation_range = (6, 10),
-           maximum_growth_rate = 500u"m/Myr",
-           extinction_coefficient = 0.8u"m^-1",
-           saturation_intensity = 60u"W/m^2"),
-
-    Facies(viability_range = (4, 10),
-           activation_range = (6, 10),
-           maximum_growth_rate = 400u"m/Myr",
-           extinction_coefficient = 0.1u"m^-1",
-           saturation_intensity = 60u"W/m^2"),
-
-    Facies(viability_range = (4, 10),
-           activation_range = (6, 10),
-           maximum_growth_rate = 100u"m/Myr",
-           extinction_coefficient = 0.005u"m^-1",
-           saturation_intensity = 60u"W/m^2")
-]
-
-end
-```
-:::
-
-
-``` {.julia file=src/Burgess2013/Production.jl}
-module Production
-
-export production_rate
-
-using Unitful
-using ..Config: Facies
-
-<<carbonate-production>>
-
-function production_rate(insolation, facies, water_depth)
-    gₘ = facies.maximum_growth_rate
-    I = insolation / facies.saturation_intensity
-    x = water_depth * facies.extinction_coefficient
-    return water_depth > 0.0u"m" ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
-end
 
 end
 ```
 
 ### Crowding
+
 In crowded areas carbonate production rates are reduced. For cells where
 
 $$n_{min} \le n \le n_{opt}$$
@@ -142,6 +63,7 @@ $$n_{opt} \le n \le n_{max}$$
 we have a linear increase and linear decrease of production rate (i.e. a triangle function).
 
 ## Subsidence
+
 Subsidence refers to gradual lowering or lifting of the underlying floor bed. This could be either sea level rise due to climate change, but also tectonic activity. Sea level also changes according to a given recipe with say three sinusoidals (e.g. Milankovich cycles). When a cell gets "subaerial exposure", i.e. the water level drops below the cell elevation (stupid jargon), accumulation stops and the cell becomes dormant. On reflooding, the cell resumes activity. From the text it is not entirely clear, but I think deactivated cells don't take part in the CA, so they count as dead neighbours.
 
 - [reference on accommodation](http://strata.uga.edu/sequence/accommodation.html), also links to a model called [SedFlux](https://github.com/mcflugen/sedflux).
@@ -149,7 +71,6 @@ Subsidence refers to gradual lowering or lifting of the underlying floor bed. Th
 $$T + E = S + W$$
 
 Saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation plus change in Water depth.
-
 
 ## Steps
 

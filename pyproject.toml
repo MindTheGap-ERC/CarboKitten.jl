@@ -5,11 +5,11 @@ description = "Development environment for CarboKitten. This is not an actual Py
 authors = ["Johan Hidding <j.hidding@esciencecenter.nl>"]
 license = "Apache-2"
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
-entangled-cli = "^2.0.2"
-
+entangled-cli = {git = "https://github.com/entangled/entangled.py", rev = "main"}
 
 [build-system]
 requires = ["poetry-core"]
@@ -20,9 +20,9 @@ include = [".entangled/tasks.json"]
 
 [tool.brei.runner.julia]
 command = "julia"
-args = ["--project=workenv", "${script}"]
+args = ["+1.10", "--project=workenv", "${script}"]
 
 [[tool.brei.task]]
 name = "copy_figures"
 requires = ["#figures"]
-script = "rsync -avh docs/src/_fig/ docs/src/fig/ --delete"
+script = "rsync -avh docs/src/_fig/ docs/src/fig/"

@@ -50,7 +50,7 @@ We will now test this function first on an Elementary CA (ECA), Conway's Game of
 ``` {.julia file=src/Stencil.jl}
 module Stencil
 
-using ..Config: AbstractBox
+using ..Boxes: AbstractBox
 using ..BoundaryTrait
 
 export stencil, convolution

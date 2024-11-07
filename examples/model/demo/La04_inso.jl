@@ -20,19 +20,19 @@ const PATH = "data/output"
 const TAG = "alcap2"
 const PERIOD = 0.2Myr
 const AMPLITUDE = 4.0m
-const filepath = "data/input/miller.xlsx"
+const filepath = "data/input/La04.xlsx"
 
-function sealevel_curve(t,filepath)
+function sealevel_curve(filepath)
     table = DataFrame(XLSX.readtable(filepath, "T1")) 
-
-    time = (table[1:end,1]./1000)*1.0u"Myr"
-    sl = table[1:end,2]u"m"
+    time = table.Yr ./ 1e6 .* u"Myr"
+    sl = table.SL .* 1.0u"m"
 
     data = DataFrame(time = time, sea_level = sl)
 
     x  = linear_interpolation(data.time, data.sea_level)
-    return x(t)
+    return x
 end 
+
 
 const FACIES = [
     ALCAP.Facies(
@@ -62,16 +62,16 @@ const INPUT = ALCAP.Input(
     tag="$TAG",
     box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m),
     time=TimeProperties(
-        t0 = 0.001u"Myr",
+        t0 = -2.0u"Myr",
         Δt=0.001Myr,
-        steps=2580,
+        steps=1500,
         write_interval=1),
     ca_interval=1,
     bedrock_elevation=(x, y) -> -x / 300.0,
-    sea_level=t -> sealevel_curve(t,filepath),
+    sea_level= sealevel_curve(filepath),
     subsidence_rate=50.0m / Myr,
     disintegration_rate=500.0m / Myr,
-    insolation=400.0u"W/m^2",
+    insolation=insolation_curve(filepath),
     sediment_buffer_size=50,
     depositional_resolution=0.5m,
     facies=FACIES)

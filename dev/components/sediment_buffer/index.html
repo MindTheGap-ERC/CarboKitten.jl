@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Sediment Buffers · CarboKitten</title><meta name="title" content="Sediment Buffers · CarboKitten"/><meta property="og:title" content="Sediment Buffers · CarboKitten"/><meta property="twitter:title" content="Sediment Buffers · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../model-alcap/">ALCAPS</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li><li><span class="tocitem">Components</span><ul><li><a class="tocitem" href="../components/">Components</a></li><li><a class="tocitem" href="../tag/">Tags</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../time/">Time</a></li><li><a class="tocitem" href="../facies/">Facies</a></li><li><a class="tocitem" href="../cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../production/">Production</a></li><li><a class="tocitem" href="../hdf5/">HDF5 Writer</a></li><li class="is-active"><a class="tocitem" href>Sediment Buffers</a><ul class="internal"><li><a class="tocitem" href="#Data-structure"><span>Data structure</span></a></li><li><a class="tocitem" href="#Implementation"><span>Implementation</span></a></li><li><a class="tocitem" href="#Component"><span>Component</span></a></li></ul></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li></ul></li><li><a class="tocitem" href="../../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../../carbocat/">Summary</a></li><li><a class="tocitem" href="../../carbocat-ca/">Cellular Automaton</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Output</span><ul><li><a class="tocitem" href="../../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Components</a></li><li class="is-active"><a href>Sediment Buffers</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Sediment Buffers</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/components/sediment_buffer.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Sediment-Buffers"><a class="docs-heading-anchor" href="#Sediment-Buffers">Sediment Buffers</a><a id="Sediment-Buffers-1"></a><a class="docs-heading-anchor-permalink" href="#Sediment-Buffers" title="Permalink"></a></h1><div class="component-dag" style="overflow: scroll"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.50.0 (20211204.2007)
+ -->
+<!-- Pages: 1 -->
+<svg width="320pt" height="221pt"
+ viewBox="0.00 0.00 320.00 221.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 217)">
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-217 316,-217 316,4 -4,4"/>
+<!-- Boxes -->
+<g id="node1" class="node">
+<title>Boxes</title>
+<path fill="none" stroke="black" d="M225,-213C225,-213 87,-213 87,-213 81,-213 75,-207 75,-201 75,-201 75,-146 75,-146 75,-140 81,-134 87,-134 87,-134 225,-134 225,-134 231,-134 237,-140 237,-146 237,-146 237,-201 237,-201 237,-207 231,-213 225,-213"/>
+<polyline fill="none" stroke="black" points="82,-182.5 230,-182.5 "/>
+<text text-anchor="start" x="132.5" y="-191.3" font-family="Times,serif" font-weight="bold" font-size="14.00">Boxes</text>
+<polygon fill="#cccccc" stroke="transparent" points="82,-159.5 82,-182.5 129,-182.5 129,-159.5 82,-159.5"/>
+<polyline fill="none" stroke="black" points="82,-159.5 129,-159.5 129,-182.5 82,-182.5 "/>
+<text text-anchor="start" x="86" y="-167.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="129,-159.5 129,-182.5 183,-182.5 183,-159.5 129,-159.5"/>
+<polygon fill="none" stroke="black" points="129,-159.5 129,-182.5 183,-182.5 183,-159.5 129,-159.5"/>
+<text text-anchor="start" x="133" y="-167.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="183,-159.5 183,-182.5 230,-182.5 230,-159.5 183,-159.5"/>
+<polyline fill="none" stroke="black" points="230,-182.5 183,-182.5 183,-159.5 230,-159.5 "/>
+<text text-anchor="start" x="187" y="-167.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="129,-140.5 129,-159.5 "/>
+<text text-anchor="start" x="86" y="-147.5" font-family="monospace" font-size="10.00">box</text>
+<polyline fill="none" stroke="black" points="183,-140.5 183,-159.5 "/>
+<text text-anchor="start" x="133" y="-147.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="186" y="-147.5" font-family="monospace" font-size="10.00"> </text>
+</g>
+<!-- SedimentBuffer -->
+<g id="node2" class="node">
+<title>SedimentBuffer</title>
+<path fill="none" stroke="black" d="M300,-98C300,-98 12,-98 12,-98 6,-98 0,-92 0,-86 0,-86 0,-12 0,-12 0,-6 6,0 12,0 12,0 300,0 300,0 306,0 312,-6 312,-12 312,-12 312,-86 312,-86 312,-92 306,-98 300,-98"/>
+<polyline fill="none" stroke="black" points="7,-68 305,-68 "/>
+<text text-anchor="start" x="93" y="-76.8" font-family="Times,serif" font-weight="bold" font-size="14.00">SedimentBuffer</text>
+<polygon fill="#cccccc" stroke="transparent" points="7,-45 7,-68 154,-68 154,-45 7,-45"/>
+<polyline fill="none" stroke="black" points="7,-45 154,-45 154,-68 7,-68 "/>
+<text text-anchor="start" x="11" y="-52.8" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="154,-45 154,-68 208,-68 208,-45 154,-45"/>
+<polygon fill="none" stroke="black" points="154,-45 154,-68 208,-68 208,-45 154,-45"/>
+<text text-anchor="start" x="158" y="-52.8" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="208,-45 208,-68 305,-68 305,-45 208,-45"/>
+<polyline fill="none" stroke="black" points="305,-68 208,-68 208,-45 305,-45 "/>
+<text text-anchor="start" x="212" y="-52.8" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="154,-26 154,-45 "/>
+<text text-anchor="start" x="11" y="-33" font-family="monospace" font-size="10.00">sediment_buffer_size</text>
+<polyline fill="none" stroke="black" points="208,-26 208,-45 "/>
+<text text-anchor="start" x="158" y="-33" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="211" y="-33" font-family="monospace" font-size="10.00">sediment_buffer</text>
+<polyline fill="none" stroke="black" points="154,-7 154,-26 "/>
+<text text-anchor="start" x="11" y="-14" font-family="monospace" font-size="10.00">depositional_resolution</text>
+<polyline fill="none" stroke="black" points="208,-7 208,-26 "/>
+<text text-anchor="start" x="158" y="-14" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="211" y="-14" font-family="monospace" font-size="10.00"> </text>
+</g>
+<!-- Boxes&#45;&gt;SedimentBuffer -->
+<g id="edge1" class="edge">
+<title>Boxes&#45;&gt;SedimentBuffer</title>
+<path fill="none" stroke="black" d="M156,-133.74C156,-125.68 156,-117.01 156,-108.42"/>
+<polygon fill="black" stroke="black" points="159.5,-108.42 156,-98.42 152.5,-108.42 159.5,-108.42"/>
+</g>
+</g>
+</svg>
+</div><p>For our models of transport and denudation it is important to remember the facies of the sediment for some time into the past. One way to do this, is to remember all contributions of sediment in a stack. Every time we transport or erode sediment, we can pop parcels from this stack. In a three-dimensional model, we need a 2d grid of stacks. Each stack would have its own memory management (which is computationally expensive), and most resources are spent on areas with very little accretion. (In fact, this is what CarboCAT does. We believe this design choice is the main contributor to the difference in run-time between CarboCAT and CarboKitten).</p><p>Instead, we choose a fixed size sediment buffer. Each cell in the buffer represents a parcel of sediment, where we store the relative fractions of each contributing facies. This buffer is only used to determine the facies of disintegrated sediment. The output of the overal model is still the amount of sediment for each iteration.</p><p>We can&#39;t stress this enough: any inaccuracy in using a fixed size buffer with a chosen granularity only impacts the precision of the composition of transported sediment. Even then, the schema is conservative: no sediment is lost unless erosion is so rampant that it eats through the entire sediment stack. In that case, a simulation should be run with a larger buffer.</p><h2 id="Data-structure"><a class="docs-heading-anchor" href="#Data-structure">Data structure</a><a id="Data-structure-1"></a><a class="docs-heading-anchor-permalink" href="#Data-structure" title="Permalink"></a></h2><p>While the sediment buffer is allocated as a single 4-dimensional array (depth, facies, <span>$x$</span>, <span>$y$</span>), it is best to explain its functioning from the perspective of a single cell in our model. We are left with two dimensions: depth (rows) and facies (columns).</p><p>We choose to have the head of our sediment stack always be at the first row. When sediment out-grows the buffer, the deepenst layers are dropped from memory. The head can contain an incomplete amount of sediment, while all rows below the head are either full or empty. When sediment is pushed to the stack and the head row overflows, all rows are copied down one row and the surplus is assigned to the now empty head row. The inverse happens when removing (popping) material from the stack (in computer science stacks are pushed on and popped from). This process is illustrated below.</p><p><img src="../../fig/sediment-buffer.svg" alt="sediment buffer diagram"/></p><p>Above we see a buffer. First we push a parcel of size <span>$3/4$</span>, then we pop an amount of <span>$1/2$</span>. This popped parcel will have different fractions from the pushed one, since it also draws from the half filled row that was in the stack before pushing. In this sense, a small amount of facies mixing will take place, depending on the depositional resolution chosen.</p><p>Our implementation is such that each cell in the buffer is contiguous in memory. Thus, copying rows of unstrided memory should be very efficient, although the performance remains to be tested.</p><h2 id="Implementation"><a class="docs-heading-anchor" href="#Implementation">Implementation</a><a id="Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Implementation" title="Permalink"></a></h2><p>We define two functions <code>push_sediment!</code> and <code>pop_sediment!</code>. Given a <span>$s \times n$</span> matrix, where <span>$n$</span> is the number of facies types and <span>$s$</span> is the depth of the stack, we can grow and shrink sediment. These functions are unit-free, setting <span>$\Delta z$</span> to be equal to 1.</p><div class="noweb-label">file:<i>test/SedimentStackSpec.jl</i></div><pre><code class="language- julia hljs">@testset &quot;SedimentStack&quot; begin
+  using CarboKitten.SedimentStack: push_sediment!, pop_sediment!
+  stack = zeros(Float64, 10, 3)
+  @test pop_sediment!(stack, 0.0) == [0.0, 0.0, 0.0]
+  push_sediment!(stack, [5.0, 0, 0])
+  @test pop_sediment!(stack, 1.5) == [1.5, 0.0, 0.0]
+  push_sediment!(stack, [0.0, 2.0, 0.0])   # (0 0.5) (0 1) (0.5 0.5) (1 0) ...
+  @test pop_sediment!(stack, 2.0) == [0.25, 1.75, 0.0]
+  @test pop_sediment!(stack, 1.5) == [1.25, 0.25, 0.0]
+  @test pop_sediment!(stack, 0.0) == [0.0, 0.0, 0.0]
+end
+
+@testset &quot;SedimentArray&quot; begin
+  using CarboKitten.SedimentStack: push_sediment!, peek_sediment
+  sediment = zeros(Float64, 10, 3, 5, 5)
+  for x in 1:10
+    production = rand(3, 5, 5)
+    push_sediment!(sediment, production)
+  end
+  a = peek_sediment(sediment, 1.0)
+  @test all(sum(a; dims=1) .≈ 1.0)
+end</code></pre><h3 id="Pushing-sediment"><a class="docs-heading-anchor" href="#Pushing-sediment">Pushing sediment</a><a id="Pushing-sediment-1"></a><a class="docs-heading-anchor-permalink" href="#Pushing-sediment" title="Permalink"></a></h3><p>The single-cell version of <code>push_sediment!</code> takes as argument <code>col</code> a column (physically speaking a column of sediment) represented by a <span>$s \times n$</span>-matrix and a parcel a <span>$n$</span>-vector.</p><div class="noweb-label">⪡sediment-stack-impl⪢≣</div><pre><code class="language- julia hljs">function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F &lt;: Real
+  &lt;&lt;push-sediment&gt;&gt;
+end</code></pre><p>First we determine the total sediment amount <span>$\Delta$</span>, being the sum of the parcel, as well as the amount of sediment in our <em>bucket</em>, the head row.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">Δ = sum(parcel)
+bucket = sum(col[1, :])</code></pre><p>If the bucket has enough space left for the parcel, we can just add the parcel to the bucket and return.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">if bucket + Δ &lt; 1.0
+  col[1,:] .+= parcel
+  return
+end</code></pre><p>Otherwise, we compute the normalized fractions <code>frac</code> of facies in the parcel. We add as much sediment as we can to fill the bucket and copy rows down as far as needed.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">frac = parcel ./ Δ
+col[1,:] .+= frac .* (1.0 - bucket)
+Δ -= (1.0 - bucket)
+n = floor(Int64, Δ)
+col[n+2:end,:] = col[1:end-n-1,:]</code></pre><p>If the parcel has enough material left to fill more rows, those are all filled with the fractions in <code>frac</code>. The head row is assigned whatever is left.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">na = [CartesianIndex()]
+col[2:n+1,:] .= frac[na,:]
+Δ -= n
+col[1,:] .= frac .* Δ</code></pre><h3 id="Popping-sediment"><a class="docs-heading-anchor" href="#Popping-sediment">Popping sediment</a><a id="Popping-sediment-1"></a><a class="docs-heading-anchor-permalink" href="#Popping-sediment" title="Permalink"></a></h3><p>Similar to <code>push_sediment!</code> we have <code>pop_sediment!</code>. We give <code>pop_sediment!</code> the sedimentary column <code>col</code> and the total amount of sediment we require. There is a bit that we will reuse called <code>pop_fraction</code>, which only works if the amount of popped sediment is lower than the contents of the bucket.</p><div class="noweb-label">⪡sediment-stack-impl⪢≣</div><pre><code class="language- julia hljs">@inline function pop_fraction(col::AbstractMatrix{F}, Δ::F) where F &lt;: Real
+  bucket = sum(col[1,:])
+  if Δ == 0 || bucket == 0
+    return zeros(F, size(col)[2])
+  end
+
+  @assert Δ &lt; bucket &quot;pop_fraction can only pop from the top cell: $(col), $(Δ)&quot;
+  parcel = (Δ / bucket) .* col[1,:]
+  col[1,:] .-= parcel
+  return parcel
+end
+
+function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F &lt;: Real  # -&gt; Vector{F}
+  &lt;&lt;pop-sediment&gt;&gt;
+end</code></pre><p>We start by computing the bucket size again. If it is greater than the required amount, we call <code>pop_fraction</code>.</p><div class="noweb-label">⪡pop-sediment⪢≣</div><pre><code class="language- julia hljs">bucket = sum(col[1,:])
+if Δ &lt; bucket
+  return pop_fraction(col, Δ)
+end</code></pre><p>Otherwise, we start a parcel with the contents of the bucket. Add to that the remaining material in rows below. Now we copy rows from below, setting the bottom <span>$n$</span> rows to 0. The last step is to call <code>pop_fraction</code> one more time with the remaining required amount.</p><div class="noweb-label">⪡pop-sediment⪢≣</div><pre><code class="language- julia hljs">parcel = copy(col[1,:])
+Δ -= bucket
+n = floor(Int64, Δ)
+
+parcel .+= sum(col[2:n+1,:]; dims=1)&#39;
+col[1:end-n-1, :] = col[n+2:end, :]
+col[end-n-1:end, :] .= 0
+Δ -= n
+
+parcel .+= pop_fraction(col, Δ)
+return parcel</code></pre><h3 id="Peeking"><a class="docs-heading-anchor" href="#Peeking">Peeking</a><a id="Peeking-1"></a><a class="docs-heading-anchor-permalink" href="#Peeking" title="Permalink"></a></h3><p>Instead of popping sediment, we can also <em>peek</em> at the stack with <code>peek_sediment!</code>, which is a non-destructive way to inspect what the returned parcel would be if we were to call <code>pop_sediment!</code> with the same arguments.</p><details><summary>SedimentStack impl</summary><div class="noweb-label">file:<i>src/SedimentStack.jl</i></div><pre><code class="language- julia hljs">module SedimentStack
+
+export push_sediment!, pop_sediment!, peek_sediment
+
+&lt;&lt;sediment-stack-impl&gt;&gt;
+
+function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) where F &lt;: Real
+  _, x, y = size(p)
+  @views for i in CartesianIndices((x, y))
+    push_sediment!(sediment[:, :, i[1], i[2]], p[:, i[1], i[2]])
+  end
+end
+
+
+function peek_sediment(col::AbstractMatrix{F}, Δ::F) where F &lt;: Real  # -&gt; Vector{F}
+  if Δ == 0
+      return zeros(F, size(col)[2])
+  end
+
+  bucket = sum(col[1,:])
+  if Δ &lt; bucket
+    parcel = (Δ / bucket) .* col[1,:]
+    return parcel
+  end
+
+  parcel = copy(col[1,:])
+  Δ -= bucket
+  n = floor(Int64, Δ)
+
+  parcel .+= sum(col[2:n+1,:]; dims=1)&#39;
+  Δ -= n
+
+  last_bit = (Δ / sum(col[n+2,:])) .* col[n+2,:]
+  parcel .+= last_bit
+
+  return parcel
+end
+
+function peek_sediment(sediment::AbstractArray{F,4}, Δ::F) where F &lt;: Real
+  _, f, x, y = size(sediment)
+  out = Array{F, 3}(undef, f, x, y)
+  for i in CartesianIndices((x, y))
+    out[:, i[1], i[2]] = peek_sediment(@view(sediment[:, :, i[1], i[2]]), Δ)
+  end
+  return out
+end
+
+function pop_sediment!(cols::AbstractArray{F, 4}, amount::AbstractArray{F, 2}, out::AbstractArray{F, 3}) where F &lt;: Real
+  @views for i in CartesianIndices(amount)
+      out[:, i[1], i[2]] = pop_sediment!(cols[:, :, i[1], i[2]], amount[i[1], i[2]])
+  end
+end
+
+end # module</code></pre></details><h2 id="Component"><a class="docs-heading-anchor" href="#Component">Component</a><a id="Component-1"></a><a class="docs-heading-anchor-permalink" href="#Component" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Components/SedimentBuffer.jl</i></div><pre><code class="language- julia hljs">@compose module SedimentBuffer
+@mixin Boxes
+
+using ..Common
+using CarboKitten.SedimentStack: pop_sediment!, push_sediment!, peek_sediment
+
+export pop_sediment!, push_sediment!, peek_sediment
+
+@kwdef struct Input &lt;: AbstractInput
+    sediment_buffer_size::Int = 50
+    depositional_resolution::Amount = 0.5u&quot;m&quot;
+end
+
+@kwdef mutable struct State &lt;: AbstractState
+    sediment_buffer::Array{Float64,4}
+end
+
+end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../hdf5/">« HDF5 Writer</a><a class="docs-footer-nextpage" href="../../active-layer-transport/">Active Layer Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 7 November 2024 15:29">Thursday 7 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

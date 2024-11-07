@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>CSV Export · CarboKitten</title><meta name="title" content="CSV Export · CarboKitten"/><meta property="og:title" content="CSV Export · CarboKitten"/><meta property="twitter:title" content="CSV Export · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li><li><a class="tocitem" href="../carbocat-ca/">Cellular Automaton</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Output</span><ul><li class="is-active"><a class="tocitem" href>CSV Export</a><ul class="internal"><li><a class="tocitem" href="#Tests"><span>Tests</span></a></li><li><a class="tocitem" href="#Writing-CSV-files"><span>Writing CSV files</span></a></li><li><a class="tocitem" href="#Age-depth-model"><span>Age-depth model</span></a></li><li><a class="tocitem" href="#Stratigraphic-Column"><span>Stratigraphic Column</span></a></li><li><a class="tocitem" href="#Dispatch"><span>Dispatch</span></a></li></ul></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Output</a></li><li class="is-active"><a href>CSV Export</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>CSV Export</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/data-export.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Data-export"><a class="docs-heading-anchor" href="#Data-export">Data export</a><a id="Data-export-1"></a><a class="docs-heading-anchor-permalink" href="#Data-export" title="Permalink"></a></h1><p>We provide several ways to export reduced data from CarboKitten to CSV files that are easier to read, visualize and post-process for most people.</p><div class="noweb-label">⪡export-specification⪢≣</div><pre><code class="language- julia hljs">abstract type ExportSpecification end
+
+@kwdef struct CSV &lt;: ExportSpecification
+    grid_locations::Vector{NTuple{2,Int}}
+    output_files::IdDict{Symbol,String}
+end
+
+CSV(grid_locations, kwargs...) = CSV(grid_locations, IdDict(kwargs...))</code></pre><pre><code class="language-julia hljs">using CarboKitten.Export: CSV
+
+CSV(tuple.(10:20:70, 25),
+  :sediment_accumulation_curve =&gt; &quot;run_06_sac.csv&quot;,
+  :age_depth_model             =&gt; &quot;run_06_adm.csv&quot;,
+  :stratigraphic_column        =&gt; &quot;run_06_sc.csv&quot;,
+  :metadata                    =&gt; &quot;run_06.toml&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">CarboKitten.Export.CSV([(10, 25), (30, 25), (50, 25), (70, 25)], IdDict(:age_depth_model =&gt; &quot;run_06_adm.csv&quot;, :metadata =&gt; &quot;run_06.toml&quot;, :sediment_accumulation_curve =&gt; &quot;run_06_sac.csv&quot;, :stratigraphic_column =&gt; &quot;run_06_sc.csv&quot;))</code></pre><p>There is a <code>data_export</code> function that can be overloaded with any <code>ExportSpcification</code>. When given a <code>CSV</code> specification, files are written as given.</p><ul><li><code>:sediment_accumulation_curve</code>  (SAC) is another term for <code>sediment_height</code> elsewhere in the code.</li><li><code>:age_depth_model</code> (ADM) is a monotonic version of the SAC, relating depth to age.</li><li><code>:stratigraphic_column</code> amount of deposited material per facies per time step, corrected for disintegrated material. The cumulative sum of the SC should add up to the ADM.</li><li><code>:metadata</code> some metadata, written as a TOML file.</li></ul><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><p>We have a test case with just three pixels.</p><ol><li>Uniform production</li><li>Uniform production, top-hat disintegration, making the sediment accumulation non-monotonic</li><li>Linearly increasing production (not sure what this adds)</li></ol><div class="noweb-label">⪡export-test-case⪢≣</div><pre><code class="language- julia hljs">const AXES1 = Axes(
+    x=[0.0, 1.0, 2.0] * u&quot;m&quot;,
+    y=[1.0] * u&quot;m&quot;,
+    t=(0.0:0.1:1.0) * u&quot;Myr&quot;)
+
+const HEADER1 = Header(
+    tag=&quot;test&quot;,
+    axes=AXES1,
+    write_interval=1,
+    Δt=0.1u&quot;Myr&quot;,
+    time_steps=10,
+    bedrock_elevation=zeros(typeof(1.0u&quot;m&quot;), 3, 3),
+    sea_level=zeros(typeof(1.0u&quot;m&quot;), 10),
+    subsidence_rate=10u&quot;m/Myr&quot;)
+
+const PRODUCTION1 = reshape(
+    hcat(ones(Amount, 10),
+        ones(Amount, 10),
+        cumsum(ones(Amount, 10)) / 5.5)&#39;,
+    1, 3, 1, 10)
+
+const DISINTEGRATION1 = reshape(
+    hcat(zeros(Amount, 10),
+        1:10 .|&gt; (x -&gt; x &lt; 4 || x &gt; 6 ? 0.0u&quot;m&quot; : 2.0u&quot;m&quot;),
+        zeros(Amount, 10))&#39;,
+    1, 3, 1, 10)
+
+const ELEVATION1 = cat(
+    [0.0, 0.0, 0.0]u&quot;m&quot;,
+    cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :];
+    dims=3)
+
+const DATA1 = Data(
+    disintegration=DISINTEGRATION1,
+    production=PRODUCTION1,
+    deposition=PRODUCTION1 .- DISINTEGRATION1,
+    sediment_elevation=ELEVATION1)
+
+const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]</code></pre><h3 id="Sediment-Accumulation"><a class="docs-heading-anchor" href="#Sediment-Accumulation">Sediment Accumulation</a><a id="Sediment-Accumulation-1"></a><a class="docs-heading-anchor-permalink" href="#Sediment-Accumulation" title="Permalink"></a></h3><h2 id="Writing-CSV-files"><a class="docs-heading-anchor" href="#Writing-CSV-files">Writing CSV files</a><a id="Writing-CSV-files-1"></a><a class="docs-heading-anchor-permalink" href="#Writing-CSV-files" title="Permalink"></a></h2><p>The <code>CSV.jl</code> module lets us write a <code>DataFrame</code> to CSV, but doesn&#39;t work so well in combination with Units.</p><div class="noweb-label">⪡export-function⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
+    unitful_headers(df::DataFrame)
+
+Gets a string representation for all column names including their unit.
+Returns a `Vector{String}`.
+&quot;&quot;&quot;
+unitful_headers(df::DataFrame) =
+    [&quot;$(e.variable) [$(unit(e.eltype))]&quot; for e in eachrow(describe(df))]
+
+&quot;&quot;&quot;
+    ustrip(df::DataFrame)
+
+Strip units from a `DataFrame`. Returns a new `DataFrame`.
+&quot;&quot;&quot;
+Unitful.ustrip(df::DataFrame) =
+    DataFrame((e.variable =&gt; df[!, e.variable] / unit(e.eltype)
+               for e in eachrow(describe(df)))...)
+
+&quot;&quot;&quot;
+    write_unitful_csv(io::IO, df::DataFrame)
+
+Write a CSV from a `DataFrame` with `Unitful` units. The units will be
+represented in the CSV header, and stripped from the individual values.
+&quot;&quot;&quot;
+write_unitful_csv(io, df::DataFrame) =
+    write_csv(io, ustrip(df), header=unitful_headers(df))</code></pre><p>We may test that writing and reading the CSV back, gives the same result:</p><div class="noweb-label">⪡export-test⪢≣</div><pre><code class="language- julia hljs">@testset &quot;Hither and Dither&quot; begin
+    io = IOBuffer(UInt8[], read=true, write=true)
+    data_export(CSVExportTrait{:sediment_accumulation_curve}, io, HEADER1, DATA1, GRID_LOCATIONS1)
+    seek(io, 0)
+    df = read_csv(io, DataFrame)
+    rename!(df, (n =&gt; split(n)[1] for n in names(df))...)
+    @test df.sac1 ≈ ELEVATION1[1, 1, :] / u&quot;m&quot;
+    @test df.sac2 ≈ ELEVATION1[2, 1, :] / u&quot;m&quot;
+    @test df.sac3 ≈ ELEVATION1[3, 1, :] / u&quot;m&quot;
+end</code></pre><h2 id="Age-depth-model"><a class="docs-heading-anchor" href="#Age-depth-model">Age-depth model</a><a id="Age-depth-model-1"></a><a class="docs-heading-anchor-permalink" href="#Age-depth-model" title="Permalink"></a></h2><div class="noweb-label">⪡export-function⪢≣</div><pre><code class="language- julia hljs">Base.accumulate(f) = (args...; kwargs...) -&gt; accumulate(f, args...; kwargs...)
+
+&quot;&quot;&quot;
+    age_depth_model(sediment_accumulation_curve::Vector)
+    age_depth_model(sediment_accumulation_curve::DataFrame)
+
+Compute the ADM from the SAC. Implemented as:
+
+    reverse ∘ accumulate(min) ∘ reverse
+
+The `DataFrame` version `select`s SAC columns, transformed into ADM.
+&quot;&quot;&quot;
+age_depth_model(sac::Vector{T}) where {T} = sac |&gt; reverse |&gt; accumulate(min) |&gt; reverse
+age_depth_model(sac_df::DataFrame) =
+    let sac_cols = filter(contains(&quot;sac&quot;), names(sac_df)),
+        adm_cols = replace.(sac_cols, &quot;sac&quot; =&gt; &quot;adm&quot;)
+
+        select(sac_df, &quot;time&quot;, (sac =&gt; age_depth_model =&gt; adm
+                                for (sac, adm) in zip(sac_cols, adm_cols))...)
+    end</code></pre><p>We test that the constructed ADM is monotonic increasing in time:</p><div class="noweb-label">⪡export-test⪢≣</div><pre><code class="language- julia hljs">@testset &quot;ADM Monotonicity&quot; begin
+    sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
+    adm = sac |&gt; age_depth_model
+
+    @test sac.sac1 == adm.adm1
+    @test sac.sac3 == adm.adm3
+    @test sac.sac2 != adm.adm2
+
+    @test all(adm.adm2[2:end] .- adm.adm2[1:end-1] .&gt;= 0.0u&quot;m&quot;)
+end</code></pre><h2 id="Stratigraphic-Column"><a class="docs-heading-anchor" href="#Stratigraphic-Column">Stratigraphic Column</a><a id="Stratigraphic-Column-1"></a><a class="docs-heading-anchor-permalink" href="#Stratigraphic-Column" title="Permalink"></a></h2><div class="noweb-label">⪡export-function⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
+    stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
+
+Compute the Stratigraphic Column for a given grid position `loc` and `facies` index.
+Returns an `Array{Quantity, 2}` where the `Quantity` is in units of meters.
+&quot;&quot;&quot;
+function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
+    dc = DataColumn(
+        loc,
+        data.disintegration[:, loc..., :],
+        data.production[:, loc..., :],
+        data.deposition[:, loc..., :],
+        data.sediment_elevation[loc..., :])
+    return stratigraphic_column(header, dc, facies)
+end
+
+function stratigraphic_column(header::Header, data::DataColumn, facies::Int)
+    n_times = length(header.axes.t) - 1
+    sc = zeros(typeof(1.0u&quot;m&quot;), n_times)
+
+    for ts = 1:n_times
+        acc = data.deposition[facies, ts] - data.disintegration[facies, ts]
+        if acc &gt; 0.0u&quot;m&quot;
+            sc[ts] = acc
+            continue
+        end
+        ts_down = ts - 1
+        while acc &lt; 0.0u&quot;m&quot;
+            ts_down &lt; 1 &amp;&amp; break
+            if -acc &lt; sc[ts_down]
+                sc[ts_down] -= acc
+                break
+            else
+                acc += sc[ts_down]
+                sc[ts_down] = 0.0u&quot;m&quot;
+            end
+            ts_down -= 1
+        end
+    end
+
+    sc
+end</code></pre><p>The stratigraphic column should sum to the age-depth model.</p><div class="noweb-label">⪡export-test⪢≣</div><pre><code class="language- julia hljs">@testset &quot;SC sum equals ADM&quot; begin
+    sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
+    adm = sac |&gt; age_depth_model
+    sc = extract_sc(HEADER1, DATA1, GRID_LOCATIONS1)
+    @test [0.0u&quot;m&quot;; cumsum(sc.sc1_f1)] ≈ adm.adm1
+    @test [0.0u&quot;m&quot;; cumsum(sc.sc2_f1)] ≈ adm.adm2
+    @test [0.0u&quot;m&quot;; cumsum(sc.sc3_f1)] ≈ adm.adm3
+end</code></pre><h2 id="Dispatch"><a class="docs-heading-anchor" href="#Dispatch">Dispatch</a><a id="Dispatch-1"></a><a class="docs-heading-anchor-permalink" href="#Dispatch" title="Permalink"></a></h2><div class="noweb-label">⪡export-function⪢≣</div><pre><code class="language- julia hljs">struct CSVExportTrait{S} end
+
+function data_export(spec::T, filepath::String) where {T&lt;:ExportSpecification}
+    data_export(spec, read_data(filepath)...)
+end
+
+function data_export(spec::CSV, header::Header, data::Data)
+    for (key, filename) in spec.output_files
+        if key == :metadata
+            md = Dict(
+                &quot;global&quot; =&gt; Dict(
+                    &quot;tag&quot; =&gt; header.tag,
+                    &quot;subsidence_rate&quot; =&gt; header.subsidence_rate,
+                    &quot;time_steps&quot; =&gt; header.time_steps,
+                    &quot;delta_t&quot; =&gt; header.Δt),
+                &quot;locations&quot; =&gt; [Dict(
+                    &quot;number&quot; =&gt; i,
+                    &quot;x&quot; =&gt; header.axes.x[loc[1]],
+                    &quot;y&quot; =&gt; header.axes.y[loc[2]],
+                    &quot;bedrock_elevation&quot; =&gt; header.bedrock_elevation[loc...])
+                                for (i, loc) in enumerate(spec.grid_locations)],
+                &quot;files&quot; =&gt; spec.output_files)
+            open(filename, &quot;w&quot;) do io
+                TOML.print(io, md) do obj
+                    if obj isa Quantity
+                        [ustrip(obj), string(unit(obj))]
+                    else
+                        obj
+                    end
+                end
+            end
+            continue
+        end
+        open(filename, &quot;w&quot;) do io
+            data_export(CSVExportTrait{key}, io, header, data, spec.grid_locations)
+        end
+    end
+end
+
+function data_export(::Type{CSVExportTrait{S}}, args...) where {S}
+    error(&quot;Unknown CSV data export: `$(S)`&quot;)
+end
+
+function data_export(::Type{CSVExportTrait{:sediment_accumulation_curve}},
+    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+    sac = extract_sac(header, data, grid_locations)
+    write_unitful_csv(io, sac)
+end
+
+function data_export(::Type{CSVExportTrait{:age_depth_model}},
+    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+    adm = extract_sac(header, data, grid_locations) |&gt; age_depth_model
+    write_unitful_csv(io, adm)
+end
+
+function data_export(::Type{CSVExportTrait{:stratigraphic_column}},
+    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+    sc = extract_sc(header, data, grid_locations)
+    write_unitful_csv(io, sc)
+end
+
+&quot;&quot;&quot;
+    extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+Extract Sediment Accumumlation Curve (SAC) from the data. The SAC is directly copied from
+`data.sediment_elevation`. Returns a `DataFrame` with `time` and `sac&lt;n&gt;` columns where `&lt;n&gt;`
+is in the range `1:length(grid_locations)`.
+&quot;&quot;&quot;
+function extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    DataFrame(:time =&gt; header.axes.t[1:end],
+        (Symbol(&quot;sac$(i)&quot;) =&gt; data.sediment_elevation[loc..., :]
+         for (i, loc) in enumerate(grid_locations))...)
+end
+
+&quot;&quot;&quot;
+    extract_sc(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+Extract Stratigraphic Column (SC) from the data. Returns a `DataFrame` with `time` and `sc&lt;n&gt;` columns where `&lt;n&gt;`
+is in the range `1:length(grid_locations)`.
+&quot;&quot;&quot;
+function extract_sc(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    n_facies = size(data.production)[1]
+    DataFrame(&quot;time&quot; =&gt; header.axes.t[1:end-1],
+        (&quot;sc$(i)_f$(f)&quot; =&gt; stratigraphic_column(header, data, loc, f)
+         for f in 1:n_facies, (i, loc) in enumerate(grid_locations))...)
+end</code></pre><div class="noweb-label">file:<i>src/Export.jl</i></div><pre><code class="language- julia hljs">module Export
+
+export Data, DataSlice, DataColumn, Header, CSV, read_data, read_slice, data_export
+
+using HDF5
+import CSV: write as write_csv
+using TOML
+
+using Unitful
+using DataFrames
+using .Iterators: flatten
+
+const Rate = typeof(1.0u&quot;m/Myr&quot;)
+const Amount = typeof(1.0u&quot;m&quot;)
+const Length = typeof(1.0u&quot;m&quot;)
+const Time = typeof(1.0u&quot;Myr&quot;)
+
+const na = [CartesianIndex()]
+
+&lt;&lt;export-specification&gt;&gt;
+
+@kwdef struct Axes
+    x::Vector{Length}
+    y::Vector{Length}
+    t::Vector{Time}
+end
+
+@kwdef struct Header
+    tag::String
+    axes::Axes
+    Δt::Time
+    write_interval::Int
+    time_steps::Int
+    bedrock_elevation::Matrix{Amount}
+    sea_level::Vector{Length}
+    subsidence_rate::Rate
+end
+
+@kwdef struct Data
+    disintegration::Array{Amount,4}
+    production::Array{Amount,4}
+    deposition::Array{Amount,4}
+    sediment_elevation::Array{Amount,3}
+end
+
+struct DataSlice
+    slice::NTuple{2,Union{Colon,Int}}
+    disintegration::Array{Amount,3}
+    production::Array{Amount,3}
+    deposition::Array{Amount,3}
+    sediment_elevation::Array{Amount,2}
+end
+
+struct DataColumn
+    slice::NTuple{2,Int}
+    disintegration::Array{Amount,2}
+    production::Array{Amount,2}
+    deposition::Array{Amount,2}
+    sediment_elevation::Array{Amount,1}
+end
+
+function read_header(fid)
+    attrs = HDF5.attributes(fid[&quot;input&quot;])
+
+    axes = Axes(
+        fid[&quot;input/x&quot;][] * u&quot;m&quot;,
+        fid[&quot;input/y&quot;][] * u&quot;m&quot;,
+        fid[&quot;input/t&quot;][] * u&quot;Myr&quot;)
+
+    return Header(
+        attrs[&quot;tag&quot;][],
+        axes,
+        attrs[&quot;delta_t&quot;][] * u&quot;Myr&quot;,
+        attrs[&quot;write_interval&quot;][],
+        attrs[&quot;time_steps&quot;][],
+        fid[&quot;input/bedrock_elevation&quot;][] * u&quot;m&quot;,
+        fid[&quot;input/sea_level&quot;][] * u&quot;m&quot;,
+        attrs[&quot;subsidence_rate&quot;][] * u&quot;m/Myr&quot;)
+end
+
+function read_data(filename)
+    h5open(filename) do fid
+        header = read_header(fid)
+        data = Data(
+            fid[&quot;disintegration&quot;][] * u&quot;m&quot;,
+            fid[&quot;production&quot;][] * u&quot;m&quot;,
+            fid[&quot;deposition&quot;][] * u&quot;m&quot;,
+            fid[&quot;sediment_height&quot;][] * u&quot;m&quot;)
+        header, data
+    end
+end
+
+read_slice(fid::HDF5.File, slice...) = DataSlice(
+    slice,
+    fid[&quot;disintegration&quot;][:, slice..., :] * u&quot;m&quot;,
+    fid[&quot;production&quot;][:, slice..., :] * u&quot;m&quot;,
+    fid[&quot;deposition&quot;][:, slice..., :] * u&quot;m&quot;,
+    fid[&quot;sediment_height&quot;][slice..., :] * u&quot;m&quot;)
+
+function read_slice(filename, slice...)
+    h5open(filename) do fid
+        header = read_header(fid)
+        data = read_slice(fid, slice...)
+        header, data
+    end
+end
+
+&lt;&lt;export-function&gt;&gt;
+
+end</code></pre><div class="noweb-label">file:<i>test/ExportSpec.jl</i></div><pre><code class="language- julia hljs">using CarboKitten.Export: Axes, Header, Data, data_export, CSVExportTrait,
+    age_depth_model, extract_sac, extract_sc, CSV
+using CSV: read as read_csv
+using TOML
+using DataFrames
+using Unitful
+
+const Amount = typeof(1.0u&quot;m&quot;)
+
+&lt;&lt;export-test-case&gt;&gt;
+
+@testset &quot;Data Export&quot; begin
+    &lt;&lt;export-test&gt;&gt;
+
+    @testset &quot;Write to folder&quot; begin
+        mktempdir() do path
+            spec = CSV(GRID_LOCATIONS1,
+                :sediment_accumulation_curve =&gt; joinpath(path, &quot;sac.csv&quot;),
+                :age_depth_model =&gt; joinpath(path, &quot;adm.csv&quot;),
+                :stratigraphic_column =&gt; joinpath(path, &quot;sc.csv&quot;),
+                :metadata =&gt; joinpath(path, &quot;metadata.toml&quot;))
+            data_export(spec, HEADER1, DATA1)
+            for f in values(spec.output_files)
+                @test isfile(f)
+            end
+
+            metadata = TOML.parsefile(spec.output_files[:metadata])
+            @test IdDict(Symbol(k) =&gt; v for (k, v) in metadata[&quot;files&quot;]) == spec.output_files
+            @test length(metadata[&quot;locations&quot;]) == 3
+            adm = read_csv(spec.output_files[:age_depth_model], DataFrame)
+            rename!(adm, (n =&gt; split(n)[1] for n in names(adm))...)
+            @test adm == ustrip(extract_sac(HEADER1, DATA1, GRID_LOCATIONS1) |&gt; age_depth_model)
+        end
+    end
+end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../denudation/physical_erosion/">« Physical Erosion</a><a class="docs-footer-nextpage" href="../unitful/">Unitful »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 7 November 2024 15:29">Thursday 7 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Visualizations · CarboKitten</title><meta name="title" content="Visualizations · CarboKitten"/><meta property="og:title" content="Visualizations · CarboKitten"/><meta property="twitter:title" content="Visualizations · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li></ul></li><li class="is-active"><a class="tocitem" href>Visualizations</a><ul class="internal"><li><a class="tocitem" href="#Makie-primer"><span>Makie primer</span></a></li><li><a class="tocitem" href="#Colours"><span>Colours</span></a></li><li><a class="tocitem" href="#Project-Extension"><span>Project Extension</span></a></li><li><a class="tocitem" href="#Summary-collage"><span>Summary collage</span></a></li><li><a class="tocitem" href="#Wheeler-diagram"><span>Wheeler diagram</span></a></li><li><a class="tocitem" href="#Production-curve"><span>Production curve</span></a></li><li><a class="tocitem" href="#Sediment-profile"><span>Sediment profile</span></a></li><li><a class="tocitem" href="#Stratigraphic-Column"><span>Stratigraphic Column</span></a></li><li><a class="tocitem" href="#Skeleton"><span>Skeleton</span></a></li><li><a class="tocitem" href="#Glamour-View-(3D)"><span>Glamour View (3D)</span></a></li><li><a class="tocitem" href="#Age-depth-Model"><span>Age-depth Model</span></a></li></ul></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li><li><a class="tocitem" href="../carbocat-ca/">Cellular Automaton</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Output</span><ul><li><a class="tocitem" href="../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Visualizations</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Visualizations</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/visualization.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Visualization"><a class="docs-heading-anchor" href="#Visualization">Visualization</a><a id="Visualization-1"></a><a class="docs-heading-anchor-permalink" href="#Visualization" title="Permalink"></a></h1><p>The visualization of CarboKitten output is implemented in a Julia <a href="https://pkgdocs.julialang.org/v1/creating-packages/#Conditional-loading-of-code-in-packages-(Extensions)">package extension</a>. This is done so that <code>CarboKitten.jl</code> itself doesn&#39;t have to depend on <code>Makie.jl</code> (our main visualization tool), which has a large transient dependency stack. To make the <code>Visualization</code> extension of CarboKitten available, make sure to activate a Julia project where <code>Makie</code> is installed.</p><h2 id="Makie-primer"><a class="docs-heading-anchor" href="#Makie-primer">Makie primer</a><a id="Makie-primer-1"></a><a class="docs-heading-anchor-permalink" href="#Makie-primer" title="Permalink"></a></h2><p><code>Makie.jl</code> is a visualization package that creates exceptionally good looking (publication quality) plots in both 2D and 3D. There are three back-ends for Makie:</p><ul><li><code>CairoMakie</code> for publication quality vector graphics, writing to <code>SVG</code>, <code>PDF</code> or <code>PNG</code>.</li><li><code>GLMakie</code> has better run-time performance than <code>CairoMakie</code>, especially when dealing with larger datasets and/or 3D visualizations. However, <code>GLMakie</code> can only produce rasterized images, so <code>PNG</code>, <code>JPEG</code> or directly to screen for interactive use.</li><li><code>WGLMakie</code> for online publication using WebGL. If you want interactive plots, like 3D plots that you can rotate in the browser, this is the one to use. Fair warning: this is also the least stable back-end for Makie.</li></ul><p>To work with Makie, you need to import one of the three back-end packages. In general, every plot available in Makie has two variants. One is a direct function for plotting:</p><pre><code class="language-julia hljs">using CairoMakie
+
+x = randn(10)
+y = randn(10)
+
+scatter(x, y)</code></pre><p>The other requires a bit more prep, but gives you more control.</p><pre><code class="language-julia hljs">fig = Figure()
+ax = Axis(fig[1,1])
+scatter!(ax, x, y)</code></pre><p>Here, we create a figure explicitly, then create a new set of axes somewhere on the grid in the figure, and then plot on that set of axes. The plotting functions accepting an <code>Axis</code> argument actually modify an existing context, which is why these functions always end with an exclamation mark, in this case <code>scatter!</code>.</p><p>If you like to know more about Makie, their <a href="https://docs.makie.org/stable/tutorials/getting-started">&quot;Getting started&quot;</a> is a good place to start.</p><h2 id="Colours"><a class="docs-heading-anchor" href="#Colours">Colours</a><a id="Colours-1"></a><a class="docs-heading-anchor-permalink" href="#Colours" title="Permalink"></a></h2><p>We like to use colorblind safe pallete of colours as described on <a href="https://personal.sron.nl/~pault/">Paul Tol&#39;s website</a>: &#39;#4477AA&#39;, &#39;#EE6677&#39;, &#39;#228833&#39;, &#39;#CCBB44&#39;, &#39;#66CCEE&#39;, &#39;#AA3377&#39;, &#39;#BBBBBB&#39;.</p><h2 id="Project-Extension"><a class="docs-heading-anchor" href="#Project-Extension">Project Extension</a><a id="Project-Extension-1"></a><a class="docs-heading-anchor-permalink" href="#Project-Extension" title="Permalink"></a></h2><p>The Project Extension requires a front-end where the available methods are exposed.</p><div class="noweb-label">file:<i>src/Visualization.jl</i></div><pre><code class="language- julia hljs">module Visualization
+export sediment_profile!, sediment_profile, wheeler_diagram!, wheeler_diagram, production_curve!,
+       production_curve, glamour_view!, summary_plot
+
+function print_instructions(func_name, args)
+    println(&quot;Called `$(func_name)` with args `$(typeof.(args))`&quot;)
+    println(&quot;This is an extension and only becomes available when you import {Cairo,GL,WGL}Makie before using this.&quot;)
+end
+
+sediment_profile!(args...) = print_instructions(&quot;sediment_profile!&quot;, args)
+sediment_profile(args...) = print_instructions(&quot;sediment_profile&quot;, args)
+wheeler_diagram!(args...) = print_instructions(&quot;wheeler_diagram!&quot;, args)
+wheeler_diagram(args...) = print_instructions(&quot;wheeler_diagram&quot;, args)
+production_curve(args...) = print_instructions(&quot;production_curve&quot;, args)
+production_curve!(args...) = print_instructions(&quot;production_curve!&quot;, args)
+stratigraphic_column!(args...) = print_instructions(&quot;production_curve!&quot;, args)
+age_depth_model!(args...) = print_instructions(&quot;age_depth_model!&quot;, args)
+glamour_view!(args...) = print_instructions(&quot;glamour_view!&quot;, args)
+summary_plot(args...) = print_instructions(&quot;summary_plot&quot;, args)
+
+end  # module</code></pre><div class="noweb-label">file:<i>ext/VisualizationExt.jl</i></div><pre><code class="language- julia hljs">module VisualizationExt
+
+include(&quot;WheelerDiagram.jl&quot;)
+include(&quot;ProductionCurve.jl&quot;)
+include(&quot;StratigraphicColumn.jl&quot;)
+include(&quot;AgeDepthModel.jl&quot;)
+include(&quot;SedimentProfile.jl&quot;)
+include(&quot;GlamourView.jl&quot;)
+include(&quot;SummaryPlot.jl&quot;)
+
+end</code></pre><h2 id="Summary-collage"><a class="docs-heading-anchor" href="#Summary-collage">Summary collage</a><a id="Summary-collage-1"></a><a class="docs-heading-anchor-permalink" href="#Summary-collage" title="Permalink"></a></h2><p><img src="../fig/alcaps-alternative.png" alt="Collage"/></p><div class="noweb-label">file:<i>ext/SummaryPlot.jl</i></div><pre><code class="language- julia hljs">module SummaryPlot
+
+using CarboKitten.Visualization
+import CarboKitten.Visualization: summary_plot
+using CarboKitten.Export: read_header, read_slice
+using CarboKitten.Utility: in_units_of
+using HDF5
+using Unitful
+using Makie
+
+summary_plot(filename::AbstractString; kwargs...) = h5open(fid-&gt;summary_plot(fid; kwargs...), filename, &quot;r&quot;)
+
+function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
+	header = read_header(fid)
+    y_slice = div(length(header.axes.y), 2) + 1
+    max_depth = minimum(header.bedrock_elevation)
+	data = read_slice(fid, :, y_slice)
+
+	n_facies = size(data.production)[1]
+	fig = Figure(size=(1200, 1000), backgroundcolor=:gray80)
+
+	ax1 = Axis(fig[1:2,1:2])
+	sediment_profile!(ax1, header, data)
+
+	ax2 = Axis(fig[4,1])
+	ax3 = Axis(fig[4,2])
+	sm, df = wheeler_diagram!(ax2, ax3, header, data; smooth_size=wheeler_smooth)
+	Colorbar(fig[3,1], sm; vertical=false, label=&quot;sediment accumulation [m/Myr]&quot;)
+	Colorbar(fig[3,2], df; vertical=false, label=&quot;dominant facies&quot;, ticks=1:n_facies)
+
+	ax4 = Axis(fig[4,3], title=&quot;sealevel curve&quot;, xlabel=&quot;sealevel [m]&quot;,
+        limits=(nothing, (header.axes.t[1] |&gt; in_units_of(u&quot;Myr&quot;),
+						  header.axes.t[end] |&gt; in_units_of(u&quot;Myr&quot;))))
+	lines!(ax4, header.sea_level |&gt; in_units_of(u&quot;m&quot;), header.axes.t |&gt; in_units_of(u&quot;Myr&quot;))
+
+	ax5 = Axis(fig[2,3])
+	production_curve!(ax5, fid[&quot;input&quot;], max_depth=max_depth)
+
+	linkyaxes!(ax2, ax3, ax4)
+
+	ax = Axis3(fig[1, 3]; zlabel=&quot;depth [m]&quot;, xlabel=&quot;x [km]&quot;, ylabel=&quot;y [km]&quot;)
+	glamour_view!(ax, fid)
+
+	fig
+end
+
+end</code></pre><h2 id="Wheeler-diagram"><a class="docs-heading-anchor" href="#Wheeler-diagram">Wheeler diagram</a><a id="Wheeler-diagram-1"></a><a class="docs-heading-anchor-permalink" href="#Wheeler-diagram" title="Permalink"></a></h2><p><img src="../fig/wheeler_diagram.png" alt="Wheeler diagram"/></p><div class="noweb-label">file:<i>examples/visualization/wheeler_diagram.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/wheeler_diagram.png
+#| requires: data/output/alcap2.h5
+#| collect: figures
+
+module Script
+
+using CairoMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: wheeler_diagram
+
+function main()
+  header, data = read_slice(&quot;data/output/alcap2.h5&quot;, :, 25)
+  fig = wheeler_diagram(header, data)
+  save(&quot;docs/src/_fig/wheeler_diagram.png&quot;, fig)
+end
+
+end
+
+Script.main()</code></pre><div class="noweb-label">file:<i>ext/WheelerDiagram.jl</i></div><pre><code class="language- julia hljs">module WheelerDiagram
+
+import CarboKitten.Visualization: wheeler_diagram, wheeler_diagram!
+using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
+using CarboKitten.Utility: in_units_of
+using Makie
+using Unitful
+using CarboKitten.BoundaryTrait
+using CarboKitten.Stencil: convolution
+
+
+const na = [CartesianIndex()]
+
+elevation(h::Header, d::DataSlice) =
+    let bl = h.bedrock_elevation[d.slice..., na],
+        sr = h.axes.t[end] * h.subsidence_rate
+
+        bl .+ d.sediment_elevation .- sr
+    end
+
+water_depth(header::Header, data::DataSlice) =
+    let h = elevation(header, data),
+        s = header.subsidence_rate .* (header.axes.t .- header.axes.t[end]),
+        l = header.sea_level
+
+        h .- (s.+l)[na, :]
+    end
+
+const Rate = typeof(1.0u&quot;m/Myr&quot;)
+
+function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
+    smooth_size::NTuple{2,Int}=(3, 11),
+    colormap=Reverse(:curl),
+    range::NTuple{2,Rate}=(-100.0u&quot;m/Myr&quot;, 100.0u&quot;m/Myr&quot;))
+    magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ (header.Δt * header.write_interval)
+    blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
+    wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
+    blur(water_depth(header, data) / u&quot;m&quot;, wd)
+    mag = zeros(Float64, length(header.axes.x), length(header.axes.t) - 1)
+    blur(magnitude / u&quot;m/Myr&quot;, mag)
+
+    ax.ylabel = &quot;time [Myr]&quot;
+    ax.xlabel = &quot;position [km]&quot;
+
+    sa = heatmap!(ax, header.axes.x / u&quot;km&quot;, header.axes.t / u&quot;Myr&quot;, mag;
+        colormap=colormap, colorrange=range ./ u&quot;m/Myr&quot;)
+    contour!(ax, header.axes.x / u&quot;km&quot;, header.axes.t / u&quot;Myr&quot;, wd;
+        levels=[0], color=:red, linewidth=2, linestyle=:dash)
+    return sa
+end
+
+function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
+    smooth_size::NTuple{2,Int}=(3, 11),
+    colors=Makie.wong_colors())
+    n_facies = size(data.production)[1]
+    colormax(d) = getindex.(argmax(d; dims=1)[1, :, :], 1)
+
+    dominant_facies = colormax(data.deposition)
+    blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
+    wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
+    blur(water_depth(header, data) / u&quot;m&quot;, wd)
+
+    ax.ylabel = &quot;time [Myr]&quot;
+    ax.xlabel = &quot;position [km]&quot;
+
+    ft = heatmap!(ax, header.axes.x / u&quot;km&quot;, header.axes.t / u&quot;Myr&quot;, dominant_facies;
+        colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
+        colorrange=(0.5, n_facies + 0.5))
+    contourf!(ax, header.axes.x / u&quot;km&quot;, header.axes.t / u&quot;Myr&quot;, wd;
+        levels=[0.0, 10000.0], colormap=Reverse(:grays))
+    contour!(ax, header.axes.x / u&quot;km&quot;, header.axes.t / u&quot;Myr&quot;, wd;
+        levels=[0], color=:black, linewidth=2)
+    return ft
+end
+
+function wheeler_diagram!(ax1::Axis, ax2::Axis, header::Header, data::DataSlice;
+    smooth_size::NTuple{2,Int}=(3, 11),
+    range::NTuple{2,Rate}=(-100.0u&quot;m/Myr&quot;, 100.0u&quot;m/Myr&quot;))
+
+    linkyaxes!(ax1, ax2)
+    sa = sediment_accumulation!(ax1, header, data; smooth_size=smooth_size, range=range)
+    ft = dominant_facies!(ax2, header, data; smooth_size=smooth_size)
+    ax2.ylabel = &quot;&quot;
+
+    return sa, ft
+end
+
+function wheeler_diagram(header::Header, data::DataSlice;
+    smooth_size::NTuple{2,Int}=(3, 11),
+    range::NTuple{2,Rate}=(-100.0u&quot;m/Myr&quot;, 100.0u&quot;m/Myr&quot;))
+
+    fig = Figure(size=(1000, 600))
+    ax1 = Axis(fig[2, 1])
+    ax2 = Axis(fig[2, 2])
+
+    sa, ft = wheeler_diagram!(ax1, ax2, header, data; smooth_size=smooth_size, range=range)
+
+    Colorbar(fig[1, 1], sa; vertical=false, label=&quot;sediment accumulation [m/Myr]&quot;)
+    Colorbar(fig[1, 2], ft; vertical=false, ticks=1:3, label=&quot;dominant facies&quot;)
+    fig
+end
+
+end</code></pre><h2 id="Production-curve"><a class="docs-heading-anchor" href="#Production-curve">Production curve</a><a id="Production-curve-1"></a><a class="docs-heading-anchor-permalink" href="#Production-curve" title="Permalink"></a></h2><p><img src="../fig/production_curve.svg" alt="Production curve"/></p><div class="noweb-label">file:<i>examples/visualization/production_curve.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/production_curve.svg
+#| requires: data/output/alcap2.h5
+#| collect: figures
+
+using CairoMakie
+using CarboKitten.Visualization: production_curve
+
+save(&quot;docs/src/_fig/production_curve.svg&quot;, production_curve(&quot;data/output/alcap2.h5&quot;))</code></pre><div class="noweb-label">file:<i>ext/ProductionCurve.jl</i></div><pre><code class="language- julia hljs">module ProductionCurve
+
+using Makie
+using Unitful
+using HDF5
+
+import CarboKitten.Components.Common: AbstractInput
+import CarboKitten.Visualization: production_curve!, production_curve
+using CarboKitten.Components.Production: Facies, production_rate
+
+function production_curve!(ax, input::I) where I &lt;: AbstractInput
+    ax.title = &quot;production at $(sprint(show, input.insolation; context=:fancy_exponent=&gt;true))&quot;
+    ax.xlabel = &quot;production [m/Myr]&quot;
+    ax.ylabel = &quot;depth [m]&quot;
+    ax.yreversed = true
+
+    for f in input.facies
+        depth = (0.1:0.1:50.0)u&quot;m&quot;
+        prod = [production_rate(input.insolation, f, d) for d in depth]
+        lines!(ax, prod / u&quot;m/Myr&quot;, depth / u&quot;m&quot;)
+    end
+end
+
+function production_curve(input::I) where I &lt;: AbstractInput
+    fig = Figure()
+    ax = Axis(fig[1, 1])
+    production_curve!(ax, input)
+    fig
+end
+
+function production_curve(filename::AbstractString)
+    h5open(filename, &quot;r&quot;) do fid
+        fig = Figure()
+        ax = Axis(fig[1, 1])
+        production_curve!(ax, fid[&quot;input&quot;])
+        fig
+    end
+end
+
+function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u&quot;m&quot;)
+    a = HDF5.attributes(g)
+    insolation = a[&quot;insolation&quot;][] * u&quot;W/m^2&quot;
+
+    ax.title = &quot;production at $(sprint(show, insolation; context=:fancy_exponent=&gt;true))&quot;
+    ax.xlabel = &quot;production [m/Myr]&quot;
+    ax.ylabel = &quot;depth [m]&quot;
+
+    for i in 1:a[&quot;n_facies&quot;][]
+        fa = HDF5.attributes(g[&quot;facies$(i)&quot;])
+        f = Facies(
+            fa[&quot;maximum_growth_rate&quot;][] * u&quot;m/Myr&quot;,
+            fa[&quot;extinction_coefficient&quot;][] * u&quot;m^-1&quot;,
+            fa[&quot;saturation_intensity&quot;][] * u&quot;W/m^2&quot;)
+        depth = (0.1u&quot;m&quot;:0.1u&quot;m&quot;:-max_depth)
+        prod = [production_rate(insolation, f, d) for d in depth]
+        lines!(ax, prod / u&quot;m/Myr&quot;, - depth / u&quot;m&quot;)
+    end
+end
+
+end</code></pre><h2 id="Sediment-profile"><a class="docs-heading-anchor" href="#Sediment-profile">Sediment profile</a><a id="Sediment-profile-1"></a><a class="docs-heading-anchor-permalink" href="#Sediment-profile" title="Permalink"></a></h2><p><img src="../fig/sediment_profile.png" alt="Sediment profile"/></p><div class="noweb-label">file:<i>examples/visualization/sediment_profile.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/sediment_profile.png
+#| requires: data/output/alcap2.h5
+#| collect: figures
+
+using CairoMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: sediment_profile
+
+save(&quot;docs/src/_fig/sediment_profile.png&quot;,
+    sediment_profile(read_slice(&quot;data/output/alcap2.h5&quot;, :, 25)...))</code></pre><div class="noweb-label">file:<i>ext/SedimentProfile.jl</i></div><pre><code class="language- julia hljs">module SedimentProfile
+
+import CarboKitten.Visualization: sediment_profile, sediment_profile!
+
+using CarboKitten.Visualization
+using CarboKitten.Utility: in_units_of
+using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
+using CarboKitten.Skeleton: skeleton
+
+using Makie
+using GeometryBasics
+using Unitful
+
+using Statistics: mean
+
+const Rate = typeof(1.0u&quot;m/Myr&quot;)
+const Amount = typeof(1.0u&quot;m&quot;)
+const Length = typeof(1.0u&quot;m&quot;)
+const Time = typeof(1.0u&quot;Myr&quot;)
+
+const na = [CartesianIndex()]
+
+elevation(h::Header, d::Data) =
+    let bl = h.bedrock_elevation[:, :, na],
+        sr = h.axes.t[end] * h.subsidence_rate
+
+        bl .+ d.sediment_elevation .- sr
+    end
+
+elevation(h::Header, d::DataSlice) =
+    let bl = h.bedrock_elevation[d.slice..., na],
+        sr = h.axes.t[end] * h.subsidence_rate
+
+        bl .+ d.sediment_elevation .- sr
+    end
+
+colormax(d::Data) = getindex.(argmax(d.deposition; dims=1)[1, :, :, :], 1)
+colormax(d::DataSlice) = getindex.(argmax(d.deposition; dims=1)[1, :, :], 1)
+
+&quot;&quot;&quot;
+    explode_quad_vertices(v)
+
+Takes a three dimensional array representing a grid of vertices. This function duplicates these
+vertices in the vertical direction, so that an amount of sediment can be given a single color.
+
+Returns a tuple of vertices and faces (triangles), suitable for plotting with Makie&#39;s `mesh`
+function.
+&quot;&quot;&quot;
+function explode_quad_vertices(v::Array{Float64,3})
+    w, h, d = size(v)
+    points = zeros(Float64, w, h - 1, 2, d)
+    n_vertices = 2 * w * (h - 1)
+    n_quads = (w - 1) * (h - 1)
+    @views points[:, :, 1, :] = v[1:end, 1:end-1, :]
+    @views points[:, :, 2, :] = v[1:end, 2:end, :]
+    idx = reshape(1:n_vertices, w, (h - 1), 2)
+    vtx1 = reshape(idx[1:end-1, :, 1], n_quads)
+    vtx2 = reshape(idx[2:end, :, 1], n_quads)
+    vtx3 = reshape(idx[2:end, :, 2], n_quads)
+    vtx4 = reshape(idx[1:end-1, :, 2], n_quads)
+    return reshape(points, n_vertices, d),
+    vcat(hcat(vtx1, vtx2, vtx3), hcat(vtx1, vtx3, vtx4))
+end
+
+function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
+    x = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
+    t = header.axes.t |&gt; in_units_of(u&quot;Myr&quot;)
+    n_facies = size(data.production)[1]
+    ξ = elevation(header, data)  # |&gt; in_units_of(u&quot;m&quot;)
+
+    verts = zeros(Float64, length(x), length(t), 2)
+    @views verts[:, :, 1] .= x
+    @views verts[:, :, 2] .= ξ |&gt; in_units_of(u&quot;m&quot;)
+    v, f = explode_quad_vertices(verts)
+
+    water_depth = ξ .- (header.subsidence_rate.*(header.axes.t.-header.axes.t[end]).+header.sea_level)[na, :]
+    hiatus = skeleton(water_depth .&gt; 0.0u&quot;m&quot;)
+
+    total_subsidence = header.subsidence_rate * header.axes.t[end]
+    bedrock = (header.bedrock_elevation[data.slice...] .- total_subsidence) |&gt; in_units_of(u&quot;m&quot;)
+    lower_limit = minimum(bedrock) - 20
+    band!(ax, x, lower_limit, bedrock; color=:gray)
+    lines!(ax, x, bedrock; color=:black)
+    ylims!(ax, lower_limit + 10, nothing)
+    xlims!(ax, x[1], x[end])
+    ax.xlabel = &quot;position [km]&quot;
+    ax.ylabel = &quot;depth [m]&quot;
+    ax.title = &quot;sediment profile&quot;
+
+    c = reshape(colormax(data)[:, :], length(x) * (length(t) - 1))
+    mesh!(ax, v, f, color=vcat(c, c), alpha=1.0, colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+
+    verts = [(x[pt[1]], ξ[pt...] |&gt; in_units_of(u&quot;m&quot;)) for pt in hiatus[1]]
+    linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
+end
+
+function sediment_profile(header::Header, data_slice::DataSlice)
+    fig = Figure(size=(1000, 600))
+    ax = Axis(fig[1, 1])
+    sediment_profile!(ax, header, data_slice)
+    return fig
+end
+
+end  # module</code></pre><h2 id="Stratigraphic-Column"><a class="docs-heading-anchor" href="#Stratigraphic-Column">Stratigraphic Column</a><a id="Stratigraphic-Column-1"></a><a class="docs-heading-anchor-permalink" href="#Stratigraphic-Column" title="Permalink"></a></h2><div class="noweb-label">file:<i>ext/StratigraphicColumn.jl</i></div><pre><code class="language- julia hljs">module StratigraphicColumn
+
+using Makie
+using Unitful
+
+import CarboKitten.Visualization: stratigraphic_column!
+using CarboKitten.Export: Header, DataColumn, stratigraphic_column, age_depth_model
+
+
+function scdata(header::Header, data::DataColumn)
+    n_facies = size(data.production)[1]
+    n_times = length(header.axes.t) - 1
+    sc = zeros(Float64, n_facies, n_times)
+    for f = 1:n_facies
+        sc[f, :] = stratigraphic_column(header, data, f) / u&quot;m&quot;
+    end
+
+    colormax(d) = getindex.(argmax(d; dims=1)[1, :], 1)
+    adm = age_depth_model(data.sediment_elevation)
+
+    return (ys_low=adm[1:end-1] / u&quot;m&quot;, ys_high=adm[2:end] / u&quot;m&quot;, facies=colormax(sc)[1:end])
+end
+
+
+function stratigraphic_column!(ax::Axis, header::Header, data::DataColumn; color=Makie.wong_colors())
+    (ys_low, ys_high, facies) = scdata(header, data)
+    hspan!(ax, ys_low, ys_high; color=color[facies])
+end
+
+function stratigraphic_column!(ax::Axis, header::Header, data::Observable{DataColumn}; color=Makie.wong_colors())
+    _scdata = lift(d -&gt; scdata(header, d), data)
+    _ys_low = lift(d -&gt; d.ys_low, _scdata)
+    _ys_high = lift(d -&gt; d.ys_high, _scdata)
+    _color = lift(d -&gt; color[d.facies], _scdata)
+    hspan!(ax, _ys_low, _ys_high; color=_color)
+end
+
+end</code></pre><h2 id="Skeleton"><a class="docs-heading-anchor" href="#Skeleton">Skeleton</a><a id="Skeleton-1"></a><a class="docs-heading-anchor-permalink" href="#Skeleton" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Skeleton.jl</i></div><pre><code class="language- julia hljs">module Skeleton
+
+using .Iterators: filter, map as imap, product, flatten, drop
+using ..Utility: enumerate_seq, find_ranges
+
+const Vertex = Tuple{Int, UnitRange{Int}}
+
+pairs(it) = zip(it, drop(it, 1))
+edge(a::Vertex, b::Vertex) = isempty(a[2] ∩ b[2]) ? nothing : (a[1], b[1])
+edges_between(a, b) = filter(!isnothing, imap(splat(edge), product(a, b)))
+middle(a::UnitRange{Int}) = (a.start + a.stop) ÷ 2
+
+&quot;&quot;&quot;
+    skeleton(bitmap::AbstractMatrix{Bool})
+
+Computes the skeleton of a bitmap, i.e. reduces features with some thickness to
+a set of line segments. This function is designed with stratigraphic application
+in mind: we scan each row in the bitmap for connected regions, then link neighbouring
+regions when they overlap. The result is a graph that represents hiatus in the sediment
+accumulation.
+
+Returns a tuple of `vertices` and `edges`, where `vertices` is a vector of 2-tuples and
+`edges` is a nx2 matrix of indices into the `vertices`.
+&quot;&quot;&quot;
+function skeleton(bitmap::AbstractMatrix{Bool}; minwidth=10)
+    vertex_rows = (filter(r-&gt;length(r)&gt;=minwidth, find_ranges(row)) for row in eachrow(bitmap))
+    edges = flatten(map(splat(edges_between), pairs(enumerate_seq(vertex_rows))))
+    vertices = flatten(((i, middle(v)) for v in vs) for (i, vs) in enumerate(vertex_rows))
+    return collect(vertices), reshape(reinterpret(Int, collect(edges)), (2,:))&#39;
+end
+
+end</code></pre><h2 id="Glamour-View-(3D)"><a class="docs-heading-anchor" href="#Glamour-View-(3D)">Glamour View (3D)</a><a id="Glamour-View-(3D)-1"></a><a class="docs-heading-anchor-permalink" href="#Glamour-View-(3D)" title="Permalink"></a></h2><p>Not very useful but highly glamourous.</p><p><img src="../fig/glamour_view.png" alt="Glamour view"/></p><div class="noweb-label">file:<i>examples/visualization/glamour_view.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/glamour_view.png
+#| requires: data/output/cap1.h5
+#| collect: figures
+
+module Script
+
+using GLMakie
+using CarboKitten.Visualization: glamour_view!
+using HDF5
+
+function main()
+    fig = Figure()
+    ax = Axis3(fig[1,1])
+    h5open(&quot;data/output/cap1.h5&quot;, &quot;r&quot;) do fid
+        glamour_view!(ax, fid)
+    end
+    save(&quot;docs/src/_fig/glamour_view.png&quot;, fig)
+end
+
+end
+
+Script.main()</code></pre><div class="noweb-label">file:<i>ext/GlamourView.jl</i></div><pre><code class="language- julia hljs">module GlamourView
+
+import CarboKitten.Visualization: glamour_view!
+using CarboKitten.Utility: in_units_of
+using CarboKitten.Export: read_header
+using Makie
+using HDF5
+using Unitful
+
+function glamour_view!(ax::Makie.Axis3, fid::HDF5.File; colormap=Reverse(:speed))
+	header = read_header(fid)
+	x = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
+	y = header.axes.y |&gt; in_units_of(u&quot;km&quot;)
+	xy_aspect = x[end] / y[end]
+
+	ax.aspect = (xy_aspect, 1, 1)
+	ax.azimuth = -π/3
+
+	n_steps = length(header.axes.t)
+	grid_size = (length(x), length(y))
+	steps_between = 2
+	selected_steps = [1, ((1:steps_between) .* n_steps .÷ (steps_between + 1))..., n_steps]
+	bedrock = header.bedrock_elevation .- header.axes.t[end] * header.subsidence_rate
+
+	result = Array{Float64, 3}(undef, grid_size..., length(selected_steps))
+	for (i, j) in enumerate(selected_steps)
+		result[:, :, i] = fid[&quot;sediment_height&quot;][:,:,j] .+ bedrock / u&quot;m&quot;
+	end
+
+	surface!(ax, x, y, result[:,:,1];
+		color=ones(grid_size),
+		colormap=:grays)
+
+	for s in eachslice(result[:,:,2:end-1], dims=3)
+		surface!(ax, x, y, s;
+			colormap=(colormap, 0.7))		
+	end
+
+	surface!(ax, x, y, result[:,:,end];
+		colormap=colormap)
+	lines!(ax, x, zeros(grid_size[1]), result[:, 1, end]; color=(:white, 0.5), linewidth=1)
+	lines!(ax, fill(x[end], grid_size[2]), y, result[end, :, end]; color=(:white, 0.5), linewidth=1)
+end
+
+end</code></pre><h2 id="Age-depth-Model"><a class="docs-heading-anchor" href="#Age-depth-Model">Age-depth Model</a><a id="Age-depth-Model-1"></a><a class="docs-heading-anchor-permalink" href="#Age-depth-Model" title="Permalink"></a></h2><div class="noweb-label">file:<i>ext/AgeDepthModel.jl</i></div><pre><code class="language- julia hljs">module AgeDepthModel
+
+using Makie
+using Unitful
+
+using CarboKitten.Visualization
+using CarboKitten.Export
+
+end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../active-layer-transport/">« Active Layer Transport</a><a class="docs-footer-nextpage" href="../carbocat/">Summary »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 7 November 2024 15:29">Thursday 7 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

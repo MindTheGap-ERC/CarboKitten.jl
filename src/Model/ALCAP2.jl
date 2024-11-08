@@ -8,6 +8,7 @@ using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
+using .H5Writer: run
 
 export Input, Facies
 
@@ -57,5 +58,8 @@ end
 function write_header(fid, input::AbstractInput)
     @for_each(P -> P.write_header(fid, input), PARENTS)
 end
+
+include("ALCAP/Example.jl")
+
 end
 # ~/~ end

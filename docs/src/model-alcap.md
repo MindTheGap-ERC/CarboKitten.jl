@@ -8,23 +8,8 @@ The following **S**edimentation model includes the Burgess 2013 **C**ellular **A
 
 The following is a complete example input.
 
-``` {.julia .task file=examples/model/alcap/run.jl}
-#| requires: src/Model/ALCAP2.jl
-#| creates: data/output/alcap2.h5
-
-module Script
-
-using Unitful
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model: ALCAP2 as ALCAP
-using CarboKitten.Export: data_export, CSV
-
-const m = u"m"
-const Myr = u"Myr"
-
-const PATH = "data/output"
-const TAG = "alcap2"
+``` {.julia #alcap-example-input}
+const TAG = "alcap-example"
 
 const FACIES = [
     ALCAP.Facies(
@@ -50,25 +35,42 @@ const FACIES = [
         diffusion_coefficient=7000u"m")
 ]
 
-const PERIOD = 0.2Myr
-const AMPLITUDE = 4.0m
+const PERIOD = 0.2u"Myr"
+const AMPLITUDE = 4.0u"m"
 
 const INPUT = ALCAP.Input(
     tag="$TAG",
-    box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m),
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TimeProperties(
-        Δt=0.0002Myr,
+        Δt=0.0002u"Myr",
         steps=5000,
         write_interval=1),
     ca_interval=1,
     bedrock_elevation=(x, y) -> -x / 300.0,
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
-    subsidence_rate=50.0m / Myr,
-    disintegration_rate=500.0m / Myr,
+    subsidence_rate=50.0u"m/Myr",
+    disintegration_rate=50.0u"m/Myr",
     insolation=400.0u"W/m^2",
     sediment_buffer_size=50,
-    depositional_resolution=0.5m,
+    depositional_resolution=0.5u"m",
     facies=FACIES)
+```
+
+``` {.julia .task file=examples/model/alcap/run.jl}
+#| requires: src/Model/ALCAP2.jl
+#| creates: data/output/alcap-example.h5
+
+module Script
+
+using Unitful
+using CarboKitten.Components
+using CarboKitten.Components.Common
+using CarboKitten.Model: ALCAP2 as ALCAP
+using CarboKitten.Export: data_export, CSV
+
+const PATH = "data/output"
+
+<<alcap-example-input>>
 
 function main()
     H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
@@ -93,13 +95,13 @@ Script.main()
 
 ``` {.julia .task file=examples/model/alcap/plot.jl}
 #| creates: docs/src/_fig/alcaps-alternative.png
-#| requires: data/output/alcap2.h5
+#| requires: data/output/alcap-example.h5
 #| collect: figures
 
 using GLMakie
 using CarboKitten.Visualization
 
-save("docs/src/_fig/alcaps-alternative.png", summary_plot("data/output/alcap2.h5"))
+save("docs/src/_fig/alcaps-alternative.png", summary_plot("data/output/alcap-example.h5"))
 ```
 
 ```@raw html
@@ -112,6 +114,19 @@ save("docs/src/_fig/alcaps-alternative.png", summary_plot("data/output/alcap2.h5
 CarboKitten.Model.ALCAP2
 ```
 
+``` {.julia file=src/Model/ALCAP/Example.jl}
+module Example
+
+using Unitful
+using CarboKitten.Model: ALCAP2 as ALCAP
+using CarboKitten.Boxes: Box, Coast
+using CarboKitten.Config: TimeProperties
+
+<<alcap-example-input>>
+
+end
+```
+
 ``` {.julia file=src/Model/ALCAP2.jl}
 # FIXME: rename this to ALCAP and remove old code
 @compose module ALCAP2
@@ -122,6 +137,7 @@ using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
+using .H5Writer: run
 
 export Input, Facies
 
@@ -171,6 +187,9 @@ end
 function write_header(fid, input::AbstractInput)
     @for_each(P -> P.write_header(fid, input), PARENTS)
 end
+
+include("ALCAP/Example.jl")
+
 end
 ```
 

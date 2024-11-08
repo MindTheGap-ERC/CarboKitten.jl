@@ -33,6 +33,15 @@ function sealevel_curve(filepath)
     return x
 end 
 
+function insolation_curve(filepath)
+    table = DataFrame(XLSX.readtable(filepath, "T1")) 
+    time = table.Yr ./ 1e6 .* u"Myr"
+    insolation = table.Insolation./ 1e6 .* u"W/m^2"
+
+    data = DataFrame(time = time, insolation = insolation)
+
+    return linear_interpolation(data.time, data.insolation)
+end 
 
 const FACIES = [
     ALCAP.Facies(

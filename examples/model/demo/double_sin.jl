@@ -9,30 +9,12 @@ using CarboKitten.Components
 using CarboKitten.Components.Common
 using CarboKitten.Model: ALCAP2 as ALCAP
 using CarboKitten.Export: data_export, CSV
-using DataFrames
-using XLSX
-using Interpolations
 
 const m = u"m"
 const Myr = u"Myr"
 
 const PATH = "data/output"
-const TAG = "alcap2"
-const PERIOD = 0.2Myr
-const AMPLITUDE = 4.0m
-const filepath = "data/input/miller.xlsx"
-
-function sealevel_curve(filepath)
-    table = DataFrame(XLSX.readtable(filepath, "T1")) 
-
-    time = table[:,1] ./ 1000.0 .* u"Myr"
-    sl = table[:,2] .* u"m"
-
-    data = DataFrame(time = time, sea_level = sl)
-
-    x  = linear_interpolation(data.time, data.sea_level)
-    return x
-end 
+const TAG = "alcap2_CAT"
 
 const FACIES = [
     ALCAP.Facies(
@@ -58,17 +40,21 @@ const FACIES = [
         diffusion_coefficient=7000u"m")
 ]
 
+const PERIOD1 = 1*u"Myr"
+const PERIOD2 = 0.112*u"Myr"
+const AMPLITUDE1 = 20.0*u"m"
+const AMPLITUDE2 = 5.0*u"m"
+
 const INPUT = ALCAP.Input(
     tag="$TAG",
     box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m),
     time=TimeProperties(
-        t0 = 0.001u"Myr",
-        Δt=0.001Myr,
-        steps=2579,
+        Δt=0.0004Myr,
+        steps=5000,
         write_interval=1),
     ca_interval=1,
-    bedrock_elevation=(x, y) -> -3x / 520.0,
-    sea_level= sealevel_curve(filepath),
+    bedrock_elevation=(x, y) -> -3x/ 520.0,
+    sea_level=t -> (AMPLITUDE1 * sin(2π * t / PERIOD1) + AMPLITUDE2 * sin((2π * t / PERIOD2) + π/4)) ,
     subsidence_rate=50.0m / Myr,
     disintegration_rate=500.0m / Myr,
     insolation=400.0u"W/m^2",

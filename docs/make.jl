@@ -66,6 +66,7 @@ path = joinpath(@__DIR__, "transpiled")
 rm(path; force=true, recursive=true)
 mkpath(path)
 Entangled.transpile_file.(joinpath(@__DIR__, "src"), sources, path)
+run(`touch $(joinpath(path, "first_tutorial.md"))`)
 copydir(joinpath(@__DIR__, "src/fig"), joinpath(path, "fig"))
 
 makedocs(
@@ -81,6 +82,7 @@ makedocs(
             "ALCAPS" => "model-alcap.md"
         ],
         "Examples" => [
+            "Tutorial (Pluto notebook)" => "first_tutorial.md",
             "Tabular Sea Levels" => "cases/tabular-sea-level.md"
         ],
         "Architecture" => "architecture.md",
@@ -120,6 +122,8 @@ makedocs(
         "References" => "references.md"
     ],
     plugins=[bib])
+
+cp(joinpath(@__DIR__, "notebooks/first_tutorial.html"), joinpath(@__DIR__, "build/first_tutorial/index.html"), force=true)
 
 deploydocs(
     repo="github.com/MindTheGap-ERC/CarboKitten.jl"

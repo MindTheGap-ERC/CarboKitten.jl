@@ -67,6 +67,9 @@ using CSV: read as read_csv
 # ╔═╡ 17501c93-f432-4f1a-b815-5ac9c5a29f8f
 using CarboKitten.DataSets: miller_2020
 
+# ╔═╡ e2562586-d03a-4b6e-9ef6-aad012f2be9f
+using Interpolations
+
 # ╔═╡ 3c4cef70-df77-46ba-b623-fd46b5500e51
 TableOfContents()
 
@@ -380,7 +383,7 @@ run_model(Model{ALCAP}, input, "$(OUTPUTDIR)/tutorial.h5")
 # ╔═╡ 0fd7ea33-ff06-4355-9278-125c8ed66df4
 # ╠═╡ disabled = true
 #=╠═╡
-summary_plot("$(OUTPUTDIR)/tutorial2.h5")
+summary_plot("$(OUTPUTDIR)/tutorial.h5")
   ╠═╡ =#
 
 # ╔═╡ a3e5f420-a59d-4725-8f8f-e5b8f06987db
@@ -448,157 +451,46 @@ let
 	fig
 end
 
+# ╔═╡ 31a137be-f726-47f9-be2d-a6f91e4084dc
+md"""
+We can use the `refkey` field to select on a specific dataset. Inspect the unique values using the `levels` function.
+"""
+
+# ╔═╡ 3d550592-93a0-4eeb-891e-f690a3b1d686
+levels(miller_df.refkey)
+
 # ╔═╡ c0970bfe-db0a-46cc-a3e2-13e1ee78ee8e
 md"""
 !!! info "Exercise: data selection"
 	Read the above code to plot the data in Miller et al. 2020, focussing on creating a subset of the data. Use the `refkey` column to select only the data from Lisiecki et al. 2005, and store it in `lisiecki_df`.
+
+	Plot the result.
 """
 
-# ╔═╡ 4802af1d-8e60-4dc9-85b6-3f057be65336
-md"# Small Tasks"
+# ╔═╡ 6f60233c-739d-40d5-8c43-d30647006351
+md"""
+The `Interpolations` package has a convenient linear interpolation function. It does require input values to be sorted.
+"""
 
-# ╔═╡ 6065af94-5dd4-485d-9c11-7a1360b1458c
-md"Let's try to modify the sea-level curve. For example, add 2nd and 3rd order of sine curves o top of the existing sea-level curve. How this differs from the example? How about changing the Magnitude and Amplitudes, or gradient of initial topography? You might need to do some modifications on the input files (Shown later)"
+# ╔═╡ 54d26634-765f-4291-8a82-34e2e6e2fa09
+sort!(miller_df, [:time]);
 
-# ╔═╡ 1e7c85db-7161-49f3-a54d-e6eef8bf799a
-md"After this, you can try to a real sea-level curve"
+# ╔═╡ 1977eab2-f277-41c4-ac00-826bafa8de4d
+miller_sea_level = linear_interpolation(miller_df.time, miller_df.sealevel);
 
-# ╔═╡ 41d1bf67-1eb9-4272-8ffb-3c0c0ea7926e
-md"The input file (consists of four parts) looks like:"
+# ╔═╡ ca0498b0-c425-4949-b1d9-03df4067db2e
+md"""
+!!! info "Exercise: run the model"
+	Create a sea level function by interpolating the Lisiecki data set. Make sure to start the simulation at t=-2.0 Myr, for example:
 
-# ╔═╡ b9aa7141-ede6-47b2-a593-a601eddf0d61
-md"first part: dependency. It also defines where you would like to store your output in `PATH` and `TAG`"
-
-# ╔═╡ 3cc4223e-7ae0-4c42-aca1-14d86cb32a5d
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-using Unitful
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model: ALCAP2 as ALCAP
-using CarboKitten.Export: data_export, CSV
-
-const m = u"m"
-const Myr = u"Myr"
-
-const PATH = "data/output"
-const TAG = "alcap2"
-end
-
-  ╠═╡ =#
-
-# ╔═╡ d5063ba9-9ebc-43b1-b262-c82272e6318e
-md"second part: Facies defination"
-
-# ╔═╡ d8d2d274-b63f-4364-9c25-5349ad7edb2c
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-const FACIES = [
-    ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
-        maximum_growth_rate=500u"m/Myr",
-        extinction_coefficient=0.8u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=10000u"m"),
-    ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
-        maximum_growth_rate=400u"m/Myr",
-        extinction_coefficient=0.1u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=5000u"m"),
-    ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
-        maximum_growth_rate=100u"m/Myr",
-        extinction_coefficient=0.005u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=7000u"m")
-]
-end
-  ╠═╡ =#
-
-# ╔═╡ 3a671070-332e-4411-9fed-a3945c04c830
-md"the third part is the input values"
-
-# ╔═╡ 7532c74b-6550-46c5-8ddd-bbc095c91780
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	const PERIOD = 0.2Myr
-    const AMPLITUDE = 4.0m
-	
-	const INPUT = ALCAP.Input(
-    tag="$TAG",
-    box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m),
-    time=TimeProperties(
-        Δt=0.0002Myr,
-        steps=5000,
-        write_interval=1),
-    ca_interval=1,
-    bedrock_elevation=(x, y) -> -x / 300.0,
-    sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
-    subsidence_rate=50.0m / Myr,
-    disintegration_rate=500.0m / Myr,
-    insolation=400.0u"W/m^2",
-    sediment_buffer_size=50,
-    depositional_resolution=0.5m,
-    facies=FACIES)
-end
-  ╠═╡ =#
-
-# ╔═╡ 9acb27a7-cd33-4209-88bc-66268a1e1ee4
-md"the fourth part is the data export"
-
-# ╔═╡ 22170bcc-402a-4045-bbf6-a209c65907a8
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	function main()
-    H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
-
-    data_export(
-        CSV(tuple.(10:20:70, 25),
-          :sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
-          :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
-          :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
-          :metadata => "$(PATH)/$(TAG).toml"),
-        "$(PATH)/$(TAG).h5")
-end
-end
-  ╠═╡ =#
-
-# ╔═╡ 368cc3f8-80c0-4665-af56-33dd427bfa0e
-md"run the model"
-
-# ╔═╡ ec47c9f0-6cc0-41aa-b26f-d866e59f63e7
-#=╠═╡
-main()
-  ╠═╡ =#
-
-# ╔═╡ 3f2a50ac-1297-4a03-a252-bbc96b4f1137
-md"You can also try your own sea-level curve. Herein filepath means the place where you store your sea-level curve. Make sure your sea-level curve has two columns."
-
-# ╔═╡ 86aedf7b-fcaa-4eda-b1df-12cc38975e15
-# ╠═╡ disabled = true
-#=╠═╡
-begin 
-using Interpolations
-function sealevel_curve(t,filepath)
-    data = DataFrame(CSV.File(filepath))
-	time = data[:,1] #assumes your first column is time
-    sea_level = data[:,2] 
-    x = linear_interpolation(time, sea_level)
-    return x(t)
-end 
-end
-  ╠═╡ =#
-
-# ╔═╡ 123fa963-9a89-469e-a66f-b788d5575ff5
-md"You can now replace the sea-level curve with: `sea_level = t -> sealevel_curve(t,filepath)` "
+	```julia
+	time = TimeProperties(
+		t0 = -2.0u"Myr",
+		Δt = 500.0u"yr",
+		steps = 2000
+	)
+	```
+"""
 
 # ╔═╡ Cell order:
 # ╠═ac7ec9d8-a70e-4b0e-be7b-705037273165
@@ -662,21 +554,11 @@ md"You can now replace the sea-level curve with: `sea_level = t -> sealevel_curv
 # ╠═17501c93-f432-4f1a-b815-5ac9c5a29f8f
 # ╠═71f2c3ad-80ea-4678-87cf-bb95ef5b57ff
 # ╠═04824ca5-3e40-40e7-8211-990c18af21e6
+# ╟─31a137be-f726-47f9-be2d-a6f91e4084dc
+# ╠═3d550592-93a0-4eeb-891e-f690a3b1d686
 # ╟─c0970bfe-db0a-46cc-a3e2-13e1ee78ee8e
-# ╠═4802af1d-8e60-4dc9-85b6-3f057be65336
-# ╠═6065af94-5dd4-485d-9c11-7a1360b1458c
-# ╠═1e7c85db-7161-49f3-a54d-e6eef8bf799a
-# ╠═41d1bf67-1eb9-4272-8ffb-3c0c0ea7926e
-# ╠═b9aa7141-ede6-47b2-a593-a601eddf0d61
-# ╠═3cc4223e-7ae0-4c42-aca1-14d86cb32a5d
-# ╠═d5063ba9-9ebc-43b1-b262-c82272e6318e
-# ╠═d8d2d274-b63f-4364-9c25-5349ad7edb2c
-# ╠═3a671070-332e-4411-9fed-a3945c04c830
-# ╠═7532c74b-6550-46c5-8ddd-bbc095c91780
-# ╠═9acb27a7-cd33-4209-88bc-66268a1e1ee4
-# ╠═22170bcc-402a-4045-bbf6-a209c65907a8
-# ╠═368cc3f8-80c0-4665-af56-33dd427bfa0e
-# ╠═ec47c9f0-6cc0-41aa-b26f-d866e59f63e7
-# ╠═3f2a50ac-1297-4a03-a252-bbc96b4f1137
-# ╠═86aedf7b-fcaa-4eda-b1df-12cc38975e15
-# ╠═123fa963-9a89-469e-a66f-b788d5575ff5
+# ╟─6f60233c-739d-40d5-8c43-d30647006351
+# ╠═e2562586-d03a-4b6e-9ef6-aad012f2be9f
+# ╠═54d26634-765f-4291-8a82-34e2e6e2fa09
+# ╠═1977eab2-f277-41c4-ac00-826bafa8de4d
+# ╟─ca0498b0-c425-4949-b1d9-03df4067db2e

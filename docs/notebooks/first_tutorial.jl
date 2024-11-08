@@ -11,6 +11,9 @@ using Pkg; Pkg.activate("../../workenv")
 # ╔═╡ 9c050dc8-b09f-404a-a699-d8ce88aa1def
 using Revise
 
+# ╔═╡ ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
+using PlutoUI
+
 # ╔═╡ bcea7127-3c21-4c35-af42-3d2c71464409
 using CarboKitten
 
@@ -41,12 +44,26 @@ using CarboKitten.Components.TimeIntegration: write_times
 # ╔═╡ d0bfae1a-deef-4625-a242-0a9b899bf83d
 using CarboKitten.Model.ALCAP2: Facies
 
-# ╔═╡ facfe3ea-5716-493a-8052-26cf6a237beb
-using CarboKitten.Model.ALCAP2: Input
+# ╔═╡ 3723832f-344c-4471-acb0-cef7d4e5ca94
+using CarboKitten.Export: data_export, CSV
+
+# ╔═╡ 31e7c759-f980-4618-be90-892865751e58
+using DataFrames
+
+# ╔═╡ 61ae751b-0c05-4e96-8be9-3f85cb6afc51
+using CSV: read as read_csv
+
+# ╔═╡ 3c4cef70-df77-46ba-b623-fd46b5500e51
+TableOfContents()
+
+# ╔═╡ 0ce8de55-3304-431d-a2aa-110b46a25c9b
+md"""
+This CarboKitten tutorial is aimed at people that are completely new to Julia.
+"""
 
 # ╔═╡ 9babc2b0-9c26-11ef-3459-0d113ec3c402
 md"""
-# Install Julia and Pluto
+# Installing
 
 Please install Julia from the following webpage: [https://julialang.org/downloads/](https://julialang.org/downloads/).
 
@@ -114,9 +131,16 @@ All packages used and their versions are stored inside the notebooks. When you r
 """
 
 # ╔═╡ 68fac1d8-f402-429e-90a4-25fcfa188c2e
-md"# A first example"
+md"## A first example"
 
-# ╔═╡ bb5e8dd7-8d1c-41e2-a5e4-ef4575cfd29b
+# ╔═╡ 9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
+md"""Please make sure to set the output directory to a convenient place. If you downloaded this notebook to an empty directory, using `"."` would be a good choice.
+"""
+
+# ╔═╡ b3b271cb-143f-44ba-a593-80b9e6c96392
+OUTPUTDIR = "../../data/output"
+
+# ╔═╡ 1d5cf6cc-745d-4a5a-80ae-b1b6c057af0b
 md"""
 !!! tip "HDF5"
 	Output is written to HDF5 files, a broadly used and supported data format for binary scientific data.
@@ -124,10 +148,31 @@ md"""
 	After the simulation is done, we can read the HDF5 file for further analysis and visualization.
 """
 
+# ╔═╡ c974cb9a-e1c0-4402-880c-7990d217da89
+md"""
+!!! info "Example: String interpolation"
+	Notice the `"$(...)"` syntax: this is called string interpolation: the contents of the `OUTPUTDIR` variable are formatted into the resulting string. Try it out with a few examples (inside a `let` block so the variables don't leak):
+
+	```julia
+	let
+		name = "Peter"
+		"Hello, $(name)!"
+	end
+	```
+
+	What happens if you change `name` into a number?
+"""
+
+# ╔═╡ 316b049d-698d-4d5e-9c18-73701ef8b492
+md"""
+!!! tip "Disabled cells"
+    The cell below is disabled because it will take a minute or so to run. Click the cell-menu at the top right of the cell to enable it.
+"""
+
 # ╔═╡ 74f4674f-dbea-44ad-8d54-9861b35139cd
 # ╠═╡ disabled = true
 #=╠═╡
-run_model(Model{ALCAP}, Example.INPUT, "../../data/output/tutorial.h5")
+run_model(Model{ALCAP}, Example.INPUT, "$(OUTPUTDIR)/example.h5")
   ╠═╡ =#
 
 # ╔═╡ 66e30189-ae72-4ec1-b7bd-1136ddfce2ee
@@ -137,7 +182,10 @@ md"""
 """
 
 # ╔═╡ e118a117-9a00-4589-906d-c31d2057bcef
-summary_plot("../../data/output/tutorial.h5")
+# ╠═╡ disabled = true
+#=╠═╡
+summary_plot("$(OUTPUTDIR)/example.h5")
+  ╠═╡ =#
 
 # ╔═╡ 8f883ea5-d90e-41e7-9809-3f170183a640
 md"""
@@ -213,6 +261,7 @@ Here, we define the `sea_level` as a sine wave with fixed amplitude and period.
 function sea_level(t)
 	amplitude = 4.0u"m"
 	period = 0.2u"Myr"
+	
 	return amplitude * sin(2π * t / period)
 end
 
@@ -290,7 +339,9 @@ The subsidence rate is set to a constant 50m/Myr and insolation to 400W/m^2. The
 """
 
 # ╔═╡ ae3a74ea-f6b5-442c-973b-1cec48627968
-input = Input(
+input = ALCAP.Input(
+	tag = "tutorial",
+	
 	time = time,
 	box = box,
 	facies = facies,
@@ -307,56 +358,58 @@ input = Input(
 )
 
 # ╔═╡ 8946d268-4407-4fe4-86ae-67b3a37b34be
-run_model(Model{ALCAP}, input, "../../data/output/tutorial2.h5")
+# ╠═╡ disabled = true
+#=╠═╡
+run_model(Model{ALCAP}, input, "$(OUTPUTDIR)/tutorial2.h5")
+  ╠═╡ =#
 
 # ╔═╡ 0fd7ea33-ff06-4355-9278-125c8ed66df4
-summary_plot("../../data/output/tutorial2.h5")
-
-# ╔═╡ 7ff4d3e4-670f-4cab-9220-d1f8471efb50
-md"The model would store the results in a HDF5 file, and automatically helps you extract age-depth model from locations from land towards sea"
-
-# ╔═╡ cf65176e-1c3f-4059-897f-de645d72cd29
-md"In this case, we extract the 10th, 30th, 50th and 70th grid from land (the position where red dashed lines are, the next figure)"
-
-# ╔═╡ 5987c45f-bf4d-40f5-99b9-0ab9b2f25ada
 # ╠═╡ disabled = true
 #=╠═╡
-begin
-fig3 = lines(x, bedrock_elevation, color = :black, linewidth = 2)
-sea_surface = AMPLITUDE .* sin.(2π .* x ./ PERIOD)
-x_vlines = collect(10:20:70) .* 150
-for x_pos in x_vlines
-    vlines!(x_pos, color = :red, linestyle = :dash, linewidth = 1.5)
-end
-lines!(x,sea_surface,color = :blue, linewidth = 1)
-fig3
-end
+summary_plot("$(OUTPUTDIR)/tutorial2.h5")
   ╠═╡ =#
 
-# ╔═╡ b4d995fd-dfc4-47c0-b428-d0dfc4a606ea
-md"The blue line is sea-level, black line is initial topography and the red-dashed lines indicate the positions we are extracting data"
+# ╔═╡ a3e5f420-a59d-4725-8f8f-e5b8f06987db
+md"""
+# Extracting CSV data
 
-# ╔═╡ 48975f1c-55fb-4f72-a858-2f4cf301ac51
-md"The data (i.e., age-depth model) are stored in `data/output`, with the name of the run. Herein, 'adm' = 'age-depth model', 'sc' = 'stratigraphic columns'"
+HDF5 is a very versatile data format, and is readable from every major computational platform (e.g. MatLab, Python, R). However, sometimes you may want to process your output data further using existing tools that read CSV data.
+"""
 
-# ╔═╡ 2d6569d2-f191-49ce-893c-7a4beaed0c96
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-using DataFrames, CSV 
-alcap2_example_adm = CSV.read("data/output/alcap2_adm.csv", DataFrame)
-fig5 = Figure()
-ax = Axis(fig5[1, 1],title = "Age-Depth Model Plots", xlabel = "Age (Myr)", ylabel = "Depth (m)")
-time = alcap2_example_adm[1:end,1]
-location = ["10","30","50","70"]
-for (i, ycol) in enumerate([2, 3, 4, 5])
-    fig5 = lines!(ax, time, alcap2_example_adm[!, ycol], label = location[i])
+# ╔═╡ ec4f0021-12af-4f8c-8acb-970e6820d2a4
+export_locations = [(10, 25), (25, 25), (40, 25)]
+
+# ╔═╡ 7f05b817-f933-4280-b2ed-ae318a535123
+data_export(CSV(export_locations,
+	:sediment_accumulation_curve => "$(OUTPUTDIR)/tutorial_sac.csv",
+	:age_depth_model => "$(OUTPUTDIR)/tutorial_adm.csv"),
+	"$(OUTPUTDIR)/tutorial.h5")
+
+# ╔═╡ 2a24237e-5c1f-47e1-8f33-cca3ef563930
+md"""
+!!! info "Exercise: Meta data"
+	Next to `:sediment_accumulation_curve` and `:age_depth_model`, we have implemented functions to extract `:stratigraphic_column` and `:metadata`.
+
+	The `:metadata` target is special, since it doesn't write to CSV but to TOML. Add the `:metadata` target to the export list and inspect the result.
+"""
+
+# ╔═╡ 329d30f1-797e-4522-9c20-e60d35079f5f
+adm = read_csv("$(OUTPUTDIR)/tutorial_adm.csv", DataFrame)
+
+# ╔═╡ f550da45-1202-4f9d-9f0b-b96d5c929f58
+let
+	fig = Figure()
+	time = adm[!, 1]
+
+	ax = Axis(fig[1, 1], title="Age-Depth Model", xlabel="t [Myr]", ylabel="depth (m)")
+
+	for i = 1:3
+		lines!(ax, time, adm[!, i+1], label="location $i")
+	end
+
+	fig[1,2] = Legend(fig, ax)
+	fig
 end
-fig5[1,2] = Legend(fig5,ax)
-fig5
-end
-
-  ╠═╡ =#
 
 # ╔═╡ 4802af1d-8e60-4dc9-85b6-3f057be65336
 md"# Small Tasks"
@@ -507,6 +560,9 @@ md"You can now replace the sea-level curve with: `sea_level = t -> sealevel_curv
 # ╔═╡ Cell order:
 # ╠═ac7ec9d8-a70e-4b0e-be7b-705037273165
 # ╠═9c050dc8-b09f-404a-a699-d8ce88aa1def
+# ╠═ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
+# ╠═3c4cef70-df77-46ba-b623-fd46b5500e51
+# ╟─0ce8de55-3304-431d-a2aa-110b46a25c9b
 # ╟─9babc2b0-9c26-11ef-3459-0d113ec3c402
 # ╟─17722d8b-baca-4f16-981f-1501c734a95f
 # ╟─22ec7e16-b8c0-414d-9700-52bf379e1051
@@ -516,7 +572,11 @@ md"You can now replace the sea-level curve with: `sea_level = t -> sealevel_curv
 # ╟─68fac1d8-f402-429e-90a4-25fcfa188c2e
 # ╠═d72d7e42-8392-44a0-a8b3-d59475be8dc7
 # ╠═325e3d04-2ff2-4c27-91bf-265820ac6763
-# ╟─bb5e8dd7-8d1c-41e2-a5e4-ef4575cfd29b
+# ╟─9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
+# ╠═b3b271cb-143f-44ba-a593-80b9e6c96392
+# ╟─1d5cf6cc-745d-4a5a-80ae-b1b6c057af0b
+# ╟─c974cb9a-e1c0-4402-880c-7990d217da89
+# ╟─316b049d-698d-4d5e-9c18-73701ef8b492
 # ╠═74f4674f-dbea-44ad-8d54-9861b35139cd
 # ╟─66e30189-ae72-4ec1-b7bd-1136ddfce2ee
 # ╠═4fe0f485-2db0-4685-b5b9-e9ba6009e4a6
@@ -543,16 +603,18 @@ md"You can now replace the sea-level curve with: `sea_level = t -> sealevel_curv
 # ╠═d0bfae1a-deef-4625-a242-0a9b899bf83d
 # ╠═68ab2b1c-67fb-48f1-ac81-c7efac04d96a
 # ╟─43405e49-2739-4e79-8204-e489db6c1fd5
-# ╠═facfe3ea-5716-493a-8052-26cf6a237beb
 # ╠═ae3a74ea-f6b5-442c-973b-1cec48627968
 # ╠═8946d268-4407-4fe4-86ae-67b3a37b34be
 # ╠═0fd7ea33-ff06-4355-9278-125c8ed66df4
-# ╠═7ff4d3e4-670f-4cab-9220-d1f8471efb50
-# ╠═cf65176e-1c3f-4059-897f-de645d72cd29
-# ╠═5987c45f-bf4d-40f5-99b9-0ab9b2f25ada
-# ╠═b4d995fd-dfc4-47c0-b428-d0dfc4a606ea
-# ╠═48975f1c-55fb-4f72-a858-2f4cf301ac51
-# ╠═2d6569d2-f191-49ce-893c-7a4beaed0c96
+# ╟─a3e5f420-a59d-4725-8f8f-e5b8f06987db
+# ╠═3723832f-344c-4471-acb0-cef7d4e5ca94
+# ╠═ec4f0021-12af-4f8c-8acb-970e6820d2a4
+# ╠═7f05b817-f933-4280-b2ed-ae318a535123
+# ╟─2a24237e-5c1f-47e1-8f33-cca3ef563930
+# ╠═31e7c759-f980-4618-be90-892865751e58
+# ╠═61ae751b-0c05-4e96-8be9-3f85cb6afc51
+# ╠═329d30f1-797e-4522-9c20-e60d35079f5f
+# ╠═f550da45-1202-4f9d-9f0b-b96d5c929f58
 # ╠═4802af1d-8e60-4dc9-85b6-3f057be65336
 # ╠═6065af94-5dd4-485d-9c11-7a1360b1458c
 # ╠═1e7c85db-7161-49f3-a54d-e6eef8bf799a

@@ -1,6 +1,17 @@
 ### A Pluto.jl notebook ###
 # v0.20.3
 
+#> [frontmatter]
+#> title = "CarboKitten Tutorial"
+#> date = "2024-11-18"
+#> tags = ["geoscience", "stratigraphy"]
+#> description = "a first tutorial on working with CarboKitten and Julia"
+#> 
+#>     [[frontmatter.author]]
+#>     name = "Johan Hidding"
+#>     [[frontmatter.author]]
+#>     name = "Xianyi Liu"
+
 using Markdown
 using InteractiveUtils
 
@@ -52,6 +63,9 @@ using DataFrames
 
 # ╔═╡ 61ae751b-0c05-4e96-8be9-3f85cb6afc51
 using CSV: read as read_csv
+
+# ╔═╡ 17501c93-f432-4f1a-b815-5ac9c5a29f8f
+using CarboKitten.DataSets: miller_2020
 
 # ╔═╡ 3c4cef70-df77-46ba-b623-fd46b5500e51
 TableOfContents()
@@ -360,7 +374,7 @@ input = ALCAP.Input(
 # ╔═╡ 8946d268-4407-4fe4-86ae-67b3a37b34be
 # ╠═╡ disabled = true
 #=╠═╡
-run_model(Model{ALCAP}, input, "$(OUTPUTDIR)/tutorial2.h5")
+run_model(Model{ALCAP}, input, "$(OUTPUTDIR)/tutorial.h5")
   ╠═╡ =#
 
 # ╔═╡ 0fd7ea33-ff06-4355-9278-125c8ed66df4
@@ -410,6 +424,35 @@ let
 	fig[1,2] = Legend(fig, ax)
 	fig
 end
+
+# ╔═╡ c2166805-da62-4adf-8514-fd28924d115e
+md"""
+# Tabular Sea Level
+
+We've already seen how we can read CSV files. To make this part a bit easier, CarboKitten ships with the Cenozoic sea level dataset by Miller et al. 2020.
+"""
+
+# ╔═╡ 71f2c3ad-80ea-4678-87cf-bb95ef5b57ff
+miller_df = miller_2020()
+
+# ╔═╡ 04824ca5-3e40-40e7-8211-990c18af21e6
+let
+	fig = Figure(size=(1000,300))
+	ax = Axis(fig[1, 1]; xlabel="time (Ma BP)", ylabel="sealevel (m)")
+	
+	for ref in levels(miller_df.reference)
+		subset = miller_df[miller_df.reference .== ref,:]
+		lines!(ax, subset.time |> in_units_of(u"Myr"), subset.sealevel |> in_units_of(u"m"), label=ref)
+	end
+	fig[1, 2] = Legend(fig, ax)
+	fig
+end
+
+# ╔═╡ c0970bfe-db0a-46cc-a3e2-13e1ee78ee8e
+md"""
+!!! info "Exercise: data selection"
+	Read the above code to plot the data in Miller et al. 2020, focussing on creating a subset of the data. Use the `refkey` column to select only the data from Lisiecki et al. 2005, and store it in `lisiecki_df`.
+"""
 
 # ╔═╡ 4802af1d-8e60-4dc9-85b6-3f057be65336
 md"# Small Tasks"
@@ -615,6 +658,11 @@ md"You can now replace the sea-level curve with: `sea_level = t -> sealevel_curv
 # ╠═61ae751b-0c05-4e96-8be9-3f85cb6afc51
 # ╠═329d30f1-797e-4522-9c20-e60d35079f5f
 # ╠═f550da45-1202-4f9d-9f0b-b96d5c929f58
+# ╟─c2166805-da62-4adf-8514-fd28924d115e
+# ╠═17501c93-f432-4f1a-b815-5ac9c5a29f8f
+# ╠═71f2c3ad-80ea-4678-87cf-bb95ef5b57ff
+# ╠═04824ca5-3e40-40e7-8211-990c18af21e6
+# ╟─c0970bfe-db0a-46cc-a3e2-13e1ee78ee8e
 # ╠═4802af1d-8e60-4dc9-85b6-3f057be65336
 # ╠═6065af94-5dd4-485d-9c11-7a1360b1458c
 # ╠═1e7c85db-7161-49f3-a54d-e6eef8bf799a

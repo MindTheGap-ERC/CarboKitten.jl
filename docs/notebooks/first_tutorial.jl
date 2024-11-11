@@ -79,7 +79,7 @@ Please install Julia from the following webpage: [https://julialang.org/download
 
 We will use [Pluto](https://plutojl.org/) to do our tutorial. This is a notebook interface (similar to Jupyter) that is easy to use and has a strong focus on reproducibility.
 
-Start the Julia REPL (read-eval-print loop), either from the start menu, or in a terminal, by running `julia`. You should see a colorful welcome message and a prompt for input:
+Start the Julia REPL (read-eval-print loop), either from the start menu (on Windows), the Launchpad (on Mac), or in a terminal, by typing `julia` and pressing Enter. You should see a colorful welcome message and a prompt for input:
 """
 
 # ╔═╡ 17722d8b-baca-4f16-981f-1501c734a95f
@@ -100,7 +100,7 @@ julia>
 
 # ╔═╡ 22ec7e16-b8c0-414d-9700-52bf379e1051
 md"""
-You can install Pluto by running `using Pluto` and then answering `y` to the prompted question.
+You can install Pluto by typing `using Pluto`, pressing Enter and then answering `y` to the prompted question.
 
 ```juliarepl
 julia> using Pluto
@@ -111,7 +111,7 @@ julia> using Pluto
  └ (y/n/o) [y]: 
 ```
 
-After a while you should see the following message. Please run `Pluto.run()` to start the Pluto Notebook:
+After a while you should see the following message. Please type `Pluto.run()` and press Enter to start the Pluto Notebook:
 
 ```
 ┌ Info: 
@@ -141,16 +141,16 @@ All packages used and their versions are stored inside the notebooks. When you r
 """
 
 # ╔═╡ 68fac1d8-f402-429e-90a4-25fcfa188c2e
-md"## A first example"
+md"## Running an existing model"
 
 # ╔═╡ 002cb6d7-ee29-408f-a289-36ab913c7f85
 md"""
-### Import the example
+### Import the model definition
 """
 
 # ╔═╡ 545a6a8d-70d5-470a-a615-4305efa0ecd1
 md"""
-This is a built-in example with default parametric settings and use a simple sinusoidal curve to represent sealevel. In this example, we just aim to show you how the results look like, and how to plot your results.
+This is a built-in example model with default values of parameters. It uses a simple sinusoidal curve to represent sea level.
 """
 
 # ╔═╡ 9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
@@ -160,7 +160,24 @@ Please make sure to set the output directory to a convenient place. If you downl
 """
 
 # ╔═╡ b3b271cb-143f-44ba-a593-80b9e6c96392
-OUTPUTDIR = "../../data/output"
+OUTPUTDIR = "."
+
+# ╔═╡ 316b049d-698d-4d5e-9c18-73701ef8b492
+md"""
+!!! tip "Disabled cells"
+    The cell below is disabled because it will take a minute or so to run. Click the cell-menu at the top right of the cell to enable it.
+"""
+
+# ╔═╡ 5f1c367c-5d8a-4a8a-ad1f-f3a937c58dc1
+md"""
+### Run the model
+"""
+
+# ╔═╡ 74f4674f-dbea-44ad-8d54-9861b35139cd
+# ╠═╡ disabled = true
+#=╠═╡
+run_model(Model{ALCAP}, Example.INPUT, "$(OUTPUTDIR)/example.h5")
+  ╠═╡ =#
 
 # ╔═╡ 1d5cf6cc-745d-4a5a-80ae-b1b6c057af0b
 md"""
@@ -185,32 +202,15 @@ md"""
 	What happens if you change `name` into a number?
 """
 
-# ╔═╡ 316b049d-698d-4d5e-9c18-73701ef8b492
-md"""
-!!! tip "Disabled cells"
-    The cell below is disabled because it will take a minute or so to run. Click the cell-menu at the top right of the cell to enable it.
-"""
-
-# ╔═╡ 5f1c367c-5d8a-4a8a-ad1f-f3a937c58dc1
-md"""
-### Run the model
-"""
-
-# ╔═╡ 74f4674f-dbea-44ad-8d54-9861b35139cd
-# ╠═╡ disabled = true
-#=╠═╡
-run_model(Model{ALCAP}, Example.INPUT, "$(OUTPUTDIR)/example.h5")
-  ╠═╡ =#
-
 # ╔═╡ 66e30189-ae72-4ec1-b7bd-1136ddfce2ee
 md"""
 !!! tip "Makie"
-	We will be using [Makie](https://makie.org) to do our plotting.
+	We will be using the [Makie](https://makie.org) package to do our plotting.
 """
 
 # ╔═╡ 19da029b-8752-4177-8ba4-cc2097adec95
 md"""
-### Plot the cross-section
+### Plot a cross-section of the platform along the onshore-offshore gradient
 We can then plot the cross-section of the result by conducting the following command.
 """
 
@@ -222,12 +222,16 @@ summary_plot("$(OUTPUTDIR)/example.h5")
 
 # ╔═╡ 56765b03-9d25-49c6-9aec-75e1e32e6a43
 md"""
-The first sub-diagram on the top left shows the cross-section of the simulated carbonate-platform. Moving clockwise, the second diagram shows how it look like in 3D. The third diagram show the production rate used in this simulation. The fourth diagram shows the sea-level curve we used in this simulation. The fifth and the last diagram are the Wheeler's diagram, showing the when do sediments deposited.
+The first sub-diagram on the top left shows the cross-section of the simulated carbonate platform. 
+Moving clockwise, the second diagram shows what the platform looks like in 3D. 
+The third diagram shows the production rate used in this simulation. 
+The fourth diagram shows the sea-level curve. 
+The fifth and sixth diagrams are the chronostratigraphic (Wheeler's) diagrams, matching sediment deposition with time, colored according to sedimentation rate and dominant facies.
 """
 
 # ╔═╡ 8f883ea5-d90e-41e7-9809-3f170183a640
 md"""
-# A second example
+# Creating your own model
 
 In our second example we walk through the entire configuration. We start by defining the shape of our box. Overall, we need to define the grids (simulation box), the time (simulation time), the sea-level curve, the initial topography, the facies and the other to start the simulation.
 
@@ -239,7 +243,9 @@ box = Box{Coast}(grid_size = (50, 50), phys_scale = 300.0u"m")
 
 # ╔═╡ 5e914211-fd1f-45e0-9ecd-442d819684a2
 md"""
-There is a lot to unpack here: `Coast` indicates a box topology that is periodic in the y-direction and mirrored in the x-direction, which is ideal for simulating a strip of coast-line. Other choices could be `Periodic{2}` or `Reflected{2}`. The `grid_size` argument is the size of our box in pixels, and `phys_scale` is the size of one pixel with dimensions of length.
+There is a lot to unpack here: `Coast` indicates a box topology that is periodic in the y-direction and mirrored in the x-direction, 
+which is ideal for simulating a strip of coastline. Other choices could be `Periodic{2}` or `Reflected{2}`. 
+The `grid_size` argument is the size of our box in pixels, and `phys_scale` is the size of one pixel with units of length.
 """
 
 # ╔═╡ a39a9476-6a7f-435a-b882-36ecf618369e
@@ -272,14 +278,14 @@ time = TimeProperties(
 )
 
 # ╔═╡ a2689006-cb86-4956-999a-7adea546abdd
-md"""Notice that the Δt property was automatically coneverted to Myr, which is the unit that we use internally.
+md"""Notice that the Δt property was automatically converted to Myr, which is the unit that we use internally.
 """
 
 # ╔═╡ a81dba9b-8f12-4b72-9ea8-993d6c5e501b
 md"""
 ## Sea level
 
-Sea level is given as a function in this example. The function should take quantities of time and return a quantity of length.
+In this example, the sea level is given as a function. The function should take quantities in units of time and return a quantity in units of length.
 
 !!! tip "Functions in Julia"
 	There are several ways to define functions in Julia. The most readable is as follows:
@@ -331,11 +337,11 @@ end
 md"""
 ## Facies definitions
 
-Three biological facies are considered in this case, including:
+Three biological facies are distinguished based on sediment produced by three carbonate factories:
 
-- T(Tropical) factory (max growth rate = 500.0m/Myr)
-- M(Mounds) factory (max growth rate = 400.0m/Myr)
-- C(Cool water) factory (max growth rate = 100.0m/Myr)
+- T(Tropical) factory (max growth rate = 500.0 m/Myr)
+- M(Mounds) factory (max growth rate = 400.0 m/Myr)
+- C(Cool water) factory (max growth rate = 100.0 m/Myr)
 
 Their growth rates depend on the water depth, as parametrized by the Bosscher & Schlager 1992 model,
 
@@ -373,7 +379,7 @@ facies = [
 md"""
 ## Other parameters
 
-The subsidence rate is set to a constant 50m/Myr and insolation to 400W/m^2. The other parameters are related to the transport model.
+The subsidence rate is set to a constant 50 m/Myr and insolation to 400 $W/m^2$. The other parameters are related to the transport model.
 """
 
 # ╔═╡ ae3a74ea-f6b5-442c-973b-1cec48627968
@@ -409,7 +415,7 @@ summary_plot("$(OUTPUTDIR)/tutorial.h5")
 
 # ╔═╡ a3e5f420-a59d-4725-8f8f-e5b8f06987db
 md"""
-# Extracting CSV data
+# Extracting model output into CSV files
 
 HDF5 is a very versatile data format, and is readable from every major computational platform (e.g. MatLab, Python, R). However, sometimes you may want to process your output data further using existing tools that read CSV data.
 """
@@ -419,7 +425,7 @@ export_locations = [(10, 25), (25, 25), (40, 25)]
 
 # ╔═╡ e80aaf02-c5bf-4555-a82d-b09dcf785381
 md"""
-In this case, it exports the 10th, 25th and 40th grid in the direction towards to the deep sea. That is to say, the 10th is proximal to the land while the 40th is distal. Given that each grid is with fixed size of 150m × 150m, this suggesting we are extracting information from location: 1.5km, 3.75km and 6km away from the land. 
+In this case, it exports the 10th, 25th and 40th grid in the direction towards to the deep sea. That is to say, the 10th is proximal to the land while the 40th is distal. Given that each grid is with fixed size of 150 m × 150 m, this indicates that we are extracting information from locations at 1.5 km, 3.75 km and 6 km away from the land. 
 """
 
 # ╔═╡ 7f05b817-f933-4280-b2ed-ae318a535123
@@ -436,12 +442,12 @@ md"""
 !!! info "Exercise: Meta data"
 	Next to `:sediment_accumulation_curve` and `:age_depth_model`, we have implemented functions to extract `:stratigraphic_column` and `:metadata`.
 
-	The `:metadata` target is special, since it doesn't write to CSV but to TOML. Add the `:metadata` target to the export list and inspect the result.
+	The `:metadata` target is special, since it doesn't write to CSV but to TOML. Add the `:metadata` target to the export a list and inspect the result.
 """
 
 # ╔═╡ adf67033-5941-4be6-bb17-c0958348b905
 md"""
-## Plot the extracted data
+## Plot Age-Depth Models from extracted positions in the platform
 """
 
 # ╔═╡ e26defa5-10ff-4275-bae9-768f7fb8d9ba
@@ -451,7 +457,7 @@ We will use Package Dataframes to process the csv file, and again use Makie to v
 
 # ╔═╡ e17f35e7-8d09-4da1-880f-563bc49b364c
 md"""
-Using the follwing command to read the csv file
+Using the following command to read the csv file:
 """
 
 # ╔═╡ 329d30f1-797e-4522-9c20-e60d35079f5f
@@ -462,7 +468,7 @@ adm = read_csv("$(OUTPUTDIR)/tutorial_adm.csv", DataFrame)
 
 # ╔═╡ add6a25b-d948-4cd0-9412-56752793ca4b
 md"""
-And plot the Age-depth model:
+And plot the Age-Depth Model:
 """
 
 # ╔═╡ f550da45-1202-4f9d-9f0b-b96d5c929f58
@@ -490,7 +496,7 @@ md"""
 
 # ╔═╡ c2166805-da62-4adf-8514-fd28924d115e
 md"""
-# Tabular Sea Level
+# Running a model based on an empirical sea-level curve
 
 We've already seen how we can read CSV files. To make this part a bit easier, CarboKitten ships with the Cenozoic sea level dataset by Miller et al. 2020.
 """
@@ -541,7 +547,7 @@ miller_sea_level = linear_interpolation(miller_df.time, miller_df.sealevel);
 # ╔═╡ ca0498b0-c425-4949-b1d9-03df4067db2e
 md"""
 !!! info "Exercise: run the model"
-	Create a sea level function by interpolating the Lisiecki data set. Make sure to start the simulation at t=-2.0 Myr, for example:
+	Create a sea level function by interpolating the Lisiecki et al. data set. Make sure to start the simulation at t=-2.0 Myr, for example:
 
 	```julia
 	time = TimeProperties(
@@ -560,7 +566,7 @@ Try to plot the cross-section and adm from this simulation
 # ╔═╡ 3afb006d-b6ff-4ae7-8e60-115d98e9d562
 md"""
 !!! info "Exercise: Try to input your own sea-level curve"
-	Except the Miller's curve, can you also try another sea-level curves and run the model?
+	Aside from the curve provided by Miller et al. (2020), can you also try another sea-level curves and run the model?
 """
 
 # ╔═╡ c85294f2-3508-48c0-b67d-d82df646ae33
@@ -599,7 +605,7 @@ Unitful = "~1.21.0"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.1"
+julia_version = "1.11.0"
 manifest_format = "2.0"
 project_hash = "f5a77729b093d48a52cd4a05603888bf5f2fd325"
 

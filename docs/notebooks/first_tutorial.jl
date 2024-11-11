@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.0
+# v0.20.3
 
 #> [frontmatter]
 #> title = "CarboKitten Tutorial"
@@ -111,7 +111,7 @@ julia> using Pluto
  └ (y/n/o) [y]: 
 ```
 
-After a while you should see the following message:
+After a while you should see the following message. Please run `Pluto.run()` to start the Pluto Notebook:
 
 ```
 ┌ Info: 
@@ -132,7 +132,7 @@ You're good to go and run Pluto now!
 md"""
 ## Install CarboKitten
 
-In a Pluto notebook, Julia packages are installed by using them.
+In a Pluto notebook, Julia packages are installed by `using` them. For example, we enter `using CarboKitten` here to install CarboKitten.jl.
 """
 
 # ╔═╡ cf61bc3f-a20a-45b7-a885-22b70075fc42
@@ -143,8 +143,20 @@ All packages used and their versions are stored inside the notebooks. When you r
 # ╔═╡ 68fac1d8-f402-429e-90a4-25fcfa188c2e
 md"## A first example"
 
+# ╔═╡ 002cb6d7-ee29-408f-a289-36ab913c7f85
+md"""
+### Import the example
+"""
+
+# ╔═╡ 545a6a8d-70d5-470a-a615-4305efa0ecd1
+md"""
+This is a built-in example with default parametric settings and use a simple sinusoidal curve to represent sealevel. In this example, we just aim to show you how the results look like, and how to plot your results.
+"""
+
 # ╔═╡ 9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
-md"""Please make sure to set the output directory to a convenient place. If you downloaded this notebook to an empty directory, using `"."` would be a good choice.
+md"""
+### Set the directory to save your output
+Please make sure to set the output directory to a convenient place. If you downloaded this notebook to an empty directory, using `"."` would be a good choice.
 """
 
 # ╔═╡ b3b271cb-143f-44ba-a593-80b9e6c96392
@@ -179,6 +191,11 @@ md"""
     The cell below is disabled because it will take a minute or so to run. Click the cell-menu at the top right of the cell to enable it.
 """
 
+# ╔═╡ 5f1c367c-5d8a-4a8a-ad1f-f3a937c58dc1
+md"""
+### Run the model
+"""
+
 # ╔═╡ 74f4674f-dbea-44ad-8d54-9861b35139cd
 # ╠═╡ disabled = true
 #=╠═╡
@@ -191,17 +208,28 @@ md"""
 	We will be using [Makie](https://makie.org) to do our plotting.
 """
 
+# ╔═╡ 19da029b-8752-4177-8ba4-cc2097adec95
+md"""
+### Plot the cross-section
+We can then plot the cross-section of the result by conducting the following command.
+"""
+
 # ╔═╡ e118a117-9a00-4589-906d-c31d2057bcef
 # ╠═╡ disabled = true
 #=╠═╡
 summary_plot("$(OUTPUTDIR)/example.h5")
   ╠═╡ =#
 
+# ╔═╡ 56765b03-9d25-49c6-9aec-75e1e32e6a43
+md"""
+The first sub-diagram on the top left shows the cross-section of the simulated carbonate-platform. Moving clockwise, the second diagram shows how it look like in 3D. The third diagram show the production rate used in this simulation. The fourth diagram shows the sea-level curve we used in this simulation. The fifth and the last diagram are the Wheeler's diagram, showing the when do sediments deposited.
+"""
+
 # ╔═╡ 8f883ea5-d90e-41e7-9809-3f170183a640
 md"""
 # A second example
 
-In our second example we walk through the entire configuration. We start by defining the shape of our box.
+In our second example we walk through the entire configuration. We start by defining the shape of our box. Overall, we need to define the grids (simulation box), the time (simulation time), the sea-level curve, the initial topography, the facies and the other to start the simulation.
 
 ## Simulation box
 """
@@ -251,7 +279,7 @@ md"""Notice that the Δt property was automatically coneverted to Myr, which is 
 md"""
 ## Sea level
 
-Sea level is given as a function. The function should take quantities of time and return a quantity of length.
+Sea level is given as a function in this example. The function should take quantities of time and return a quantity of length.
 
 !!! tip "Functions in Julia"
 	There are several ways to define functions in Julia. The most readable is as follows:
@@ -389,6 +417,11 @@ HDF5 is a very versatile data format, and is readable from every major computati
 # ╔═╡ ec4f0021-12af-4f8c-8acb-970e6820d2a4
 export_locations = [(10, 25), (25, 25), (40, 25)]
 
+# ╔═╡ e80aaf02-c5bf-4555-a82d-b09dcf785381
+md"""
+In this case, it exports the 10th, 25th and 40th grid in the direction towards to the deep sea. That is to say, the 10th is proximal to the land while the 40th is distal. Given that each grid is with fixed size of 150m × 150m, this suggesting we are extracting information from location: 1.5km, 3.75km and 6km away from the land. 
+"""
+
 # ╔═╡ 7f05b817-f933-4280-b2ed-ae318a535123
 # ╠═╡ disabled = true
 #=╠═╡
@@ -406,11 +439,31 @@ md"""
 	The `:metadata` target is special, since it doesn't write to CSV but to TOML. Add the `:metadata` target to the export list and inspect the result.
 """
 
+# ╔═╡ adf67033-5941-4be6-bb17-c0958348b905
+md"""
+## Plot the extracted data
+"""
+
+# ╔═╡ e26defa5-10ff-4275-bae9-768f7fb8d9ba
+md"""
+We will use Package Dataframes to process the csv file, and again use Makie to visualise the data.
+"""
+
+# ╔═╡ e17f35e7-8d09-4da1-880f-563bc49b364c
+md"""
+Using the follwing command to read the csv file
+"""
+
 # ╔═╡ 329d30f1-797e-4522-9c20-e60d35079f5f
 # ╠═╡ disabled = true
 #=╠═╡
 adm = read_csv("$(OUTPUTDIR)/tutorial_adm.csv", DataFrame)
   ╠═╡ =#
+
+# ╔═╡ add6a25b-d948-4cd0-9412-56752793ca4b
+md"""
+And plot the Age-depth model:
+"""
 
 # ╔═╡ f550da45-1202-4f9d-9f0b-b96d5c929f58
 #=╠═╡
@@ -428,6 +481,12 @@ let
 	fig
 end
   ╠═╡ =#
+
+# ╔═╡ 100fed92-2d7f-44c3-8ad3-020638c05b5f
+md"""
+!!! info "Exercise: Try to plot the stratigraphic column"
+	Hint: use `hspan' function from GLMakie.
+"""
 
 # ╔═╡ c2166805-da62-4adf-8514-fd28924d115e
 md"""
@@ -470,7 +529,7 @@ md"""
 
 # ╔═╡ 6f60233c-739d-40d5-8c43-d30647006351
 md"""
-The `Interpolations` package has a convenient linear interpolation function. It does require input values to be sorted.
+As the observed data is not regularly sampled, we need to interpolate the dataset. The `Interpolations` package has a convenient linear interpolation function. It does require input values to be sorted.
 """
 
 # ╔═╡ 54d26634-765f-4291-8a82-34e2e6e2fa09
@@ -491,6 +550,28 @@ md"""
 		steps = 2000
 	)
 	```
+"""
+
+# ╔═╡ 0bba5c21-a764-479e-b2e7-0f93ee8e6253
+md"""
+Try to plot the cross-section and adm from this simulation
+"""
+
+# ╔═╡ 3afb006d-b6ff-4ae7-8e60-115d98e9d562
+md"""
+!!! info "Exercise: Try to input your own sea-level curve"
+	Except the Miller's curve, can you also try another sea-level curves and run the model?
+"""
+
+# ╔═╡ c85294f2-3508-48c0-b67d-d82df646ae33
+md"""
+# Task: explore how different carbonate producers would influence the shape of carbonate platform.
+
+Researchers have found different morphology of carbonate platforms. For example, some of them show a 'steep cliff' (rimmed-shelf) while some others show a 'smooth' ramp: [different types of carbonate platform](https://onlinelibrary.wiley.com/doi/full/10.1046/j.0950-091x.2001.00152.x).
+
+Different carbonate producers (i.e., T, M, C) produce carbonate with different production rate under different water-depth. Could the production rate be a key controller for the morphology of the carbonate platform? That is to say, can you vary the parameters as illustrated in section `Facies Defination` to try to produce two carbonate platforms, one with 'rimmed-shelf' and another one with ramp'?
+
+
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -2462,13 +2543,15 @@ version = "1.4.1+1"
 # ╠═ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
 # ╠═3c4cef70-df77-46ba-b623-fd46b5500e51
 # ╟─0ce8de55-3304-431d-a2aa-110b46a25c9b
-# ╟─9babc2b0-9c26-11ef-3459-0d113ec3c402
+# ╠═9babc2b0-9c26-11ef-3459-0d113ec3c402
 # ╟─17722d8b-baca-4f16-981f-1501c734a95f
-# ╟─22ec7e16-b8c0-414d-9700-52bf379e1051
+# ╠═22ec7e16-b8c0-414d-9700-52bf379e1051
 # ╟─3b7fef8b-efb9-467d-b6db-f7cfa132be69
 # ╠═bcea7127-3c21-4c35-af42-3d2c71464409
 # ╟─cf61bc3f-a20a-45b7-a885-22b70075fc42
 # ╟─68fac1d8-f402-429e-90a4-25fcfa188c2e
+# ╟─002cb6d7-ee29-408f-a289-36ab913c7f85
+# ╟─545a6a8d-70d5-470a-a615-4305efa0ecd1
 # ╠═d72d7e42-8392-44a0-a8b3-d59475be8dc7
 # ╠═325e3d04-2ff2-4c27-91bf-265820ac6763
 # ╟─9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
@@ -2476,11 +2559,14 @@ version = "1.4.1+1"
 # ╟─1d5cf6cc-745d-4a5a-80ae-b1b6c057af0b
 # ╟─c974cb9a-e1c0-4402-880c-7990d217da89
 # ╟─316b049d-698d-4d5e-9c18-73701ef8b492
+# ╟─5f1c367c-5d8a-4a8a-ad1f-f3a937c58dc1
 # ╠═74f4674f-dbea-44ad-8d54-9861b35139cd
 # ╟─66e30189-ae72-4ec1-b7bd-1136ddfce2ee
 # ╠═4fe0f485-2db0-4685-b5b9-e9ba6009e4a6
+# ╟─19da029b-8752-4177-8ba4-cc2097adec95
 # ╠═5432b762-50fa-4ac4-97e6-0477236cb94a
 # ╠═e118a117-9a00-4589-906d-c31d2057bcef
+# ╟─56765b03-9d25-49c6-9aec-75e1e32e6a43
 # ╟─8f883ea5-d90e-41e7-9809-3f170183a640
 # ╠═51f2b3db-7b2d-4d62-8c3a-6608c01bffb7
 # ╠═b6ae4907-ac04-4a37-975f-42d85d572f91
@@ -2508,12 +2594,18 @@ version = "1.4.1+1"
 # ╟─a3e5f420-a59d-4725-8f8f-e5b8f06987db
 # ╠═3723832f-344c-4471-acb0-cef7d4e5ca94
 # ╠═ec4f0021-12af-4f8c-8acb-970e6820d2a4
+# ╟─e80aaf02-c5bf-4555-a82d-b09dcf785381
 # ╠═7f05b817-f933-4280-b2ed-ae318a535123
-# ╟─2a24237e-5c1f-47e1-8f33-cca3ef563930
+# ╠═2a24237e-5c1f-47e1-8f33-cca3ef563930
+# ╟─adf67033-5941-4be6-bb17-c0958348b905
+# ╟─e26defa5-10ff-4275-bae9-768f7fb8d9ba
 # ╠═31e7c759-f980-4618-be90-892865751e58
 # ╠═61ae751b-0c05-4e96-8be9-3f85cb6afc51
+# ╟─e17f35e7-8d09-4da1-880f-563bc49b364c
 # ╠═329d30f1-797e-4522-9c20-e60d35079f5f
+# ╟─add6a25b-d948-4cd0-9412-56752793ca4b
 # ╠═f550da45-1202-4f9d-9f0b-b96d5c929f58
+# ╠═100fed92-2d7f-44c3-8ad3-020638c05b5f
 # ╟─c2166805-da62-4adf-8514-fd28924d115e
 # ╠═17501c93-f432-4f1a-b815-5ac9c5a29f8f
 # ╠═71f2c3ad-80ea-4678-87cf-bb95ef5b57ff
@@ -2525,6 +2617,9 @@ version = "1.4.1+1"
 # ╠═e2562586-d03a-4b6e-9ef6-aad012f2be9f
 # ╠═54d26634-765f-4291-8a82-34e2e6e2fa09
 # ╠═1977eab2-f277-41c4-ac00-826bafa8de4d
-# ╟─ca0498b0-c425-4949-b1d9-03df4067db2e
+# ╠═ca0498b0-c425-4949-b1d9-03df4067db2e
+# ╠═0bba5c21-a764-479e-b2e7-0f93ee8e6253
+# ╠═3afb006d-b6ff-4ae7-8e60-115d98e9d562
+# ╠═c85294f2-3508-48c0-b67d-d82df646ae33
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

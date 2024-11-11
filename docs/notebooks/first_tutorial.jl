@@ -15,8 +15,17 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
-using PlutoUI
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
 
 # ╔═╡ bcea7127-3c21-4c35-af42-3d2c71464409
 using CarboKitten
@@ -45,9 +54,6 @@ using CarboKitten.Config: TimeProperties
 # ╔═╡ 90fdaca0-2efa-4230-8af3-177a6d94639c
 using CarboKitten.Components.TimeIntegration: write_times
 
-# ╔═╡ d0bfae1a-deef-4625-a242-0a9b899bf83d
-using CarboKitten.Model.ALCAP2: Facies
-
 # ╔═╡ 3723832f-344c-4471-acb0-cef7d4e5ca94
 using CarboKitten.Export: data_export, CSV
 
@@ -57,18 +63,34 @@ using DataFrames
 # ╔═╡ 61ae751b-0c05-4e96-8be9-3f85cb6afc51
 using CSV: read as read_csv
 
+# ╔═╡ dec0cd85-bbd7-4a74-83a8-b9425e053f86
+using CarboKitten.Export: read_slice, DataSlice, DataColumn
+
+# ╔═╡ e892bc37-81d3-4b8f-9486-de0d717cd67f
+using CarboKitten.Visualization: stratigraphic_column!
+
 # ╔═╡ 17501c93-f432-4f1a-b815-5ac9c5a29f8f
 using CarboKitten.DataSets: miller_2020
 
 # ╔═╡ e2562586-d03a-4b6e-9ef6-aad012f2be9f
 using Interpolations
 
-# ╔═╡ 3c4cef70-df77-46ba-b623-fd46b5500e51
-TableOfContents()
+# ╔═╡ e1c9135e-4906-4bd1-ba9a-058f7de7d5ac
+using CarboKitten.Visualization: sediment_profile!
+
+# ╔═╡ 5eb8bf63-de51-4f4f-ba23-53e4a68e5762
+using CarboKitten.Export: age_depth_model
+
+# ╔═╡ ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
+begin
+	using PlutoUI
+	using ShortCodes
+	TableOfContents()
+end
 
 # ╔═╡ 0ce8de55-3304-431d-a2aa-110b46a25c9b
 md"""
-This CarboKitten tutorial is aimed at people that are completely new to Julia.
+This CarboKitten tutorial is aimed at people that are completely new to Julia. Please, follow the button on the top-right to download this notebook, and put it in an new directory.
 """
 
 # ╔═╡ 9babc2b0-9c26-11ef-3459-0d113ec3c402
@@ -111,7 +133,7 @@ julia> using Pluto
  └ (y/n/o) [y]: 
 ```
 
-After a while you should see the following message. Please run `Pluto.run()` to start the Pluto Notebook:
+After a while you should see the following message:
 
 ```
 ┌ Info: 
@@ -125,7 +147,13 @@ After a while you should see the following message. Please run `Pluto.run()` to 
 └ 
 ```
 
-You're good to go and run Pluto now!
+Enter `Pluto.run()` to start the Pluto, and open the notebook that you downloaded from the menu on the top-right of this page.
+"""
+
+# ╔═╡ d573309f-c99a-43e9-a89f-083ef4ade5d8
+md"""
+!!! danger "☕ Coffee time! ☕"
+	When you open the notebook and click "run", Pluto will download and compile all the needed packages. Depending on your machine this may take 5-10 minutes.
 """
 
 # ╔═╡ 3b7fef8b-efb9-467d-b6db-f7cfa132be69
@@ -155,12 +183,31 @@ This is a built-in example with default parametric settings and use a simple sin
 
 # ╔═╡ 9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
 md"""
-### Set the directory to save your output
+### Set the output directory
+
 Please make sure to set the output directory to a convenient place. If you downloaded this notebook to an empty directory, using `"."` would be a good choice.
 """
 
 # ╔═╡ b3b271cb-143f-44ba-a593-80b9e6c96392
 OUTPUTDIR = "../../data/output"
+
+# ╔═╡ 5f1c367c-5d8a-4a8a-ad1f-f3a937c58dc1
+md"""
+### Run the model
+"""
+
+# ╔═╡ 316b049d-698d-4d5e-9c18-73701ef8b492
+md"""
+!!! tip "Disabled cells"
+    The cell below is disabled because it will take a minute or so to run. Click the cell-menu at the top right of the cell to enable it.
+"""
+
+# ╔═╡ 74f4674f-dbea-44ad-8d54-9861b35139cd
+# ╠═╡ disabled = true
+#=╠═╡
+# FIXME: have `run_model` return the output filename
+run_model(Model{ALCAP}, Example.INPUT, "$(OUTPUTDIR)/example.h5")
+  ╠═╡ =#
 
 # ╔═╡ 1d5cf6cc-745d-4a5a-80ae-b1b6c057af0b
 md"""
@@ -170,48 +217,16 @@ md"""
 	After the simulation is done, we can read the HDF5 file for further analysis and visualization.
 """
 
-# ╔═╡ c974cb9a-e1c0-4402-880c-7990d217da89
-md"""
-!!! info "Example: String interpolation"
-	Notice the `"$(...)"` syntax: this is called string interpolation: the contents of the `OUTPUTDIR` variable are formatted into the resulting string. Try it out with a few examples (inside a `let` block so the variables don't leak):
-
-	```julia
-	let
-		name = "Peter"
-		"Hello, $(name)!"
-	end
-	```
-
-	What happens if you change `name` into a number?
-"""
-
-# ╔═╡ 316b049d-698d-4d5e-9c18-73701ef8b492
-md"""
-!!! tip "Disabled cells"
-    The cell below is disabled because it will take a minute or so to run. Click the cell-menu at the top right of the cell to enable it.
-"""
-
-# ╔═╡ 5f1c367c-5d8a-4a8a-ad1f-f3a937c58dc1
-md"""
-### Run the model
-"""
-
-# ╔═╡ 74f4674f-dbea-44ad-8d54-9861b35139cd
-# ╠═╡ disabled = true
-#=╠═╡
-run_model(Model{ALCAP}, Example.INPUT, "$(OUTPUTDIR)/example.h5")
-  ╠═╡ =#
-
-# ╔═╡ 66e30189-ae72-4ec1-b7bd-1136ddfce2ee
-md"""
-!!! tip "Makie"
-	We will be using [Makie](https://makie.org) to do our plotting.
-"""
-
 # ╔═╡ 19da029b-8752-4177-8ba4-cc2097adec95
 md"""
 ### Plot the cross-section
 We can then plot the cross-section of the result by conducting the following command.
+"""
+
+# ╔═╡ 66e30189-ae72-4ec1-b7bd-1136ddfce2ee
+md"""
+!!! tip "Makie"
+	We use [Makie](https://makie.org) to do our plotting. If you'd like to learn more about Makie, check their extensive documentation.
 """
 
 # ╔═╡ e118a117-9a00-4589-906d-c31d2057bcef
@@ -222,7 +237,22 @@ summary_plot("$(OUTPUTDIR)/example.h5")
 
 # ╔═╡ 56765b03-9d25-49c6-9aec-75e1e32e6a43
 md"""
-The first sub-diagram on the top left shows the cross-section of the simulated carbonate-platform. Moving clockwise, the second diagram shows how it look like in 3D. The third diagram show the production rate used in this simulation. The fourth diagram shows the sea-level curve we used in this simulation. The fifth and the last diagram are the Wheeler's diagram, showing the when do sediments deposited.
+The first sub-diagram on the top left shows the cross-section of the simulated carbonate-platform. Moving clockwise, the second diagram shows a topographic overview of the entire simulation in 3D. The third diagram show the production rate used in this simulation. The fourth diagram shows the sea-level curve we used in this simulation. On the bottom left there are two Wheeler's diagrams, one for sedimentation rate, the other showing the dominant facies type.
+"""
+
+# ╔═╡ c974cb9a-e1c0-4402-880c-7990d217da89
+md"""
+!!! info "Exercise: String interpolation"
+	Notice the `"$(...)"` syntax: this is called string interpolation: the contents of the `OUTPUTDIR` variable are formatted into the resulting string. Try it out with a few examples (inside a `let` block so the variables don't leak):
+
+	```julia
+	let
+		name = "Peter"
+		"Hello, $(name)!"
+	end
+	```
+
+	What happens if you change `name` into a number?
 """
 
 # ╔═╡ 8f883ea5-d90e-41e7-9809-3f170183a640
@@ -350,19 +380,19 @@ When we inpsect the displayed `Facies` values, we see that also the default viab
 
 # ╔═╡ 68ab2b1c-67fb-48f1-ac81-c7efac04d96a
 facies = [
-	Facies(
+	ALCAP.Facies(
 		maximum_growth_rate = 500.0u"m/Myr",
 		extinction_coefficient = 0.8u"m^-1",
 		saturation_intensity = 60.0u"W/m^2",
 		diffusion_coefficient = 500u"m"
 	),
-	Facies(
+	ALCAP.Facies(
 		maximum_growth_rate = 400.0u"m/Myr",
 		extinction_coefficient = 0.1u"m^-1",
 		saturation_intensity = 60.0u"W/m^2",
 		diffusion_coefficient = 5000u"m"
 	),
-	Facies(
+	ALCAP.Facies(
 		maximum_growth_rate = 100.0u"m/Myr",
 		extinction_coefficient = 0.005u"m^-1",
 		saturation_intensity = 60.0u"W/m^2",
@@ -407,9 +437,15 @@ run_model(Model{ALCAP}, input, "$(OUTPUTDIR)/tutorial.h5")
 summary_plot("$(OUTPUTDIR)/tutorial.h5")
   ╠═╡ =#
 
+# ╔═╡ 39e681ae-3ce4-41eb-a48a-9a42a4667183
+md"""
+!!! info "Exercise: sea level again"
+	With the `run_model` instruction above still active, modify your input sea level curve again, like you did in the previous exercise. Re-run the `summary_plot` command again to see the result.
+"""
+
 # ╔═╡ a3e5f420-a59d-4725-8f8f-e5b8f06987db
 md"""
-# Extracting CSV data
+# Post processing
 
 HDF5 is a very versatile data format, and is readable from every major computational platform (e.g. MatLab, Python, R). However, sometimes you may want to process your output data further using existing tools that read CSV data.
 """
@@ -419,7 +455,7 @@ export_locations = [(10, 25), (25, 25), (40, 25)]
 
 # ╔═╡ e80aaf02-c5bf-4555-a82d-b09dcf785381
 md"""
-In this case, it exports the 10th, 25th and 40th grid in the direction towards to the deep sea. That is to say, the 10th is proximal to the land while the 40th is distal. Given that each grid is with fixed size of 150m × 150m, this suggesting we are extracting information from location: 1.5km, 3.75km and 6km away from the land. 
+In this case, it exports the 10th, 25th and 40th grid in the direction towards to the deep sea. That is to say, the 10th is proximal to the land while the 40th is distal. Given that each grid is with fixed size of 300m × 300m, this suggesting we are extracting information from location: 3.0km, 7.5km and 12.0km away from the land. 
 """
 
 # ╔═╡ 7f05b817-f933-4280-b2ed-ae318a535123
@@ -436,12 +472,12 @@ md"""
 !!! info "Exercise: Meta data"
 	Next to `:sediment_accumulation_curve` and `:age_depth_model`, we have implemented functions to extract `:stratigraphic_column` and `:metadata`.
 
-	The `:metadata` target is special, since it doesn't write to CSV but to TOML. Add the `:metadata` target to the export list and inspect the result.
+	The `:metadata` target is special, since it doesn't write to CSV but to TOML. Add the `:stratigraphic_column` and `:metadata` targets to the export list and inspect the result.
 """
 
 # ╔═╡ adf67033-5941-4be6-bb17-c0958348b905
 md"""
-## Plot the extracted data
+## Plot the extracted Age-Depth Model
 """
 
 # ╔═╡ e26defa5-10ff-4275-bae9-768f7fb8d9ba
@@ -482,11 +518,37 @@ let
 end
   ╠═╡ =#
 
-# ╔═╡ 100fed92-2d7f-44c3-8ad3-020638c05b5f
+# ╔═╡ 64c3ce44-de95-4f7b-954d-52f743fc5033
 md"""
-!!! info "Exercise: Try to plot the stratigraphic column"
-	Hint: use `hspan' function from GLMakie.
+## Plot the stratigraphic column
 """
+
+# ╔═╡ 1c0e170b-7837-4f2c-a407-f97096c96137
+# FIXME: implement read_column function in CarboKitten proper
+
+function get_column(data::DataSlice, x)
+	y = data.slice[2]
+	DataColumn((x, y), data.disintegration[:, x, :], data.production[:, x, :], data.deposition[:, x, :], data.sediment_elevation[x, :])
+end
+
+# ╔═╡ 0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
+# ╠═╡ disabled = true
+#=╠═╡
+let
+	fig = Figure()
+
+	y = export_locations[1][2]
+	header, slice = read_slice("$(OUTPUTDIR)/tutorial.h5", :, y)
+	
+	for i = 1:3
+		ax = Axis(fig[1,i], title="location $(i)", ylabel="height (m)", xticksvisible=false, xtickformat="", width=70)
+		column = get_column(slice, export_locations[i][1])
+		stratigraphic_column!(ax, header, column)
+	end
+	
+	fig
+end
+  ╠═╡ =#
 
 # ╔═╡ c2166805-da62-4adf-8514-fd28924d115e
 md"""
@@ -550,29 +612,78 @@ md"""
 		steps = 2000
 	)
 	```
-"""
 
-# ╔═╡ 0bba5c21-a764-479e-b2e7-0f93ee8e6253
-md"""
-Try to plot the cross-section and adm from this simulation
+	Try to plot the cross-section and adm from this simulation.
 """
 
 # ╔═╡ 3afb006d-b6ff-4ae7-8e60-115d98e9d562
 md"""
-!!! info "Exercise: Try to input your own sea-level curve"
-	Except the Miller's curve, can you also try another sea-level curves and run the model?
+!!! info "Exercise: Input your own sea-level curve"
+	We've seen how to load CSV data, and how we can interpolate tabular data to create a new sea-level curve. Can you run the model using your own sea-level data?
 """
+
+# ╔═╡ 04a28420-a758-4597-a679-b675844d9c7e
+md"""
+# Interactive Exploration
+"""
+
+# ╔═╡ cfb15723-694b-4dc1-bd37-21d17074ab98
+md"""
+In Pluto we can create interactive visualizations. Sliding `y` will cause a reload of the data slices, which can be a bit slow. Sliding `x` should go a lot better.
+"""
+
+# ╔═╡ 1fc8dffe-8e56-4da9-a7e0-07793d1d0455
+@bind y PlutoUI.Slider(1:50, default=25)
+
+# ╔═╡ a3485ec5-bdf1-4577-9d31-3ea21eba6a53
+header, data_slice = read_slice("$(OUTPUTDIR)/tutorial.h5", :, y)
+
+# ╔═╡ 1d952bc7-4375-4f6b-a47a-a2b0ea915360
+@bind x PlutoUI.Slider(1:50)
+
+# ╔═╡ c820f883-fa5b-4a43-a03f-e6961dbe4001
+let
+	fig = Figure()
+	ax = Axis(fig[1, 1])
+	sediment_profile!(ax, header, data_slice)
+	vlines!(ax, header.axes.x[x] |> in_units_of(u"km"), color=:black)
+	fig
+end
+
+# ╔═╡ 5ca6c8ed-cfd1-478d-a9fe-67fb4ff2ef0f
+let
+	fig = Figure()
+	ax = Axis(fig[1, 1], title="age depth model", ylabel="height [m]", xlabel="time [Myr]")
+	column = DataColumn(
+		(x, y),
+		data_slice.disintegration[:, x, :],
+        data_slice.production[:, x, :],
+        data_slice.deposition[:, x, :],
+        data_slice.sediment_elevation[x, :])
+	adm = age_depth_model(column.sediment_elevation) |> in_units_of(u"m")
+	lines!(ax, header.axes.t |> in_units_of(u"Myr"), adm)
+
+	ax2 = Axis(fig[1, 2], title="strat. col.", width=70, xtickformat="", xticksvisible=false)
+	stratigraphic_column!(ax2, header, column)
+	fig
+end
 
 # ╔═╡ c85294f2-3508-48c0-b67d-d82df646ae33
 md"""
-# Task: explore how different carbonate producers would influence the shape of carbonate platform.
+# Task: Platform Morphology
 
-Researchers have found different morphology of carbonate platforms. For example, some of them show a 'steep cliff' (rimmed-shelf) while some others show a 'smooth' ramp: [different types of carbonate platform](https://onlinelibrary.wiley.com/doi/full/10.1046/j.0950-091x.2001.00152.x).
+Researchers have found different morphologies of carbonate platforms. For example, some of them show a 'steep cliff' (rimmed-shelf) while some others show a 'smooth' ramp. See for instance [Pomar 2001](https://onlinelibrary.wiley.com/doi/full/10.1046/j.0950-091x.2001.00152.x).
 
-Different carbonate producers (i.e., T, M, C) produce carbonate with different production rate under different water-depth. Could the production rate be a key controller for the morphology of the carbonate platform? That is to say, can you vary the parameters as illustrated in section `Facies Defination` to try to produce two carbonate platforms, one with 'rimmed-shelf' and another one with ramp'?
-
-
+Different carbonate producers (i.e., T, M, C) produce carbonate with different production rate under different water-depth. Could the production rate be a key controller for the morphology of the carbonate platform? That is to say, can you vary the parameters as illustrated in section on Facies Definitions to try to produce two carbonate platforms, one with 'rimmed-shelf' and another one with ramp'?
 """
+
+# ╔═╡ 754f7cf0-f3a7-4cff-b20e-ed16874860c7
+md"""
+# Bibliography
+"""
+
+# ╔═╡ 8fb2774b-ebfa-4e3c-8cbc-d33be2ff8af6
+[DOI("10.1046/j.0950-091x.2001.00152.x")]
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -583,6 +694,7 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+ShortCodes = "f62ebe17-55c5-4640-972f-b59c0dd11ccf"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
@@ -592,6 +704,7 @@ DataFrames = "~1.7.0"
 GLMakie = "~0.10.16"
 Interpolations = "~0.15.1"
 PlutoUI = "~0.7.60"
+ShortCodes = "~0.3.6"
 Unitful = "~1.21.0"
 """
 
@@ -601,7 +714,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.1"
 manifest_format = "2.0"
-project_hash = "f5a77729b093d48a52cd4a05603888bf5f2fd325"
+project_hash = "55f69480f7bc9df7bec9670646b8ad15bf6e8b2b"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -677,6 +790,12 @@ git-tree-sha1 = "e81c509d2c8e49592413bfb0bb3b08150056c79d"
 uuid = "27a7e980-b3e6-11e9-2bcd-0b925532e340"
 version = "0.4.1"
 
+[[deps.Aqua]]
+deps = ["Compat", "Pkg", "Test"]
+git-tree-sha1 = "49b1d7a9870c87ba13dc63f8ccfcf578cb266f95"
+uuid = "4c88cf16-eb10-579e-8560-4a9242c79595"
+version = "0.8.9"
+
 [[deps.ArgCheck]]
 git-tree-sha1 = "a3a402a35a2f7e0b87828ccabbd5ebfbebe356b4"
 uuid = "dce04be8-c92d-5529-be00-80e4d2c0e197"
@@ -685,6 +804,16 @@ version = "2.3.0"
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.2"
+
+[[deps.ArrayLayouts]]
+deps = ["FillArrays", "LinearAlgebra"]
+git-tree-sha1 = "492681bc44fac86804706ddb37da10880a2bd528"
+uuid = "4c555306-a7a7-4459-81d9-ec55ddd5c99a"
+version = "1.10.4"
+weakdeps = ["SparseArrays"]
+
+    [deps.ArrayLayouts.extensions]
+    ArrayLayoutsSparseArraysExt = "SparseArrays"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -738,6 +867,18 @@ version = "1.11.0"
 git-tree-sha1 = "aebf55e6d7795e02ca500a689d326ac979aaf89e"
 uuid = "9718e550-a3fa-408a-8086-8db961cd8217"
 version = "0.1.1"
+
+[[deps.BlockArrays]]
+deps = ["ArrayLayouts", "FillArrays", "LinearAlgebra"]
+git-tree-sha1 = "d434647f798823bcae510aee0bc0401927f64391"
+uuid = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
+version = "1.1.1"
+
+    [deps.BlockArrays.extensions]
+    BlockArraysBandedMatricesExt = "BandedMatrices"
+
+    [deps.BlockArrays.weakdeps]
+    BandedMatrices = "aae01518-5342-5314-be14-df237901396f"
 
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -824,9 +965,9 @@ version = "0.4.0"
 
 [[deps.ColorSchemes]]
 deps = ["ColorTypes", "ColorVectorSpace", "Colors", "FixedPointNumbers", "PrecompileTools", "Random"]
-git-tree-sha1 = "13951eb68769ad1cd460cdb2e64e5e95f1bf123d"
+git-tree-sha1 = "c785dfb1b3bfddd1da557e861b919819b82bbe5b"
 uuid = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
-version = "3.27.0"
+version = "3.27.1"
 
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -1197,10 +1338,10 @@ version = "0.17.2"
     MPI = "da04e1cc-30fd-572f-bb4f-1f8673147195"
 
 [[deps.HDF5_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
-git-tree-sha1 = "82a471768b513dc39e471540fdadc84ff80ff997"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LLVMOpenMP_jll", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
+git-tree-sha1 = "38c8874692d48d5440d5752d6c74b0c6b0b60739"
 uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"
-version = "1.14.3+3"
+version = "1.14.2+1"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
@@ -1216,9 +1357,9 @@ version = "2.11.2+1"
 
 [[deps.HypergeometricFunctions]]
 deps = ["LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
-git-tree-sha1 = "7c4195be1649ae622304031ed46a2f4df989f1eb"
+git-tree-sha1 = "b1c2585431c382e3fe5805874bda6aea90a95de9"
 uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
-version = "0.3.24"
+version = "0.3.25"
 
 [[deps.Hyperscript]]
 deps = ["Test"]
@@ -1251,10 +1392,10 @@ uuid = "c817782e-172a-44cc-b673-b171935fbb9e"
 version = "0.1.7"
 
 [[deps.ImageCore]]
-deps = ["ColorVectorSpace", "Colors", "FixedPointNumbers", "MappedArrays", "MosaicViews", "OffsetArrays", "PaddedViews", "PrecompileTools", "Reexport"]
-git-tree-sha1 = "b219503865f42a12ad20ea67082e0fdb69b73ad9"
+deps = ["Aqua", "BlockArrays", "ColorVectorSpace", "Colors", "FixedPointNumbers", "MappedArrays", "MosaicViews", "OffsetArrays", "PaddedViews", "PrecompileTools", "Reexport"]
+git-tree-sha1 = "661ca04f8df633e8a021c55a22e96cf820220ede"
 uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
-version = "0.10.3"
+version = "0.10.4"
 
 [[deps.ImageIO]]
 deps = ["FileIO", "IndirectArrays", "JpegTurbo", "LazyModules", "Netpbm", "OpenEXR", "PNGFiles", "QOI", "Sixel", "TiffImages", "UUIDs", "WebP"]
@@ -1403,6 +1544,18 @@ deps = ["Dates", "Mmap", "Parsers", "Unicode"]
 git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.4"
+
+[[deps.JSON3]]
+deps = ["Dates", "Mmap", "Parsers", "PrecompileTools", "StructTypes", "UUIDs"]
+git-tree-sha1 = "1d322381ef7b087548321d3f878cb4c9bd8f8f9b"
+uuid = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+version = "1.14.1"
+
+    [deps.JSON3.extensions]
+    JSON3ArrowExt = ["ArrowTypes"]
+
+    [deps.JSON3.weakdeps]
+    ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
 
 [[deps.JpegTurbo]]
 deps = ["CEnum", "FileIO", "ImageCore", "JpegTurbo_jll", "TOML"]
@@ -1637,6 +1790,12 @@ deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 version = "2.28.6+0"
 
+[[deps.Memoize]]
+deps = ["MacroTools"]
+git-tree-sha1 = "2b1dfcba103de714d31c033b5dacc2e4a12c7caa"
+uuid = "c03570c3-d221-55d1-a50c-7939bbd78826"
+version = "0.4.4"
+
 [[deps.MeshIO]]
 deps = ["ColorTypes", "FileIO", "GeometryBasics", "Printf"]
 git-tree-sha1 = "dc182956229ff16d5a4d90a562035e633bd2561d"
@@ -1740,10 +1899,10 @@ uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.1+2"
 
 [[deps.OpenMPI_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
-git-tree-sha1 = "e25c1778a98e34219a00455d6e4384e017ea9762"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML", "Zlib_jll"]
+git-tree-sha1 = "bfce6d523861a6c562721b262c0d1aaeead2647f"
 uuid = "fe0851c0-eecd-5654-98d4-656369965a5c"
-version = "4.1.6+0"
+version = "5.0.5+0"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1976,9 +2135,9 @@ version = "0.7.0"
 
 [[deps.SIMD]]
 deps = ["PrecompileTools"]
-git-tree-sha1 = "98ca7c29edd6fc79cd74c61accb7010a4e7aee33"
+git-tree-sha1 = "52af86e35dd1b177d051b12681e1c581f53c281b"
 uuid = "fdea26ae-647d-5447-a871-4b548cad5224"
-version = "3.6.0"
+version = "3.7.0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -2012,6 +2171,12 @@ version = "0.4.1"
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
 uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
 version = "1.11.0"
+
+[[deps.ShortCodes]]
+deps = ["Base64", "CodecZlib", "Downloads", "JSON3", "Memoize", "URIs", "UUIDs"]
+git-tree-sha1 = "5844ee60d9fd30a891d48bab77ac9e16791a0a57"
+uuid = "f62ebe17-55c5-4640-972f-b59c0dd11ccf"
+version = "0.3.6"
 
 [[deps.Showoff]]
 deps = ["Dates", "Grisu"]
@@ -2152,6 +2317,12 @@ version = "0.6.18"
     GPUArraysCore = "46192b85-c4d5-4398-a991-12ede77f4527"
     SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
     StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
+[[deps.StructTypes]]
+deps = ["Dates", "UUIDs"]
+git-tree-sha1 = "159331b30e94d7b11379037feeb9b690950cace8"
+uuid = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
+version = "1.11.0"
 
 [[deps.StyledStrings]]
 uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
@@ -2540,12 +2711,11 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╠═ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
-# ╠═3c4cef70-df77-46ba-b623-fd46b5500e51
 # ╟─0ce8de55-3304-431d-a2aa-110b46a25c9b
-# ╠═9babc2b0-9c26-11ef-3459-0d113ec3c402
+# ╟─9babc2b0-9c26-11ef-3459-0d113ec3c402
 # ╟─17722d8b-baca-4f16-981f-1501c734a95f
-# ╠═22ec7e16-b8c0-414d-9700-52bf379e1051
+# ╟─22ec7e16-b8c0-414d-9700-52bf379e1051
+# ╟─d573309f-c99a-43e9-a89f-083ef4ade5d8
 # ╟─3b7fef8b-efb9-467d-b6db-f7cfa132be69
 # ╠═bcea7127-3c21-4c35-af42-3d2c71464409
 # ╟─cf61bc3f-a20a-45b7-a885-22b70075fc42
@@ -2556,17 +2726,17 @@ version = "1.4.1+1"
 # ╠═325e3d04-2ff2-4c27-91bf-265820ac6763
 # ╟─9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
 # ╠═b3b271cb-143f-44ba-a593-80b9e6c96392
-# ╟─1d5cf6cc-745d-4a5a-80ae-b1b6c057af0b
-# ╟─c974cb9a-e1c0-4402-880c-7990d217da89
-# ╟─316b049d-698d-4d5e-9c18-73701ef8b492
 # ╟─5f1c367c-5d8a-4a8a-ad1f-f3a937c58dc1
+# ╟─316b049d-698d-4d5e-9c18-73701ef8b492
 # ╠═74f4674f-dbea-44ad-8d54-9861b35139cd
-# ╟─66e30189-ae72-4ec1-b7bd-1136ddfce2ee
-# ╠═4fe0f485-2db0-4685-b5b9-e9ba6009e4a6
+# ╟─1d5cf6cc-745d-4a5a-80ae-b1b6c057af0b
 # ╟─19da029b-8752-4177-8ba4-cc2097adec95
+# ╠═4fe0f485-2db0-4685-b5b9-e9ba6009e4a6
+# ╟─66e30189-ae72-4ec1-b7bd-1136ddfce2ee
 # ╠═5432b762-50fa-4ac4-97e6-0477236cb94a
 # ╠═e118a117-9a00-4589-906d-c31d2057bcef
 # ╟─56765b03-9d25-49c6-9aec-75e1e32e6a43
+# ╟─c974cb9a-e1c0-4402-880c-7990d217da89
 # ╟─8f883ea5-d90e-41e7-9809-3f170183a640
 # ╠═51f2b3db-7b2d-4d62-8c3a-6608c01bffb7
 # ╠═b6ae4907-ac04-4a37-975f-42d85d572f91
@@ -2585,19 +2755,19 @@ version = "1.4.1+1"
 # ╟─5c90b464-858a-4a5d-a2c7-fda775057ef6
 # ╠═68f2dd79-6777-4267-ae67-5167f764b7b9
 # ╟─2e168646-5b9e-437b-b0b2-d637a4beb577
-# ╠═d0bfae1a-deef-4625-a242-0a9b899bf83d
 # ╠═68ab2b1c-67fb-48f1-ac81-c7efac04d96a
 # ╟─43405e49-2739-4e79-8204-e489db6c1fd5
 # ╠═ae3a74ea-f6b5-442c-973b-1cec48627968
 # ╠═8946d268-4407-4fe4-86ae-67b3a37b34be
 # ╠═0fd7ea33-ff06-4355-9278-125c8ed66df4
+# ╟─39e681ae-3ce4-41eb-a48a-9a42a4667183
 # ╟─a3e5f420-a59d-4725-8f8f-e5b8f06987db
 # ╠═3723832f-344c-4471-acb0-cef7d4e5ca94
 # ╠═ec4f0021-12af-4f8c-8acb-970e6820d2a4
 # ╟─e80aaf02-c5bf-4555-a82d-b09dcf785381
 # ╠═7f05b817-f933-4280-b2ed-ae318a535123
-# ╠═2a24237e-5c1f-47e1-8f33-cca3ef563930
-# ╟─adf67033-5941-4be6-bb17-c0958348b905
+# ╟─2a24237e-5c1f-47e1-8f33-cca3ef563930
+# ╠═adf67033-5941-4be6-bb17-c0958348b905
 # ╟─e26defa5-10ff-4275-bae9-768f7fb8d9ba
 # ╠═31e7c759-f980-4618-be90-892865751e58
 # ╠═61ae751b-0c05-4e96-8be9-3f85cb6afc51
@@ -2605,7 +2775,11 @@ version = "1.4.1+1"
 # ╠═329d30f1-797e-4522-9c20-e60d35079f5f
 # ╟─add6a25b-d948-4cd0-9412-56752793ca4b
 # ╠═f550da45-1202-4f9d-9f0b-b96d5c929f58
-# ╠═100fed92-2d7f-44c3-8ad3-020638c05b5f
+# ╟─64c3ce44-de95-4f7b-954d-52f743fc5033
+# ╠═dec0cd85-bbd7-4a74-83a8-b9425e053f86
+# ╠═e892bc37-81d3-4b8f-9486-de0d717cd67f
+# ╠═1c0e170b-7837-4f2c-a407-f97096c96137
+# ╠═0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
 # ╟─c2166805-da62-4adf-8514-fd28924d115e
 # ╠═17501c93-f432-4f1a-b815-5ac9c5a29f8f
 # ╠═71f2c3ad-80ea-4678-87cf-bb95ef5b57ff
@@ -2617,9 +2791,20 @@ version = "1.4.1+1"
 # ╠═e2562586-d03a-4b6e-9ef6-aad012f2be9f
 # ╠═54d26634-765f-4291-8a82-34e2e6e2fa09
 # ╠═1977eab2-f277-41c4-ac00-826bafa8de4d
-# ╠═ca0498b0-c425-4949-b1d9-03df4067db2e
-# ╠═0bba5c21-a764-479e-b2e7-0f93ee8e6253
-# ╠═3afb006d-b6ff-4ae7-8e60-115d98e9d562
-# ╠═c85294f2-3508-48c0-b67d-d82df646ae33
+# ╟─ca0498b0-c425-4949-b1d9-03df4067db2e
+# ╟─3afb006d-b6ff-4ae7-8e60-115d98e9d562
+# ╟─04a28420-a758-4597-a679-b675844d9c7e
+# ╠═e1c9135e-4906-4bd1-ba9a-058f7de7d5ac
+# ╠═5eb8bf63-de51-4f4f-ba23-53e4a68e5762
+# ╟─cfb15723-694b-4dc1-bd37-21d17074ab98
+# ╠═1fc8dffe-8e56-4da9-a7e0-07793d1d0455
+# ╠═a3485ec5-bdf1-4577-9d31-3ea21eba6a53
+# ╠═1d952bc7-4375-4f6b-a47a-a2b0ea915360
+# ╟─c820f883-fa5b-4a43-a03f-e6961dbe4001
+# ╟─5ca6c8ed-cfd1-478d-a9fe-67fb4ff2ef0f
+# ╟─c85294f2-3508-48c0-b67d-d82df646ae33
+# ╟─754f7cf0-f3a7-4cff-b20e-ed16874860c7
+# ╟─8fb2774b-ebfa-4e3c-8cbc-d33be2ff8af6
+# ╟─ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

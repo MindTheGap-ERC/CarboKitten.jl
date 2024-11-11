@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/components/production.md#src/Components/Production.jl>>[init]
 @compose module Production
-@mixin WaterDepth, FaciesBase
+@mixin TimeIntegration, WaterDepth, FaciesBase
 using ..Common
 using ..WaterDepth: water_depth
 using HDF5
@@ -14,11 +14,28 @@ export production_rate, uniform_production
 end
 
 @kwdef struct Input <: AbstractInput
-    insolation::Intensity
+    insolation
+end
+
+function insolation(input::AbstractInput)
+    if input.insolation isa Quantity
+        return s -> input.insolation
+    end
+    function (s::AbstractState)
+        t = time(s)
+        return input.insolation(t)
+    end
 end
 
 function write_header(fid, input::AbstractInput)
-    attributes(fid["input"])["insolation"] = input.insolation |> in_units_of(u"W/m^2")
+    if input.insolation isa Quantity
+        fid["input"]["insolation"] = fill(input.insolation |> in_units_of(u"W/m^2"), input.time.steps + 1)
+    else
+        t = write_times(input)
+        fid["input"]["insolation"] = input.insolation.(t) |> in_units_of(u"W/m^2")
+    end
+
+    fid["input"]["insolation"] = insolation(input) |> in_units_of(u"W/m^2")
     for (i, f) in enumerate(input.facies)
         attr = attributes(fid["input/facies$(i)"])
         attr["maximum_growth_rate"] = f.maximum_growth_rate |> in_units_of(u"m/Myr")
@@ -39,10 +56,11 @@ end
 function uniform_production(input::AbstractInput)
     w = water_depth(input)
     na = [CartesianIndex()]
+    s = insolation(input)
 
     return function (state::AbstractState)
         return production_rate.(
-            input.insolation,
+            s(state),
             input.facies[:, na, na],
             w(state)[na, :, :])
     end

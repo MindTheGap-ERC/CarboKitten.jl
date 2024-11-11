@@ -22,7 +22,7 @@ module ProductionSpec
             state = initial_state(input)
             prod = uniform_production(input)(state)
             @test all(prod[1:end-1,:] .>= prod[2:end,:])
-        end     
+        end
     end
 end
 # ~/~ end

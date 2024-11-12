@@ -1,5 +1,5 @@
 # ~/~ begin <<docs/src/model-alcap.md#examples/model/alcap/run.jl>>[init]
-#| requires: src/Model/ALCAP2.jl
+#| requires: src/Model/ALCAP.jl
 #| creates: data/output/alcap-example.h5
 
 module Script
@@ -7,7 +7,7 @@ module Script
 using Unitful
 using CarboKitten.Components
 using CarboKitten.Components.Common
-using CarboKitten.Model: ALCAP2 as ALCAP
+using CarboKitten.Model: ALCAP
 using CarboKitten.Export: data_export, CSV
 
 const PATH = "data/output"

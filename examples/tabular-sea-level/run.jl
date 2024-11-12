@@ -4,7 +4,7 @@
 module TabularSeaLevel
 
 using CarboKitten
-using CarboKitten.Model: H5Writer, ALCAP2 as ALCAP
+using CarboKitten.Model: H5Writer, ALCAP
 
 using DelimitedFiles: readdlm
 using DataFrames
@@ -14,7 +14,7 @@ using CategoricalArrays
 
 # ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[init]
 using CarboKitten.Components.Common
-using CarboKitten.Model.ALCAP2
+using CarboKitten.Model.ALCAP
 # ~/~ end
 # ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[1]
 function miller_2020()
@@ -42,7 +42,7 @@ end
 # ~/~ end
 # ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[3]
 const TIME_PROPERTIES = TimeProperties(
-    t0 = -2.0u"Myr", 
+    t0 = -2.0u"Myr",
     Δt = 200.0u"yr",
     steps = 5000
 )
@@ -77,7 +77,7 @@ const FACIES = [
 
 const INPUT = ALCAP.Input(
     tag="$TAG",
-    box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TIME_PROPERTIES,
     ca_interval=1,
     bedrock_elevation=(x, y) -> -x / 200.0 - 100.0u"m",

@@ -64,7 +64,7 @@ Depth = 1
 module Common
 export @u_str, Amount, Time, Location, Rate, Intensity, Height
 export AbstractFacies, AbstractInput, AbstractState, AbstractFrame
-export Box, axes, Boundary, Shelf, Periodic, Reflected, TimeProperties
+export Box, axes, Boundary, Coast, Periodic, Reflected, TimeProperties
 export in_units_of
 export Model
 export @for_each

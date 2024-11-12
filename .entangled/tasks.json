@@ -226,7 +226,7 @@
         "data/output/alcap-example.h5"
       ],
       "requires": [
-        "src/Model/ALCAP2.jl"
+        "src/Model/ALCAP.jl"
       ],
       "runner": "julia",
       "stdout": null,

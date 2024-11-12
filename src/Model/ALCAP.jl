@@ -1,6 +1,6 @@
-# ~/~ begin <<docs/src/model-alcap.md#src/Model/ALCAP2.jl>>[init]
+# ~/~ begin <<docs/src/model-alcap.md#src/Model/ALCAP.jl>>[init]
 # FIXME: rename this to ALCAP and remove old code
-@compose module ALCAP2
+@compose module ALCAP
 @mixin Tag, H5Writer, CAProduction, ActiveLayer
 
 using ..Common
@@ -44,7 +44,7 @@ function step!(input::Input)
         active_layer = p .+ d
         sediment = transport(state, active_layer)
 
-        push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|> NoUnits) 
+        push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|> NoUnits)
         state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
         state.step += 1
 

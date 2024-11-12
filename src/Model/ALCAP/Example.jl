@@ -2,7 +2,7 @@
 module Example
 
 using Unitful
-using CarboKitten.Model: ALCAP2 as ALCAP
+using CarboKitten.Model: ALCAP
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
 

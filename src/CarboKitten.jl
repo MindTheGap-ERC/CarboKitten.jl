@@ -37,7 +37,7 @@ using CarboKitten.Components
 
 include("./Model/BS92.jl")
 include("./Model/CAP.jl")
-include("./Model/ALCAP2.jl")
+include("./Model/ALCAP.jl")
 include("./Model/WithDenudation.jl")
 end
 

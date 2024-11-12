@@ -4,7 +4,7 @@ In CarboKitten, the sea-level curve is given as a function of time. This means y
 
 ``` {.julia #tabular-sea-level}
 using CarboKitten.Components.Common
-using CarboKitten.Model.ALCAP2
+using CarboKitten.Model.ALCAP
 ```
 
 CarboKitten has convenience functions for reading tabular data, both TSV and CSV are supported.
@@ -18,7 +18,7 @@ In this example we load the sea level data compilation from Miller 2020 [Miller2
 
 ## Loading
 
-For this example we have a tab-separated data file, that is distributed with CarboKitten. However, you can have `filename` point to any tabular data on your filesystem. 
+For this example we have a tab-separated data file, that is distributed with CarboKitten. However, you can have `filename` point to any tabular data on your filesystem.
 
 You can use the `readdlm` function in `DelimitedFiles` to read most text based table formats. See the [`DataFrames` documentation](https://dataframes.juliadata.org/stable/man/importing_and_exporting/) to find out how to read from most popular data file formats.
 
@@ -48,7 +48,7 @@ levels(df.refkey)
 
 ## Interpolating
 
-There are many ways to interpolate the data we have. We will now stick to the package `Interpolations` and use the linear interpolator in there. 
+There are many ways to interpolate the data we have. We will now stick to the package `Interpolations` and use the linear interpolator in there.
 
 ``` {.julia #tabular-sea-level}
 function sea_level()
@@ -68,7 +68,7 @@ We will be running a simulation from 2 million years BA, to 1 million years BA w
 
 ``` {.julia #tabular-sea-level}
 const TIME_PROPERTIES = TimeProperties(
-    t0 = -2.0u"Myr", 
+    t0 = -2.0u"Myr",
     Δt = 200.0u"yr",
     steps = 5000
 )
@@ -109,7 +109,7 @@ const FACIES = [
 
 const INPUT = ALCAP.Input(
     tag="$TAG",
-    box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TIME_PROPERTIES,
     ca_interval=1,
     bedrock_elevation=(x, y) -> -x / 200.0 - 100.0u"m",
@@ -137,7 +137,7 @@ end
 module TabularSeaLevel
 
 using CarboKitten
-using CarboKitten.Model: H5Writer, ALCAP2 as ALCAP
+using CarboKitten.Model: H5Writer, ALCAP
 
 using DelimitedFiles: readdlm
 using DataFrames
@@ -168,7 +168,7 @@ using CarboKitten.Components.Common
 using CarboKitten.DataSets: artifact_dir
 using CarboKitten.Components.TimeIntegration: write_times
 using CarboKitten.Visualization: summary_plot
-using CarboKitten.Model: ALCAP2 as ALCAP
+using CarboKitten.Model: ALCAP
 using CarboKitten.Boxes: Box
 
 using DelimitedFiles: readdlm

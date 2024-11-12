@@ -80,7 +80,7 @@ const INPUT = ALCAP.Input(
     box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TIME_PROPERTIES,
     ca_interval=1,
-    bedrock_elevation=(x, y) -> -x / 200.0 - 100.0u"m",
+    initial_topography=(x, y) -> -x / 200.0 - 100.0u"m",
     sea_level=sea_level(),
     subsidence_rate=50.0u"m/Myr",
     disintegration_rate=50.0u"m/Myr",

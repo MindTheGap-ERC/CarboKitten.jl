@@ -22,14 +22,14 @@ const Time = typeof(1.0u"Myr")
 const na = [CartesianIndex()]
 
 elevation(h::Header, d::Data) =
-    let bl = h.bedrock_elevation[:, :, na],
+    let bl = h.initial_topography[:, :, na],
         sr = h.axes.t[end] * h.subsidence_rate
 
         bl .+ d.sediment_elevation .- sr
     end
 
 elevation(h::Header, d::DataSlice) =
-    let bl = h.bedrock_elevation[d.slice..., na],
+    let bl = h.initial_topography[d.slice..., na],
         sr = h.axes.t[end] * h.subsidence_rate
 
         bl .+ d.sediment_elevation .- sr
@@ -78,7 +78,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     hiatus = skeleton(water_depth .> 0.0u"m")
 
     total_subsidence = header.subsidence_rate * header.axes.t[end]
-    bedrock = (header.bedrock_elevation[data.slice...] .- total_subsidence) |> in_units_of(u"m")
+    bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |> in_units_of(u"m")
     lower_limit = minimum(bedrock) - 20
     band!(ax, x, lower_limit, bedrock; color=:gray)
     lines!(ax, x, bedrock; color=:black)

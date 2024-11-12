@@ -26,7 +26,7 @@ const INPUT = Input(
     sea_level = let sc = sealevel_curve()
       t -> -sc(t)
     end,
-    bedrock_elevation = (x, y) -> - x / 300.0,
+    initial_topography = (x, y) -> - x / 300.0,
     subsidence_rate = 0.0u"m/yr",
     insolation = 400.0u"W/m^2",
     facies = [Facies(

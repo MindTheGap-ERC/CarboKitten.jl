@@ -99,7 +99,7 @@ summary_plot(filename::AbstractString; kwargs...) = h5open(fid->summary_plot(fid
 function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
 	header = read_header(fid)
     y_slice = div(length(header.axes.y), 2) + 1
-    max_depth = minimum(header.bedrock_elevation)
+    max_depth = minimum(header.initial_topography)
 	data = read_slice(fid, :, y_slice)
 
 	n_facies = size(data.production)[1]
@@ -174,7 +174,7 @@ using CarboKitten.Stencil: convolution
 const na = [CartesianIndex()]
 
 elevation(h::Header, d::DataSlice) =
-    let bl = h.bedrock_elevation[d.slice..., na],
+    let bl = h.initial_topography[d.slice..., na],
         sr = h.axes.t[end] * h.subsidence_rate
 
         bl .+ d.sediment_elevation .- sr
@@ -384,14 +384,14 @@ const Time = typeof(1.0u"Myr")
 const na = [CartesianIndex()]
 
 elevation(h::Header, d::Data) =
-    let bl = h.bedrock_elevation[:, :, na],
+    let bl = h.initial_topography[:, :, na],
         sr = h.axes.t[end] * h.subsidence_rate
 
         bl .+ d.sediment_elevation .- sr
     end
 
 elevation(h::Header, d::DataSlice) =
-    let bl = h.bedrock_elevation[d.slice..., na],
+    let bl = h.initial_topography[d.slice..., na],
         sr = h.axes.t[end] * h.subsidence_rate
 
         bl .+ d.sediment_elevation .- sr
@@ -440,7 +440,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     hiatus = skeleton(water_depth .> 0.0u"m")
 
     total_subsidence = header.subsidence_rate * header.axes.t[end]
-    bedrock = (header.bedrock_elevation[data.slice...] .- total_subsidence) |> in_units_of(u"m")
+    bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |> in_units_of(u"m")
     lower_limit = minimum(bedrock) - 20
     band!(ax, x, lower_limit, bedrock; color=:gray)
     lines!(ax, x, bedrock; color=:black)
@@ -601,7 +601,7 @@ function glamour_view!(ax::Makie.Axis3, fid::HDF5.File; colormap=Reverse(:speed)
 	grid_size = (length(x), length(y))
 	steps_between = 2
 	selected_steps = [1, ((1:steps_between) .* n_steps .÷ (steps_between + 1))..., n_steps]
-	bedrock = header.bedrock_elevation .- header.axes.t[end] * header.subsidence_rate
+	bedrock = header.initial_topography .- header.axes.t[end] * header.subsidence_rate
 
 	result = Array{Float64, 3}(undef, grid_size..., length(selected_steps))
 	for (i, j) in enumerate(selected_steps)
@@ -614,7 +614,7 @@ function glamour_view!(ax::Makie.Axis3, fid::HDF5.File; colormap=Reverse(:speed)
 
 	for s in eachslice(result[:,:,2:end-1], dims=3)
 		surface!(ax, x, y, s;
-			colormap=(colormap, 0.7))		
+			colormap=(colormap, 0.7))
 	end
 
 	surface!(ax, x, y, result[:,:,end];

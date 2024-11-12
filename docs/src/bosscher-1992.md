@@ -264,7 +264,7 @@ const INPUT = Input(
     sea_level = let sc = sealevel_curve()
       t -> -sc(t)
     end,
-    bedrock_elevation = (x, y) -> - x / 300.0,
+    initial_topography = (x, y) -> - x / 300.0,
     subsidence_rate = 0.0u"m/yr",
     insolation = 400.0u"W/m^2",
     facies = [Facies(
@@ -330,7 +330,7 @@ const INPUT = BS92.Input(
         steps = 5000,
         write_interval = 1),
     sea_level = t -> 4.0u"m" * sin(2π * t / 0.2u"Myr"),
-    bedrock_elevation = (x, y) -> - x / 300.0,
+    initial_topography = (x, y) -> - x / 300.0,
     subsidence_rate = 50.0u"m/Myr",
     insolation = 400.0u"W/m^2",
     facies = FACIES)

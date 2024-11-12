@@ -42,7 +42,7 @@ transporting the active layer, returning a transported `Amount` of sediment.
 """
 function transportation(input)
     x, y = axes(input.box)
-    μ0 = input.bedrock_elevation.(x, y')
+    μ0 = input.initial_topography.(x, y')
     # We always return this array
     transported_output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
     stencils = [

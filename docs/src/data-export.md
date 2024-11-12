@@ -50,7 +50,7 @@ const HEADER1 = Header(
     write_interval=1,
     Δt=0.1u"Myr",
     time_steps=10,
-    bedrock_elevation=zeros(typeof(1.0u"m"), 3, 3),
+    initial_topography=zeros(typeof(1.0u"m"), 3, 3),
     sea_level=zeros(typeof(1.0u"m"), 10),
     subsidence_rate=10u"m/Myr")
 
@@ -252,7 +252,7 @@ function data_export(spec::CSV, header::Header, data::Data)
                     "number" => i,
                     "x" => header.axes.x[loc[1]],
                     "y" => header.axes.y[loc[2]],
-                    "bedrock_elevation" => header.bedrock_elevation[loc...])
+                    "initial_topography" => header.initial_topography[loc...])
                                 for (i, loc) in enumerate(spec.grid_locations)],
                 "files" => spec.output_files)
             open(filename, "w") do io
@@ -358,7 +358,7 @@ end
     Δt::Time
     write_interval::Int
     time_steps::Int
-    bedrock_elevation::Matrix{Amount}
+    initial_topography::Matrix{Amount}
     sea_level::Vector{Length}
     subsidence_rate::Rate
 end
@@ -400,7 +400,7 @@ function read_header(fid)
         attrs["delta_t"][] * u"Myr",
         attrs["write_interval"][],
         attrs["time_steps"][],
-        fid["input/bedrock_elevation"][] * u"m",
+        fid["input/initial_topography"][] * u"m",
         fid["input/sea_level"][] * u"m",
         attrs["subsidence_rate"][] * u"m/Myr")
 end

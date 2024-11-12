@@ -13,27 +13,27 @@ using CarboKitten.BoundaryTrait
 const PATH = "data/output"
 
 # ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]
-const TAG = "alcap-example"
+const TAG = "alcap-ramp"
 
-const FACIES = [
+const FACIES_R = [
     ALCAP.Facies(
         viability_range=(4, 10),
         activation_range=(6, 10),
-        maximum_growth_rate=500u"m/Myr",
-        extinction_coefficient=0.8u"m^-1",
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.03u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=10000u"m"),
     ALCAP.Facies(
         viability_range=(4, 10),
         activation_range=(6, 10),
-        maximum_growth_rate=400u"m/Myr",
-        extinction_coefficient=0.1u"m^-1",
+        maximum_growth_rate=80u"m/Myr",
+        extinction_coefficient=0.01u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=5000u"m"),
     ALCAP.Facies(
         viability_range=(4, 10),
         activation_range=(6, 10),
-        maximum_growth_rate=100u"m/Myr",
+        maximum_growth_rate=70u"m/Myr",
         extinction_coefficient=0.005u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=7000u"m")
@@ -57,7 +57,7 @@ const INPUT = ALCAP.Input(
     insolation=400.0u"W/m^2",
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",
-    facies=FACIES)
+    facies=FACIES_R)
 # ~/~ end
 
 function main()

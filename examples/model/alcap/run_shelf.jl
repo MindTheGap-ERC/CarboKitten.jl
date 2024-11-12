@@ -13,14 +13,14 @@ using CarboKitten.BoundaryTrait
 const PATH = "data/output"
 
 # ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]
-const TAG = "alcap-example"
+const TAG = "alcap-shelf"
 
-const FACIES = [
+const FACIES_S = [
     ALCAP.Facies(
         viability_range=(4, 10),
         activation_range=(6, 10),
-        maximum_growth_rate=500u"m/Myr",
-        extinction_coefficient=0.8u"m^-1",
+        maximum_growth_rate=800u"m/Myr",
+        extinction_coefficient=0.9u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=10000u"m"),
     ALCAP.Facies(
@@ -33,7 +33,7 @@ const FACIES = [
     ALCAP.Facies(
         viability_range=(4, 10),
         activation_range=(6, 10),
-        maximum_growth_rate=100u"m/Myr",
+        maximum_growth_rate=50u"m/Myr",
         extinction_coefficient=0.005u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=7000u"m")
@@ -57,7 +57,7 @@ const INPUT = ALCAP.Input(
     insolation=400.0u"W/m^2",
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",
-    facies=FACIES)
+    facies=FACIES_S)
 # ~/~ end
 
 function main()

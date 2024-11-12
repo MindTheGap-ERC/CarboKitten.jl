@@ -200,11 +200,11 @@ All packages used and their versions are stored inside the notebooks. When you r
 """
 
 # ╔═╡ 68fac1d8-f402-429e-90a4-25fcfa188c2e
-md"## Running an existing model"
+md"# Running an existing model"
 
 # ╔═╡ 002cb6d7-ee29-408f-a289-36ab913c7f85
 md"""
-### Import the model definition
+## Import the model definition
 """
 
 # ╔═╡ 545a6a8d-70d5-470a-a615-4305efa0ecd1
@@ -219,7 +219,7 @@ We have now imported the `ALCAP` model, which stands for **A**ctive **L**ayer, *
 
 # ╔═╡ 9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
 md"""
-### Set the output directory
+## Set the output directory
 
 Please make sure to set the output directory to a convenient place. If you downloaded this notebook to an empty directory, using `"."` would be a good choice.
 """
@@ -244,7 +244,7 @@ run_model(Model{ALCAP}, Example.INPUT, "$(OUTPUTDIR)/example.h5")
 
 # ╔═╡ 19da029b-8752-4177-8ba4-cc2097adec95
 md"""
-### Plotting a cross-section
+## Plotting a cross-section
 CarboKitten has a set of built-in visualizations. Here we plot a cross-section of the platform along the onshore-offshore gradient.
 """
 

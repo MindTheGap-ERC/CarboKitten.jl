@@ -359,8 +359,8 @@ end
 
 # ╔═╡ 30245436-9731-4cae-a150-fcba4360527e
 let
-	t = write_times(time)
-	sl = sea_level.(t)
+	t = write_times(time)   # obtain a vector of times
+	sl = sea_level.(t)	    # get sea_level for all those times
 	fig, ax = lines(t |> in_units_of(u"Myr"), sl |> in_units_of(u"m"))
 	ax.xlabel = "time [Myr]"
 	ax.ylabel = "sea level [m]"

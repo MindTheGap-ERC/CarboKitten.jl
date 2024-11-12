@@ -69,11 +69,17 @@ using CarboKitten.Export: read_slice, DataSlice, DataColumn
 # ╔═╡ e892bc37-81d3-4b8f-9486-de0d717cd67f
 using CarboKitten.Visualization: stratigraphic_column!
 
+# ╔═╡ b4df3f52-475b-4b1b-8189-4036e6c677e2
+using Printf
+
 # ╔═╡ 17501c93-f432-4f1a-b815-5ac9c5a29f8f
 using CarboKitten.DataSets: miller_2020
 
 # ╔═╡ e2562586-d03a-4b6e-9ef6-aad012f2be9f
 using Interpolations
+
+# ╔═╡ 99d20556-eefb-4597-88a3-0b61bd3cb5c8
+using CarboKitten.Boxes: axes as box_axes
 
 # ╔═╡ e1c9135e-4906-4bd1-ba9a-058f7de7d5ac
 using CarboKitten.Visualization: sediment_profile!
@@ -222,7 +228,7 @@ Please make sure to set the output directory to a convenient place. If you downl
 """
 
 # ╔═╡ b3b271cb-143f-44ba-a593-80b9e6c96392
-OUTPUTDIR = "."
+OUTPUTDIR = "../../data/output"
 
 # ╔═╡ 316b049d-698d-4d5e-9c18-73701ef8b492
 md"""
@@ -478,11 +484,11 @@ HDF5 is a very versatile data format, and is readable from every major computati
 """
 
 # ╔═╡ ec4f0021-12af-4f8c-8acb-970e6820d2a4
-export_locations = [(10, 25), (25, 25), (40, 25)]
+export_locations = [(11, 25), (26, 25), (41, 25)]
 
 # ╔═╡ e80aaf02-c5bf-4555-a82d-b09dcf785381
 md"""
-In this case, it exports the 10th, 25th and 40th grid in the direction towards to the deep sea. That is to say, the 10th is proximal to the land while the 40th is distal. Given that each grid is with fixed size of 150 m × 150 m, this indicates that we are extracting information from locations at 3 km, 7.5 km and 12 km away from the land. 
+In this case, it exports the 11th, 26th and 41th grid in the direction towards to the deep sea. That is to say, the 11th is proximal to the land while the 41th is distal. Given that each grid is with fixed size of 150 m × 150 m, this indicates that we are extracting information from locations at 3 km, 7.5 km and 12 km away from the land. 
 """
 
 # ╔═╡ 7f05b817-f933-4280-b2ed-ae318a535123
@@ -559,23 +565,22 @@ function get_column(data::DataSlice, x)
 end
 
 # ╔═╡ 0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
-# ╠═╡ disabled = true
-#=╠═╡
 let
 	fig = Figure()
 
 	y = export_locations[1][2]
 	header, slice = read_slice("$(OUTPUTDIR)/tutorial.h5", :, y)
+	(xaxis, _) = box_axes(input.box)
 	
 	for i = 1:3
-		ax = Axis(fig[1,i], title="location $(i)", ylabel="height (m)", xticksvisible=false, xtickformat="", width=70)
+		xpos = xaxis[export_locations[i][1]] |> in_units_of(u"km")
+		ax = Axis(fig[1,i], title=(@sprintf "%.1f km offshore" xpos), ylabel="height (m)", xticksvisible=false, xtickformat="", width=70)
 		column = get_column(slice, export_locations[i][1])
 		stratigraphic_column!(ax, header, column)
 	end
 	
 	fig
 end
-  ╠═╡ =#
 
 # ╔═╡ c2166805-da62-4adf-8514-fd28924d115e
 Markdown.parse("""
@@ -676,10 +681,7 @@ We load the data using the `read_slice` function from `CarboKitten.Export`. This
 """
 
 # ╔═╡ a3485ec5-bdf1-4577-9d31-3ea21eba6a53
-# ╠═╡ disabled = true
-#=╠═╡
 header, data_slice = read_slice("$(OUTPUTDIR)/tutorial.h5", :, y);
-  ╠═╡ =#
 
 # ╔═╡ fbf6306d-de6c-4581-9f19-4ac066162709
 md"""
@@ -692,22 +694,24 @@ Within this slice we can select a single stratigraphic column by setting the $x$
 x
 
 # ╔═╡ c820f883-fa5b-4a43-a03f-e6961dbe4001
-#=╠═╡
 let
 	fig = Figure()
 	ax = Axis(fig[1, 1])
+	(_, yaxis) = box_axes(input.box)
+	ypos = yaxis[y]
 	sediment_profile!(ax, header, data_slice)
-	ax.title = "sediment profile @ index y = $(y)"
+	ax.title = "sediment profile @ y = $(uconvert(u"km", ypos))"
 	vlines!(ax, header.axes.x[x] |> in_units_of(u"km"), color=:black)
 	fig
 end
-  ╠═╡ =#
 
 # ╔═╡ 5ca6c8ed-cfd1-478d-a9fe-67fb4ff2ef0f
-#=╠═╡
 let
 	fig = Figure()
-	ax = Axis(fig[1, 1], title="age depth model @ index ($(x),$(y))", ylabel="height [m]", xlabel="time [Myr]")
+	(xaxis, yaxis) = box_axes(input.box)
+	xpos = uconvert(u"km", xaxis[x])
+	ypos = uconvert(u"km", yaxis[y])
+	ax = Axis(fig[1, 1], title="age depth model @ (x = $(xpos) offshore, y = $(ypos))", ylabel="height [m]", xlabel="time [Myr]")
 	column = DataColumn(
 		(x, y),
 		data_slice.disintegration[:, x, :],
@@ -721,7 +725,6 @@ let
 	stratigraphic_column!(ax2, header, column)
 	fig
 end
-  ╠═╡ =#
 
 # ╔═╡ c85294f2-3508-48c0-b67d-d82df646ae33
 Markdown.parse("""
@@ -746,6 +749,7 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 ShortCodes = "f62ebe17-55c5-4640-972f-b59c0dd11ccf"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
@@ -766,7 +770,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.1"
 manifest_format = "2.0"
-project_hash = "55f69480f7bc9df7bec9670646b8ad15bf6e8b2b"
+project_hash = "5c4dedc8bb68df714d0cefa17828a6d49ae6b0dc"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2830,8 +2834,9 @@ version = "1.4.1+1"
 # ╟─64c3ce44-de95-4f7b-954d-52f743fc5033
 # ╠═dec0cd85-bbd7-4a74-83a8-b9425e053f86
 # ╠═e892bc37-81d3-4b8f-9486-de0d717cd67f
+# ╠═b4df3f52-475b-4b1b-8189-4036e6c677e2
 # ╠═1c0e170b-7837-4f2c-a407-f97096c96137
-# ╠═0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
+# ╟─0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
 # ╟─c2166805-da62-4adf-8514-fd28924d115e
 # ╠═17501c93-f432-4f1a-b815-5ac9c5a29f8f
 # ╠═71f2c3ad-80ea-4678-87cf-bb95ef5b57ff
@@ -2846,6 +2851,7 @@ version = "1.4.1+1"
 # ╟─ca0498b0-c425-4949-b1d9-03df4067db2e
 # ╟─3afb006d-b6ff-4ae7-8e60-115d98e9d562
 # ╟─04a28420-a758-4597-a679-b675844d9c7e
+# ╠═99d20556-eefb-4597-88a3-0b61bd3cb5c8
 # ╠═e1c9135e-4906-4bd1-ba9a-058f7de7d5ac
 # ╠═5eb8bf63-de51-4f4f-ba23-53e4a68e5762
 # ╟─cfb15723-694b-4dc1-bd37-21d17074ab98

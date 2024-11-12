@@ -9,7 +9,6 @@ using CarboKitten.Components
 using CarboKitten.Components.Common
 using CarboKitten.Model: ALCAP2 as ALCAP
 using CarboKitten.Export: data_export, CSV
-using CarboKitten.BoundaryTrait
 const PATH = "data/output"
 
 # ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]

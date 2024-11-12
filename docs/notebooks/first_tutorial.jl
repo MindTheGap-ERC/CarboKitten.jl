@@ -81,10 +81,38 @@ using CarboKitten.Visualization: sediment_profile!
 # ╔═╡ 5eb8bf63-de51-4f4f-ba23-53e4a68e5762
 using CarboKitten.Export: age_depth_model
 
+# ╔═╡ 44308ced-efd2-42fd-94ab-baa178352ed9
+begin
+	using ShortCodes
+	
+	refs = Dict(
+		:pomar2001 => DOI("10.1046/j.0950-091x.2001.00152.x"),
+		:church2017 => DOI("10.1002/2016WR019675"),
+		:burgess2013 => DOI("10.1016/j.cageo.2011.08.026"),
+		:bosscher1992 => DOI("10.1111/j.1365-3091.1992.tb02130.x"),
+		:paola1992 => DOI("10.1111/j.1365-2117.1992.tb00145.x"),
+		:miller2020 => DOI("10.1594/PANGAEA.923126"))
+
+	function cite(ref)
+		r = refs[ref]
+		authors = [strip(split(a, ",")[1]) for a in split(r.author, ";")]
+		author = if length(authors) == 1
+			authors[1]
+		elseif length(authors) == 2
+			"$(authors[1]) & $(authors[2])"
+		else
+			"$(authors[1]) et al."
+		end
+		year = r.year
+		"[$(author) ($(year))](https://doi.org/$(r.doi))"
+	end
+
+	sort(refs |> values |> collect, by=r->[r.year, r.author])
+end
+
 # ╔═╡ ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
 begin
 	using PlutoUI
-	using ShortCodes
 	TableOfContents()
 end
 
@@ -181,6 +209,11 @@ md"""
 This is a built-in example model with default values of parameters. It uses a simple sinusoidal curve to represent sea level.
 """
 
+# ╔═╡ dd4cde67-4329-4135-80d7-1c8950404349
+Markdown.parse("""
+We have now imported the `ALCAP` model, which stands for **A**ctive **L**ayer, **C**ellular **A**utomaton driven **P**roduction. This model uses the CA proposed by $(cite(:burgess2013)), production model by $(cite(:bosscher1992)) and an Active Layer diffusive transport approach (inspired on $(cite(:paola1992)), see $(cite(:church2017)) for a concise overview).
+""")
+
 # ╔═╡ 9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
 md"""
 ### Set the output directory
@@ -197,10 +230,8 @@ md"""
     The cell below is disabled because it will take a minute or so to run. Click the cell-menu at the top right of the cell to enable it.
 """
 
-# ╔═╡ 5f1c367c-5d8a-4a8a-ad1f-f3a937c58dc1
-md"""
-### Run the model
-"""
+# ╔═╡ 687e5908-03d7-44ee-a9d8-83f32cf9e447
+md"""The `run_model` command runs a model with given input and writes the output to an HDF5 file."""
 
 # ╔═╡ 74f4674f-dbea-44ad-8d54-9861b35139cd
 # ╠═╡ disabled = true
@@ -208,19 +239,10 @@ md"""
 run_model(Model{ALCAP}, Example.INPUT, "$(OUTPUTDIR)/example.h5")
   ╠═╡ =#
 
-# ╔═╡ 5f1c367c-5d8a-4a8a-ad1f-f3a937c58dc1
-
-
-# ╔═╡ 66e30189-ae72-4ec1-b7bd-1136ddfce2ee
-md"""
-!!! tip "Makie"
-	We will be using the [Makie](https://makie.org) package to do our plotting.
-"""
-
 # ╔═╡ 19da029b-8752-4177-8ba4-cc2097adec95
 md"""
-### Plot a cross-section of the platform along the onshore-offshore gradient
-We can then plot the cross-section of the result by conducting the following command.
+### Plotting a cross-section
+CarboKitten has a set of built-in visualizations. Here we plot a cross-section of the platform along the onshore-offshore gradient.
 """
 
 # ╔═╡ 66e30189-ae72-4ec1-b7bd-1136ddfce2ee
@@ -237,12 +259,7 @@ summary_plot("$(OUTPUTDIR)/example.h5")
 
 # ╔═╡ 56765b03-9d25-49c6-9aec-75e1e32e6a43
 md"""
-The first sub-diagram on the top left shows the cross-section of the simulated carbonate platform. 
-Moving clockwise, the second diagram shows what the platform looks like in 3D. 
-The third diagram shows the production rate used in this simulation. 
-The fourth diagram shows the sea level curve. 
-The fifth and sixth diagrams are the chronostratigraphic (Wheeler's) diagrams, matching sediment deposition with time, colored according to sedimentation rate and dominant facies.
-The first sub-diagram on the top left shows the cross-section of the simulated carbonate-platform. Moving clockwise, the second diagram shows a topographic overview of the entire simulation in 3D. The third diagram show the production rate used in this simulation. The fourth diagram shows the sea-level curve we used in this simulation. On the bottom left there are two Wheeler's diagrams, one for sedimentation rate, the other showing the dominant facies type.
+The first sub-diagram on the top left shows the cross-section of the simulated carbonate-platform. Moving clockwise, the second diagram shows a topographic overview of the entire simulation in 3D. The third diagram show the production rate used in this simulation. The fourth diagram shows the sea-level curve. On the bottom left there are two chronostratigraphic (Wheeler's) diagrams, one for sedimentation rate, the other showing the dominant facies type.
 """
 
 # ╔═╡ c974cb9a-e1c0-4402-880c-7990d217da89
@@ -484,12 +501,12 @@ md"""
 
 # ╔═╡ adf67033-5941-4be6-bb17-c0958348b905
 md"""
-## Plot Age-Depth Models from extracted positions in the platform
+## Plot age-depth models
 """
 
 # ╔═╡ e26defa5-10ff-4275-bae9-768f7fb8d9ba
 md"""
-We will use Package Dataframes to process the csv file, and again use Makie to visualise the data.
+We use the `DataFrames` package to process the CSV file, and again use Makie to visualise the data.
 """
 
 # ╔═╡ e17f35e7-8d09-4da1-880f-563bc49b364c
@@ -558,11 +575,11 @@ end
   ╠═╡ =#
 
 # ╔═╡ c2166805-da62-4adf-8514-fd28924d115e
-md"""
-# Running a model based on an empirical sea-level curve
+Markdown.parse("""
+# Using an empirical sea-level curve
 
-We've already seen how we can read CSV files. To make this part a bit easier, CarboKitten ships with the Cenozoic sea level dataset by Miller et al. 2020.
-"""
+We've already seen how we can read CSV files. To make this part a bit easier, CarboKitten ships with the Cenozoic sea level dataset by $(cite(:miller2020)).
+""")
 
 # ╔═╡ 71f2c3ad-80ea-4678-87cf-bb95ef5b57ff
 miller_df = miller_2020()
@@ -636,31 +653,58 @@ md"""
 
 # ╔═╡ cfb15723-694b-4dc1-bd37-21d17074ab98
 md"""
-In Pluto we can create interactive visualizations. Sliding `y` will cause a reload of the data slices, which can be a bit slow. Sliding `x` should go a lot better.
+In Pluto we can create interactive visualizations. Sliding `y` will cause a reload of the data slices, which can be a bit slow.
+
+!!! tip "Macros"
+	In Julia, the `@` character indicates the use of a macro. It's Ok not to understand: macro is a different word for magic smoke screen.
+
+	If you'd like to learn more about interactivity in notebooks, check out the [`PlutoUI` demo notebook](https://featured.plutojl.org/basic/plutoui.jl).
 """
 
 # ╔═╡ 1fc8dffe-8e56-4da9-a7e0-07793d1d0455
 @bind y PlutoUI.Slider(1:50, default=25)
 
+# ╔═╡ 8dfe7d41-2915-48b7-9866-b36ae7fe6443
+y
+
+# ╔═╡ 8e0bdea3-77a7-452f-a3ca-b2a0b5bbf5f0
+md"""
+We load the data using the `read_slice` function from `CarboKitten.Export`. This extracts a slice along the $x$-axis (onshore-offshore profile).
+"""
+
 # ╔═╡ a3485ec5-bdf1-4577-9d31-3ea21eba6a53
-header, data_slice = read_slice("$(OUTPUTDIR)/tutorial.h5", :, y)
+# ╠═╡ disabled = true
+#=╠═╡
+header, data_slice = read_slice("$(OUTPUTDIR)/tutorial.h5", :, y);
+  ╠═╡ =#
+
+# ╔═╡ fbf6306d-de6c-4581-9f19-4ac066162709
+md"""
+Within this slice we can select a single stratigraphic column by setting the $x$ coordinate."""
 
 # ╔═╡ 1d952bc7-4375-4f6b-a47a-a2b0ea915360
 @bind x PlutoUI.Slider(1:50)
 
+# ╔═╡ eb4a1b28-4ba4-4cd1-9490-e27105b19921
+x
+
 # ╔═╡ c820f883-fa5b-4a43-a03f-e6961dbe4001
+#=╠═╡
 let
 	fig = Figure()
 	ax = Axis(fig[1, 1])
 	sediment_profile!(ax, header, data_slice)
+	ax.title = "sediment profile @ index y = $(y)"
 	vlines!(ax, header.axes.x[x] |> in_units_of(u"km"), color=:black)
 	fig
 end
+  ╠═╡ =#
 
 # ╔═╡ 5ca6c8ed-cfd1-478d-a9fe-67fb4ff2ef0f
+#=╠═╡
 let
 	fig = Figure()
-	ax = Axis(fig[1, 1], title="age depth model", ylabel="height [m]", xlabel="time [Myr]")
+	ax = Axis(fig[1, 1], title="age depth model @ index ($(x),$(y))", ylabel="height [m]", xlabel="time [Myr]")
 	column = DataColumn(
 		(x, y),
 		data_slice.disintegration[:, x, :],
@@ -674,23 +718,21 @@ let
 	stratigraphic_column!(ax2, header, column)
 	fig
 end
+  ╠═╡ =#
 
 # ╔═╡ c85294f2-3508-48c0-b67d-d82df646ae33
-md"""
+Markdown.parse("""
 # Task: Platform Morphology
 
-Researchers have found different morphologies of carbonate platforms. For example, some of them show a 'steep cliff' (rimmed-shelf) while some others show a 'smooth' ramp. See for instance [Pomar 2001](https://onlinelibrary.wiley.com/doi/full/10.1046/j.0950-091x.2001.00152.x).
+Researchers have found different morphologies of carbonate platforms. For example, some of them show a 'steep cliff' (rimmed-shelf) while some others show a 'smooth' ramp. See for instance $(cite(:pomar2001)).
 
 Different carbonate producers (i.e., T, M, C) produce carbonate with different production rate under different water-depth. Could the production rate be a key controller for the morphology of the carbonate platform? That is to say, can you vary the parameters as illustrated in section on Facies Definitions to try to produce two carbonate platforms, one with 'rimmed-shelf' and another one with ramp'?
-"""
+""")
 
 # ╔═╡ 754f7cf0-f3a7-4cff-b20e-ed16874860c7
 md"""
 # Bibliography
 """
-
-# ╔═╡ 8fb2774b-ebfa-4e3c-8cbc-d33be2ff8af6
-[DOI("10.1046/j.0950-091x.2001.00152.x")]
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -719,7 +761,7 @@ Unitful = "~1.21.0"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.0"
+julia_version = "1.11.1"
 manifest_format = "2.0"
 project_hash = "55f69480f7bc9df7bec9670646b8ad15bf6e8b2b"
 
@@ -2731,15 +2773,15 @@ version = "1.4.1+1"
 # ╟─545a6a8d-70d5-470a-a615-4305efa0ecd1
 # ╠═d72d7e42-8392-44a0-a8b3-d59475be8dc7
 # ╠═325e3d04-2ff2-4c27-91bf-265820ac6763
+# ╟─dd4cde67-4329-4135-80d7-1c8950404349
 # ╟─9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
 # ╠═b3b271cb-143f-44ba-a593-80b9e6c96392
-# ╟─5f1c367c-5d8a-4a8a-ad1f-f3a937c58dc1
 # ╟─316b049d-698d-4d5e-9c18-73701ef8b492
+# ╟─687e5908-03d7-44ee-a9d8-83f32cf9e447
 # ╠═74f4674f-dbea-44ad-8d54-9861b35139cd
-# ╟─1d5cf6cc-745d-4a5a-80ae-b1b6c057af0b
 # ╟─19da029b-8752-4177-8ba4-cc2097adec95
-# ╠═4fe0f485-2db0-4685-b5b9-e9ba6009e4a6
 # ╟─66e30189-ae72-4ec1-b7bd-1136ddfce2ee
+# ╠═4fe0f485-2db0-4685-b5b9-e9ba6009e4a6
 # ╠═5432b762-50fa-4ac4-97e6-0477236cb94a
 # ╠═e118a117-9a00-4589-906d-c31d2057bcef
 # ╟─56765b03-9d25-49c6-9aec-75e1e32e6a43
@@ -2774,7 +2816,7 @@ version = "1.4.1+1"
 # ╟─e80aaf02-c5bf-4555-a82d-b09dcf785381
 # ╠═7f05b817-f933-4280-b2ed-ae318a535123
 # ╟─2a24237e-5c1f-47e1-8f33-cca3ef563930
-# ╠═adf67033-5941-4be6-bb17-c0958348b905
+# ╟─adf67033-5941-4be6-bb17-c0958348b905
 # ╟─e26defa5-10ff-4275-bae9-768f7fb8d9ba
 # ╠═31e7c759-f980-4618-be90-892865751e58
 # ╠═61ae751b-0c05-4e96-8be9-3f85cb6afc51
@@ -2805,13 +2847,17 @@ version = "1.4.1+1"
 # ╠═5eb8bf63-de51-4f4f-ba23-53e4a68e5762
 # ╟─cfb15723-694b-4dc1-bd37-21d17074ab98
 # ╠═1fc8dffe-8e56-4da9-a7e0-07793d1d0455
+# ╠═8dfe7d41-2915-48b7-9866-b36ae7fe6443
+# ╟─8e0bdea3-77a7-452f-a3ca-b2a0b5bbf5f0
 # ╠═a3485ec5-bdf1-4577-9d31-3ea21eba6a53
+# ╟─fbf6306d-de6c-4581-9f19-4ac066162709
 # ╠═1d952bc7-4375-4f6b-a47a-a2b0ea915360
+# ╠═eb4a1b28-4ba4-4cd1-9490-e27105b19921
 # ╟─c820f883-fa5b-4a43-a03f-e6961dbe4001
 # ╟─5ca6c8ed-cfd1-478d-a9fe-67fb4ff2ef0f
 # ╟─c85294f2-3508-48c0-b67d-d82df646ae33
 # ╟─754f7cf0-f3a7-4cff-b20e-ed16874860c7
-# ╟─8fb2774b-ebfa-4e3c-8cbc-d33be2ff8af6
+# ╟─44308ced-efd2-42fd-94ab-baa178352ed9
 # ╟─ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

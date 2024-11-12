@@ -67,7 +67,7 @@ We write output to HDF5.
         fid["deposition"][:, :, :, idx] = frame.deposition |> in_units_of(u"m")
     end
 
-    function run(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
+    function run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
         state = M.initial_state(input)
         step! = M.step!(input)
 
@@ -86,6 +86,8 @@ We write output to HDF5.
                 write_state(fid, w+1, state)
             end
         end
+
+        return filename
     end
 end
 ```

@@ -1,5 +1,4 @@
 # ~/~ begin <<docs/src/model-alcap.md#src/Model/ALCAP.jl>>[init]
-# FIXME: rename this to ALCAP and remove old code
 @compose module ALCAP
 @mixin Tag, H5Writer, CAProduction, ActiveLayer
 
@@ -8,7 +7,7 @@ using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
-using .H5Writer: run
+using .H5Writer: run_model
 
 export Input, Facies
 

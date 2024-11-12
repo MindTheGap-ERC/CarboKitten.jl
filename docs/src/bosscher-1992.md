@@ -241,6 +241,7 @@ end
 
 module Script
 
+using CarboKitten
 using CarboKitten.Components
 using CarboKitten.Components.Common
 using CarboKitten.Model.BS92
@@ -274,7 +275,7 @@ const INPUT = Input(
     )])
 
 function main()
-    H5Writer.run(Model{BS92}, INPUT, "data/output/bs92.h5")
+    run_model(Model{BS92}, INPUT, "data/output/bs92.h5")
 end
 
 end
@@ -302,6 +303,7 @@ Using the above implementation of the model by Bosscher and Schlager, we can run
 
 module Script
 
+using CarboKitten
 using CarboKitten.Components
 using CarboKitten.Components.Common
 using CarboKitten.Model.BS92
@@ -336,7 +338,7 @@ const INPUT = BS92.Input(
     facies = FACIES)
 
 function main()
-    H5Writer.run(Model{BS92}, INPUT, "data/output/bs92-multi-facies.h5")
+    run_model(Model{BS92}, INPUT, "data/output/bs92-multi-facies.h5")
 end
 
 end

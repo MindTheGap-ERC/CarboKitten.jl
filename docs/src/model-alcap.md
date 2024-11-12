@@ -63,6 +63,7 @@ const INPUT = ALCAP.Input(
 module Script
 
 using Unitful
+using CarboKitten
 using CarboKitten.Components
 using CarboKitten.Components.Common
 using CarboKitten.Model: ALCAP
@@ -73,7 +74,7 @@ const PATH = "data/output"
 <<alcap-example-input>>
 
 function main()
-    H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+    run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
 
     data_export(
         CSV(tuple.(10:20:70, 25),
@@ -128,7 +129,6 @@ end
 ```
 
 ``` {.julia file=src/Model/ALCAP.jl}
-# FIXME: rename this to ALCAP and remove old code
 @compose module ALCAP
 @mixin Tag, H5Writer, CAProduction, ActiveLayer
 
@@ -137,7 +137,7 @@ using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
-using .H5Writer: run
+using .H5Writer: run_model
 
 export Input, Facies
 

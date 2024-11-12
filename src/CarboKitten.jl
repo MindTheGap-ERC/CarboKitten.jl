@@ -44,6 +44,8 @@ end
 include("./Export.jl")
 include("./Visualization.jl")
 
-const run = Components.H5Writer.run
+using .Components.H5Writer: run_model
+
+export run_model
 
 end # module CarboKitten

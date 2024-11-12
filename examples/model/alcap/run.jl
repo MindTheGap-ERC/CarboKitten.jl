@@ -5,6 +5,7 @@
 module Script
 
 using Unitful
+using CarboKitten
 using CarboKitten.Components
 using CarboKitten.Components.Common
 using CarboKitten.Model: ALCAP
@@ -61,7 +62,7 @@ const INPUT = ALCAP.Input(
 # ~/~ end
 
 function main()
-    H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+    run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
 
     data_export(
         CSV(tuple.(10:20:70, 25),

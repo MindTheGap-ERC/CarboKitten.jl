@@ -58,7 +58,7 @@ const FACIES = [
 		insolation = 400.0u"W/m^2",
 		facies = FACIES)
 
-	main() = CarboKitten.run(Model{CAP}, INPUT, "data/output/cap1.h5")
+	main() = CarboKitten.run_model(Model{CAP}, INPUT, "data/output/cap1.h5")
 end
 
 Script.main()

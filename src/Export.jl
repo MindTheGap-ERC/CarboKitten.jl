@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/data-export.md#src/Export.jl>>[init]
 module Export
 
-export Data, DataSlice, DataColumn, Header, CSV, read_data, read_slice, data_export
+export Data, DataSlice, DataColumn, Header, CSV, read_data, read_slice,  read_column, data_export
 
 using HDF5
 import CSV: write as write_csv
@@ -107,10 +107,25 @@ read_slice(fid::HDF5.File, slice...) = DataSlice(
     fid["deposition"][:, slice..., :] * u"m",
     fid["sediment_height"][slice..., :] * u"m")
 
-function read_slice(filename, slice...)
+function read_slice(filename::AbstractString, slice...)
     h5open(filename) do fid
         header = read_header(fid)
         data = read_slice(fid, slice...)
+        header, data
+    end
+end
+
+read_column(fid::HDF5.File, slice...) = DataColumn(
+    slice,
+    fid["disintegration"][:, slice..., :] * u"m",
+    fid["production"][:, slice..., :] * u"m",
+    fid["deposition"][:, slice..., :] * u"m",
+    fid["sediment_height"][slice..., :] * u"m")
+
+function read_column(filename::AbstractString, slice...)
+    h5open(filename) do fid
+        header = read_header(fid)
+        data = read_column(fid, slice...)
         header, data
     end
 end

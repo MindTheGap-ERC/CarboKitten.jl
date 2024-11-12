@@ -193,5 +193,5 @@ end
 ## API
 
 ```@autodocs
-Modules = [CarboKitten.Model.ALCAP]
+Modules = [CarboKitten.Models.ALCAP]
 ```

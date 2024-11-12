@@ -117,24 +117,6 @@ end
 ## Box properties
 
 ``` {.julia #box-type}
-abstract type AbstractBox{BT} end
-
-struct Box{BT} <: AbstractBox{BT}
-    grid_size::NTuple{2,Int}
-    phys_scale::typeof(1.0u"m")
-    phys_size::Vec2
-
-    function Box{BT}(;grid_size::NTuple{2, Int}, phys_scale::Quantity{Float64, 𝐋, U}) where {BT <: Boundary{2}, U}
-        new{BT}(grid_size, phys_scale, phys_size(grid_size, phys_scale))
-    end
-end
-
-function box_axes(box::Box)
-	y_axis = (0:(box.grid_size[2] - 1)) .* box.phys_scale
-	x_axis = (0:(box.grid_size[1] - 1)) .* box.phys_scale
-	return x_axis, y_axis
-end
-
 const axes = box_axes
 
 phys_size(grid_size, phys_scale) = (
@@ -186,7 +168,9 @@ end
 module Boxes
 
 using ..BoundaryTrait
+using ..CarboKitten: AbstractBox, Box, box_axes
 using ..Vectors
+
 using Unitful
 using Unitful.DefaultSymbols
 

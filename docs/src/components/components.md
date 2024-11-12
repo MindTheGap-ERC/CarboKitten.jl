@@ -71,6 +71,7 @@ export @for_each
 
 using ModuleMixins
 using Unitful
+using ...CarboKitten: Model
 using ...BoundaryTrait
 using ...Config: TimeProperties
 using ...Boxes: Box, box_axes
@@ -87,8 +88,6 @@ abstract type AbstractFacies end
 abstract type AbstractInput end
 abstract type AbstractState end
 abstract type AbstractFrame end
-
-struct Model{M} end
 
 end
 ```

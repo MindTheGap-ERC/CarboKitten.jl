@@ -6,5 +6,5 @@
 using GLMakie
 using CarboKitten.Visualization
 
-save("docs/src/_fig/alcaps-ramp.png", summary_plot("data/output/alcap-ramp.h5"))
+save("docs/src/_fig/alcaps-alternative.png", summary_plot("data/output/alcap-example.h5"))
 # ~/~ end

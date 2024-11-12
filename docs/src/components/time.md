@@ -36,7 +36,7 @@ end
 ``` {.julia file=src/Components/TimeIntegration.jl}
 @compose module TimeIntegration
 using ..Common
-import ...CarboKitten: time_axis
+import ...CarboKitten: time_axis, n_writes
 
 using HDF5
 export time, n_writes, time_axis
@@ -62,9 +62,7 @@ write_times(input::AbstractInput) = write_times(input.time)
 write_times(time::TimeProperties) = (0:n_writes(time)) .* (time.Δt * time.write_interval) .+ time.t0
 
 time_axis(input::AbstractInput) = time_axis(input.time)
-
 n_writes(input::AbstractInput) = n_writes(input.time)
-n_writes(time::TimeProperties) = div(time.steps, time.write_interval)
 
 function write_header(fid, input::AbstractInput)
     gid = fid["input"]

@@ -54,6 +54,8 @@ number of steps between writing output.
     write_interval::Int = 1
 end
 
+n_writes(time::TimeProperties) = div(time.steps, time.write_interval)
+
 """
     time_axis(time::TimeProperties)
 

@@ -361,7 +361,10 @@ end
 let
 	t = write_times(time)
 	sl = sea_level.(t)
-	lines(t, sl)
+	fig, ax = lines(t |> in_units_of(u"Myr"), sl |> in_units_of(u"m"))
+	ax.xlabel = "time [Myr]"
+	ax.ylabel = "sea level [m]"
+	fig
 end
 
 # ╔═╡ f6776dbe-8dc5-4c01-a034-cc47d0c34e8a

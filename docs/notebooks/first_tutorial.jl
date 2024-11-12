@@ -69,9 +69,6 @@ using CarboKitten.Export: read_slice, DataSlice, DataColumn
 # ╔═╡ e892bc37-81d3-4b8f-9486-de0d717cd67f
 using CarboKitten.Visualization: stratigraphic_column!
 
-# ╔═╡ b4df3f52-475b-4b1b-8189-4036e6c677e2
-using Printf
-
 # ╔═╡ 17501c93-f432-4f1a-b815-5ac9c5a29f8f
 using CarboKitten.DataSets: miller_2020
 
@@ -228,7 +225,7 @@ Please make sure to set the output directory to a convenient place. If you downl
 """
 
 # ╔═╡ b3b271cb-143f-44ba-a593-80b9e6c96392
-OUTPUTDIR = "../../data/output"
+OUTPUTDIR = "."
 
 # ╔═╡ 316b049d-698d-4d5e-9c18-73701ef8b492
 md"""
@@ -540,10 +537,13 @@ let
 	fig = Figure()
 	time = adm[!, 1]
 
+	(xaxis, _) = box_axes(input.box)
 	ax = Axis(fig[1, 1], title="Age-Depth Model", xlabel="t [Myr]", ylabel="depth (m)")
+	
 
 	for i = 1:3
-		lines!(ax, time, adm[!, i+1], label="location $i")
+		xpos = uconvert(u"km", xaxis[export_locations[i][1]])
+		lines!(ax, time, adm[!, i+1], label="$(xpos) offshore")
 	end
 
 	fig[1,2] = Legend(fig, ax)
@@ -565,6 +565,8 @@ function get_column(data::DataSlice, x)
 end
 
 # ╔═╡ 0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
+# ╠═╡ disabled = true
+#=╠═╡
 let
 	fig = Figure()
 
@@ -573,14 +575,15 @@ let
 	(xaxis, _) = box_axes(input.box)
 	
 	for i = 1:3
-		xpos = xaxis[export_locations[i][1]] |> in_units_of(u"km")
-		ax = Axis(fig[1,i], title=(@sprintf "%.1f km offshore" xpos), ylabel="height (m)", xticksvisible=false, xtickformat="", width=70)
+		xpos = uconvert(u"km", xaxis[export_locations[i][1]])
+		ax = Axis(fig[1,i], title="$(xpos) offshore", ylabel="height (m)", xticksvisible=false, xtickformat="", width=70)
 		column = get_column(slice, export_locations[i][1])
 		stratigraphic_column!(ax, header, column)
 	end
 	
 	fig
 end
+  ╠═╡ =#
 
 # ╔═╡ c2166805-da62-4adf-8514-fd28924d115e
 Markdown.parse("""
@@ -681,7 +684,10 @@ We load the data using the `read_slice` function from `CarboKitten.Export`. This
 """
 
 # ╔═╡ a3485ec5-bdf1-4577-9d31-3ea21eba6a53
+# ╠═╡ disabled = true
+#=╠═╡
 header, data_slice = read_slice("$(OUTPUTDIR)/tutorial.h5", :, y);
+  ╠═╡ =#
 
 # ╔═╡ fbf6306d-de6c-4581-9f19-4ac066162709
 md"""
@@ -694,6 +700,7 @@ Within this slice we can select a single stratigraphic column by setting the $x$
 x
 
 # ╔═╡ c820f883-fa5b-4a43-a03f-e6961dbe4001
+#=╠═╡
 let
 	fig = Figure()
 	ax = Axis(fig[1, 1])
@@ -704,8 +711,10 @@ let
 	vlines!(ax, header.axes.x[x] |> in_units_of(u"km"), color=:black)
 	fig
 end
+  ╠═╡ =#
 
 # ╔═╡ 5ca6c8ed-cfd1-478d-a9fe-67fb4ff2ef0f
+#=╠═╡
 let
 	fig = Figure()
 	(xaxis, yaxis) = box_axes(input.box)
@@ -725,6 +734,7 @@ let
 	stratigraphic_column!(ax2, header, column)
 	fig
 end
+  ╠═╡ =#
 
 # ╔═╡ c85294f2-3508-48c0-b67d-d82df646ae33
 Markdown.parse("""
@@ -749,7 +759,6 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 ShortCodes = "f62ebe17-55c5-4640-972f-b59c0dd11ccf"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
@@ -770,7 +779,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.1"
 manifest_format = "2.0"
-project_hash = "5c4dedc8bb68df714d0cefa17828a6d49ae6b0dc"
+project_hash = "55f69480f7bc9df7bec9670646b8ad15bf6e8b2b"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2830,13 +2839,12 @@ version = "1.4.1+1"
 # ╟─e17f35e7-8d09-4da1-880f-563bc49b364c
 # ╠═329d30f1-797e-4522-9c20-e60d35079f5f
 # ╟─add6a25b-d948-4cd0-9412-56752793ca4b
-# ╠═f550da45-1202-4f9d-9f0b-b96d5c929f58
+# ╟─f550da45-1202-4f9d-9f0b-b96d5c929f58
 # ╟─64c3ce44-de95-4f7b-954d-52f743fc5033
 # ╠═dec0cd85-bbd7-4a74-83a8-b9425e053f86
 # ╠═e892bc37-81d3-4b8f-9486-de0d717cd67f
-# ╠═b4df3f52-475b-4b1b-8189-4036e6c677e2
 # ╠═1c0e170b-7837-4f2c-a407-f97096c96137
-# ╟─0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
+# ╠═0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
 # ╟─c2166805-da62-4adf-8514-fd28924d115e
 # ╠═17501c93-f432-4f1a-b815-5ac9c5a29f8f
 # ╠═71f2c3ad-80ea-4678-87cf-bb95ef5b57ff

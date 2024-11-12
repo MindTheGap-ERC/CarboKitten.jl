@@ -48,7 +48,7 @@
         "docs/src/_fig/wheeler_diagram.png"
       ],
       "requires": [
-        "data/output/alcap2.h5"
+        "data/output/alcap-example.h5"
       ],
       "runner": "julia",
       "stdout": null,
@@ -62,7 +62,7 @@
         "docs/src/_fig/production_curve.svg"
       ],
       "requires": [
-        "data/output/alcap2.h5"
+        "data/output/alcap-example.h5"
       ],
       "runner": "julia",
       "stdout": null,
@@ -76,7 +76,7 @@
         "docs/src/_fig/sediment_profile.png"
       ],
       "requires": [
-        "data/output/alcap2.h5"
+        "data/output/alcap-example.h5"
       ],
       "runner": "julia",
       "stdout": null,

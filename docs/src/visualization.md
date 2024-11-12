@@ -139,7 +139,7 @@ end
 
 ``` {.julia .task file=examples/visualization/wheeler_diagram.jl}
 #| creates: docs/src/_fig/wheeler_diagram.png
-#| requires: data/output/alcap2.h5
+#| requires: data/output/alcap-example.h5
 #| collect: figures
 
 module Script
@@ -149,7 +149,7 @@ using CarboKitten.Export: read_slice
 using CarboKitten.Visualization: wheeler_diagram
 
 function main()
-  header, data = read_slice("data/output/alcap2.h5", :, 25)
+  header, data = read_slice("data/output/alcap-example.h5", :, 25)
   fig = wheeler_diagram(header, data)
   save("docs/src/_fig/wheeler_diagram.png", fig)
 end
@@ -271,13 +271,13 @@ end
 
 ``` {.julia .task file=examples/visualization/production_curve.jl}
 #| creates: docs/src/_fig/production_curve.svg
-#| requires: data/output/alcap2.h5
+#| requires: data/output/alcap-example.h5
 #| collect: figures
 
 using CairoMakie
 using CarboKitten.Visualization: production_curve
 
-save("docs/src/_fig/production_curve.svg", production_curve("data/output/alcap2.h5"))
+save("docs/src/_fig/production_curve.svg", production_curve("data/output/alcap-example.h5"))
 ```
 
 ``` {.julia file=ext/ProductionCurve.jl}
@@ -349,7 +349,7 @@ end
 
 ``` {.julia .task file=examples/visualization/sediment_profile.jl}
 #| creates: docs/src/_fig/sediment_profile.png
-#| requires: data/output/alcap2.h5
+#| requires: data/output/alcap-example.h5
 #| collect: figures
 
 using CairoMakie
@@ -357,7 +357,7 @@ using CarboKitten.Export: read_slice
 using CarboKitten.Visualization: sediment_profile
 
 save("docs/src/_fig/sediment_profile.png",
-    sediment_profile(read_slice("data/output/alcap2.h5", :, 25)...))
+    sediment_profile(read_slice("data/output/alcap-example.h5", :, 25)...))
 ```
 
 ```{.julia file=ext/SedimentProfile.jl}

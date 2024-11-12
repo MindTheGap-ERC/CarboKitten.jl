@@ -33,7 +33,7 @@ end
 @compose module TimeIntegration
 using ..Common
 using HDF5
-export time, n_writes
+export time, n_writes, time_axis
 
 @kwdef struct Input <: AbstractInput
     time::TimeProperties
@@ -49,6 +49,9 @@ time(input::AbstractInput, state::AbstractState) = input.time.t0 + state.step * 
 
 write_times(input::AbstractInput) = write_times(input.time)
 write_times(time::TimeProperties) = (0:n_writes(time)) .* (time.Δt * time.write_interval) .+ time.t0
+
+time_axis(input::AbstractInput) = time_axis(input.time)
+time_axis(time::TimeProperties) = (0:n_writes(time)) .* (time.Δt * time.write_interval) .+ time.t0
 
 n_writes(input::AbstractInput) = n_writes(input.time)
 n_writes(time::TimeProperties) = div(time.steps, time.write_interval)

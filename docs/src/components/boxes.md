@@ -129,11 +129,13 @@ struct Box{BT} <: AbstractBox{BT}
     end
 end
 
-function axes(box::Box)
+function box_axes(box::Box)
 	y_axis = (0:(box.grid_size[2] - 1)) .* box.phys_scale
 	x_axis = (0:(box.grid_size[1] - 1)) .* box.phys_scale
 	return x_axis, y_axis
 end
+
+const axes = box_axes
 
 phys_size(grid_size, phys_scale) = (
     x = grid_size[1] * (phys_scale / m |> NoUnits),
@@ -188,7 +190,7 @@ using ..Vectors
 using Unitful
 using Unitful.DefaultSymbols
 
-export AbstractBox, Box, axes
+export AbstractBox, Box, box_axes
 
 <<box-type>>
 <<vector-offset>>
@@ -221,7 +223,7 @@ using ..Common
 end
 
 function write_header(fid, input::AbstractInput)
-    x, y = Common.axes(input.box)
+    x, y = box_axes(input.box)
 
     gid = fid["input"]
     gid["x"] = collect(x) |> in_units_of(u"m")

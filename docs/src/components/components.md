@@ -64,17 +64,17 @@ Depth = 1
 module Common
 export @u_str, Amount, Time, Location, Rate, Intensity, Height
 export AbstractFacies, AbstractInput, AbstractState, AbstractFrame
-export Box, axes, Boundary, Coast, Periodic, Reflected, TimeProperties
+export Box, box_axes, Boundary, Coast, Periodic, Reflected, TimeProperties
 export in_units_of
 export Model
 export @for_each
 
 using ModuleMixins
 using Unitful
-using CarboKitten.BoundaryTrait
-using CarboKitten.Config: TimeProperties
-using CarboKitten.Boxes: Box, axes
-using CarboKitten.Utility: in_units_of
+using ...BoundaryTrait
+using ...Config: TimeProperties
+using ...Boxes: Box, box_axes
+using ...Utility: in_units_of
 
 const Amount = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")

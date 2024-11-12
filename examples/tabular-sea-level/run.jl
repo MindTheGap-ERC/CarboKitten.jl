@@ -4,7 +4,6 @@
 module TabularSeaLevel
 
 using CarboKitten
-using CarboKitten.Model: H5Writer, ALCAP
 
 using DelimitedFiles: readdlm
 using DataFrames
@@ -13,8 +12,6 @@ using Interpolations
 using CategoricalArrays
 
 # ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[init]
-using CarboKitten.Components.Common
-using CarboKitten.Model.ALCAP
 # ~/~ end
 # ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[1]
 function miller_2020()
@@ -90,8 +87,7 @@ const INPUT = ALCAP.Input(
     facies=FACIES)
 
 function main()
-    CarboKitten.init()
-    H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+    run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
 end
 # ~/~ end
 

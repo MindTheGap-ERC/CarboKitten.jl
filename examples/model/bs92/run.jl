@@ -4,9 +4,6 @@
 module Script
 
 using CarboKitten
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model.BS92
 using CarboKitten.DataSets: bosscher_schlager_1992
 
 using Interpolations
@@ -17,9 +14,9 @@ function sealevel_curve()
     linear_interpolation(data.time, data.sealevel)
 end
 
-const INPUT = Input(
+const INPUT = BS92.Input(
     tag = "example model BS92",
-    box = Common.Box{Shelf}(grid_size=(100, 1), phys_scale=600.0u"m"),
+    box = Box{Coast}(grid_size=(100, 1), phys_scale=600.0u"m"),
     time = TimeProperties(
       Δt = 10.0u"yr",
       steps = 8000,
@@ -30,7 +27,7 @@ const INPUT = Input(
     initial_topography = (x, y) -> - x / 300.0,
     subsidence_rate = 0.0u"m/yr",
     insolation = 400.0u"W/m^2",
-    facies = [Facies(
+    facies = [BS92.Facies(
       maximum_growth_rate = 0.005u"m/yr",
       saturation_intensity = 50.0u"W/m^2",
       extinction_coefficient = 0.05u"m^-1"

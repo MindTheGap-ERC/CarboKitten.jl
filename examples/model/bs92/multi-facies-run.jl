@@ -4,11 +4,6 @@
 module Script
 
 using CarboKitten
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model.BS92
-
-using Unitful
 
 const FACIES = [
     BS92.Facies(
@@ -26,7 +21,7 @@ const FACIES = [
 
 const INPUT = BS92.Input(
     tag = "example model BS92",
-    box = Common.Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),
+    box = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
     time = TimeProperties(
         Δt = 200.0u"yr",
         steps = 5000,

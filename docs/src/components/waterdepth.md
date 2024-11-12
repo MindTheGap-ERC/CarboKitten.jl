@@ -23,7 +23,6 @@ saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation p
 @mixin TimeIntegration, Boxes
 using ..Common
 using HDF5
-using CarboKitten.Boxes: axes
 
 export water_depth
 
@@ -42,7 +41,7 @@ function initial_state(input::AbstractInput)
 end
 
 function water_depth(input::AbstractInput)
-    x, y = axes(input.box)
+    x, y = box_axes(input.box)
     eta0 = input.initial_topography.(x, y')
 
     return function (state::AbstractState)
@@ -55,7 +54,7 @@ end
 function write_header(fid, input::AbstractInput)
     gid = fid["input"]
     attr = attributes(gid)
-    x, y = Common.axes(input.box)
+    x, y = box_axes(input.box)
     t = TimeIntegration.write_times(input)
 
     gid["initial_topography"] = input.initial_topography.(x, y') |> in_units_of(u"m")

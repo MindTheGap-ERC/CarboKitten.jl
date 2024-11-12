@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/model-alcap.md#src/Model/ALCAP.jl>>[init]
+# ~/~ begin <<docs/src/model-alcap.md#src/Models/ALCAP.jl>>[init]
 @compose module ALCAP
 @mixin Tag, H5Writer, CAProduction, ActiveLayer
 

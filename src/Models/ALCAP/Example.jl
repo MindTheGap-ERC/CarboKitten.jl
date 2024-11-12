@@ -1,8 +1,8 @@
-# ~/~ begin <<docs/src/model-alcap.md#src/Model/ALCAP/Example.jl>>[init]
+# ~/~ begin <<docs/src/model-alcap.md#src/Models/ALCAP/Example.jl>>[init]
 module Example
 
 using Unitful
-using CarboKitten.Model: ALCAP
+using ..ALCAP: ALCAP
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
 

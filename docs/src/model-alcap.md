@@ -57,16 +57,13 @@ const INPUT = ALCAP.Input(
 ```
 
 ``` {.julia .task file=examples/model/alcap/run.jl}
-#| requires: src/Model/ALCAP.jl
+#| requires: src/Models/ALCAP.jl
 #| creates: data/output/alcap-example.h5
 
 module Script
 
 using Unitful
 using CarboKitten
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model: ALCAP
 using CarboKitten.Export: data_export, CSV
 
 const PATH = "data/output"
@@ -112,14 +109,14 @@ save("docs/src/_fig/alcaps-alternative.png", summary_plot("data/output/alcap-exa
 ## Modular Implementation
 
 ```component-dag
-CarboKitten.Model.ALCAP
+CarboKitten.Models.ALCAP
 ```
 
-``` {.julia file=src/Model/ALCAP/Example.jl}
+``` {.julia file=src/Models/ALCAP/Example.jl}
 module Example
 
 using Unitful
-using CarboKitten.Model: ALCAP
+using ..ALCAP: ALCAP
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
 
@@ -128,7 +125,7 @@ using CarboKitten.Config: TimeProperties
 end
 ```
 
-``` {.julia file=src/Model/ALCAP.jl}
+``` {.julia file=src/Models/ALCAP.jl}
 @compose module ALCAP
 @mixin Tag, H5Writer, CAProduction, ActiveLayer
 

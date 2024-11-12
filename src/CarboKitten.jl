@@ -30,22 +30,30 @@ end
 
 include("./Components.jl")
 
-module Model
+module Models
 using ModuleMixins: @compose
 using CarboKitten.Components.Common
 using CarboKitten.Components
 
-include("./Model/BS92.jl")
-include("./Model/CAP.jl")
-include("./Model/ALCAP.jl")
-include("./Model/WithDenudation.jl")
+include("./Models/BS92.jl")
+include("./Models/CAP.jl")
+include("./Models/ALCAP.jl")
+include("./Models/WithDenudation.jl")
 end
 
 include("./Export.jl")
 include("./Visualization.jl")
 
 using .Components.H5Writer: run_model
+using .Boxes: Box, box_axes
+using .Config: TimeProperties
+using .Components.TimeIntegration: TimeProperties, time_axis
+using .Components.Common: Model, in_units_of, @u_str
+using .Models: BS92, CAP, ALCAP
+using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 
-export run_model
+export run_model, Box, box_axes, TimeProperties, time_axis,
+       Model, BS92, CAP, ALCAP, in_units_of, @u_str,
+       Boundary, Coast, Periodic, Reflected
 
 end # module CarboKitten

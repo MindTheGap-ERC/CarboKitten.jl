@@ -3,8 +3,7 @@
 In CarboKitten, the sea-level curve is given as a function of time. This means you can generate sea levels automatically, or if you like interpolate them on a table. In this demo, we show how we can read values from a file and interpolate those for input into the CarboKitten ALCAP model.
 
 ``` {.julia #tabular-sea-level}
-using CarboKitten.Components.Common
-using CarboKitten.Model.ALCAP
+
 ```
 
 CarboKitten has convenience functions for reading tabular data, both TSV and CSV are supported.
@@ -109,7 +108,7 @@ const FACIES = [
 
 const INPUT = ALCAP.Input(
     tag="$TAG",
-    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    box=CarboKitten.Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TIME_PROPERTIES,
     ca_interval=1,
     initial_topography=(x, y) -> -x / 200.0 - 100.0u"m",
@@ -122,8 +121,7 @@ const INPUT = ALCAP.Input(
     facies=FACIES)
 
 function main()
-    CarboKitten.init()
-    H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+    run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
 end
 ```
 
@@ -137,7 +135,6 @@ end
 module TabularSeaLevel
 
 using CarboKitten
-using CarboKitten.Model: H5Writer, ALCAP
 
 using DelimitedFiles: readdlm
 using DataFrames
@@ -164,12 +161,9 @@ TabularSeaLevel.main()
 
 module PlotTabularSeaLevel
 
-using CarboKitten.Components.Common
+using CarboKitten
 using CarboKitten.DataSets: artifact_dir
-using CarboKitten.Components.TimeIntegration: write_times
 using CarboKitten.Visualization: summary_plot
-using CarboKitten.Model: ALCAP
-using CarboKitten.Boxes: Box
 
 using DelimitedFiles: readdlm
 using CairoMakie
@@ -206,7 +200,7 @@ function plot_lisiecki_data()
     ax = Axis(fig[1, 1]; xlabel="time (Ma BP)", ylabel="sealevel (m)", limits=((-2.2, -0.8), nothing))
 
 
-    times = write_times(TIME_PROPERTIES)
+    times = time_axis(TIME_PROPERTIES)
     lines!(ax, times |> in_units_of(u"Myr"), sl.(times) |> in_units_of(u"m"), label="interpolated sealevel", color=Makie.wong_colors()[2])
 
     scatter!(ax, lisiecki_df.time |> in_units_of(u"Myr"), lisiecki_df.sealevel |> in_units_of(u"m"), label="Lisiecki data")

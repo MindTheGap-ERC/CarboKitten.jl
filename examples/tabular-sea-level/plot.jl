@@ -8,12 +8,9 @@
 
 module PlotTabularSeaLevel
 
-using CarboKitten.Components.Common
+using CarboKitten
 using CarboKitten.DataSets: artifact_dir
-using CarboKitten.Components.TimeIntegration: write_times
 using CarboKitten.Visualization: summary_plot
-using CarboKitten.Model: ALCAP
-using CarboKitten.Boxes: Box
 
 using DelimitedFiles: readdlm
 using CairoMakie
@@ -23,8 +20,6 @@ using Interpolations
 using CategoricalArrays
 
 # ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[init]
-using CarboKitten.Components.Common
-using CarboKitten.Model.ALCAP
 # ~/~ end
 # ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[1]
 function miller_2020()
@@ -87,7 +82,7 @@ const FACIES = [
 
 const INPUT = ALCAP.Input(
     tag="$TAG",
-    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    box=CarboKitten.Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TIME_PROPERTIES,
     ca_interval=1,
     initial_topography=(x, y) -> -x / 200.0 - 100.0u"m",
@@ -100,8 +95,7 @@ const INPUT = ALCAP.Input(
     facies=FACIES)
 
 function main()
-    CarboKitten.init()
-    H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+    run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
 end
 # ~/~ end
 
@@ -131,7 +125,7 @@ function plot_lisiecki_data()
     ax = Axis(fig[1, 1]; xlabel="time (Ma BP)", ylabel="sealevel (m)", limits=((-2.2, -0.8), nothing))
 
 
-    times = write_times(TIME_PROPERTIES)
+    times = time_axis(TIME_PROPERTIES)
     lines!(ax, times |> in_units_of(u"Myr"), sl.(times) |> in_units_of(u"m"), label="interpolated sealevel", color=Makie.wong_colors()[2])
 
     scatter!(ax, lisiecki_df.time |> in_units_of(u"Myr"), lisiecki_df.sealevel |> in_units_of(u"m"), label="Lisiecki data")

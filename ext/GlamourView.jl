@@ -21,7 +21,7 @@ function glamour_view!(ax::Makie.Axis3, fid::HDF5.File; colormap=Reverse(:speed)
 	grid_size = (length(x), length(y))
 	steps_between = 2
 	selected_steps = [1, ((1:steps_between) .* n_steps .÷ (steps_between + 1))..., n_steps]
-	bedrock = header.bedrock_elevation .- header.axes.t[end] * header.subsidence_rate
+	bedrock = header.initial_topography .- header.axes.t[end] * header.subsidence_rate
 
 	result = Array{Float64, 3}(undef, grid_size..., length(selected_steps))
 	for (i, j) in enumerate(selected_steps)
@@ -34,7 +34,7 @@ function glamour_view!(ax::Makie.Axis3, fid::HDF5.File; colormap=Reverse(:speed)
 
 	for s in eachslice(result[:,:,2:end-1], dims=3)
 		surface!(ax, x, y, s;
-			colormap=(colormap, 0.7))		
+			colormap=(colormap, 0.7))
 	end
 
 	surface!(ax, x, y, result[:,:,end];

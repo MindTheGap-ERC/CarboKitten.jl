@@ -17,7 +17,7 @@ function main()
       Iterators.filter(x -> mod(x[1], 100) == 0, enumerate(run_model(input)))) |> collect
 
     (x, y) = axes(input.box)
-    η = input.bedrock_elevation.(x, y') .+ result[10][2].sediment .- input.subsidence_rate * result[10][2].time
+    η = input.initial_topography.(x, y') .+ result[10][2].sediment .- input.subsidence_rate * result[10][2].time
     # p = input.production.(x, y')
 
     fig = Figure(size=(800, 1000))
@@ -27,7 +27,7 @@ function main()
     ax2 = Axis(fig[3,1], xlabel="x (km)", ylabel="η (m)")
 
     for i in 1:10
-        η = input.bedrock_elevation.(x, y') .+ result[i][2].sediment .- input.subsidence_rate * result[i][2].time
+        η = input.initial_topography.(x, y') .+ result[i][2].sediment .- input.subsidence_rate * result[i][2].time
 
         lines!(ax2, x |> in_units_of(u"km"), η[:, 25] |> in_units_of(u"m"))
     end

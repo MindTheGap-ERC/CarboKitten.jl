@@ -13,6 +13,7 @@ export Box, axes
 
 using Unitful
 using Unitful.DefaultSymbols
+using ..CarboKitten: TimeProperties
 
 <<config-types>>
 
@@ -26,14 +27,7 @@ Physical parameters of CarboKitten all should have units, see our [refresher on 
 Time stepping is specified in `TimeProperties`. We'll have `time_steps` number of time steps, each of physical time `Δt`. However, only one in `write_interval` steps is written to disk.
 
 ``` {.julia #config-types}
-abstract type AbstractTimeProperties end
 
-@kwdef struct TimeProperties <: AbstractTimeProperties
-    t0::typeof(1.0u"Myr") = 0.0u"Myr"
-    Δt::typeof(1.0u"Myr")
-    steps::Int
-    write_interval::Int = 1
-end
 ```
 
 ## Vectors

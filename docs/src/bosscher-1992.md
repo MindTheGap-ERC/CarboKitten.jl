@@ -194,12 +194,12 @@ Script.main()
 ## BS92 in CarboKitten stack
 
 ```component-dag
-CarboKitten.Model.BS92
+CarboKitten.Models.BS92
 ```
 
 Within the CarboKitten design, we can express the BS92 model a bit more succinctly. The following produces output that is fully compatible with other CarboKitten models and the included post processing and visualization stack. The `H5Writer` module provides a `run` method that expects the `initial_state`, `step!` and `write_header` methods to be available.
 
-``` {.julia file=src/Model/BS92.jl}
+``` {.julia file=src/Models/BS92.jl}
 @compose module BS92
 @mixin Tag, H5Writer, Production
 
@@ -241,9 +241,7 @@ end
 
 module Script
 
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model.BS92
+using CarboKitten
 using CarboKitten.DataSets: bosscher_schlager_1992
 
 using Interpolations
@@ -254,9 +252,9 @@ function sealevel_curve()
     linear_interpolation(data.time, data.sealevel)
 end
 
-const INPUT = Input(
+const INPUT = BS92.Input(
     tag = "example model BS92",
-    box = Common.Box{Shelf}(grid_size=(100, 1), phys_scale=600.0u"m"),
+    box = Box{Coast}(grid_size=(100, 1), phys_scale=600.0u"m"),
     time = TimeProperties(
       Δt = 10.0u"yr",
       steps = 8000,
@@ -264,17 +262,17 @@ const INPUT = Input(
     sea_level = let sc = sealevel_curve()
       t -> -sc(t)
     end,
-    bedrock_elevation = (x, y) -> - x / 300.0,
+    initial_topography = (x, y) -> - x / 300.0,
     subsidence_rate = 0.0u"m/yr",
     insolation = 400.0u"W/m^2",
-    facies = [Facies(
+    facies = [BS92.Facies(
       maximum_growth_rate = 0.005u"m/yr",
       saturation_intensity = 50.0u"W/m^2",
       extinction_coefficient = 0.05u"m^-1"
     )])
 
 function main()
-    H5Writer.run(Model{BS92}, INPUT, "data/output/bs92.h5")
+    run_model(Model{BS92}, INPUT, "data/output/bs92.h5")
 end
 
 end
@@ -302,11 +300,7 @@ Using the above implementation of the model by Bosscher and Schlager, we can run
 
 module Script
 
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model.BS92
-
-using Unitful
+using CarboKitten
 
 const FACIES = [
     BS92.Facies(
@@ -324,19 +318,19 @@ const FACIES = [
 
 const INPUT = BS92.Input(
     tag = "example model BS92",
-    box = Common.Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),
+    box = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
     time = TimeProperties(
         Δt = 200.0u"yr",
         steps = 5000,
         write_interval = 1),
     sea_level = t -> 4.0u"m" * sin(2π * t / 0.2u"Myr"),
-    bedrock_elevation = (x, y) -> - x / 300.0,
+    initial_topography = (x, y) -> - x / 300.0,
     subsidence_rate = 50.0u"m/Myr",
     insolation = 400.0u"W/m^2",
     facies = FACIES)
 
 function main()
-    H5Writer.run(Model{BS92}, INPUT, "data/output/bs92-multi-facies.h5")
+    run_model(Model{BS92}, INPUT, "data/output/bs92-multi-facies.h5")
 end
 
 end

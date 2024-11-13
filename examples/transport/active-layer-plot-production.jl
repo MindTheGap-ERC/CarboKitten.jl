@@ -12,7 +12,7 @@ using .ActiveLayer: input
 
 function main()
   (x, y) = axes(input.box)
-  η = input.bedrock_elevation.(x, y')
+  η = input.initial_topography.(x, y')
   p = input.production.(x, y')
 
   fig = Figure()

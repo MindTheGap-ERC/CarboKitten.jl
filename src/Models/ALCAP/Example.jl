@@ -1,8 +1,8 @@
-# ~/~ begin <<docs/src/model-alcap.md#src/Model/ALCAP/Example.jl>>[init]
+# ~/~ begin <<docs/src/model-alcap.md#src/Models/ALCAP/Example.jl>>[init]
 module Example
 
 using Unitful
-using CarboKitten.Model: ALCAP2 as ALCAP
+using ..ALCAP: ALCAP
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
 
@@ -44,7 +44,7 @@ const INPUT = ALCAP.Input(
         steps=5000,
         write_interval=1),
     ca_interval=1,
-    bedrock_elevation=(x, y) -> -x / 300.0,
+    initial_topography=(x, y) -> -x / 300.0,
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
     subsidence_rate=50.0u"m/Myr",
     disintegration_rate=50.0u"m/Myr",

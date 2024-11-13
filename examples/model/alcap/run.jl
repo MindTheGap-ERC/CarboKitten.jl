@@ -1,13 +1,11 @@
 # ~/~ begin <<docs/src/model-alcap.md#examples/model/alcap/run.jl>>[init]
-#| requires: src/Model/ALCAP2.jl
+#| requires: src/Models/ALCAP.jl
 #| creates: data/output/alcap-example.h5
 
 module Script
 
 using Unitful
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model: ALCAP2 as ALCAP
+using CarboKitten
 using CarboKitten.Export: data_export, CSV
 
 const PATH = "data/output"
@@ -50,7 +48,7 @@ const INPUT = ALCAP.Input(
         steps=5000,
         write_interval=1),
     ca_interval=1,
-    bedrock_elevation=(x, y) -> -x / 300.0,
+    initial_topography=(x, y) -> -x / 300.0,
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
     subsidence_rate=50.0u"m/Myr",
     disintegration_rate=50.0u"m/Myr",
@@ -61,7 +59,7 @@ const INPUT = ALCAP.Input(
 # ~/~ end
 
 function main()
-    H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+    run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
 
     data_export(
         CSV(tuple.(10:20:70, 25),

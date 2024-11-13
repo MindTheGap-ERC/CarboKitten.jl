@@ -30,11 +30,8 @@ end
 # ╔═╡ bcea7127-3c21-4c35-af42-3d2c71464409
 using CarboKitten
 
-# ╔═╡ d72d7e42-8392-44a0-a8b3-d59475be8dc7
-using CarboKitten.Components.Common         # FIXME: get rid of this import
-
 # ╔═╡ 325e3d04-2ff2-4c27-91bf-265820ac6763
-using CarboKitten.Model.ALCAP2: run as run_model, Example, ALCAP2 as ALCAP
+using CarboKitten.Models: ALCAP
 
 # ╔═╡ 4fe0f485-2db0-4685-b5b9-e9ba6009e4a6
 using GLMakie
@@ -54,6 +51,9 @@ using CarboKitten.Config: TimeProperties
 # ╔═╡ 90fdaca0-2efa-4230-8af3-177a6d94639c
 using CarboKitten.Components.TimeIntegration: write_times
 
+# ╔═╡ 94aea87e-89e0-4aa3-816e-397873fffc77
+using CarboKitten.Visualization: production_curve
+
 # ╔═╡ 3723832f-344c-4471-acb0-cef7d4e5ca94
 using CarboKitten.Export: data_export, CSV
 
@@ -64,7 +64,7 @@ using DataFrames
 using CSV: read as read_csv
 
 # ╔═╡ dec0cd85-bbd7-4a74-83a8-b9425e053f86
-using CarboKitten.Export: read_slice, DataSlice, DataColumn
+using CarboKitten.Export: read_column
 
 # ╔═╡ e892bc37-81d3-4b8f-9486-de0d717cd67f
 using CarboKitten.Visualization: stratigraphic_column!
@@ -82,7 +82,7 @@ using CarboKitten.Boxes: axes as box_axes
 using CarboKitten.Visualization: sediment_profile!
 
 # ╔═╡ 5eb8bf63-de51-4f4f-ba23-53e4a68e5762
-using CarboKitten.Export: age_depth_model
+using CarboKitten.Export: age_depth_model, read_slice, DataColumn
 
 # ╔═╡ 44308ced-efd2-42fd-94ab-baa178352ed9
 begin
@@ -239,7 +239,7 @@ md"""The `run_model` command runs a model with given input and writes the output
 # ╔═╡ 74f4674f-dbea-44ad-8d54-9861b35139cd
 # ╠═╡ disabled = true
 #=╠═╡
-run_model(Model{ALCAP}, Example.INPUT, "$(OUTPUTDIR)/example.h5")
+example_output = run_model(Model{ALCAP}, ALCAP.Example.INPUT, "$(OUTPUTDIR)/example.h5")
   ╠═╡ =#
 
 # ╔═╡ 19da029b-8752-4177-8ba4-cc2097adec95
@@ -255,9 +255,8 @@ md"""
 """
 
 # ╔═╡ e118a117-9a00-4589-906d-c31d2057bcef
-# ╠═╡ disabled = true
 #=╠═╡
-summary_plot("$(OUTPUTDIR)/example.h5")
+summary_plot(example_output)
   ╠═╡ =#
 
 # ╔═╡ 56765b03-9d25-49c6-9aec-75e1e32e6a43
@@ -362,7 +361,7 @@ end
 
 # ╔═╡ 30245436-9731-4cae-a150-fcba4360527e
 let
-	t = write_times(time)   # obtain a vector of times
+	t = time_axis(time)   # obtain a vector of times
 	sl = sea_level.(t)	    # get sea_level for all those times
 	fig, ax = lines(t |> in_units_of(u"Myr"), sl |> in_units_of(u"m"))
 	ax.xlabel = "time [Myr]"
@@ -379,11 +378,11 @@ md"""
 # ╔═╡ 5c90b464-858a-4a5d-a2c7-fda775057ef6
 md"""
 ## Initial topography
-In CarboKitten, the initial topography is also known as *bedrock elevation*. This quantity needs to be given as a function of both `x` and `y`. Here our initial topography is a ramp.
+In CarboKitten, the initial topography is a function of both $x$ and $y$ coordinates, giving the initial sea floor height for each point. Here we specify a simple ramp in the $x$ direction.
 """
 
 # ╔═╡ 68f2dd79-6777-4267-ae67-5167f764b7b9
-function bedrock_elevation(x, y)
+function initial_topography(x, y)
 	return -x / 300.0
 end
 
@@ -444,7 +443,7 @@ input = ALCAP.Input(
 	box = box,
 	facies = facies,
 	sea_level = sea_level,
-	bedrock_elevation = bedrock_elevation,
+	initial_topography = initial_topography,
 	
 	subsidence_rate = 50.0u"m/Myr",
 	insolation = 400.0u"W/m^2",
@@ -455,16 +454,18 @@ input = ALCAP.Input(
 	disintegration_rate = 50.0u"m/Myr"
 )
 
+# ╔═╡ 549c852c-44d8-483d-b54c-cdf68ff6020b
+production_curve(input)
+
 # ╔═╡ 8946d268-4407-4fe4-86ae-67b3a37b34be
 # ╠═╡ disabled = true
 #=╠═╡
-run_model(Model{ALCAP}, input, "$(OUTPUTDIR)/tutorial.h5")
+tutorial_output = run_model(Model{ALCAP}, input, "$(OUTPUTDIR)/tutorial.h5")
   ╠═╡ =#
 
 # ╔═╡ 0fd7ea33-ff06-4355-9278-125c8ed66df4
-# ╠═╡ disabled = true
 #=╠═╡
-summary_plot("$(OUTPUTDIR)/tutorial.h5")
+summary_plot(tutorial_output)
   ╠═╡ =#
 
 # ╔═╡ 39e681ae-3ce4-41eb-a48a-9a42a4667183
@@ -494,7 +495,7 @@ In this case, it exports the 11th, 26th and 41th grid in the direction towards t
 data_export(CSV(export_locations,
 	:sediment_accumulation_curve => "$(OUTPUTDIR)/tutorial_sac.csv",
 	:age_depth_model => "$(OUTPUTDIR)/tutorial_adm.csv"),
-	"$(OUTPUTDIR)/tutorial.h5")
+	tutorial_output)
   ╠═╡ =#
 
 # ╔═╡ 2a24237e-5c1f-47e1-8f33-cca3ef563930
@@ -556,28 +557,19 @@ md"""
 ## Plot the stratigraphic column
 """
 
-# ╔═╡ 1c0e170b-7837-4f2c-a407-f97096c96137
-# FIXME: implement read_column function in CarboKitten proper
-
-function get_column(data::DataSlice, x)
-	y = data.slice[2]
-	DataColumn((x, y), data.disintegration[:, x, :], data.production[:, x, :], data.deposition[:, x, :], data.sediment_elevation[x, :])
-end
-
 # ╔═╡ 0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
-# ╠═╡ disabled = true
 #=╠═╡
 let
 	fig = Figure()
 
 	y = export_locations[1][2]
-	header, slice = read_slice("$(OUTPUTDIR)/tutorial.h5", :, y)
 	(xaxis, _) = box_axes(input.box)
 	
 	for i = 1:3
+		header, column = read_column(tutorial_output, export_locations[i]...)
+
 		xpos = uconvert(u"km", xaxis[export_locations[i][1]])
 		ax = Axis(fig[1,i], title="$(xpos) offshore", ylabel="height (m)", xticksvisible=false, xtickformat="", width=70)
-		column = get_column(slice, export_locations[i][1])
 		stratigraphic_column!(ax, header, column)
 	end
 	
@@ -684,9 +676,8 @@ We load the data using the `read_slice` function from `CarboKitten.Export`. This
 """
 
 # ╔═╡ a3485ec5-bdf1-4577-9d31-3ea21eba6a53
-# ╠═╡ disabled = true
 #=╠═╡
-header, data_slice = read_slice("$(OUTPUTDIR)/tutorial.h5", :, y);
+header, data_slice = read_slice(tutorial_output, :, y);
   ╠═╡ =#
 
 # ╔═╡ fbf6306d-de6c-4581-9f19-4ac066162709
@@ -764,7 +755,7 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
 CSV = "~0.10.15"
-CarboKitten = "~0.2.0"
+CarboKitten = "~0.3.0"
 DataFrames = "~1.7.0"
 GLMakie = "~0.10.16"
 Interpolations = "~0.15.1"
@@ -779,7 +770,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.1"
 manifest_format = "2.0"
-project_hash = "55f69480f7bc9df7bec9670646b8ad15bf6e8b2b"
+project_hash = "11ad17d1cfe92666d01eddc06aac34d75b7f3402"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -855,12 +846,6 @@ git-tree-sha1 = "e81c509d2c8e49592413bfb0bb3b08150056c79d"
 uuid = "27a7e980-b3e6-11e9-2bcd-0b925532e340"
 version = "0.4.1"
 
-[[deps.Aqua]]
-deps = ["Compat", "Pkg", "Test"]
-git-tree-sha1 = "49b1d7a9870c87ba13dc63f8ccfcf578cb266f95"
-uuid = "4c88cf16-eb10-579e-8560-4a9242c79595"
-version = "0.8.9"
-
 [[deps.ArgCheck]]
 git-tree-sha1 = "a3a402a35a2f7e0b87828ccabbd5ebfbebe356b4"
 uuid = "dce04be8-c92d-5529-be00-80e4d2c0e197"
@@ -869,16 +854,6 @@ version = "2.3.0"
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.2"
-
-[[deps.ArrayLayouts]]
-deps = ["FillArrays", "LinearAlgebra"]
-git-tree-sha1 = "492681bc44fac86804706ddb37da10880a2bd528"
-uuid = "4c555306-a7a7-4459-81d9-ec55ddd5c99a"
-version = "1.10.4"
-weakdeps = ["SparseArrays"]
-
-    [deps.ArrayLayouts.extensions]
-    ArrayLayoutsSparseArraysExt = "SparseArrays"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -933,18 +908,6 @@ git-tree-sha1 = "aebf55e6d7795e02ca500a689d326ac979aaf89e"
 uuid = "9718e550-a3fa-408a-8086-8db961cd8217"
 version = "0.1.1"
 
-[[deps.BlockArrays]]
-deps = ["ArrayLayouts", "FillArrays", "LinearAlgebra"]
-git-tree-sha1 = "d434647f798823bcae510aee0bc0401927f64391"
-uuid = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
-version = "1.1.1"
-
-    [deps.BlockArrays.extensions]
-    BlockArraysBandedMatricesExt = "BandedMatrices"
-
-    [deps.BlockArrays.weakdeps]
-    BandedMatrices = "aae01518-5342-5314-be14-df237901396f"
-
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "8873e196c2eb87962a2048b3b8e08946535864a1"
@@ -980,9 +943,9 @@ version = "1.18.2+1"
 
 [[deps.CarboKitten]]
 deps = ["AxisArrays", "CSV", "CategoricalArrays", "DataFrames", "DelimitedFiles", "HDF5", "Logging", "ModuleMixins", "Pkg", "ProgressLogging", "Random", "TOML", "TerminalLoggers", "Transducers", "Unitful"]
-git-tree-sha1 = "8e78eac7e2ab7d32dc003adc3768b03397479f88"
+git-tree-sha1 = "5e68dfeeead0e4dde020585dc00910457a142742"
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
-version = "0.2.0"
+version = "0.3.0"
 weakdeps = ["GeometryBasics", "Makie", "Statistics"]
 
     [deps.CarboKitten.extensions]
@@ -1237,9 +1200,9 @@ version = "3.3.10+1"
 
 [[deps.FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
-git-tree-sha1 = "62ca0547a14c57e98154423419d8a342dca75ca9"
+git-tree-sha1 = "91e0e5c68d02bcdaae76d3c8ceb4361e8f28d2e9"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-version = "1.16.4"
+version = "1.16.5"
 
 [[deps.FilePaths]]
 deps = ["FilePathsBase", "MacroTools", "Reexport", "Requires"]
@@ -1305,9 +1268,9 @@ version = "2.13.2+0"
 
 [[deps.FreeTypeAbstraction]]
 deps = ["ColorVectorSpace", "Colors", "FreeType", "GeometryBasics"]
-git-tree-sha1 = "84dfe824bd6fdf2a5d73bb187ff31b5549b2a79c"
+git-tree-sha1 = "77e2b094e61d939f9626181ab23d0b76e78f9fd3"
 uuid = "663a7486-cb36-511b-a19d-713bb74d65c9"
-version = "0.10.4"
+version = "0.10.5"
 
 [[deps.FriBidi_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1457,10 +1420,10 @@ uuid = "c817782e-172a-44cc-b673-b171935fbb9e"
 version = "0.1.7"
 
 [[deps.ImageCore]]
-deps = ["Aqua", "BlockArrays", "ColorVectorSpace", "Colors", "FixedPointNumbers", "MappedArrays", "MosaicViews", "OffsetArrays", "PaddedViews", "PrecompileTools", "Reexport"]
-git-tree-sha1 = "661ca04f8df633e8a021c55a22e96cf820220ede"
+deps = ["ColorVectorSpace", "Colors", "FixedPointNumbers", "MappedArrays", "MosaicViews", "OffsetArrays", "PaddedViews", "PrecompileTools", "Reexport"]
+git-tree-sha1 = "8c193230235bbcee22c8066b0374f63b5683c2d3"
 uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
-version = "0.10.4"
+version = "0.10.5"
 
 [[deps.ImageIO]]
 deps = ["FileIO", "IndirectArrays", "JpegTurbo", "LazyModules", "Netpbm", "OpenEXR", "PNGFiles", "QOI", "Sixel", "TiffImages", "UUIDs", "WebP"]
@@ -1863,9 +1826,9 @@ version = "0.4.4"
 
 [[deps.MeshIO]]
 deps = ["ColorTypes", "FileIO", "GeometryBasics", "Printf"]
-git-tree-sha1 = "dc182956229ff16d5a4d90a562035e633bd2561d"
+git-tree-sha1 = "14a12d9153b1a1a22d669eede58b2ea2164ff138"
 uuid = "7269a6da-0436-5bbc-96c2-40638cbb6118"
-version = "0.4.12"
+version = "0.4.13"
 
 [[deps.MicroCollections]]
 deps = ["Accessors", "BangBang", "InitialValues"]
@@ -2787,7 +2750,6 @@ version = "1.4.1+1"
 # ╟─68fac1d8-f402-429e-90a4-25fcfa188c2e
 # ╟─002cb6d7-ee29-408f-a289-36ab913c7f85
 # ╟─545a6a8d-70d5-470a-a615-4305efa0ecd1
-# ╠═d72d7e42-8392-44a0-a8b3-d59475be8dc7
 # ╠═325e3d04-2ff2-4c27-91bf-265820ac6763
 # ╟─dd4cde67-4329-4135-80d7-1c8950404349
 # ╟─9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
@@ -2821,6 +2783,8 @@ version = "1.4.1+1"
 # ╠═68f2dd79-6777-4267-ae67-5167f764b7b9
 # ╟─2e168646-5b9e-437b-b0b2-d637a4beb577
 # ╠═68ab2b1c-67fb-48f1-ac81-c7efac04d96a
+# ╠═94aea87e-89e0-4aa3-816e-397873fffc77
+# ╠═549c852c-44d8-483d-b54c-cdf68ff6020b
 # ╟─43405e49-2739-4e79-8204-e489db6c1fd5
 # ╠═ae3a74ea-f6b5-442c-973b-1cec48627968
 # ╠═8946d268-4407-4fe4-86ae-67b3a37b34be
@@ -2839,11 +2803,10 @@ version = "1.4.1+1"
 # ╟─e17f35e7-8d09-4da1-880f-563bc49b364c
 # ╠═329d30f1-797e-4522-9c20-e60d35079f5f
 # ╟─add6a25b-d948-4cd0-9412-56752793ca4b
-# ╟─f550da45-1202-4f9d-9f0b-b96d5c929f58
+# ╠═f550da45-1202-4f9d-9f0b-b96d5c929f58
 # ╟─64c3ce44-de95-4f7b-954d-52f743fc5033
 # ╠═dec0cd85-bbd7-4a74-83a8-b9425e053f86
 # ╠═e892bc37-81d3-4b8f-9486-de0d717cd67f
-# ╠═1c0e170b-7837-4f2c-a407-f97096c96137
 # ╠═0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
 # ╟─c2166805-da62-4adf-8514-fd28924d115e
 # ╠═17501c93-f432-4f1a-b815-5ac9c5a29f8f

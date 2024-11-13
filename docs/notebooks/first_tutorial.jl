@@ -485,7 +485,7 @@ export_locations = [(11, 25), (26, 25), (41, 25)]
 
 # ╔═╡ e80aaf02-c5bf-4555-a82d-b09dcf785381
 md"""
-In this case, it exports the 11th, 26th and 41th grid in the direction towards to the deep sea. That is to say, the 11th is proximal to the land while the 41th is distal. Given that each grid is with fixed size of 150 m × 150 m, this indicates that we are extracting information from locations at 3 km, 7.5 km and 12 km away from the land. 
+In this case, it exports the 11th, 26th and 41th grid in the direction towards to the deep sea. That is to say, the 11th is proximal to the land while the 41th is distal. Given that each grid is with fixed size of 300 m × 300 m, this indicates that we are extracting information from locations at 3 km, 7.5 km and 12 km away from the land. 
 """
 
 # ╔═╡ 7f05b817-f933-4280-b2ed-ae318a535123

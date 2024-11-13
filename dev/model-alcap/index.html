@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>ALCAPS · CarboKitten</title><meta name="title" content="ALCAPS · CarboKitten"/><meta property="og:title" content="ALCAPS · CarboKitten"/><meta property="twitter:title" content="ALCAPS · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li class="is-active"><a class="tocitem" href>ALCAPS</a><ul class="internal"><li><a class="tocitem" href="#Example-Input"><span>Example Input</span></a></li><li><a class="tocitem" href="#Modular-Implementation"><span>Modular Implementation</span></a></li><li><a class="tocitem" href="#API"><span>API</span></a></li></ul></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li><li><a class="tocitem" href="../carbocat-ca/">Cellular Automaton</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Output</span><ul><li><a class="tocitem" href="../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Models</a></li><li class="is-active"><a href>ALCAPS</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>ALCAPS</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/model-alcap.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Model-with-CA,-Production-and-Active-Layer-transport-(ALCAPS)"><a class="docs-heading-anchor" href="#Model-with-CA,-Production-and-Active-Layer-transport-(ALCAPS)">Model with CA, Production and Active Layer transport (ALCAPS)</a><a id="Model-with-CA,-Production-and-Active-Layer-transport-(ALCAPS)-1"></a><a class="docs-heading-anchor-permalink" href="#Model-with-CA,-Production-and-Active-Layer-transport-(ALCAPS)" title="Permalink"></a></h1><p>The following <strong>S</strong>edimentation model includes the Burgess 2013 <strong>C</strong>ellular <strong>A</strong>utomaton, Bosscher &amp; Schlager 1992 <strong>P</strong>roduction curves and an <strong>A</strong>ctive <strong>L</strong>ayer transport model, based on Paola 1992, henceforth ALCAPS.</p><p><img src="../fig/alcaps-alternative.png" alt="Result from alternative input"/></p><h2 id="Example-Input"><a class="docs-heading-anchor" href="#Example-Input">Example Input</a><a id="Example-Input-1"></a><a class="docs-heading-anchor-permalink" href="#Example-Input" title="Permalink"></a></h2><p>The following is a complete example input.</p><div class="noweb-label">⪡alcap-example-input⪢≣</div><pre><code class="language- julia hljs">const TAG = &quot;alcap-example&quot;
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>ALCAPS · CarboKitten</title><meta name="title" content="ALCAPS · CarboKitten"/><meta property="og:title" content="ALCAPS · CarboKitten"/><meta property="twitter:title" content="ALCAPS · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li class="is-active"><a class="tocitem" href>ALCAPS</a><ul class="internal"><li><a class="tocitem" href="#Example-Input"><span>Example Input</span></a></li><li><a class="tocitem" href="#Modular-Implementation"><span>Modular Implementation</span></a></li><li><a class="tocitem" href="#API"><span>API</span></a></li></ul></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li><li><a class="tocitem" href="../carbocat-ca/">Cellular Automaton</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Output</span><ul><li><a class="tocitem" href="../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Models</a></li><li class="is-active"><a href>ALCAPS</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>ALCAPS</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/model-alcap.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Model-with-CA,-Production-and-Active-Layer-transport-(ALCAP)"><a class="docs-heading-anchor" href="#Model-with-CA,-Production-and-Active-Layer-transport-(ALCAP)">Model with CA, Production and Active Layer transport (ALCAP)</a><a id="Model-with-CA,-Production-and-Active-Layer-transport-(ALCAP)-1"></a><a class="docs-heading-anchor-permalink" href="#Model-with-CA,-Production-and-Active-Layer-transport-(ALCAP)" title="Permalink"></a></h1><p>The following <strong>S</strong>edimentation model includes the Burgess 2013 <strong>C</strong>ellular <strong>A</strong>utomaton, Bosscher &amp; Schlager 1992 <strong>P</strong>roduction curves and an <strong>A</strong>ctive <strong>L</strong>ayer transport model, based on Paola 1992, henceforth ALCAP.</p><p><img src="../fig/alcaps-alternative.png" alt="Result from alternative input"/></p><h2 id="Example-Input"><a class="docs-heading-anchor" href="#Example-Input">Example Input</a><a id="Example-Input-1"></a><a class="docs-heading-anchor-permalink" href="#Example-Input" title="Permalink"></a></h2><p>The following is a complete example input.</p><div class="noweb-label">⪡alcap-example-input⪢≣</div><pre><code class="language- julia hljs">const TAG = &quot;alcap-example&quot;
 
 const FACIES = [
     ALCAP.Facies(
@@ -36,22 +36,20 @@ const INPUT = ALCAP.Input(
         steps=5000,
         write_interval=1),
     ca_interval=1,
-    bedrock_elevation=(x, y) -&gt; -x / 300.0,
+    initial_topography=(x, y) -&gt; -x / 300.0,
     sea_level=t -&gt; AMPLITUDE * sin(2π * t / PERIOD),
     subsidence_rate=50.0u&quot;m/Myr&quot;,
     disintegration_rate=50.0u&quot;m/Myr&quot;,
     insolation=400.0u&quot;W/m^2&quot;,
     sediment_buffer_size=50,
     depositional_resolution=0.5u&quot;m&quot;,
-    facies=FACIES)</code></pre><div class="noweb-label">file:<i>examples/model/alcap/run.jl</i></div><pre><code class="language- julia hljs">#| requires: src/Model/ALCAP2.jl
+    facies=FACIES)</code></pre><div class="noweb-label">file:<i>examples/model/alcap/run.jl</i></div><pre><code class="language- julia hljs">#| requires: src/Models/ALCAP.jl
 #| creates: data/output/alcap-example.h5
 
 module Script
 
 using Unitful
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model: ALCAP2 as ALCAP
+using CarboKitten
 using CarboKitten.Export: data_export, CSV
 
 const PATH = &quot;data/output&quot;
@@ -59,7 +57,7 @@ const PATH = &quot;data/output&quot;
 &lt;&lt;alcap-example-input&gt;&gt;
 
 function main()
-    H5Writer.run(Model{ALCAP}, INPUT, &quot;$(PATH)/$(TAG).h5&quot;)
+    run_model(Model{ALCAP}, INPUT, &quot;$(PATH)/$(TAG).h5&quot;)
 
     data_export(
         CSV(tuple.(10:20:70, 25),
@@ -85,368 +83,367 @@ save(&quot;docs/src/_fig/alcaps-alternative.png&quot;, summary_plot(&quot;data/o
 <!-- Generated by graphviz version 2.50.0 (20211204.2007)
  -->
 <!-- Pages: 1 -->
-<svg width="1120pt" height="580pt"
- viewBox="0.00 0.00 1119.50 580.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="1123pt" height="580pt"
+ viewBox="0.00 0.00 1122.50 580.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 576)">
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-576 1115.5,-576 1115.5,4 -4,4"/>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-576 1118.5,-576 1118.5,4 -4,4"/>
 <!-- Boxes -->
 <g id="node1" class="node">
 <title>Boxes</title>
-<path fill="none" stroke="black" d="M519,-572C519,-572 381,-572 381,-572 375,-572 369,-566 369,-560 369,-560 369,-505 369,-505 369,-499 375,-493 381,-493 381,-493 519,-493 519,-493 525,-493 531,-499 531,-505 531,-505 531,-560 531,-560 531,-566 525,-572 519,-572"/>
-<polyline fill="none" stroke="black" points="376,-541.5 524,-541.5 "/>
-<text text-anchor="start" x="426.5" y="-550.3" font-family="Times,serif" font-weight="bold" font-size="14.00">Boxes</text>
-<polygon fill="#cccccc" stroke="transparent" points="376,-518.5 376,-541.5 423,-541.5 423,-518.5 376,-518.5"/>
-<polyline fill="none" stroke="black" points="376,-518.5 423,-518.5 423,-541.5 376,-541.5 "/>
-<text text-anchor="start" x="380" y="-526.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="423,-518.5 423,-541.5 477,-541.5 477,-518.5 423,-518.5"/>
-<polygon fill="none" stroke="black" points="423,-518.5 423,-541.5 477,-541.5 477,-518.5 423,-518.5"/>
-<text text-anchor="start" x="427" y="-526.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="477,-518.5 477,-541.5 524,-541.5 524,-518.5 477,-518.5"/>
-<polyline fill="none" stroke="black" points="524,-541.5 477,-541.5 477,-518.5 524,-518.5 "/>
-<text text-anchor="start" x="481" y="-526.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="423,-499.5 423,-518.5 "/>
-<text text-anchor="start" x="380" y="-506.5" font-family="monospace" font-size="10.00">box</text>
-<polyline fill="none" stroke="black" points="477,-499.5 477,-518.5 "/>
-<text text-anchor="start" x="427" y="-506.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="480" y="-506.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M525,-572C525,-572 387,-572 387,-572 381,-572 375,-566 375,-560 375,-560 375,-505 375,-505 375,-499 381,-493 387,-493 387,-493 525,-493 525,-493 531,-493 537,-499 537,-505 537,-505 537,-560 537,-560 537,-566 531,-572 525,-572"/>
+<polyline fill="none" stroke="black" points="382,-541.5 530,-541.5 "/>
+<text text-anchor="start" x="432.5" y="-550.3" font-family="Times,serif" font-weight="bold" font-size="14.00">Boxes</text>
+<polygon fill="#cccccc" stroke="transparent" points="382,-518.5 382,-541.5 429,-541.5 429,-518.5 382,-518.5"/>
+<polyline fill="none" stroke="black" points="382,-518.5 429,-518.5 429,-541.5 382,-541.5 "/>
+<text text-anchor="start" x="386" y="-526.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="429,-518.5 429,-541.5 483,-541.5 483,-518.5 429,-518.5"/>
+<polygon fill="none" stroke="black" points="429,-518.5 429,-541.5 483,-541.5 483,-518.5 429,-518.5"/>
+<text text-anchor="start" x="433" y="-526.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="483,-518.5 483,-541.5 530,-541.5 530,-518.5 483,-518.5"/>
+<polyline fill="none" stroke="black" points="530,-541.5 483,-541.5 483,-518.5 530,-518.5 "/>
+<text text-anchor="start" x="487" y="-526.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="429,-499.5 429,-518.5 "/>
+<text text-anchor="start" x="386" y="-506.5" font-family="monospace" font-size="10.00">box</text>
+<polyline fill="none" stroke="black" points="483,-499.5 483,-518.5 "/>
+<text text-anchor="start" x="433" y="-506.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="486" y="-506.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- WaterDepth -->
 <g id="node3" class="node">
 <title>WaterDepth</title>
-<path fill="none" stroke="black" d="M264,-457C264,-457 12,-457 12,-457 6,-457 0,-451 0,-445 0,-445 0,-352 0,-352 0,-346 6,-340 12,-340 12,-340 264,-340 264,-340 270,-340 276,-346 276,-352 276,-352 276,-445 276,-445 276,-451 270,-457 264,-457"/>
-<polyline fill="none" stroke="black" points="7,-426.5 269,-426.5 "/>
-<text text-anchor="start" x="90.5" y="-435.3" font-family="Times,serif" font-weight="bold" font-size="14.00">WaterDepth</text>
-<polygon fill="#cccccc" stroke="transparent" points="7,-403.5 7,-426.5 118,-426.5 118,-403.5 7,-403.5"/>
-<polyline fill="none" stroke="black" points="7,-403.5 118,-403.5 118,-426.5 7,-426.5 "/>
+<path fill="none" stroke="black" d="M270,-457C270,-457 12,-457 12,-457 6,-457 0,-451 0,-445 0,-445 0,-352 0,-352 0,-346 6,-340 12,-340 12,-340 270,-340 270,-340 276,-340 282,-346 282,-352 282,-352 282,-445 282,-445 282,-451 276,-457 270,-457"/>
+<polyline fill="none" stroke="black" points="7,-426.5 275,-426.5 "/>
+<text text-anchor="start" x="93.5" y="-435.3" font-family="Times,serif" font-weight="bold" font-size="14.00">WaterDepth</text>
+<polygon fill="#cccccc" stroke="transparent" points="7,-403.5 7,-426.5 124,-426.5 124,-403.5 7,-403.5"/>
+<polyline fill="none" stroke="black" points="7,-403.5 124,-403.5 124,-426.5 7,-426.5 "/>
 <text text-anchor="start" x="11" y="-411.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="118,-403.5 118,-426.5 172,-426.5 172,-403.5 118,-403.5"/>
-<polygon fill="none" stroke="black" points="118,-403.5 118,-426.5 172,-426.5 172,-403.5 118,-403.5"/>
-<text text-anchor="start" x="122" y="-411.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="172,-403.5 172,-426.5 269,-426.5 269,-403.5 172,-403.5"/>
-<polyline fill="none" stroke="black" points="269,-426.5 172,-426.5 172,-403.5 269,-403.5 "/>
-<text text-anchor="start" x="176" y="-411.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="118,-384.5 118,-403.5 "/>
+<polygon fill="#cccccc" stroke="transparent" points="124,-403.5 124,-426.5 178,-426.5 178,-403.5 124,-403.5"/>
+<polygon fill="none" stroke="black" points="124,-403.5 124,-426.5 178,-426.5 178,-403.5 124,-403.5"/>
+<text text-anchor="start" x="128" y="-411.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="178,-403.5 178,-426.5 275,-426.5 275,-403.5 178,-403.5"/>
+<polyline fill="none" stroke="black" points="275,-426.5 178,-426.5 178,-403.5 275,-403.5 "/>
+<text text-anchor="start" x="182" y="-411.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="124,-384.5 124,-403.5 "/>
 <text text-anchor="start" x="11" y="-391.5" font-family="monospace" font-size="10.00">sea_level</text>
-<polyline fill="none" stroke="black" points="172,-384.5 172,-403.5 "/>
-<text text-anchor="start" x="122" y="-391.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="175" y="-391.5" font-family="monospace" font-size="10.00">sediment_height</text>
-<polyline fill="none" stroke="black" points="118,-365.5 118,-384.5 "/>
-<text text-anchor="start" x="11" y="-372.5" font-family="monospace" font-size="10.00">bedrock_elevation</text>
-<polyline fill="none" stroke="black" points="172,-365.5 172,-384.5 "/>
-<text text-anchor="start" x="122" y="-372.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="175" y="-372.5" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="118,-346.5 118,-365.5 "/>
+<polyline fill="none" stroke="black" points="178,-384.5 178,-403.5 "/>
+<text text-anchor="start" x="128" y="-391.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="181" y="-391.5" font-family="monospace" font-size="10.00">sediment_height</text>
+<polyline fill="none" stroke="black" points="124,-365.5 124,-384.5 "/>
+<text text-anchor="start" x="11" y="-372.5" font-family="monospace" font-size="10.00">initial_topography</text>
+<polyline fill="none" stroke="black" points="178,-365.5 178,-384.5 "/>
+<text text-anchor="start" x="128" y="-372.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="181" y="-372.5" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="124,-346.5 124,-365.5 "/>
 <text text-anchor="start" x="11" y="-353.5" font-family="monospace" font-size="10.00">subsidence_rate</text>
-<polyline fill="none" stroke="black" points="172,-346.5 172,-365.5 "/>
-<text text-anchor="start" x="122" y="-353.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="175" y="-353.5" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="178,-346.5 178,-365.5 "/>
+<text text-anchor="start" x="128" y="-353.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="181" y="-353.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- Boxes&#45;&gt;WaterDepth -->
 <g id="edge2" class="edge">
 <title>Boxes&#45;&gt;WaterDepth</title>
-<path fill="none" stroke="black" d="M368.84,-497.16C342.69,-486.1 312.87,-473.48 283.54,-461.07"/>
-<polygon fill="black" stroke="black" points="284.61,-457.73 274.03,-457.05 281.88,-464.17 284.61,-457.73"/>
+<path fill="none" stroke="black" d="M374.88,-497.51C348.2,-486.33 317.66,-473.53 287.65,-460.95"/>
+<polygon fill="black" stroke="black" points="288.94,-457.7 278.36,-457.06 286.23,-464.15 288.94,-457.7"/>
 </g>
 <!-- CellularAutomaton -->
 <g id="node4" class="node">
 <title>CellularAutomaton</title>
-<path fill="none" stroke="black" d="M1099.5,-294.5C1099.5,-294.5 838.5,-294.5 838.5,-294.5 832.5,-294.5 826.5,-288.5 826.5,-282.5 826.5,-282.5 826.5,-208.5 826.5,-208.5 826.5,-202.5 832.5,-196.5 838.5,-196.5 838.5,-196.5 1099.5,-196.5 1099.5,-196.5 1105.5,-196.5 1111.5,-202.5 1111.5,-208.5 1111.5,-208.5 1111.5,-282.5 1111.5,-282.5 1111.5,-288.5 1105.5,-294.5 1099.5,-294.5"/>
-<polyline fill="none" stroke="black" points="834,-264.5 1105,-264.5 "/>
-<text text-anchor="start" x="894" y="-273.3" font-family="Times,serif" font-weight="bold" font-size="14.00">CellularAutomaton</text>
-<polygon fill="#cccccc" stroke="transparent" points="834,-241.5 834,-264.5 927,-264.5 927,-241.5 834,-241.5"/>
-<polyline fill="none" stroke="black" points="834,-241.5 927,-241.5 927,-264.5 834,-264.5 "/>
-<text text-anchor="start" x="838" y="-249.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="927,-241.5 927,-264.5 1032,-264.5 1032,-241.5 927,-241.5"/>
-<polygon fill="none" stroke="black" points="927,-241.5 927,-264.5 1032,-264.5 1032,-241.5 927,-241.5"/>
-<text text-anchor="start" x="931" y="-249.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="1032,-241.5 1032,-264.5 1105,-264.5 1105,-241.5 1032,-241.5"/>
-<polyline fill="none" stroke="black" points="1105,-264.5 1032,-264.5 1032,-241.5 1105,-241.5 "/>
-<text text-anchor="start" x="1036" y="-249.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="927,-222.5 927,-241.5 "/>
-<text text-anchor="start" x="838" y="-229.5" font-family="monospace" font-size="10.00">ca_interval</text>
-<polyline fill="none" stroke="black" points="1032,-222.5 1032,-241.5 "/>
-<text text-anchor="start" x="931" y="-229.5" font-family="monospace" font-size="10.00">viability_range</text>
-<text text-anchor="start" x="1035" y="-229.5" font-family="monospace" font-size="10.00">ca</text>
-<polyline fill="none" stroke="black" points="927,-203.5 927,-222.5 "/>
-<text text-anchor="start" x="838" y="-210.5" font-family="monospace" font-size="10.00">ca_random_seed</text>
-<polyline fill="none" stroke="black" points="1032,-203.5 1032,-222.5 "/>
-<text text-anchor="start" x="931" y="-210.5" font-family="monospace" font-size="10.00">activation_range</text>
-<text text-anchor="start" x="1035" y="-210.5" font-family="monospace" font-size="10.00">ca_priority</text>
+<path fill="none" stroke="black" d="M1102.5,-294.5C1102.5,-294.5 841.5,-294.5 841.5,-294.5 835.5,-294.5 829.5,-288.5 829.5,-282.5 829.5,-282.5 829.5,-208.5 829.5,-208.5 829.5,-202.5 835.5,-196.5 841.5,-196.5 841.5,-196.5 1102.5,-196.5 1102.5,-196.5 1108.5,-196.5 1114.5,-202.5 1114.5,-208.5 1114.5,-208.5 1114.5,-282.5 1114.5,-282.5 1114.5,-288.5 1108.5,-294.5 1102.5,-294.5"/>
+<polyline fill="none" stroke="black" points="837,-264.5 1108,-264.5 "/>
+<text text-anchor="start" x="897" y="-273.3" font-family="Times,serif" font-weight="bold" font-size="14.00">CellularAutomaton</text>
+<polygon fill="#cccccc" stroke="transparent" points="837,-241.5 837,-264.5 930,-264.5 930,-241.5 837,-241.5"/>
+<polyline fill="none" stroke="black" points="837,-241.5 930,-241.5 930,-264.5 837,-264.5 "/>
+<text text-anchor="start" x="841" y="-249.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="930,-241.5 930,-264.5 1035,-264.5 1035,-241.5 930,-241.5"/>
+<polygon fill="none" stroke="black" points="930,-241.5 930,-264.5 1035,-264.5 1035,-241.5 930,-241.5"/>
+<text text-anchor="start" x="934" y="-249.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="1035,-241.5 1035,-264.5 1108,-264.5 1108,-241.5 1035,-241.5"/>
+<polyline fill="none" stroke="black" points="1108,-264.5 1035,-264.5 1035,-241.5 1108,-241.5 "/>
+<text text-anchor="start" x="1039" y="-249.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="930,-222.5 930,-241.5 "/>
+<text text-anchor="start" x="841" y="-229.5" font-family="monospace" font-size="10.00">ca_interval</text>
+<polyline fill="none" stroke="black" points="1035,-222.5 1035,-241.5 "/>
+<text text-anchor="start" x="934" y="-229.5" font-family="monospace" font-size="10.00">viability_range</text>
+<text text-anchor="start" x="1038" y="-229.5" font-family="monospace" font-size="10.00">ca</text>
+<polyline fill="none" stroke="black" points="930,-203.5 930,-222.5 "/>
+<text text-anchor="start" x="841" y="-210.5" font-family="monospace" font-size="10.00">ca_random_seed</text>
+<polyline fill="none" stroke="black" points="1035,-203.5 1035,-222.5 "/>
+<text text-anchor="start" x="934" y="-210.5" font-family="monospace" font-size="10.00">activation_range</text>
+<text text-anchor="start" x="1038" y="-210.5" font-family="monospace" font-size="10.00">ca_priority</text>
 </g>
 <!-- Boxes&#45;&gt;CellularAutomaton -->
 <g id="edge3" class="edge">
 <title>Boxes&#45;&gt;CellularAutomaton</title>
-<path fill="none" stroke="black" d="M531.19,-528.88C604.84,-523.2 713.98,-506.27 795,-457 856.78,-419.43 906.71,-351.92 936.97,-303.47"/>
-<polygon fill="black" stroke="black" points="940.14,-305.01 942.39,-294.66 934.17,-301.34 940.14,-305.01"/>
+<path fill="none" stroke="black" d="M537.29,-529.04C611.01,-523.47 720.19,-506.61 801,-457 862.19,-419.43 911.16,-351.92 940.76,-303.47"/>
+<polygon fill="black" stroke="black" points="943.9,-305.03 946.06,-294.66 937.9,-301.42 943.9,-305.03"/>
 </g>
 <!-- SedimentBuffer -->
 <g id="node8" class="node">
 <title>SedimentBuffer</title>
-<path fill="none" stroke="black" d="M594,-447.5C594,-447.5 306,-447.5 306,-447.5 300,-447.5 294,-441.5 294,-435.5 294,-435.5 294,-361.5 294,-361.5 294,-355.5 300,-349.5 306,-349.5 306,-349.5 594,-349.5 594,-349.5 600,-349.5 606,-355.5 606,-361.5 606,-361.5 606,-435.5 606,-435.5 606,-441.5 600,-447.5 594,-447.5"/>
-<polyline fill="none" stroke="black" points="301,-417.5 599,-417.5 "/>
-<text text-anchor="start" x="387" y="-426.3" font-family="Times,serif" font-weight="bold" font-size="14.00">SedimentBuffer</text>
-<polygon fill="#cccccc" stroke="transparent" points="301,-394.5 301,-417.5 448,-417.5 448,-394.5 301,-394.5"/>
-<polyline fill="none" stroke="black" points="301,-394.5 448,-394.5 448,-417.5 301,-417.5 "/>
-<text text-anchor="start" x="305" y="-402.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="448,-394.5 448,-417.5 502,-417.5 502,-394.5 448,-394.5"/>
-<polygon fill="none" stroke="black" points="448,-394.5 448,-417.5 502,-417.5 502,-394.5 448,-394.5"/>
-<text text-anchor="start" x="452" y="-402.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="502,-394.5 502,-417.5 599,-417.5 599,-394.5 502,-394.5"/>
-<polyline fill="none" stroke="black" points="599,-417.5 502,-417.5 502,-394.5 599,-394.5 "/>
-<text text-anchor="start" x="506" y="-402.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="448,-375.5 448,-394.5 "/>
-<text text-anchor="start" x="305" y="-382.5" font-family="monospace" font-size="10.00">sediment_buffer_size</text>
-<polyline fill="none" stroke="black" points="502,-375.5 502,-394.5 "/>
-<text text-anchor="start" x="452" y="-382.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="505" y="-382.5" font-family="monospace" font-size="10.00">sediment_buffer</text>
-<polyline fill="none" stroke="black" points="448,-356.5 448,-375.5 "/>
-<text text-anchor="start" x="305" y="-363.5" font-family="monospace" font-size="10.00">depositional_resolution</text>
-<polyline fill="none" stroke="black" points="502,-356.5 502,-375.5 "/>
-<text text-anchor="start" x="452" y="-363.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="505" y="-363.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M600,-447.5C600,-447.5 312,-447.5 312,-447.5 306,-447.5 300,-441.5 300,-435.5 300,-435.5 300,-361.5 300,-361.5 300,-355.5 306,-349.5 312,-349.5 312,-349.5 600,-349.5 600,-349.5 606,-349.5 612,-355.5 612,-361.5 612,-361.5 612,-435.5 612,-435.5 612,-441.5 606,-447.5 600,-447.5"/>
+<polyline fill="none" stroke="black" points="307,-417.5 605,-417.5 "/>
+<text text-anchor="start" x="393" y="-426.3" font-family="Times,serif" font-weight="bold" font-size="14.00">SedimentBuffer</text>
+<polygon fill="#cccccc" stroke="transparent" points="307,-394.5 307,-417.5 454,-417.5 454,-394.5 307,-394.5"/>
+<polyline fill="none" stroke="black" points="307,-394.5 454,-394.5 454,-417.5 307,-417.5 "/>
+<text text-anchor="start" x="311" y="-402.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="454,-394.5 454,-417.5 508,-417.5 508,-394.5 454,-394.5"/>
+<polygon fill="none" stroke="black" points="454,-394.5 454,-417.5 508,-417.5 508,-394.5 454,-394.5"/>
+<text text-anchor="start" x="458" y="-402.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="508,-394.5 508,-417.5 605,-417.5 605,-394.5 508,-394.5"/>
+<polyline fill="none" stroke="black" points="605,-417.5 508,-417.5 508,-394.5 605,-394.5 "/>
+<text text-anchor="start" x="512" y="-402.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="454,-375.5 454,-394.5 "/>
+<text text-anchor="start" x="311" y="-382.5" font-family="monospace" font-size="10.00">sediment_buffer_size</text>
+<polyline fill="none" stroke="black" points="508,-375.5 508,-394.5 "/>
+<text text-anchor="start" x="458" y="-382.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="511" y="-382.5" font-family="monospace" font-size="10.00">sediment_buffer</text>
+<polyline fill="none" stroke="black" points="454,-356.5 454,-375.5 "/>
+<text text-anchor="start" x="311" y="-363.5" font-family="monospace" font-size="10.00">depositional_resolution</text>
+<polyline fill="none" stroke="black" points="508,-356.5 508,-375.5 "/>
+<text text-anchor="start" x="458" y="-363.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="511" y="-363.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- Boxes&#45;&gt;SedimentBuffer -->
 <g id="edge9" class="edge">
 <title>Boxes&#45;&gt;SedimentBuffer</title>
-<path fill="none" stroke="black" d="M450,-492.97C450,-482.02 450,-469.84 450,-458"/>
-<polygon fill="black" stroke="black" points="453.5,-457.71 450,-447.71 446.5,-457.71 453.5,-457.71"/>
+<path fill="none" stroke="black" d="M456,-492.97C456,-482.02 456,-469.84 456,-458"/>
+<polygon fill="black" stroke="black" points="459.5,-457.71 456,-447.71 452.5,-457.71 459.5,-457.71"/>
 </g>
 <!-- TimeIntegration -->
 <g id="node2" class="node">
 <title>TimeIntegration</title>
-<path fill="none" stroke="black" d="M207,-572C207,-572 69,-572 69,-572 63,-572 57,-566 57,-560 57,-560 57,-505 57,-505 57,-499 63,-493 69,-493 69,-493 207,-493 207,-493 213,-493 219,-499 219,-505 219,-505 219,-560 219,-560 219,-566 213,-572 207,-572"/>
-<polyline fill="none" stroke="black" points="64,-541.5 212,-541.5 "/>
-<text text-anchor="start" x="72.5" y="-550.3" font-family="Times,serif" font-weight="bold" font-size="14.00">TimeIntegration</text>
-<polygon fill="#cccccc" stroke="transparent" points="64,-518.5 64,-541.5 111,-541.5 111,-518.5 64,-518.5"/>
-<polyline fill="none" stroke="black" points="64,-518.5 111,-518.5 111,-541.5 64,-541.5 "/>
-<text text-anchor="start" x="68" y="-526.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="111,-518.5 111,-541.5 165,-541.5 165,-518.5 111,-518.5"/>
-<polygon fill="none" stroke="black" points="111,-518.5 111,-541.5 165,-541.5 165,-518.5 111,-518.5"/>
-<text text-anchor="start" x="115" y="-526.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="165,-518.5 165,-541.5 212,-541.5 212,-518.5 165,-518.5"/>
-<polyline fill="none" stroke="black" points="212,-541.5 165,-541.5 165,-518.5 212,-518.5 "/>
-<text text-anchor="start" x="169" y="-526.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="111,-499.5 111,-518.5 "/>
-<text text-anchor="start" x="68" y="-506.5" font-family="monospace" font-size="10.00">time</text>
-<polyline fill="none" stroke="black" points="165,-499.5 165,-518.5 "/>
-<text text-anchor="start" x="115" y="-506.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="168" y="-506.5" font-family="monospace" font-size="10.00">step</text>
+<path fill="none" stroke="black" d="M210,-572C210,-572 72,-572 72,-572 66,-572 60,-566 60,-560 60,-560 60,-505 60,-505 60,-499 66,-493 72,-493 72,-493 210,-493 210,-493 216,-493 222,-499 222,-505 222,-505 222,-560 222,-560 222,-566 216,-572 210,-572"/>
+<polyline fill="none" stroke="black" points="67,-541.5 215,-541.5 "/>
+<text text-anchor="start" x="75.5" y="-550.3" font-family="Times,serif" font-weight="bold" font-size="14.00">TimeIntegration</text>
+<polygon fill="#cccccc" stroke="transparent" points="67,-518.5 67,-541.5 114,-541.5 114,-518.5 67,-518.5"/>
+<polyline fill="none" stroke="black" points="67,-518.5 114,-518.5 114,-541.5 67,-541.5 "/>
+<text text-anchor="start" x="71" y="-526.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="114,-518.5 114,-541.5 168,-541.5 168,-518.5 114,-518.5"/>
+<polygon fill="none" stroke="black" points="114,-518.5 114,-541.5 168,-541.5 168,-518.5 114,-518.5"/>
+<text text-anchor="start" x="118" y="-526.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="168,-518.5 168,-541.5 215,-541.5 215,-518.5 168,-518.5"/>
+<polyline fill="none" stroke="black" points="215,-541.5 168,-541.5 168,-518.5 215,-518.5 "/>
+<text text-anchor="start" x="172" y="-526.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="114,-499.5 114,-518.5 "/>
+<text text-anchor="start" x="71" y="-506.5" font-family="monospace" font-size="10.00">time</text>
+<polyline fill="none" stroke="black" points="168,-499.5 168,-518.5 "/>
+<text text-anchor="start" x="118" y="-506.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="171" y="-506.5" font-family="monospace" font-size="10.00">step</text>
 </g>
 <!-- TimeIntegration&#45;&gt;WaterDepth -->
 <g id="edge1" class="edge">
 <title>TimeIntegration&#45;&gt;WaterDepth</title>
-<path fill="none" stroke="black" d="M138,-492.97C138,-484.98 138,-476.34 138,-467.65"/>
-<polygon fill="black" stroke="black" points="141.5,-467.47 138,-457.47 134.5,-467.47 141.5,-467.47"/>
+<path fill="none" stroke="black" d="M141,-492.97C141,-484.98 141,-476.34 141,-467.65"/>
+<polygon fill="black" stroke="black" points="144.5,-467.47 141,-457.47 137.5,-467.47 144.5,-467.47"/>
 </g>
 <!-- H5Writer -->
 <g id="node6" class="node">
 <title>H5Writer</title>
-<path fill="none" stroke="black" d="M170.5,-263.5C170.5,-263.5 105.5,-263.5 105.5,-263.5 99.5,-263.5 93.5,-257.5 93.5,-251.5 93.5,-251.5 93.5,-239.5 93.5,-239.5 93.5,-233.5 99.5,-227.5 105.5,-227.5 105.5,-227.5 170.5,-227.5 170.5,-227.5 176.5,-227.5 182.5,-233.5 182.5,-239.5 182.5,-239.5 182.5,-251.5 182.5,-251.5 182.5,-257.5 176.5,-263.5 170.5,-263.5"/>
-<text text-anchor="start" x="100.5" y="-242.8" font-family="Times,serif" font-weight="bold" font-size="14.00">H5Writer</text>
+<path fill="none" stroke="black" d="M173.5,-263.5C173.5,-263.5 108.5,-263.5 108.5,-263.5 102.5,-263.5 96.5,-257.5 96.5,-251.5 96.5,-251.5 96.5,-239.5 96.5,-239.5 96.5,-233.5 102.5,-227.5 108.5,-227.5 108.5,-227.5 173.5,-227.5 173.5,-227.5 179.5,-227.5 185.5,-233.5 185.5,-239.5 185.5,-239.5 185.5,-251.5 185.5,-251.5 185.5,-257.5 179.5,-263.5 173.5,-263.5"/>
+<text text-anchor="start" x="103.5" y="-242.8" font-family="Times,serif" font-weight="bold" font-size="14.00">H5Writer</text>
 </g>
 <!-- WaterDepth&#45;&gt;H5Writer -->
 <g id="edge6" class="edge">
 <title>WaterDepth&#45;&gt;H5Writer</title>
-<path fill="none" stroke="black" d="M138,-339.98C138,-317.27 138,-292.25 138,-273.82"/>
-<polygon fill="black" stroke="black" points="141.5,-273.79 138,-263.79 134.5,-273.79 141.5,-273.79"/>
+<path fill="none" stroke="black" d="M141,-339.98C141,-317.27 141,-292.25 141,-273.82"/>
+<polygon fill="black" stroke="black" points="144.5,-273.79 141,-263.79 137.5,-273.79 144.5,-273.79"/>
 </g>
 <!-- Production -->
 <g id="node7" class="node">
 <title>Production</title>
-<path fill="none" stroke="black" d="M796.5,-304C796.5,-304 549.5,-304 549.5,-304 543.5,-304 537.5,-298 537.5,-292 537.5,-292 537.5,-199 537.5,-199 537.5,-193 543.5,-187 549.5,-187 549.5,-187 796.5,-187 796.5,-187 802.5,-187 808.5,-193 808.5,-199 808.5,-199 808.5,-292 808.5,-292 808.5,-298 802.5,-304 796.5,-304"/>
-<polyline fill="none" stroke="black" points="545,-273.5 802,-273.5 "/>
-<text text-anchor="start" x="629.5" y="-282.3" font-family="Times,serif" font-weight="bold" font-size="14.00">Production</text>
-<polygon fill="#cccccc" stroke="transparent" points="545,-250.5 545,-273.5 614,-273.5 614,-250.5 545,-250.5"/>
-<polyline fill="none" stroke="black" points="545,-250.5 614,-250.5 614,-273.5 545,-273.5 "/>
-<text text-anchor="start" x="549" y="-258.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="614,-250.5 614,-273.5 755,-273.5 755,-250.5 614,-250.5"/>
-<polygon fill="none" stroke="black" points="614,-250.5 614,-273.5 755,-273.5 755,-250.5 614,-250.5"/>
-<text text-anchor="start" x="618" y="-258.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="755,-250.5 755,-273.5 802,-273.5 802,-250.5 755,-250.5"/>
-<polyline fill="none" stroke="black" points="802,-273.5 755,-273.5 755,-250.5 802,-250.5 "/>
-<text text-anchor="start" x="759" y="-258.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="614,-231.5 614,-250.5 "/>
-<text text-anchor="start" x="549" y="-238.5" font-family="monospace" font-size="10.00">insolation</text>
-<polyline fill="none" stroke="black" points="755,-231.5 755,-250.5 "/>
-<text text-anchor="start" x="618" y="-238.5" font-family="monospace" font-size="10.00">maximum_growth_rate</text>
-<text text-anchor="start" x="758" y="-238.5" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="614,-212.5 614,-231.5 "/>
-<text text-anchor="start" x="549" y="-219.5" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="755,-212.5 755,-231.5 "/>
-<text text-anchor="start" x="618" y="-219.5" font-family="monospace" font-size="10.00">extinction_coefficient</text>
-<text text-anchor="start" x="758" y="-219.5" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="614,-193.5 614,-212.5 "/>
-<text text-anchor="start" x="549" y="-200.5" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="755,-193.5 755,-212.5 "/>
-<text text-anchor="start" x="618" y="-200.5" font-family="monospace" font-size="10.00">saturation_intensity</text>
-<text text-anchor="start" x="758" y="-200.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M799.5,-304C799.5,-304 552.5,-304 552.5,-304 546.5,-304 540.5,-298 540.5,-292 540.5,-292 540.5,-199 540.5,-199 540.5,-193 546.5,-187 552.5,-187 552.5,-187 799.5,-187 799.5,-187 805.5,-187 811.5,-193 811.5,-199 811.5,-199 811.5,-292 811.5,-292 811.5,-298 805.5,-304 799.5,-304"/>
+<polyline fill="none" stroke="black" points="548,-273.5 805,-273.5 "/>
+<text text-anchor="start" x="632.5" y="-282.3" font-family="Times,serif" font-weight="bold" font-size="14.00">Production</text>
+<polygon fill="#cccccc" stroke="transparent" points="548,-250.5 548,-273.5 617,-273.5 617,-250.5 548,-250.5"/>
+<polyline fill="none" stroke="black" points="548,-250.5 617,-250.5 617,-273.5 548,-273.5 "/>
+<text text-anchor="start" x="552" y="-258.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="617,-250.5 617,-273.5 758,-273.5 758,-250.5 617,-250.5"/>
+<polygon fill="none" stroke="black" points="617,-250.5 617,-273.5 758,-273.5 758,-250.5 617,-250.5"/>
+<text text-anchor="start" x="621" y="-258.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="758,-250.5 758,-273.5 805,-273.5 805,-250.5 758,-250.5"/>
+<polyline fill="none" stroke="black" points="805,-273.5 758,-273.5 758,-250.5 805,-250.5 "/>
+<text text-anchor="start" x="762" y="-258.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="617,-231.5 617,-250.5 "/>
+<text text-anchor="start" x="552" y="-238.5" font-family="monospace" font-size="10.00">insolation</text>
+<polyline fill="none" stroke="black" points="758,-231.5 758,-250.5 "/>
+<text text-anchor="start" x="621" y="-238.5" font-family="monospace" font-size="10.00">maximum_growth_rate</text>
+<text text-anchor="start" x="761" y="-238.5" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="617,-212.5 617,-231.5 "/>
+<text text-anchor="start" x="552" y="-219.5" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="758,-212.5 758,-231.5 "/>
+<text text-anchor="start" x="621" y="-219.5" font-family="monospace" font-size="10.00">extinction_coefficient</text>
+<text text-anchor="start" x="761" y="-219.5" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="617,-193.5 617,-212.5 "/>
+<text text-anchor="start" x="552" y="-200.5" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="758,-193.5 758,-212.5 "/>
+<text text-anchor="start" x="621" y="-200.5" font-family="monospace" font-size="10.00">saturation_intensity</text>
+<text text-anchor="start" x="761" y="-200.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- WaterDepth&#45;&gt;Production -->
 <g id="edge7" class="edge">
 <title>WaterDepth&#45;&gt;Production</title>
-<path fill="none" stroke="black" d="M276.2,-342.44C279.15,-341.59 282.09,-340.77 285,-340 387.84,-312.68 421.21,-331.35 527.42,-304.27"/>
-<polygon fill="black" stroke="black" points="528.45,-307.61 537.24,-301.69 526.68,-300.84 528.45,-307.61"/>
+<path fill="none" stroke="black" d="M282.04,-342.45C285.04,-341.6 288.03,-340.78 291,-340 392.67,-313.26 425.53,-331.15 530.53,-304.24"/>
+<polygon fill="black" stroke="black" points="531.46,-307.62 540.23,-301.68 529.67,-300.85 531.46,-307.62"/>
 </g>
 <!-- ActiveLayer -->
 <g id="node10" class="node">
 <title>ActiveLayer</title>
-<path fill="none" stroke="black" d="M507.5,-285C507.5,-285 212.5,-285 212.5,-285 206.5,-285 200.5,-279 200.5,-273 200.5,-273 200.5,-218 200.5,-218 200.5,-212 206.5,-206 212.5,-206 212.5,-206 507.5,-206 507.5,-206 513.5,-206 519.5,-212 519.5,-218 519.5,-218 519.5,-273 519.5,-273 519.5,-279 513.5,-285 507.5,-285"/>
-<polyline fill="none" stroke="black" points="208,-254.5 513,-254.5 "/>
-<text text-anchor="start" x="314.5" y="-263.3" font-family="Times,serif" font-weight="bold" font-size="14.00">ActiveLayer</text>
-<polygon fill="#cccccc" stroke="transparent" points="208,-231.5 208,-254.5 331,-254.5 331,-231.5 208,-231.5"/>
-<polyline fill="none" stroke="black" points="208,-231.5 331,-231.5 331,-254.5 208,-254.5 "/>
-<text text-anchor="start" x="212" y="-239.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="331,-231.5 331,-254.5 466,-254.5 466,-231.5 331,-231.5"/>
-<polygon fill="none" stroke="black" points="331,-231.5 331,-254.5 466,-254.5 466,-231.5 331,-231.5"/>
-<text text-anchor="start" x="335" y="-239.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="466,-231.5 466,-254.5 513,-254.5 513,-231.5 466,-231.5"/>
-<polyline fill="none" stroke="black" points="513,-254.5 466,-254.5 466,-231.5 513,-231.5 "/>
-<text text-anchor="start" x="470" y="-239.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="331,-212.5 331,-231.5 "/>
-<text text-anchor="start" x="212" y="-219.5" font-family="monospace" font-size="10.00">disintegration_rate</text>
-<polyline fill="none" stroke="black" points="466,-212.5 466,-231.5 "/>
-<text text-anchor="start" x="335" y="-219.5" font-family="monospace" font-size="10.00">diffusion_coefficient</text>
-<text text-anchor="start" x="469" y="-219.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M510.5,-285C510.5,-285 215.5,-285 215.5,-285 209.5,-285 203.5,-279 203.5,-273 203.5,-273 203.5,-218 203.5,-218 203.5,-212 209.5,-206 215.5,-206 215.5,-206 510.5,-206 510.5,-206 516.5,-206 522.5,-212 522.5,-218 522.5,-218 522.5,-273 522.5,-273 522.5,-279 516.5,-285 510.5,-285"/>
+<polyline fill="none" stroke="black" points="211,-254.5 516,-254.5 "/>
+<text text-anchor="start" x="317.5" y="-263.3" font-family="Times,serif" font-weight="bold" font-size="14.00">ActiveLayer</text>
+<polygon fill="#cccccc" stroke="transparent" points="211,-231.5 211,-254.5 334,-254.5 334,-231.5 211,-231.5"/>
+<polyline fill="none" stroke="black" points="211,-231.5 334,-231.5 334,-254.5 211,-254.5 "/>
+<text text-anchor="start" x="215" y="-239.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="334,-231.5 334,-254.5 469,-254.5 469,-231.5 334,-231.5"/>
+<polygon fill="none" stroke="black" points="334,-231.5 334,-254.5 469,-254.5 469,-231.5 334,-231.5"/>
+<text text-anchor="start" x="338" y="-239.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="469,-231.5 469,-254.5 516,-254.5 516,-231.5 469,-231.5"/>
+<polyline fill="none" stroke="black" points="516,-254.5 469,-254.5 469,-231.5 516,-231.5 "/>
+<text text-anchor="start" x="473" y="-239.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="334,-212.5 334,-231.5 "/>
+<text text-anchor="start" x="215" y="-219.5" font-family="monospace" font-size="10.00">disintegration_rate</text>
+<polyline fill="none" stroke="black" points="469,-212.5 469,-231.5 "/>
+<text text-anchor="start" x="338" y="-219.5" font-family="monospace" font-size="10.00">diffusion_coefficient</text>
+<text text-anchor="start" x="472" y="-219.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- WaterDepth&#45;&gt;ActiveLayer -->
 <g id="edge12" class="edge">
 <title>WaterDepth&#45;&gt;ActiveLayer</title>
-<path fill="none" stroke="black" d="M222.56,-339.98C246.47,-323.72 272.11,-306.28 294.69,-290.92"/>
-<polygon fill="black" stroke="black" points="296.89,-293.66 303.19,-285.14 292.95,-287.87 296.89,-293.66"/>
+<path fill="none" stroke="black" d="M225.56,-339.98C249.47,-323.72 275.11,-306.28 297.69,-290.92"/>
+<polygon fill="black" stroke="black" points="299.89,-293.66 306.19,-285.14 295.95,-287.87 299.89,-293.66"/>
 </g>
 <!-- CAProduction -->
 <g id="node9" class="node">
 <title>CAProduction</title>
-<path fill="none" stroke="black" d="M666.5,-129.5C666.5,-129.5 567.5,-129.5 567.5,-129.5 561.5,-129.5 555.5,-123.5 555.5,-117.5 555.5,-117.5 555.5,-105.5 555.5,-105.5 555.5,-99.5 561.5,-93.5 567.5,-93.5 567.5,-93.5 666.5,-93.5 666.5,-93.5 672.5,-93.5 678.5,-99.5 678.5,-105.5 678.5,-105.5 678.5,-117.5 678.5,-117.5 678.5,-123.5 672.5,-129.5 666.5,-129.5"/>
-<text text-anchor="start" x="562.5" y="-108.8" font-family="Times,serif" font-weight="bold" font-size="14.00">CAProduction</text>
+<path fill="none" stroke="black" d="M669.5,-129.5C669.5,-129.5 570.5,-129.5 570.5,-129.5 564.5,-129.5 558.5,-123.5 558.5,-117.5 558.5,-117.5 558.5,-105.5 558.5,-105.5 558.5,-99.5 564.5,-93.5 570.5,-93.5 570.5,-93.5 669.5,-93.5 669.5,-93.5 675.5,-93.5 681.5,-99.5 681.5,-105.5 681.5,-105.5 681.5,-117.5 681.5,-117.5 681.5,-123.5 675.5,-129.5 669.5,-129.5"/>
+<text text-anchor="start" x="565.5" y="-108.8" font-family="Times,serif" font-weight="bold" font-size="14.00">CAProduction</text>
 </g>
 <!-- CellularAutomaton&#45;&gt;CAProduction -->
 <g id="edge10" class="edge">
 <title>CellularAutomaton&#45;&gt;CAProduction</title>
-<path fill="none" stroke="black" d="M845.73,-196.48C836.38,-193.17 827.06,-189.97 818,-187 761.03,-168.31 743.6,-173.43 688,-151 676.52,-146.37 664.51,-140.35 653.71,-134.46"/>
-<polygon fill="black" stroke="black" points="655.39,-131.39 644.96,-129.57 651.98,-137.5 655.39,-131.39"/>
+<path fill="none" stroke="black" d="M848.73,-196.48C839.38,-193.17 830.06,-189.97 821,-187 764.03,-168.31 746.6,-173.43 691,-151 679.52,-146.37 667.51,-140.35 656.71,-134.46"/>
+<polygon fill="black" stroke="black" points="658.39,-131.39 647.96,-129.57 654.98,-137.5 658.39,-131.39"/>
 </g>
 <!-- FaciesBase -->
 <g id="node5" class="node">
 <title>FaciesBase</title>
-<path fill="none" stroke="black" d="M774,-438C774,-438 636,-438 636,-438 630,-438 624,-432 624,-426 624,-426 624,-371 624,-371 624,-365 630,-359 636,-359 636,-359 774,-359 774,-359 780,-359 786,-365 786,-371 786,-371 786,-426 786,-426 786,-432 780,-438 774,-438"/>
-<polyline fill="none" stroke="black" points="631,-407.5 779,-407.5 "/>
-<text text-anchor="start" x="661" y="-416.3" font-family="Times,serif" font-weight="bold" font-size="14.00">FaciesBase</text>
-<polygon fill="#cccccc" stroke="transparent" points="631,-384.5 631,-407.5 678,-407.5 678,-384.5 631,-384.5"/>
-<polyline fill="none" stroke="black" points="631,-384.5 678,-384.5 678,-407.5 631,-407.5 "/>
-<text text-anchor="start" x="635" y="-392.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="678,-384.5 678,-407.5 732,-407.5 732,-384.5 678,-384.5"/>
-<polygon fill="none" stroke="black" points="678,-384.5 678,-407.5 732,-407.5 732,-384.5 678,-384.5"/>
-<text text-anchor="start" x="682" y="-392.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="732,-384.5 732,-407.5 779,-407.5 779,-384.5 732,-384.5"/>
-<polyline fill="none" stroke="black" points="779,-407.5 732,-407.5 732,-384.5 779,-384.5 "/>
-<text text-anchor="start" x="736" y="-392.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="678,-365.5 678,-384.5 "/>
-<text text-anchor="start" x="635" y="-372.5" font-family="monospace" font-size="10.00">facies</text>
-<polyline fill="none" stroke="black" points="732,-365.5 732,-384.5 "/>
-<text text-anchor="start" x="682" y="-372.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="735" y="-372.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M780,-438C780,-438 642,-438 642,-438 636,-438 630,-432 630,-426 630,-426 630,-371 630,-371 630,-365 636,-359 642,-359 642,-359 780,-359 780,-359 786,-359 792,-365 792,-371 792,-371 792,-426 792,-426 792,-432 786,-438 780,-438"/>
+<polyline fill="none" stroke="black" points="637,-407.5 785,-407.5 "/>
+<text text-anchor="start" x="667" y="-416.3" font-family="Times,serif" font-weight="bold" font-size="14.00">FaciesBase</text>
+<polygon fill="#cccccc" stroke="transparent" points="637,-384.5 637,-407.5 684,-407.5 684,-384.5 637,-384.5"/>
+<polyline fill="none" stroke="black" points="637,-384.5 684,-384.5 684,-407.5 637,-407.5 "/>
+<text text-anchor="start" x="641" y="-392.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="684,-384.5 684,-407.5 738,-407.5 738,-384.5 684,-384.5"/>
+<polygon fill="none" stroke="black" points="684,-384.5 684,-407.5 738,-407.5 738,-384.5 684,-384.5"/>
+<text text-anchor="start" x="688" y="-392.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="738,-384.5 738,-407.5 785,-407.5 785,-384.5 738,-384.5"/>
+<polyline fill="none" stroke="black" points="785,-407.5 738,-407.5 738,-384.5 785,-384.5 "/>
+<text text-anchor="start" x="742" y="-392.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="684,-365.5 684,-384.5 "/>
+<text text-anchor="start" x="641" y="-372.5" font-family="monospace" font-size="10.00">facies</text>
+<polyline fill="none" stroke="black" points="738,-365.5 738,-384.5 "/>
+<text text-anchor="start" x="688" y="-372.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="741" y="-372.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- FaciesBase&#45;&gt;CellularAutomaton -->
 <g id="edge4" class="edge">
 <title>FaciesBase&#45;&gt;CellularAutomaton</title>
-<path fill="none" stroke="black" d="M772.64,-358.81C804.06,-340.84 841.91,-319.19 875.96,-299.71"/>
-<polygon fill="black" stroke="black" points="878.05,-302.55 884.99,-294.55 874.57,-296.48 878.05,-302.55"/>
+<path fill="none" stroke="black" d="M777.88,-358.81C808.93,-340.84 846.35,-319.19 880.02,-299.71"/>
+<polygon fill="black" stroke="black" points="882.04,-302.59 888.95,-294.55 878.54,-296.53 882.04,-302.59"/>
 </g>
 <!-- FaciesBase&#45;&gt;H5Writer -->
 <g id="edge5" class="edge">
 <title>FaciesBase&#45;&gt;H5Writer</title>
-<path fill="none" stroke="black" d="M653.88,-358.9C641.7,-351.43 628.35,-344.52 615,-340 435.88,-279.32 360.85,-387.18 191,-304 176.38,-296.84 163.83,-283.77 154.62,-271.91"/>
-<polygon fill="black" stroke="black" points="157.25,-269.57 148.52,-263.58 151.6,-273.71 157.25,-269.57"/>
+<path fill="none" stroke="black" d="M659.88,-358.89C647.7,-351.42 634.35,-344.52 621,-340 440.6,-278.95 365.07,-387.71 194,-304 179.38,-296.84 166.83,-283.78 157.61,-271.91"/>
+<polygon fill="black" stroke="black" points="160.25,-269.58 151.51,-263.58 154.6,-273.71 160.25,-269.58"/>
 </g>
 <!-- FaciesBase&#45;&gt;Production -->
 <g id="edge8" class="edge">
 <title>FaciesBase&#45;&gt;Production</title>
-<path fill="none" stroke="black" d="M696.76,-358.61C693.87,-344.99 690.54,-329.28 687.31,-314"/>
-<polygon fill="black" stroke="black" points="690.69,-313.11 685.2,-304.05 683.85,-314.56 690.69,-313.11"/>
+<path fill="none" stroke="black" d="M701.99,-358.61C698.83,-344.99 695.19,-329.28 691.65,-314"/>
+<polygon fill="black" stroke="black" points="695.01,-313.01 689.34,-304.05 688.19,-314.59 695.01,-313.01"/>
 </g>
 <!-- FaciesBase&#45;&gt;ActiveLayer -->
 <g id="edge13" class="edge">
 <title>FaciesBase&#45;&gt;ActiveLayer</title>
-<path fill="none" stroke="black" d="M648.47,-358.77C637.6,-352.08 626.13,-345.51 615,-340 590.29,-327.76 534.92,-307.18 482.07,-288.44"/>
-<polygon fill="black" stroke="black" points="483.18,-285.12 472.58,-285.09 480.84,-291.72 483.18,-285.12"/>
+<path fill="none" stroke="black" d="M654.49,-358.74C643.62,-352.05 632.14,-345.49 621,-340 596.01,-327.68 539.99,-307.09 486.51,-288.37"/>
+<polygon fill="black" stroke="black" points="487.51,-285.01 476.91,-285.02 485.2,-291.62 487.51,-285.01"/>
 </g>
-<!-- ALCAP2 -->
-<g id="node11" class="node">
-<title>ALCAP2</title>
-<path fill="none" stroke="black" d="M487.5,-36C487.5,-36 434.5,-36 434.5,-36 428.5,-36 422.5,-30 422.5,-24 422.5,-24 422.5,-12 422.5,-12 422.5,-6 428.5,0 434.5,0 434.5,0 487.5,0 487.5,0 493.5,0 499.5,-6 499.5,-12 499.5,-12 499.5,-24 499.5,-24 499.5,-30 493.5,-36 487.5,-36"/>
-<text text-anchor="start" x="429.5" y="-15.3" font-family="Times,serif" font-weight="bold" font-size="14.00">ALCAP2</text>
+<!-- ALCAP -->
+<g id="node12" class="node">
+<title>ALCAP</title>
+<path fill="none" stroke="black" d="M485.5,-36C485.5,-36 442.5,-36 442.5,-36 436.5,-36 430.5,-30 430.5,-24 430.5,-24 430.5,-12 430.5,-12 430.5,-6 436.5,0 442.5,0 442.5,0 485.5,0 485.5,0 491.5,0 497.5,-6 497.5,-12 497.5,-12 497.5,-24 497.5,-24 497.5,-30 491.5,-36 485.5,-36"/>
+<text text-anchor="start" x="437.5" y="-15.3" font-family="Times,serif" font-weight="bold" font-size="14.00">ALCAP</text>
 </g>
-<!-- H5Writer&#45;&gt;ALCAP2 -->
+<!-- H5Writer&#45;&gt;ALCAP -->
 <g id="edge16" class="edge">
-<title>H5Writer&#45;&gt;ALCAP2</title>
-<path fill="none" stroke="black" d="M151.76,-227.25C161.88,-215.18 176.36,-199.12 191,-187 264.98,-125.77 363.07,-70.19 418.36,-40.85"/>
-<polygon fill="black" stroke="black" points="420.3,-43.78 427.51,-36.02 417.03,-37.59 420.3,-43.78"/>
+<title>H5Writer&#45;&gt;ALCAP</title>
+<path fill="none" stroke="black" d="M154.76,-227.25C164.88,-215.18 179.36,-199.12 194,-187 267.98,-125.77 366.07,-70.19 421.36,-40.85"/>
+<polygon fill="black" stroke="black" points="423.3,-43.78 430.51,-36.02 420.03,-37.59 423.3,-43.78"/>
 </g>
 <!-- Production&#45;&gt;CAProduction -->
 <g id="edge11" class="edge">
 <title>Production&#45;&gt;CAProduction</title>
-<path fill="none" stroke="black" d="M648.6,-186.99C641.49,-170.22 634.05,-152.7 628.19,-138.87"/>
-<polygon fill="black" stroke="black" points="631.35,-137.35 624.22,-129.52 624.9,-140.09 631.35,-137.35"/>
+<path fill="none" stroke="black" d="M651.6,-186.99C644.49,-170.22 637.05,-152.7 631.19,-138.87"/>
+<polygon fill="black" stroke="black" points="634.35,-137.35 627.22,-129.52 627.9,-140.09 634.35,-137.35"/>
 </g>
 <!-- SedimentBuffer&#45;&gt;ActiveLayer -->
 <g id="edge14" class="edge">
 <title>SedimentBuffer&#45;&gt;ActiveLayer</title>
-<path fill="none" stroke="black" d="M421.28,-349.31C410.76,-331.67 398.88,-311.73 388.39,-294.14"/>
-<polygon fill="black" stroke="black" points="391.18,-291.98 383.05,-285.18 385.17,-295.56 391.18,-291.98"/>
+<path fill="none" stroke="black" d="M426.32,-349.31C415.45,-331.67 403.17,-311.73 392.34,-294.14"/>
+<polygon fill="black" stroke="black" points="395.05,-291.86 386.82,-285.18 389.09,-295.53 395.05,-291.86"/>
 </g>
-<!-- CAProduction&#45;&gt;ALCAP2 -->
+<!-- CAProduction&#45;&gt;ALCAP -->
 <g id="edge17" class="edge">
-<title>CAProduction&#45;&gt;ALCAP2</title>
-<path fill="none" stroke="black" d="M587.66,-93.29C562.6,-78.59 526.39,-57.35 499.1,-41.34"/>
-<polygon fill="black" stroke="black" points="500.61,-38.17 490.21,-36.13 497.07,-44.21 500.61,-38.17"/>
+<title>CAProduction&#45;&gt;ALCAP</title>
+<path fill="none" stroke="black" d="M590.66,-93.29C565.6,-78.59 529.39,-57.35 502.1,-41.34"/>
+<polygon fill="black" stroke="black" points="503.61,-38.17 493.21,-36.13 500.07,-44.21 503.61,-38.17"/>
 </g>
-<!-- ActiveLayer&#45;&gt;ALCAP2 -->
+<!-- ActiveLayer&#45;&gt;ALCAP -->
 <g id="edge18" class="edge">
-<title>ActiveLayer&#45;&gt;ALCAP2</title>
-<path fill="none" stroke="black" d="M377.25,-205.99C397.76,-160.19 431.46,-84.95 449.21,-45.32"/>
-<polygon fill="black" stroke="black" points="452.47,-46.6 453.36,-36.05 446.08,-43.74 452.47,-46.6"/>
+<title>ActiveLayer&#45;&gt;ALCAP</title>
+<path fill="none" stroke="black" d="M380.25,-205.99C400.76,-160.19 434.46,-84.95 452.21,-45.32"/>
+<polygon fill="black" stroke="black" points="455.47,-46.6 456.36,-36.05 449.08,-43.74 455.47,-46.6"/>
 </g>
 <!-- Tag -->
-<g id="node12" class="node">
+<g id="node11" class="node">
 <title>Tag</title>
-<path fill="none" stroke="black" d="M847,-151C847,-151 709,-151 709,-151 703,-151 697,-145 697,-139 697,-139 697,-84 697,-84 697,-78 703,-72 709,-72 709,-72 847,-72 847,-72 853,-72 859,-78 859,-84 859,-84 859,-139 859,-139 859,-145 853,-151 847,-151"/>
-<polyline fill="none" stroke="black" points="704,-120.5 852,-120.5 "/>
-<text text-anchor="start" x="764" y="-129.3" font-family="Times,serif" font-weight="bold" font-size="14.00">Tag</text>
-<polygon fill="#cccccc" stroke="transparent" points="704,-97.5 704,-120.5 751,-120.5 751,-97.5 704,-97.5"/>
-<polyline fill="none" stroke="black" points="704,-97.5 751,-97.5 751,-120.5 704,-120.5 "/>
-<text text-anchor="start" x="708" y="-105.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="751,-97.5 751,-120.5 805,-120.5 805,-97.5 751,-97.5"/>
-<polygon fill="none" stroke="black" points="751,-97.5 751,-120.5 805,-120.5 805,-97.5 751,-97.5"/>
-<text text-anchor="start" x="755" y="-105.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="805,-97.5 805,-120.5 852,-120.5 852,-97.5 805,-97.5"/>
-<polyline fill="none" stroke="black" points="852,-120.5 805,-120.5 805,-97.5 852,-97.5 "/>
-<text text-anchor="start" x="809" y="-105.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="751,-78.5 751,-97.5 "/>
-<text text-anchor="start" x="708" y="-85.5" font-family="monospace" font-size="10.00">tag</text>
-<polyline fill="none" stroke="black" points="805,-78.5 805,-97.5 "/>
-<text text-anchor="start" x="755" y="-85.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="808" y="-85.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M850,-151C850,-151 712,-151 712,-151 706,-151 700,-145 700,-139 700,-139 700,-84 700,-84 700,-78 706,-72 712,-72 712,-72 850,-72 850,-72 856,-72 862,-78 862,-84 862,-84 862,-139 862,-139 862,-145 856,-151 850,-151"/>
+<polyline fill="none" stroke="black" points="707,-120.5 855,-120.5 "/>
+<text text-anchor="start" x="767" y="-129.3" font-family="Times,serif" font-weight="bold" font-size="14.00">Tag</text>
+<polygon fill="#cccccc" stroke="transparent" points="707,-97.5 707,-120.5 754,-120.5 754,-97.5 707,-97.5"/>
+<polyline fill="none" stroke="black" points="707,-97.5 754,-97.5 754,-120.5 707,-120.5 "/>
+<text text-anchor="start" x="711" y="-105.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="754,-97.5 754,-120.5 808,-120.5 808,-97.5 754,-97.5"/>
+<polygon fill="none" stroke="black" points="754,-97.5 754,-120.5 808,-120.5 808,-97.5 754,-97.5"/>
+<text text-anchor="start" x="758" y="-105.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="808,-97.5 808,-120.5 855,-120.5 855,-97.5 808,-97.5"/>
+<polyline fill="none" stroke="black" points="855,-120.5 808,-120.5 808,-97.5 855,-97.5 "/>
+<text text-anchor="start" x="812" y="-105.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="754,-78.5 754,-97.5 "/>
+<text text-anchor="start" x="711" y="-85.5" font-family="monospace" font-size="10.00">tag</text>
+<polyline fill="none" stroke="black" points="808,-78.5 808,-97.5 "/>
+<text text-anchor="start" x="758" y="-85.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="811" y="-85.5" font-family="monospace" font-size="10.00"> </text>
 </g>
-<!-- Tag&#45;&gt;ALCAP2 -->
+<!-- Tag&#45;&gt;ALCAP -->
 <g id="edge15" class="edge">
-<title>Tag&#45;&gt;ALCAP2</title>
-<path fill="none" stroke="black" d="M696.81,-75.02C693.85,-73.96 690.91,-72.95 688,-72 627.76,-52.25 556.24,-36.83 509.81,-27.83"/>
-<polygon fill="black" stroke="black" points="510.2,-24.34 499.72,-25.9 508.88,-31.21 510.2,-24.34"/>
+<title>Tag&#45;&gt;ALCAP</title>
+<path fill="none" stroke="black" d="M699.81,-75.02C696.85,-73.96 693.91,-72.95 691,-72 628.43,-51.49 553.71,-35.64 507.55,-26.82"/>
+<polygon fill="black" stroke="black" points="508.06,-23.35 497.58,-24.93 506.76,-30.23 508.06,-23.35"/>
 </g>
 </g>
 </svg>
-</div><div class="noweb-label">file:<i>src/Model/ALCAP/Example.jl</i></div><pre><code class="language- julia hljs">module Example
+</div><div class="noweb-label">file:<i>src/Models/ALCAP/Example.jl</i></div><pre><code class="language- julia hljs">module Example
 
 using Unitful
-using CarboKitten.Model: ALCAP2 as ALCAP
+using ..ALCAP: ALCAP
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
 
 &lt;&lt;alcap-example-input&gt;&gt;
 
-end</code></pre><div class="noweb-label">file:<i>src/Model/ALCAP2.jl</i></div><pre><code class="language- julia hljs"># FIXME: rename this to ALCAP and remove old code
-@compose module ALCAP2
+end</code></pre><div class="noweb-label">file:<i>src/Models/ALCAP.jl</i></div><pre><code class="language- julia hljs">@compose module ALCAP
 @mixin Tag, H5Writer, CAProduction, ActiveLayer
 
 using ..Common
@@ -454,7 +451,7 @@ using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
-using .H5Writer: run
+using .H5Writer: run_model
 
 export Input, Facies
 
@@ -490,7 +487,7 @@ function step!(input::Input)
         active_layer = p .+ d
         sediment = transport(state, active_layer)
 
-        push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|&gt; NoUnits) 
+        push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|&gt; NoUnits)
         state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
         state.step += 1
 
@@ -512,4 +509,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ca-with-production/">« Model with CA and Production</a><a class="docs-footer-nextpage" href="../first_tutorial/">Tutorial (Pluto notebook) »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Friday 8 November 2024 17:49">Friday 8 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ca-with-production/">« Model with CA and Production</a><a class="docs-footer-nextpage" href="../first_tutorial/">Tutorial (Pluto notebook) »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 13 November 2024 11:37">Wednesday 13 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

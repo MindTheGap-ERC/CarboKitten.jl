@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Bosscher and Schlager 1992 · CarboKitten</title><meta name="title" content="Bosscher and Schlager 1992 · CarboKitten"/><meta property="og:title" content="Bosscher and Schlager 1992 · CarboKitten"/><meta property="twitter:title" content="Bosscher and Schlager 1992 · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li class="is-active"><a class="tocitem" href>Bosscher and Schlager 1992</a><ul class="internal"><li><a class="tocitem" href="#Parameters"><span>Parameters</span></a></li><li><a class="tocitem" href="#Growth-Rate"><span>Growth Rate</span></a></li><li><a class="tocitem" href="#Depth-Evolution"><span>Depth Evolution</span></a></li><li><a class="tocitem" href="#Crosssection"><span>Crosssection</span></a></li><li><a class="tocitem" href="#BS92-in-CarboKitten-stack"><span>BS92 in CarboKitten stack</span></a></li><li><a class="tocitem" href="#Multiple-facies"><span>Multiple facies</span></a></li></ul></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li><li><a class="tocitem" href="../carbocat-ca/">Cellular Automaton</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Output</span><ul><li><a class="tocitem" href="../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Models</a></li><li class="is-active"><a href>Bosscher and Schlager 1992</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Bosscher and Schlager 1992</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/bosscher-1992.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Carbonate-Production"><a class="docs-heading-anchor" href="#Carbonate-Production">Carbonate Production</a><a id="Carbonate-Production-1"></a><a class="docs-heading-anchor-permalink" href="#Carbonate-Production" title="Permalink"></a></h1><p>The paper by Bosscher and Schlager (1992) [<a href="../references/#Bosscher1992">1</a>] is an early computer model for simulating reef growth. This paper contains some of the essential ingredients that we find back in CarboKitten. We reproduce their results within the framework of CarboKitten&#39;s larger design.</p><p>The BS92 model assumes a direct relation between water depth and sediment accumulation rate. That way we can model reef growth by integrating an Ordinary Differential Equation (ODE). The <a href="../components/production/"><code>Production</code> component</a> provides this model for the rest of CarboKitten.</p><p><img src="../fig/bs92-summary.png" alt="summary plot"/></p><h2 id="Parameters"><a class="docs-heading-anchor" href="#Parameters">Parameters</a><a id="Parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Parameters" title="Permalink"></a></h2><blockquote><ul><li>Maximum growth rate <span>$G_m$</span>. The maximum rate of reef growth is in the range of <span>$10-15 {\rm mm\ yr^{-1}}$</span> (Macintyre etal., 1977; Adey, 1978; Davies, 1983).</li><li>Extinction coefficient <span>$k$</span>. This is a measure of the extinction of photosynthetically active radiation (PAR), i.e. light with a wavelength of 400-700 nm.  The value of k for oceanic waters ranges from <span>$0.04$</span> to <span>$0.16\ {\rm m^{-1}}$</span> (Jerlov, 1976); reported values for reef waters also lie within this range (Brakel, 1979; Van den Hoek et al., 1975; Weinberg, 1976; Chalker, 1981; Porter, 1985).</li><li>Surface light intensity <span>$I_0$</span>. The light intensity at the water surface at midday in the tropics lies in the range of <span>$2000-2250\ {\rm \mu E\ m^{-2}s^{-1}}$</span>.</li><li>Saturating light intensity <span>$I_k$</span>. Light saturating intensities are in the range <span>$50-450\ {\rm \mu E\ m^{-2}s^{-1}}$</span>, depending on species and water depth (Chalker, 1981; Wyman et al., 1987). Photoadaptation of reef-building corals has not been taken into account. More generally, light does not become a limiting factor for coral growth until it reaches roughly 10% of its surface value (B. E. Chalker, in Done, 1983).</li></ul></blockquote><p><em>from BS92</em></p><h2 id="Growth-Rate"><a class="docs-heading-anchor" href="#Growth-Rate">Growth Rate</a><a id="Growth-Rate-1"></a><a class="docs-heading-anchor-permalink" href="#Growth-Rate" title="Permalink"></a></h2><p>The growth rate is given as</p><p class="math-container">\[g(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right),\]</p><div class="noweb-label">⪡carbonate-production⪢≣</div><pre><code class="language- julia hljs">g(gₘ, I₀, Iₖ, k, w) = gₘ * tanh(I₀/Iₖ * exp(-w * k))</code></pre><div class="noweb-label">⪡b92-model⪢≣</div><pre><code class="language- julia hljs">&lt;&lt;carbonate-production&gt;&gt;
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Bosscher and Schlager 1992 · CarboKitten</title><meta name="title" content="Bosscher and Schlager 1992 · CarboKitten"/><meta property="og:title" content="Bosscher and Schlager 1992 · CarboKitten"/><meta property="twitter:title" content="Bosscher and Schlager 1992 · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li class="is-active"><a class="tocitem" href>Bosscher and Schlager 1992</a><ul class="internal"><li><a class="tocitem" href="#Parameters"><span>Parameters</span></a></li><li><a class="tocitem" href="#Growth-Rate"><span>Growth Rate</span></a></li><li><a class="tocitem" href="#Depth-Evolution"><span>Depth Evolution</span></a></li><li><a class="tocitem" href="#Crosssection"><span>Crosssection</span></a></li><li><a class="tocitem" href="#BS92-in-CarboKitten-stack"><span>BS92 in CarboKitten stack</span></a></li><li><a class="tocitem" href="#Multiple-facies"><span>Multiple facies</span></a></li></ul></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li><li><a class="tocitem" href="../carbocat-ca/">Cellular Automaton</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Output</span><ul><li><a class="tocitem" href="../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Models</a></li><li class="is-active"><a href>Bosscher and Schlager 1992</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Bosscher and Schlager 1992</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/bosscher-1992.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Carbonate-Production"><a class="docs-heading-anchor" href="#Carbonate-Production">Carbonate Production</a><a id="Carbonate-Production-1"></a><a class="docs-heading-anchor-permalink" href="#Carbonate-Production" title="Permalink"></a></h1><p>The paper by Bosscher and Schlager (1992) [<a href="../references/#Bosscher1992">1</a>] is an early computer model for simulating reef growth. This paper contains some of the essential ingredients that we find back in CarboKitten. We reproduce their results within the framework of CarboKitten&#39;s larger design.</p><p>The BS92 model assumes a direct relation between water depth and sediment accumulation rate. That way we can model reef growth by integrating an Ordinary Differential Equation (ODE). The <a href="../components/production/"><code>Production</code> component</a> provides this model for the rest of CarboKitten.</p><p><img src="../fig/bs92-summary.png" alt="summary plot"/></p><h2 id="Parameters"><a class="docs-heading-anchor" href="#Parameters">Parameters</a><a id="Parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Parameters" title="Permalink"></a></h2><blockquote><ul><li>Maximum growth rate <span>$G_m$</span>. The maximum rate of reef growth is in the range of <span>$10-15 {\rm mm\ yr^{-1}}$</span> (Macintyre etal., 1977; Adey, 1978; Davies, 1983).</li><li>Extinction coefficient <span>$k$</span>. This is a measure of the extinction of photosynthetically active radiation (PAR), i.e. light with a wavelength of 400-700 nm.  The value of k for oceanic waters ranges from <span>$0.04$</span> to <span>$0.16\ {\rm m^{-1}}$</span> (Jerlov, 1976); reported values for reef waters also lie within this range (Brakel, 1979; Van den Hoek et al., 1975; Weinberg, 1976; Chalker, 1981; Porter, 1985).</li><li>Surface light intensity <span>$I_0$</span>. The light intensity at the water surface at midday in the tropics lies in the range of <span>$2000-2250\ {\rm \mu E\ m^{-2}s^{-1}}$</span>.</li><li>Saturating light intensity <span>$I_k$</span>. Light saturating intensities are in the range <span>$50-450\ {\rm \mu E\ m^{-2}s^{-1}}$</span>, depending on species and water depth (Chalker, 1981; Wyman et al., 1987). Photoadaptation of reef-building corals has not been taken into account. More generally, light does not become a limiting factor for coral growth until it reaches roughly 10% of its surface value (B. E. Chalker, in Done, 1983).</li></ul></blockquote><p><em>from BS92</em></p><h2 id="Growth-Rate"><a class="docs-heading-anchor" href="#Growth-Rate">Growth Rate</a><a id="Growth-Rate-1"></a><a class="docs-heading-anchor-permalink" href="#Growth-Rate" title="Permalink"></a></h2><p>The growth rate is given as</p><p class="math-container">\[g(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right),\]</p><div class="noweb-label">⪡carbonate-production⪢≣</div><pre><code class="language- julia hljs">g(gₘ, I₀, Iₖ, k, w) = gₘ * tanh(I₀/Iₖ * exp(-w * k))</code></pre><div class="noweb-label">⪡b92-model⪢≣</div><pre><code class="language- julia hljs">&lt;&lt;carbonate-production&gt;&gt;
 
 struct Parameters
      I₀::Float64
@@ -100,94 +100,94 @@ Script.main()</code></pre></details><h2 id="BS92-in-CarboKitten-stack"><a class=
 <!-- Generated by graphviz version 2.50.0 (20211204.2007)
  -->
 <!-- Pages: 1 -->
-<svg width="623pt" height="465pt"
- viewBox="0.00 0.00 623.00 465.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="624pt" height="465pt"
+ viewBox="0.00 0.00 624.00 465.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 461)">
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-461 619,-461 619,4 -4,4"/>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-461 620,-461 620,4 -4,4"/>
 <!-- Boxes -->
 <g id="node1" class="node">
 <title>Boxes</title>
-<path fill="none" stroke="black" d="M276,-457C276,-457 138,-457 138,-457 132,-457 126,-451 126,-445 126,-445 126,-390 126,-390 126,-384 132,-378 138,-378 138,-378 276,-378 276,-378 282,-378 288,-384 288,-390 288,-390 288,-445 288,-445 288,-451 282,-457 276,-457"/>
-<polyline fill="none" stroke="black" points="133,-426.5 281,-426.5 "/>
-<text text-anchor="start" x="183.5" y="-435.3" font-family="Times,serif" font-weight="bold" font-size="14.00">Boxes</text>
-<polygon fill="#cccccc" stroke="transparent" points="133,-403.5 133,-426.5 180,-426.5 180,-403.5 133,-403.5"/>
-<polyline fill="none" stroke="black" points="133,-403.5 180,-403.5 180,-426.5 133,-426.5 "/>
-<text text-anchor="start" x="137" y="-411.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="180,-403.5 180,-426.5 234,-426.5 234,-403.5 180,-403.5"/>
-<polygon fill="none" stroke="black" points="180,-403.5 180,-426.5 234,-426.5 234,-403.5 180,-403.5"/>
-<text text-anchor="start" x="184" y="-411.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="234,-403.5 234,-426.5 281,-426.5 281,-403.5 234,-403.5"/>
-<polyline fill="none" stroke="black" points="281,-426.5 234,-426.5 234,-403.5 281,-403.5 "/>
-<text text-anchor="start" x="238" y="-411.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="180,-384.5 180,-403.5 "/>
-<text text-anchor="start" x="137" y="-391.5" font-family="monospace" font-size="10.00">box</text>
-<polyline fill="none" stroke="black" points="234,-384.5 234,-403.5 "/>
-<text text-anchor="start" x="184" y="-391.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="237" y="-391.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M274,-457C274,-457 136,-457 136,-457 130,-457 124,-451 124,-445 124,-445 124,-390 124,-390 124,-384 130,-378 136,-378 136,-378 274,-378 274,-378 280,-378 286,-384 286,-390 286,-390 286,-445 286,-445 286,-451 280,-457 274,-457"/>
+<polyline fill="none" stroke="black" points="131,-426.5 279,-426.5 "/>
+<text text-anchor="start" x="181.5" y="-435.3" font-family="Times,serif" font-weight="bold" font-size="14.00">Boxes</text>
+<polygon fill="#cccccc" stroke="transparent" points="131,-403.5 131,-426.5 178,-426.5 178,-403.5 131,-403.5"/>
+<polyline fill="none" stroke="black" points="131,-403.5 178,-403.5 178,-426.5 131,-426.5 "/>
+<text text-anchor="start" x="135" y="-411.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="178,-403.5 178,-426.5 232,-426.5 232,-403.5 178,-403.5"/>
+<polygon fill="none" stroke="black" points="178,-403.5 178,-426.5 232,-426.5 232,-403.5 178,-403.5"/>
+<text text-anchor="start" x="182" y="-411.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="232,-403.5 232,-426.5 279,-426.5 279,-403.5 232,-403.5"/>
+<polyline fill="none" stroke="black" points="279,-426.5 232,-426.5 232,-403.5 279,-403.5 "/>
+<text text-anchor="start" x="236" y="-411.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="178,-384.5 178,-403.5 "/>
+<text text-anchor="start" x="135" y="-391.5" font-family="monospace" font-size="10.00">box</text>
+<polyline fill="none" stroke="black" points="232,-384.5 232,-403.5 "/>
+<text text-anchor="start" x="182" y="-391.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="235" y="-391.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- WaterDepth -->
 <g id="node3" class="node">
 <title>WaterDepth</title>
-<path fill="none" stroke="black" d="M423,-342C423,-342 171,-342 171,-342 165,-342 159,-336 159,-330 159,-330 159,-237 159,-237 159,-231 165,-225 171,-225 171,-225 423,-225 423,-225 429,-225 435,-231 435,-237 435,-237 435,-330 435,-330 435,-336 429,-342 423,-342"/>
-<polyline fill="none" stroke="black" points="166,-311.5 428,-311.5 "/>
-<text text-anchor="start" x="249.5" y="-320.3" font-family="Times,serif" font-weight="bold" font-size="14.00">WaterDepth</text>
-<polygon fill="#cccccc" stroke="transparent" points="166,-288.5 166,-311.5 277,-311.5 277,-288.5 166,-288.5"/>
-<polyline fill="none" stroke="black" points="166,-288.5 277,-288.5 277,-311.5 166,-311.5 "/>
-<text text-anchor="start" x="170" y="-296.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="277,-288.5 277,-311.5 331,-311.5 331,-288.5 277,-288.5"/>
-<polygon fill="none" stroke="black" points="277,-288.5 277,-311.5 331,-311.5 331,-288.5 277,-288.5"/>
-<text text-anchor="start" x="281" y="-296.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="331,-288.5 331,-311.5 428,-311.5 428,-288.5 331,-288.5"/>
-<polyline fill="none" stroke="black" points="428,-311.5 331,-311.5 331,-288.5 428,-288.5 "/>
-<text text-anchor="start" x="335" y="-296.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="277,-269.5 277,-288.5 "/>
-<text text-anchor="start" x="170" y="-276.5" font-family="monospace" font-size="10.00">sea_level</text>
-<polyline fill="none" stroke="black" points="331,-269.5 331,-288.5 "/>
-<text text-anchor="start" x="281" y="-276.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="334" y="-276.5" font-family="monospace" font-size="10.00">sediment_height</text>
-<polyline fill="none" stroke="black" points="277,-250.5 277,-269.5 "/>
-<text text-anchor="start" x="170" y="-257.5" font-family="monospace" font-size="10.00">bedrock_elevation</text>
-<polyline fill="none" stroke="black" points="331,-250.5 331,-269.5 "/>
-<text text-anchor="start" x="281" y="-257.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="334" y="-257.5" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="277,-231.5 277,-250.5 "/>
-<text text-anchor="start" x="170" y="-238.5" font-family="monospace" font-size="10.00">subsidence_rate</text>
-<polyline fill="none" stroke="black" points="331,-231.5 331,-250.5 "/>
-<text text-anchor="start" x="281" y="-238.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="334" y="-238.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M424,-342C424,-342 166,-342 166,-342 160,-342 154,-336 154,-330 154,-330 154,-237 154,-237 154,-231 160,-225 166,-225 166,-225 424,-225 424,-225 430,-225 436,-231 436,-237 436,-237 436,-330 436,-330 436,-336 430,-342 424,-342"/>
+<polyline fill="none" stroke="black" points="161,-311.5 429,-311.5 "/>
+<text text-anchor="start" x="247.5" y="-320.3" font-family="Times,serif" font-weight="bold" font-size="14.00">WaterDepth</text>
+<polygon fill="#cccccc" stroke="transparent" points="161,-288.5 161,-311.5 278,-311.5 278,-288.5 161,-288.5"/>
+<polyline fill="none" stroke="black" points="161,-288.5 278,-288.5 278,-311.5 161,-311.5 "/>
+<text text-anchor="start" x="165" y="-296.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="278,-288.5 278,-311.5 332,-311.5 332,-288.5 278,-288.5"/>
+<polygon fill="none" stroke="black" points="278,-288.5 278,-311.5 332,-311.5 332,-288.5 278,-288.5"/>
+<text text-anchor="start" x="282" y="-296.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="332,-288.5 332,-311.5 429,-311.5 429,-288.5 332,-288.5"/>
+<polyline fill="none" stroke="black" points="429,-311.5 332,-311.5 332,-288.5 429,-288.5 "/>
+<text text-anchor="start" x="336" y="-296.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="278,-269.5 278,-288.5 "/>
+<text text-anchor="start" x="165" y="-276.5" font-family="monospace" font-size="10.00">sea_level</text>
+<polyline fill="none" stroke="black" points="332,-269.5 332,-288.5 "/>
+<text text-anchor="start" x="282" y="-276.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="335" y="-276.5" font-family="monospace" font-size="10.00">sediment_height</text>
+<polyline fill="none" stroke="black" points="278,-250.5 278,-269.5 "/>
+<text text-anchor="start" x="165" y="-257.5" font-family="monospace" font-size="10.00">initial_topography</text>
+<polyline fill="none" stroke="black" points="332,-250.5 332,-269.5 "/>
+<text text-anchor="start" x="282" y="-257.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="335" y="-257.5" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="278,-231.5 278,-250.5 "/>
+<text text-anchor="start" x="165" y="-238.5" font-family="monospace" font-size="10.00">subsidence_rate</text>
+<polyline fill="none" stroke="black" points="332,-231.5 332,-250.5 "/>
+<text text-anchor="start" x="282" y="-238.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="335" y="-238.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- Boxes&#45;&gt;WaterDepth -->
 <g id="edge2" class="edge">
 <title>Boxes&#45;&gt;WaterDepth</title>
-<path fill="none" stroke="black" d="M233.27,-377.97C239.07,-369.46 245.38,-360.21 251.69,-350.95"/>
-<polygon fill="black" stroke="black" points="254.73,-352.7 257.48,-342.47 248.95,-348.76 254.73,-352.7"/>
+<path fill="none" stroke="black" d="M231.27,-377.97C237.07,-369.46 243.38,-360.21 249.69,-350.95"/>
+<polygon fill="black" stroke="black" points="252.73,-352.7 255.48,-342.47 246.95,-348.76 252.73,-352.7"/>
 </g>
 <!-- TimeIntegration -->
 <g id="node2" class="node">
 <title>TimeIntegration</title>
-<path fill="none" stroke="black" d="M456,-457C456,-457 318,-457 318,-457 312,-457 306,-451 306,-445 306,-445 306,-390 306,-390 306,-384 312,-378 318,-378 318,-378 456,-378 456,-378 462,-378 468,-384 468,-390 468,-390 468,-445 468,-445 468,-451 462,-457 456,-457"/>
-<polyline fill="none" stroke="black" points="313,-426.5 461,-426.5 "/>
-<text text-anchor="start" x="321.5" y="-435.3" font-family="Times,serif" font-weight="bold" font-size="14.00">TimeIntegration</text>
-<polygon fill="#cccccc" stroke="transparent" points="313,-403.5 313,-426.5 360,-426.5 360,-403.5 313,-403.5"/>
-<polyline fill="none" stroke="black" points="313,-403.5 360,-403.5 360,-426.5 313,-426.5 "/>
-<text text-anchor="start" x="317" y="-411.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="360,-403.5 360,-426.5 414,-426.5 414,-403.5 360,-403.5"/>
-<polygon fill="none" stroke="black" points="360,-403.5 360,-426.5 414,-426.5 414,-403.5 360,-403.5"/>
-<text text-anchor="start" x="364" y="-411.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="414,-403.5 414,-426.5 461,-426.5 461,-403.5 414,-403.5"/>
-<polyline fill="none" stroke="black" points="461,-426.5 414,-426.5 414,-403.5 461,-403.5 "/>
-<text text-anchor="start" x="418" y="-411.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="360,-384.5 360,-403.5 "/>
-<text text-anchor="start" x="317" y="-391.5" font-family="monospace" font-size="10.00">time</text>
-<polyline fill="none" stroke="black" points="414,-384.5 414,-403.5 "/>
-<text text-anchor="start" x="364" y="-391.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="417" y="-391.5" font-family="monospace" font-size="10.00">step</text>
+<path fill="none" stroke="black" d="M454,-457C454,-457 316,-457 316,-457 310,-457 304,-451 304,-445 304,-445 304,-390 304,-390 304,-384 310,-378 316,-378 316,-378 454,-378 454,-378 460,-378 466,-384 466,-390 466,-390 466,-445 466,-445 466,-451 460,-457 454,-457"/>
+<polyline fill="none" stroke="black" points="311,-426.5 459,-426.5 "/>
+<text text-anchor="start" x="319.5" y="-435.3" font-family="Times,serif" font-weight="bold" font-size="14.00">TimeIntegration</text>
+<polygon fill="#cccccc" stroke="transparent" points="311,-403.5 311,-426.5 358,-426.5 358,-403.5 311,-403.5"/>
+<polyline fill="none" stroke="black" points="311,-403.5 358,-403.5 358,-426.5 311,-426.5 "/>
+<text text-anchor="start" x="315" y="-411.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="358,-403.5 358,-426.5 412,-426.5 412,-403.5 358,-403.5"/>
+<polygon fill="none" stroke="black" points="358,-403.5 358,-426.5 412,-426.5 412,-403.5 358,-403.5"/>
+<text text-anchor="start" x="362" y="-411.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="412,-403.5 412,-426.5 459,-426.5 459,-403.5 412,-403.5"/>
+<polyline fill="none" stroke="black" points="459,-426.5 412,-426.5 412,-403.5 459,-403.5 "/>
+<text text-anchor="start" x="416" y="-411.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="358,-384.5 358,-403.5 "/>
+<text text-anchor="start" x="315" y="-391.5" font-family="monospace" font-size="10.00">time</text>
+<polyline fill="none" stroke="black" points="412,-384.5 412,-403.5 "/>
+<text text-anchor="start" x="362" y="-391.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="415" y="-391.5" font-family="monospace" font-size="10.00">step</text>
 </g>
 <!-- TimeIntegration&#45;&gt;WaterDepth -->
 <g id="edge1" class="edge">
 <title>TimeIntegration&#45;&gt;WaterDepth</title>
-<path fill="none" stroke="black" d="M360.73,-377.97C354.93,-369.46 348.62,-360.21 342.31,-350.95"/>
-<polygon fill="black" stroke="black" points="345.05,-348.76 336.52,-342.47 339.27,-352.7 345.05,-348.76"/>
+<path fill="none" stroke="black" d="M358.73,-377.97C352.93,-369.46 346.62,-360.21 340.31,-350.95"/>
+<polygon fill="black" stroke="black" points="343.05,-348.76 334.52,-342.47 337.27,-352.7 343.05,-348.76"/>
 </g>
 <!-- H5Writer -->
 <g id="node7" class="node">
@@ -198,8 +198,8 @@ Script.main()</code></pre></details><h2 id="BS92-in-CarboKitten-stack"><a class=
 <!-- WaterDepth&#45;&gt;H5Writer -->
 <g id="edge7" class="edge">
 <title>WaterDepth&#45;&gt;H5Writer</title>
-<path fill="none" stroke="black" d="M408.97,-224.86C426.99,-213.85 444.97,-201.75 461,-189 472.94,-179.5 484.6,-167.26 493.94,-156.52"/>
-<polygon fill="black" stroke="black" points="496.8,-158.56 500.59,-148.67 491.46,-154.04 496.8,-158.56"/>
+<path fill="none" stroke="black" d="M408.36,-224.99C426.6,-213.97 444.79,-201.83 461,-189 472.96,-179.53 484.63,-167.3 493.96,-156.55"/>
+<polygon fill="black" stroke="black" points="496.83,-158.59 500.61,-148.69 491.48,-154.07 496.83,-158.59"/>
 </g>
 <!-- Production -->
 <g id="node8" class="node">
@@ -235,41 +235,41 @@ Script.main()</code></pre></details><h2 id="BS92-in-CarboKitten-stack"><a class=
 <!-- WaterDepth&#45;&gt;Production -->
 <g id="edge8" class="edge">
 <title>WaterDepth&#45;&gt;Production</title>
-<path fill="none" stroke="black" d="M304.24,-224.98C305.3,-216.54 306.4,-207.77 307.49,-199.14"/>
-<polygon fill="black" stroke="black" points="310.98,-199.47 308.75,-189.11 304.03,-198.59 310.98,-199.47"/>
+<path fill="none" stroke="black" d="M303,-224.98C304.17,-216.54 305.39,-207.77 306.59,-199.14"/>
+<polygon fill="black" stroke="black" points="310.08,-199.49 307.99,-189.11 303.14,-198.53 310.08,-199.49"/>
 </g>
 <!-- FaciesBase -->
 <g id="node4" class="node">
 <title>FaciesBase</title>
-<path fill="none" stroke="black" d="M603,-323C603,-323 465,-323 465,-323 459,-323 453,-317 453,-311 453,-311 453,-256 453,-256 453,-250 459,-244 465,-244 465,-244 603,-244 603,-244 609,-244 615,-250 615,-256 615,-256 615,-311 615,-311 615,-317 609,-323 603,-323"/>
-<polyline fill="none" stroke="black" points="460,-292.5 608,-292.5 "/>
-<text text-anchor="start" x="490" y="-301.3" font-family="Times,serif" font-weight="bold" font-size="14.00">FaciesBase</text>
-<polygon fill="#cccccc" stroke="transparent" points="460,-269.5 460,-292.5 507,-292.5 507,-269.5 460,-269.5"/>
-<polyline fill="none" stroke="black" points="460,-269.5 507,-269.5 507,-292.5 460,-292.5 "/>
-<text text-anchor="start" x="464" y="-277.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="507,-269.5 507,-292.5 561,-292.5 561,-269.5 507,-269.5"/>
-<polygon fill="none" stroke="black" points="507,-269.5 507,-292.5 561,-292.5 561,-269.5 507,-269.5"/>
-<text text-anchor="start" x="511" y="-277.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="561,-269.5 561,-292.5 608,-292.5 608,-269.5 561,-269.5"/>
-<polyline fill="none" stroke="black" points="608,-292.5 561,-292.5 561,-269.5 608,-269.5 "/>
-<text text-anchor="start" x="565" y="-277.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="507,-250.5 507,-269.5 "/>
-<text text-anchor="start" x="464" y="-257.5" font-family="monospace" font-size="10.00">facies</text>
-<polyline fill="none" stroke="black" points="561,-250.5 561,-269.5 "/>
-<text text-anchor="start" x="511" y="-257.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="564" y="-257.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M604,-323C604,-323 466,-323 466,-323 460,-323 454,-317 454,-311 454,-311 454,-256 454,-256 454,-250 460,-244 466,-244 466,-244 604,-244 604,-244 610,-244 616,-250 616,-256 616,-256 616,-311 616,-311 616,-317 610,-323 604,-323"/>
+<polyline fill="none" stroke="black" points="461,-292.5 609,-292.5 "/>
+<text text-anchor="start" x="491" y="-301.3" font-family="Times,serif" font-weight="bold" font-size="14.00">FaciesBase</text>
+<polygon fill="#cccccc" stroke="transparent" points="461,-269.5 461,-292.5 508,-292.5 508,-269.5 461,-269.5"/>
+<polyline fill="none" stroke="black" points="461,-269.5 508,-269.5 508,-292.5 461,-292.5 "/>
+<text text-anchor="start" x="465" y="-277.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="508,-269.5 508,-292.5 562,-292.5 562,-269.5 508,-269.5"/>
+<polygon fill="none" stroke="black" points="508,-269.5 508,-292.5 562,-292.5 562,-269.5 508,-269.5"/>
+<text text-anchor="start" x="512" y="-277.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="562,-269.5 562,-292.5 609,-292.5 609,-269.5 562,-269.5"/>
+<polyline fill="none" stroke="black" points="609,-292.5 562,-292.5 562,-269.5 609,-269.5 "/>
+<text text-anchor="start" x="566" y="-277.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="508,-250.5 508,-269.5 "/>
+<text text-anchor="start" x="465" y="-257.5" font-family="monospace" font-size="10.00">facies</text>
+<polyline fill="none" stroke="black" points="562,-250.5 562,-269.5 "/>
+<text text-anchor="start" x="512" y="-257.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="565" y="-257.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- FaciesBase&#45;&gt;H5Writer -->
 <g id="edge6" class="edge">
 <title>FaciesBase&#45;&gt;H5Writer</title>
-<path fill="none" stroke="black" d="M528.85,-243.61C525.34,-217.09 520.77,-182.62 517.63,-158.94"/>
-<polygon fill="black" stroke="black" points="521.09,-158.34 516.3,-148.88 514.15,-159.26 521.09,-158.34"/>
+<path fill="none" stroke="black" d="M529.59,-243.61C525.9,-217.09 521.11,-182.62 517.82,-158.94"/>
+<polygon fill="black" stroke="black" points="521.26,-158.31 516.42,-148.88 514.33,-159.27 521.26,-158.31"/>
 </g>
 <!-- FaciesBase&#45;&gt;Production -->
 <g id="edge9" class="edge">
 <title>FaciesBase&#45;&gt;Production</title>
-<path fill="none" stroke="black" d="M478.14,-243.81C456.7,-228.96 431.63,-211.59 407.7,-195.01"/>
-<polygon fill="black" stroke="black" points="409.5,-192.01 399.29,-189.19 405.52,-197.76 409.5,-192.01"/>
+<path fill="none" stroke="black" d="M478.89,-243.81C457.35,-228.96 432.16,-211.59 408.12,-195.01"/>
+<polygon fill="black" stroke="black" points="409.89,-191.99 399.67,-189.19 405.92,-197.75 409.89,-191.99"/>
 </g>
 <!-- BS92 -->
 <g id="node5" class="node">
@@ -318,7 +318,7 @@ Script.main()</code></pre></details><h2 id="BS92-in-CarboKitten-stack"><a class=
 </g>
 </g>
 </svg>
-</div><p>Within the CarboKitten design, we can express the BS92 model a bit more succinctly. The following produces output that is fully compatible with other CarboKitten models and the included post processing and visualization stack. The <code>H5Writer</code> module provides a <code>run</code> method that expects the <code>initial_state</code>, <code>step!</code> and <code>write_header</code> methods to be available.</p><div class="noweb-label">file:<i>src/Model/BS92.jl</i></div><pre><code class="language- julia hljs">@compose module BS92
+</div><p>Within the CarboKitten design, we can express the BS92 model a bit more succinctly. The following produces output that is fully compatible with other CarboKitten models and the included post processing and visualization stack. The <code>H5Writer</code> module provides a <code>run</code> method that expects the <code>initial_state</code>, <code>step!</code> and <code>write_header</code> methods to be available.</p><div class="noweb-label">file:<i>src/Models/BS92.jl</i></div><pre><code class="language- julia hljs">@compose module BS92
 @mixin Tag, H5Writer, Production
 
 using ..Common
@@ -355,9 +355,7 @@ end</code></pre><div class="noweb-label">file:<i>examples/model/bs92/run.jl</i><
 
 module Script
 
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model.BS92
+using CarboKitten
 using CarboKitten.DataSets: bosscher_schlager_1992
 
 using Interpolations
@@ -368,9 +366,9 @@ function sealevel_curve()
     linear_interpolation(data.time, data.sealevel)
 end
 
-const INPUT = Input(
+const INPUT = BS92.Input(
     tag = &quot;example model BS92&quot;,
-    box = Common.Box{Shelf}(grid_size=(100, 1), phys_scale=600.0u&quot;m&quot;),
+    box = Box{Coast}(grid_size=(100, 1), phys_scale=600.0u&quot;m&quot;),
     time = TimeProperties(
       Δt = 10.0u&quot;yr&quot;,
       steps = 8000,
@@ -378,17 +376,17 @@ const INPUT = Input(
     sea_level = let sc = sealevel_curve()
       t -&gt; -sc(t)
     end,
-    bedrock_elevation = (x, y) -&gt; - x / 300.0,
+    initial_topography = (x, y) -&gt; - x / 300.0,
     subsidence_rate = 0.0u&quot;m/yr&quot;,
     insolation = 400.0u&quot;W/m^2&quot;,
-    facies = [Facies(
+    facies = [BS92.Facies(
       maximum_growth_rate = 0.005u&quot;m/yr&quot;,
       saturation_intensity = 50.0u&quot;W/m^2&quot;,
       extinction_coefficient = 0.05u&quot;m^-1&quot;
     )])
 
 function main()
-    H5Writer.run(Model{BS92}, INPUT, &quot;data/output/bs92.h5&quot;)
+    run_model(Model{BS92}, INPUT, &quot;data/output/bs92.h5&quot;)
 end
 
 end
@@ -403,11 +401,7 @@ save(&quot;docs/src/_fig/bs92-summary.png&quot;, summary_plot(&quot;data/output/
 
 module Script
 
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model.BS92
-
-using Unitful
+using CarboKitten
 
 const FACIES = [
     BS92.Facies(
@@ -425,19 +419,19 @@ const FACIES = [
 
 const INPUT = BS92.Input(
     tag = &quot;example model BS92&quot;,
-    box = Common.Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u&quot;m&quot;),
+    box = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u&quot;m&quot;),
     time = TimeProperties(
         Δt = 200.0u&quot;yr&quot;,
         steps = 5000,
         write_interval = 1),
     sea_level = t -&gt; 4.0u&quot;m&quot; * sin(2π * t / 0.2u&quot;Myr&quot;),
-    bedrock_elevation = (x, y) -&gt; - x / 300.0,
+    initial_topography = (x, y) -&gt; - x / 300.0,
     subsidence_rate = 50.0u&quot;m/Myr&quot;,
     insolation = 400.0u&quot;W/m^2&quot;,
     facies = FACIES)
 
 function main()
-    H5Writer.run(Model{BS92}, INPUT, &quot;data/output/bs92-multi-facies.h5&quot;)
+    run_model(Model{BS92}, INPUT, &quot;data/output/bs92-multi-facies.h5&quot;)
 end
 
 end
@@ -453,4 +447,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Introduction</a><a class="docs-footer-nextpage" href="../ca-with-production/">Model with CA and Production »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Friday 8 November 2024 17:49">Friday 8 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Introduction</a><a class="docs-footer-nextpage" href="../ca-with-production/">Model with CA and Production »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 13 November 2024 11:37">Wednesday 13 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>HDF5 Writer · CarboKitten</title><meta name="title" content="HDF5 Writer · CarboKitten"/><meta property="og:title" content="HDF5 Writer · CarboKitten"/><meta property="twitter:title" content="HDF5 Writer · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../model-alcap/">ALCAPS</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li><li><span class="tocitem">Components</span><ul><li><a class="tocitem" href="../components/">Components</a></li><li><a class="tocitem" href="../tag/">Tags</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../time/">Time</a></li><li><a class="tocitem" href="../facies/">Facies</a></li><li><a class="tocitem" href="../cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../production/">Production</a></li><li class="is-active"><a class="tocitem" href>HDF5 Writer</a></li><li><a class="tocitem" href="../sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li></ul></li><li><a class="tocitem" href="../../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../../carbocat/">Summary</a></li><li><a class="tocitem" href="../../carbocat-ca/">Cellular Automaton</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Output</span><ul><li><a class="tocitem" href="../../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Components</a></li><li class="is-active"><a href>HDF5 Writer</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>HDF5 Writer</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/components/hdf5.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="HDF5-Output"><a class="docs-heading-anchor" href="#HDF5-Output">HDF5 Output</a><a id="HDF5-Output-1"></a><a class="docs-heading-anchor-permalink" href="#HDF5-Output" title="Permalink"></a></h1><div class="component-dag" style="overflow: scroll"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>HDF5 Writer · CarboKitten</title><meta name="title" content="HDF5 Writer · CarboKitten"/><meta property="og:title" content="HDF5 Writer · CarboKitten"/><meta property="twitter:title" content="HDF5 Writer · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../model-alcap/">ALCAPS</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li><li><span class="tocitem">Components</span><ul><li><a class="tocitem" href="../components/">Components</a></li><li><a class="tocitem" href="../tag/">Tags</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../time/">Time</a></li><li><a class="tocitem" href="../facies/">Facies</a></li><li><a class="tocitem" href="../cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../production/">Production</a></li><li class="is-active"><a class="tocitem" href>HDF5 Writer</a></li><li><a class="tocitem" href="../sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li></ul></li><li><a class="tocitem" href="../../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../../carbocat/">Summary</a></li><li><a class="tocitem" href="../../carbocat-ca/">Cellular Automaton</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Output</span><ul><li><a class="tocitem" href="../../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Components</a></li><li class="is-active"><a href>HDF5 Writer</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>HDF5 Writer</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/components/hdf5.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="HDF5-Output"><a class="docs-heading-anchor" href="#HDF5-Output">HDF5 Output</a><a id="HDF5-Output-1"></a><a class="docs-heading-anchor-permalink" href="#HDF5-Output" title="Permalink"></a></h1><div class="component-dag" style="overflow: scroll"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Generated by graphviz version 2.50.0 (20211204.2007)
  -->
 <!-- Pages: 1 -->
-<svg width="497pt" height="312pt"
- viewBox="0.00 0.00 497.00 312.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="500pt" height="312pt"
+ viewBox="0.00 0.00 500.00 312.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 308)">
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-308 493,-308 493,4 -4,4"/>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-308 496,-308 496,4 -4,4"/>
 <!-- Boxes -->
 <g id="node1" class="node">
 <title>Boxes</title>
@@ -33,33 +33,33 @@
 <!-- WaterDepth -->
 <g id="node3" class="node">
 <title>WaterDepth</title>
-<path fill="none" stroke="black" d="M297,-189C297,-189 45,-189 45,-189 39,-189 33,-183 33,-177 33,-177 33,-84 33,-84 33,-78 39,-72 45,-72 45,-72 297,-72 297,-72 303,-72 309,-78 309,-84 309,-84 309,-177 309,-177 309,-183 303,-189 297,-189"/>
-<polyline fill="none" stroke="black" points="40,-158.5 302,-158.5 "/>
+<path fill="none" stroke="black" d="M300,-189C300,-189 42,-189 42,-189 36,-189 30,-183 30,-177 30,-177 30,-84 30,-84 30,-78 36,-72 42,-72 42,-72 300,-72 300,-72 306,-72 312,-78 312,-84 312,-84 312,-177 312,-177 312,-183 306,-189 300,-189"/>
+<polyline fill="none" stroke="black" points="37,-158.5 305,-158.5 "/>
 <text text-anchor="start" x="123.5" y="-167.3" font-family="Times,serif" font-weight="bold" font-size="14.00">WaterDepth</text>
-<polygon fill="#cccccc" stroke="transparent" points="40,-135.5 40,-158.5 151,-158.5 151,-135.5 40,-135.5"/>
-<polyline fill="none" stroke="black" points="40,-135.5 151,-135.5 151,-158.5 40,-158.5 "/>
-<text text-anchor="start" x="44" y="-143.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="151,-135.5 151,-158.5 205,-158.5 205,-135.5 151,-135.5"/>
-<polygon fill="none" stroke="black" points="151,-135.5 151,-158.5 205,-158.5 205,-135.5 151,-135.5"/>
-<text text-anchor="start" x="155" y="-143.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="205,-135.5 205,-158.5 302,-158.5 302,-135.5 205,-135.5"/>
-<polyline fill="none" stroke="black" points="302,-158.5 205,-158.5 205,-135.5 302,-135.5 "/>
-<text text-anchor="start" x="209" y="-143.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="151,-116.5 151,-135.5 "/>
-<text text-anchor="start" x="44" y="-123.5" font-family="monospace" font-size="10.00">sea_level</text>
-<polyline fill="none" stroke="black" points="205,-116.5 205,-135.5 "/>
-<text text-anchor="start" x="155" y="-123.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="208" y="-123.5" font-family="monospace" font-size="10.00">sediment_height</text>
-<polyline fill="none" stroke="black" points="151,-97.5 151,-116.5 "/>
-<text text-anchor="start" x="44" y="-104.5" font-family="monospace" font-size="10.00">bedrock_elevation</text>
-<polyline fill="none" stroke="black" points="205,-97.5 205,-116.5 "/>
-<text text-anchor="start" x="155" y="-104.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="208" y="-104.5" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="151,-78.5 151,-97.5 "/>
-<text text-anchor="start" x="44" y="-85.5" font-family="monospace" font-size="10.00">subsidence_rate</text>
-<polyline fill="none" stroke="black" points="205,-78.5 205,-97.5 "/>
-<text text-anchor="start" x="155" y="-85.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="208" y="-85.5" font-family="monospace" font-size="10.00"> </text>
+<polygon fill="#cccccc" stroke="transparent" points="37,-135.5 37,-158.5 154,-158.5 154,-135.5 37,-135.5"/>
+<polyline fill="none" stroke="black" points="37,-135.5 154,-135.5 154,-158.5 37,-158.5 "/>
+<text text-anchor="start" x="41" y="-143.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="154,-135.5 154,-158.5 208,-158.5 208,-135.5 154,-135.5"/>
+<polygon fill="none" stroke="black" points="154,-135.5 154,-158.5 208,-158.5 208,-135.5 154,-135.5"/>
+<text text-anchor="start" x="158" y="-143.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="208,-135.5 208,-158.5 305,-158.5 305,-135.5 208,-135.5"/>
+<polyline fill="none" stroke="black" points="305,-158.5 208,-158.5 208,-135.5 305,-135.5 "/>
+<text text-anchor="start" x="212" y="-143.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="154,-116.5 154,-135.5 "/>
+<text text-anchor="start" x="41" y="-123.5" font-family="monospace" font-size="10.00">sea_level</text>
+<polyline fill="none" stroke="black" points="208,-116.5 208,-135.5 "/>
+<text text-anchor="start" x="158" y="-123.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="211" y="-123.5" font-family="monospace" font-size="10.00">sediment_height</text>
+<polyline fill="none" stroke="black" points="154,-97.5 154,-116.5 "/>
+<text text-anchor="start" x="41" y="-104.5" font-family="monospace" font-size="10.00">initial_topography</text>
+<polyline fill="none" stroke="black" points="208,-97.5 208,-116.5 "/>
+<text text-anchor="start" x="158" y="-104.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="211" y="-104.5" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="154,-78.5 154,-97.5 "/>
+<text text-anchor="start" x="41" y="-85.5" font-family="monospace" font-size="10.00">subsidence_rate</text>
+<polyline fill="none" stroke="black" points="208,-78.5 208,-97.5 "/>
+<text text-anchor="start" x="158" y="-85.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="211" y="-85.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- Boxes&#45;&gt;WaterDepth -->
 <g id="edge2" class="edge">
@@ -97,41 +97,41 @@
 <!-- H5Writer -->
 <g id="node5" class="node">
 <title>H5Writer</title>
-<path fill="none" stroke="black" d="M321.5,-36C321.5,-36 256.5,-36 256.5,-36 250.5,-36 244.5,-30 244.5,-24 244.5,-24 244.5,-12 244.5,-12 244.5,-6 250.5,0 256.5,0 256.5,0 321.5,0 321.5,0 327.5,0 333.5,-6 333.5,-12 333.5,-12 333.5,-24 333.5,-24 333.5,-30 327.5,-36 321.5,-36"/>
-<text text-anchor="start" x="251.5" y="-15.3" font-family="Times,serif" font-weight="bold" font-size="14.00">H5Writer</text>
+<path fill="none" stroke="black" d="M323.5,-36C323.5,-36 258.5,-36 258.5,-36 252.5,-36 246.5,-30 246.5,-24 246.5,-24 246.5,-12 246.5,-12 246.5,-6 252.5,0 258.5,0 258.5,0 323.5,0 323.5,0 329.5,0 335.5,-6 335.5,-12 335.5,-12 335.5,-24 335.5,-24 335.5,-30 329.5,-36 323.5,-36"/>
+<text text-anchor="start" x="253.5" y="-15.3" font-family="Times,serif" font-weight="bold" font-size="14.00">H5Writer</text>
 </g>
 <!-- WaterDepth&#45;&gt;H5Writer -->
 <g id="edge4" class="edge">
 <title>WaterDepth&#45;&gt;H5Writer</title>
-<path fill="none" stroke="black" d="M232.42,-71.98C243.36,-61.74 254.18,-51.6 263.39,-42.98"/>
-<polygon fill="black" stroke="black" points="265.81,-45.51 270.71,-36.12 261.02,-40.41 265.81,-45.51"/>
+<path fill="none" stroke="black" d="M233.46,-71.98C244.58,-61.74 255.59,-51.6 264.96,-42.98"/>
+<polygon fill="black" stroke="black" points="267.42,-45.47 272.4,-36.12 262.68,-40.32 267.42,-45.47"/>
 </g>
 <!-- FaciesBase -->
 <g id="node4" class="node">
 <title>FaciesBase</title>
-<path fill="none" stroke="black" d="M477,-170C477,-170 339,-170 339,-170 333,-170 327,-164 327,-158 327,-158 327,-103 327,-103 327,-97 333,-91 339,-91 339,-91 477,-91 477,-91 483,-91 489,-97 489,-103 489,-103 489,-158 489,-158 489,-164 483,-170 477,-170"/>
-<polyline fill="none" stroke="black" points="334,-139.5 482,-139.5 "/>
-<text text-anchor="start" x="364" y="-148.3" font-family="Times,serif" font-weight="bold" font-size="14.00">FaciesBase</text>
-<polygon fill="#cccccc" stroke="transparent" points="334,-116.5 334,-139.5 381,-139.5 381,-116.5 334,-116.5"/>
-<polyline fill="none" stroke="black" points="334,-116.5 381,-116.5 381,-139.5 334,-139.5 "/>
-<text text-anchor="start" x="338" y="-124.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="381,-116.5 381,-139.5 435,-139.5 435,-116.5 381,-116.5"/>
-<polygon fill="none" stroke="black" points="381,-116.5 381,-139.5 435,-139.5 435,-116.5 381,-116.5"/>
-<text text-anchor="start" x="385" y="-124.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="435,-116.5 435,-139.5 482,-139.5 482,-116.5 435,-116.5"/>
-<polyline fill="none" stroke="black" points="482,-139.5 435,-139.5 435,-116.5 482,-116.5 "/>
-<text text-anchor="start" x="439" y="-124.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="381,-97.5 381,-116.5 "/>
-<text text-anchor="start" x="338" y="-104.5" font-family="monospace" font-size="10.00">facies</text>
-<polyline fill="none" stroke="black" points="435,-97.5 435,-116.5 "/>
-<text text-anchor="start" x="385" y="-104.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="438" y="-104.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M480,-170C480,-170 342,-170 342,-170 336,-170 330,-164 330,-158 330,-158 330,-103 330,-103 330,-97 336,-91 342,-91 342,-91 480,-91 480,-91 486,-91 492,-97 492,-103 492,-103 492,-158 492,-158 492,-164 486,-170 480,-170"/>
+<polyline fill="none" stroke="black" points="337,-139.5 485,-139.5 "/>
+<text text-anchor="start" x="367" y="-148.3" font-family="Times,serif" font-weight="bold" font-size="14.00">FaciesBase</text>
+<polygon fill="#cccccc" stroke="transparent" points="337,-116.5 337,-139.5 384,-139.5 384,-116.5 337,-116.5"/>
+<polyline fill="none" stroke="black" points="337,-116.5 384,-116.5 384,-139.5 337,-139.5 "/>
+<text text-anchor="start" x="341" y="-124.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="384,-116.5 384,-139.5 438,-139.5 438,-116.5 384,-116.5"/>
+<polygon fill="none" stroke="black" points="384,-116.5 384,-139.5 438,-139.5 438,-116.5 384,-116.5"/>
+<text text-anchor="start" x="388" y="-124.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="438,-116.5 438,-139.5 485,-139.5 485,-116.5 438,-116.5"/>
+<polyline fill="none" stroke="black" points="485,-139.5 438,-139.5 438,-116.5 485,-116.5 "/>
+<text text-anchor="start" x="442" y="-124.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="384,-97.5 384,-116.5 "/>
+<text text-anchor="start" x="341" y="-104.5" font-family="monospace" font-size="10.00">facies</text>
+<polyline fill="none" stroke="black" points="438,-97.5 438,-116.5 "/>
+<text text-anchor="start" x="388" y="-104.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="441" y="-104.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- FaciesBase&#45;&gt;H5Writer -->
 <g id="edge3" class="edge">
 <title>FaciesBase&#45;&gt;H5Writer</title>
-<path fill="none" stroke="black" d="M366.38,-90.85C349.26,-74.95 329.96,-57.03 314.92,-43.06"/>
-<polygon fill="black" stroke="black" points="317.18,-40.39 307.47,-36.15 312.42,-45.52 317.18,-40.39"/>
+<path fill="none" stroke="black" d="M369.03,-90.85C351.76,-74.95 332.3,-57.03 317.13,-43.06"/>
+<polygon fill="black" stroke="black" points="319.35,-40.35 309.63,-36.15 314.61,-45.5 319.35,-40.35"/>
 </g>
 </g>
 </svg>
@@ -139,6 +139,8 @@
     using ..Common
     using HDF5
     using ProgressLogging
+
+    import ...CarboKitten: run_model, Model
 
     @mixin Boxes, TimeIntegration, FaciesBase, WaterDepth
 
@@ -195,7 +197,17 @@
         fid[&quot;deposition&quot;][:, :, :, idx] = frame.deposition |&gt; in_units_of(u&quot;m&quot;)
     end
 
-    function run(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
+    &quot;&quot;&quot;
+        run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
+
+    Run a model and write output to HDF5. Here `M` should be a model, i.e. a
+    module with `initial_state`, `step!` and `write_header` defined. Example:
+
+    ```julia
+    run_model(Model{ALCAP}, ALCAP.Example.INPUT, &quot;example.h5&quot;)
+    ```
+    &quot;&quot;&quot;
+    function run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
         state = M.initial_state(input)
         step! = M.step!(input)
 
@@ -214,10 +226,12 @@
                 write_state(fid, w+1, state)
             end
         end
+
+        return filename
     end
 end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
 mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../production/">« Production</a><a class="docs-footer-nextpage" href="../sediment_buffer/">Sediment Buffers »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Friday 8 November 2024 17:49">Friday 8 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../production/">« Production</a><a class="docs-footer-nextpage" href="../sediment_buffer/">Sediment Buffers »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 13 November 2024 11:37">Wednesday 13 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

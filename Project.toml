@@ -1,7 +1,7 @@
 name = "CarboKitten"
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 authors = ["Johan Hidding <j.hidding@esciencecenter.nl>"]
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"

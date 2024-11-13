@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.0
+# v0.20.3
 
 #> [frontmatter]
 #> title = "CarboKitten Tutorial"
@@ -15,17 +15,23 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
-using PlutoUI
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
 
 # ╔═╡ bcea7127-3c21-4c35-af42-3d2c71464409
 using CarboKitten
 
-# ╔═╡ d72d7e42-8392-44a0-a8b3-d59475be8dc7
-using CarboKitten.Components.Common         # FIXME: get rid of this import
-
 # ╔═╡ 325e3d04-2ff2-4c27-91bf-265820ac6763
-using CarboKitten.Model.ALCAP2: run as run_model, Example, ALCAP2 as ALCAP
+using CarboKitten.Models: ALCAP
 
 # ╔═╡ 4fe0f485-2db0-4685-b5b9-e9ba6009e4a6
 using GLMakie
@@ -45,8 +51,8 @@ using CarboKitten.Config: TimeProperties
 # ╔═╡ 90fdaca0-2efa-4230-8af3-177a6d94639c
 using CarboKitten.Components.TimeIntegration: write_times
 
-# ╔═╡ d0bfae1a-deef-4625-a242-0a9b899bf83d
-using CarboKitten.Model.ALCAP2: Facies
+# ╔═╡ 94aea87e-89e0-4aa3-816e-397873fffc77
+using CarboKitten.Visualization: production_curve
 
 # ╔═╡ 3723832f-344c-4471-acb0-cef7d4e5ca94
 using CarboKitten.Export: data_export, CSV
@@ -57,18 +63,65 @@ using DataFrames
 # ╔═╡ 61ae751b-0c05-4e96-8be9-3f85cb6afc51
 using CSV: read as read_csv
 
+# ╔═╡ dec0cd85-bbd7-4a74-83a8-b9425e053f86
+using CarboKitten.Export: read_column
+
+# ╔═╡ e892bc37-81d3-4b8f-9486-de0d717cd67f
+using CarboKitten.Visualization: stratigraphic_column!
+
 # ╔═╡ 17501c93-f432-4f1a-b815-5ac9c5a29f8f
 using CarboKitten.DataSets: miller_2020
 
 # ╔═╡ e2562586-d03a-4b6e-9ef6-aad012f2be9f
 using Interpolations
 
-# ╔═╡ 3c4cef70-df77-46ba-b623-fd46b5500e51
-TableOfContents()
+# ╔═╡ 99d20556-eefb-4597-88a3-0b61bd3cb5c8
+using CarboKitten.Boxes: axes as box_axes
+
+# ╔═╡ e1c9135e-4906-4bd1-ba9a-058f7de7d5ac
+using CarboKitten.Visualization: sediment_profile!
+
+# ╔═╡ 5eb8bf63-de51-4f4f-ba23-53e4a68e5762
+using CarboKitten.Export: age_depth_model, read_slice, DataColumn
+
+# ╔═╡ 44308ced-efd2-42fd-94ab-baa178352ed9
+begin
+	using ShortCodes
+	
+	refs = Dict(
+		:pomar2001 => DOI("10.1046/j.0950-091x.2001.00152.x"),
+		:church2017 => DOI("10.1002/2016WR019675"),
+		:burgess2013 => DOI("10.1016/j.cageo.2011.08.026"),
+		:bosscher1992 => DOI("10.1111/j.1365-3091.1992.tb02130.x"),
+		:paola1992 => DOI("10.1111/j.1365-2117.1992.tb00145.x"),
+		:miller2020 => DOI("10.1594/PANGAEA.923126"))
+
+	function cite(ref)
+		r = refs[ref]
+		authors = [strip(split(a, ",")[1]) for a in split(r.author, ";")]
+		author = if length(authors) == 1
+			authors[1]
+		elseif length(authors) == 2
+			"$(authors[1]) & $(authors[2])"
+		else
+			"$(authors[1]) et al."
+		end
+		year = r.year
+		"[$(author) ($(year))](https://doi.org/$(r.doi))"
+	end
+
+	sort(refs |> values |> collect, by=r->[r.year, r.author])
+end
+
+# ╔═╡ ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
+begin
+	using PlutoUI
+	TableOfContents()
+end
 
 # ╔═╡ 0ce8de55-3304-431d-a2aa-110b46a25c9b
 md"""
-This CarboKitten tutorial is aimed at people that are completely new to Julia.
+This CarboKitten tutorial is aimed at people that are completely new to Julia. Please, follow the button on the top-right to download this notebook, and put it in an new directory.
 """
 
 # ╔═╡ 9babc2b0-9c26-11ef-3459-0d113ec3c402
@@ -79,7 +132,7 @@ Please install Julia from the following webpage: [https://julialang.org/download
 
 We will use [Pluto](https://plutojl.org/) to do our tutorial. This is a notebook interface (similar to Jupyter) that is easy to use and has a strong focus on reproducibility.
 
-Start the Julia REPL (read-eval-print loop), either from the start menu, or in a terminal, by running `julia`. You should see a colorful welcome message and a prompt for input:
+Start the Julia REPL (read-eval-print loop), either from the start menu (on Windows), the Launchpad (on Mac), or in a terminal, by typing `julia` and pressing Enter. You should see a colorful welcome message and a prompt for input:
 """
 
 # ╔═╡ 17722d8b-baca-4f16-981f-1501c734a95f
@@ -100,7 +153,7 @@ julia>
 
 # ╔═╡ 22ec7e16-b8c0-414d-9700-52bf379e1051
 md"""
-You can install Pluto by running `using Pluto` and then answering `y` to the prompted question.
+You can install Pluto by typing `using Pluto`, pressing Enter and then answering `y` to the prompted question.
 
 ```juliarepl
 julia> using Pluto
@@ -111,7 +164,7 @@ julia> using Pluto
  └ (y/n/o) [y]: 
 ```
 
-After a while you should see the following message:
+After a while you should see the following message. Please type `Pluto.run()` and press Enter to start the Pluto Notebook:
 
 ```
 ┌ Info: 
@@ -125,14 +178,20 @@ After a while you should see the following message:
 └ 
 ```
 
-You're good to go and run Pluto now!
+Enter `Pluto.run()` to start the Pluto, and open the notebook that you downloaded from the menu on the top-right of this page.
+"""
+
+# ╔═╡ d573309f-c99a-43e9-a89f-083ef4ade5d8
+md"""
+!!! danger "☕ Coffee time! ☕"
+	When you open the notebook and click "run", Pluto will download and compile all the needed packages. Depending on your machine this may take 5-10 minutes.
 """
 
 # ╔═╡ 3b7fef8b-efb9-467d-b6db-f7cfa132be69
 md"""
 ## Install CarboKitten
 
-In a Pluto notebook, Julia packages are installed by using them.
+In a Pluto notebook, Julia packages are installed by `using` them. For example, we enter `using CarboKitten` here to install CarboKitten.jl.
 """
 
 # ╔═╡ cf61bc3f-a20a-45b7-a885-22b70075fc42
@@ -141,26 +200,73 @@ All packages used and their versions are stored inside the notebooks. When you r
 """
 
 # ╔═╡ 68fac1d8-f402-429e-90a4-25fcfa188c2e
-md"## A first example"
+md"# Running an existing model"
+
+# ╔═╡ 002cb6d7-ee29-408f-a289-36ab913c7f85
+md"""
+## Import the model definition
+"""
+
+# ╔═╡ 545a6a8d-70d5-470a-a615-4305efa0ecd1
+md"""
+This is a built-in example model with default values of parameters. It uses a simple sinusoidal curve to represent sea level.
+"""
+
+# ╔═╡ dd4cde67-4329-4135-80d7-1c8950404349
+Markdown.parse("""
+We have now imported the `ALCAP` model, which stands for **A**ctive **L**ayer, **C**ellular **A**utomaton driven **P**roduction. This model uses the CA proposed by $(cite(:burgess2013)), production model by $(cite(:bosscher1992)) and an Active Layer diffusive transport approach (inspired on $(cite(:paola1992)), see $(cite(:church2017)) for a concise overview).
+""")
 
 # ╔═╡ 9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
-md"""Please make sure to set the output directory to a convenient place. If you downloaded this notebook to an empty directory, using `"."` would be a good choice.
+md"""
+## Set the output directory
+
+Please make sure to set the output directory to a convenient place. If you downloaded this notebook to an empty directory, using `"."` would be a good choice.
 """
 
 # ╔═╡ b3b271cb-143f-44ba-a593-80b9e6c96392
-OUTPUTDIR = "../../data/output"
+OUTPUTDIR = "."
 
-# ╔═╡ 1d5cf6cc-745d-4a5a-80ae-b1b6c057af0b
+# ╔═╡ 316b049d-698d-4d5e-9c18-73701ef8b492
 md"""
-!!! tip "HDF5"
-	Output is written to HDF5 files, a broadly used and supported data format for binary scientific data.
+!!! tip "Disabled cells"
+    The cell below is disabled because it will take a minute or so to run. Click the cell-menu at the top right of the cell to enable it.
+"""
 
-	After the simulation is done, we can read the HDF5 file for further analysis and visualization.
+# ╔═╡ 687e5908-03d7-44ee-a9d8-83f32cf9e447
+md"""The `run_model` command runs a model with given input and writes the output to an HDF5 file."""
+
+# ╔═╡ 74f4674f-dbea-44ad-8d54-9861b35139cd
+# ╠═╡ disabled = true
+#=╠═╡
+example_output = run_model(Model{ALCAP}, ALCAP.Example.INPUT, "$(OUTPUTDIR)/example.h5")
+  ╠═╡ =#
+
+# ╔═╡ 19da029b-8752-4177-8ba4-cc2097adec95
+md"""
+## Plotting a cross-section
+CarboKitten has a set of built-in visualizations. Here we plot a cross-section of the platform along the onshore-offshore gradient.
+"""
+
+# ╔═╡ 66e30189-ae72-4ec1-b7bd-1136ddfce2ee
+md"""
+!!! tip "Makie"
+	We use [Makie](https://makie.org) to do our plotting. If you'd like to learn more about Makie, check their extensive documentation.
+"""
+
+# ╔═╡ e118a117-9a00-4589-906d-c31d2057bcef
+#=╠═╡
+summary_plot(example_output)
+  ╠═╡ =#
+
+# ╔═╡ 56765b03-9d25-49c6-9aec-75e1e32e6a43
+md"""
+The first sub-diagram on the top left shows the cross-section of the simulated carbonate-platform. Moving clockwise, the second diagram shows a topographic overview of the entire simulation in 3D. The third diagram show the production rate used in this simulation. The fourth diagram shows the sea-level curve. On the bottom left there are two chronostratigraphic (Wheeler's) diagrams, one for sedimentation rate, the other showing the dominant facies type.
 """
 
 # ╔═╡ c974cb9a-e1c0-4402-880c-7990d217da89
 md"""
-!!! info "Example: String interpolation"
+!!! info "Exercise: String interpolation"
 	Notice the `"$(...)"` syntax: this is called string interpolation: the contents of the `OUTPUTDIR` variable are formatted into the resulting string. Try it out with a few examples (inside a `let` block so the variables don't leak):
 
 	```julia
@@ -173,35 +279,11 @@ md"""
 	What happens if you change `name` into a number?
 """
 
-# ╔═╡ 316b049d-698d-4d5e-9c18-73701ef8b492
-md"""
-!!! tip "Disabled cells"
-    The cell below is disabled because it will take a minute or so to run. Click the cell-menu at the top right of the cell to enable it.
-"""
-
-# ╔═╡ 74f4674f-dbea-44ad-8d54-9861b35139cd
-# ╠═╡ disabled = true
-#=╠═╡
-run_model(Model{ALCAP}, Example.INPUT, "$(OUTPUTDIR)/example.h5")
-  ╠═╡ =#
-
-# ╔═╡ 66e30189-ae72-4ec1-b7bd-1136ddfce2ee
-md"""
-!!! tip "Makie"
-	We will be using [Makie](https://makie.org) to do our plotting.
-"""
-
-# ╔═╡ e118a117-9a00-4589-906d-c31d2057bcef
-# ╠═╡ disabled = true
-#=╠═╡
-summary_plot("$(OUTPUTDIR)/example.h5")
-  ╠═╡ =#
-
 # ╔═╡ 8f883ea5-d90e-41e7-9809-3f170183a640
 md"""
-# A second example
+# Creating your own model
 
-In our second example we walk through the entire configuration. We start by defining the shape of our box.
+In our second example we walk through the entire configuration. We start by defining the shape of our box. Overall, we need to define the grids (simulation box), the time (simulation time), the sea-level curve, the initial topography, the facies and the other to start the simulation.
 
 ## Simulation box
 """
@@ -211,7 +293,9 @@ box = Box{Coast}(grid_size = (50, 50), phys_scale = 300.0u"m")
 
 # ╔═╡ 5e914211-fd1f-45e0-9ecd-442d819684a2
 md"""
-There is a lot to unpack here: `Coast` indicates a box topology that is periodic in the y-direction and mirrored in the x-direction, which is ideal for simulating a strip of coast-line. Other choices could be `Periodic{2}` or `Reflected{2}`. The `grid_size` argument is the size of our box in pixels, and `phys_scale` is the size of one pixel with dimensions of length.
+There is a lot to unpack here: `Coast` indicates a box topology that is periodic in the y-direction and mirrored in the x-direction, 
+which is ideal for simulating a strip of coastline. Other choices could be `Periodic{2}` or `Reflected{2}`. 
+The `grid_size` argument is the size of our box in pixels, and `phys_scale` is the size of one pixel with units of length.
 """
 
 # ╔═╡ a39a9476-6a7f-435a-b882-36ecf618369e
@@ -244,14 +328,14 @@ time = TimeProperties(
 )
 
 # ╔═╡ a2689006-cb86-4956-999a-7adea546abdd
-md"""Notice that the Δt property was automatically coneverted to Myr, which is the unit that we use internally.
+md"""Notice that the Δt property was automatically converted to Myr, which is the unit that we use internally.
 """
 
 # ╔═╡ a81dba9b-8f12-4b72-9ea8-993d6c5e501b
 md"""
 ## Sea level
 
-Sea level is given as a function. The function should take quantities of time and return a quantity of length.
+In this example, the sea level is given as a function. The function should take quantities in units of time and return a quantity in units of length.
 
 !!! tip "Functions in Julia"
 	There are several ways to define functions in Julia. The most readable is as follows:
@@ -277,9 +361,12 @@ end
 
 # ╔═╡ 30245436-9731-4cae-a150-fcba4360527e
 let
-	t = write_times(time)
-	sl = sea_level.(t)
-	lines(t, sl)
+	t = time_axis(time)   # obtain a vector of times
+	sl = sea_level.(t)	    # get sea_level for all those times
+	fig, ax = lines(t |> in_units_of(u"Myr"), sl |> in_units_of(u"m"))
+	ax.xlabel = "time [Myr]"
+	ax.ylabel = "sea level [m]"
+	fig
 end
 
 # ╔═╡ f6776dbe-8dc5-4c01-a034-cc47d0c34e8a
@@ -291,11 +378,11 @@ md"""
 # ╔═╡ 5c90b464-858a-4a5d-a2c7-fda775057ef6
 md"""
 ## Initial topography
-In CarboKitten, the initial topography is also known as *bedrock elevation*. This quantity needs to be given as a function of both `x` and `y`. Here our initial topography is a ramp.
+In CarboKitten, the initial topography is a function of both $x$ and $y$ coordinates, giving the initial sea floor height for each point. Here we specify a simple ramp in the $x$ direction.
 """
 
 # ╔═╡ 68f2dd79-6777-4267-ae67-5167f764b7b9
-function bedrock_elevation(x, y)
+function initial_topography(x, y)
 	return -x / 300.0
 end
 
@@ -303,11 +390,11 @@ end
 md"""
 ## Facies definitions
 
-Three biological facies are considered in this case, including:
+Three biological facies are distinguished based on sediment produced by three carbonate factories:
 
-- T(Tropical) factory (max growth rate = 500.0m/Myr)
-- M(Mounds) factory (max growth rate = 400.0m/Myr)
-- C(Cool water) factory (max growth rate = 100.0m/Myr)
+- T(Tropical) factory (max growth rate = 500.0 m/Myr)
+- M(Mounds) factory (max growth rate = 400.0 m/Myr)
+- C(Cool water) factory (max growth rate = 100.0 m/Myr)
 
 Their growth rates depend on the water depth, as parametrized by the Bosscher & Schlager 1992 model,
 
@@ -322,19 +409,19 @@ When we inpsect the displayed `Facies` values, we see that also the default viab
 
 # ╔═╡ 68ab2b1c-67fb-48f1-ac81-c7efac04d96a
 facies = [
-	Facies(
+	ALCAP.Facies(
 		maximum_growth_rate = 500.0u"m/Myr",
 		extinction_coefficient = 0.8u"m^-1",
 		saturation_intensity = 60.0u"W/m^2",
 		diffusion_coefficient = 500u"m"
 	),
-	Facies(
+	ALCAP.Facies(
 		maximum_growth_rate = 400.0u"m/Myr",
 		extinction_coefficient = 0.1u"m^-1",
 		saturation_intensity = 60.0u"W/m^2",
 		diffusion_coefficient = 5000u"m"
 	),
-	Facies(
+	ALCAP.Facies(
 		maximum_growth_rate = 100.0u"m/Myr",
 		extinction_coefficient = 0.005u"m^-1",
 		saturation_intensity = 60.0u"W/m^2",
@@ -345,7 +432,7 @@ facies = [
 md"""
 ## Other parameters
 
-The subsidence rate is set to a constant 50m/Myr and insolation to 400W/m^2. The other parameters are related to the transport model.
+The subsidence rate is set to a constant 50 m/Myr and insolation to 400 $W/m^2$. The other parameters are related to the transport model.
 """
 
 # ╔═╡ ae3a74ea-f6b5-442c-973b-1cec48627968
@@ -356,7 +443,7 @@ input = ALCAP.Input(
 	box = box,
 	facies = facies,
 	sea_level = sea_level,
-	bedrock_elevation = bedrock_elevation,
+	initial_topography = initial_topography,
 	
 	subsidence_rate = 50.0u"m/Myr",
 	insolation = 400.0u"W/m^2",
@@ -367,27 +454,40 @@ input = ALCAP.Input(
 	disintegration_rate = 50.0u"m/Myr"
 )
 
+# ╔═╡ 549c852c-44d8-483d-b54c-cdf68ff6020b
+production_curve(input)
+
 # ╔═╡ 8946d268-4407-4fe4-86ae-67b3a37b34be
 # ╠═╡ disabled = true
 #=╠═╡
-run_model(Model{ALCAP}, input, "$(OUTPUTDIR)/tutorial.h5")
+tutorial_output = run_model(Model{ALCAP}, input, "$(OUTPUTDIR)/tutorial.h5")
   ╠═╡ =#
 
 # ╔═╡ 0fd7ea33-ff06-4355-9278-125c8ed66df4
-# ╠═╡ disabled = true
 #=╠═╡
-summary_plot("$(OUTPUTDIR)/tutorial.h5")
+summary_plot(tutorial_output)
   ╠═╡ =#
+
+# ╔═╡ 39e681ae-3ce4-41eb-a48a-9a42a4667183
+md"""
+!!! info "Exercise: sea level again"
+	With the `run_model` instruction above still active, modify your input sea level curve again, like you did in the previous exercise. Re-run the `summary_plot` command again to see the result.
+"""
 
 # ╔═╡ a3e5f420-a59d-4725-8f8f-e5b8f06987db
 md"""
-# Extracting CSV data
+# Extracting model output into CSV files
 
 HDF5 is a very versatile data format, and is readable from every major computational platform (e.g. MatLab, Python, R). However, sometimes you may want to process your output data further using existing tools that read CSV data.
 """
 
 # ╔═╡ ec4f0021-12af-4f8c-8acb-970e6820d2a4
-export_locations = [(10, 25), (25, 25), (40, 25)]
+export_locations = [(11, 25), (26, 25), (41, 25)]
+
+# ╔═╡ e80aaf02-c5bf-4555-a82d-b09dcf785381
+md"""
+In this case, it exports the 11th, 26th and 41th grid in the direction towards to the deep sea. That is to say, the 11th is proximal to the land while the 41th is distal. Given that each grid is with fixed size of 300 m × 300 m, this indicates that we are extracting information from locations at 3 km, 7.5 km and 12 km away from the land. 
+"""
 
 # ╔═╡ 7f05b817-f933-4280-b2ed-ae318a535123
 # ╠═╡ disabled = true
@@ -395,7 +495,7 @@ export_locations = [(10, 25), (25, 25), (40, 25)]
 data_export(CSV(export_locations,
 	:sediment_accumulation_curve => "$(OUTPUTDIR)/tutorial_sac.csv",
 	:age_depth_model => "$(OUTPUTDIR)/tutorial_adm.csv"),
-	"$(OUTPUTDIR)/tutorial.h5")
+	tutorial_output)
   ╠═╡ =#
 
 # ╔═╡ 2a24237e-5c1f-47e1-8f33-cca3ef563930
@@ -403,7 +503,22 @@ md"""
 !!! info "Exercise: Meta data"
 	Next to `:sediment_accumulation_curve` and `:age_depth_model`, we have implemented functions to extract `:stratigraphic_column` and `:metadata`.
 
-	The `:metadata` target is special, since it doesn't write to CSV but to TOML. Add the `:metadata` target to the export list and inspect the result.
+	The `:metadata` target is special, since it doesn't write to CSV but to TOML. Add the `:stratigraphic_column` and `:metadata` targets to the export a list and inspect the result.
+"""
+
+# ╔═╡ adf67033-5941-4be6-bb17-c0958348b905
+md"""
+## Plot age-depth models
+"""
+
+# ╔═╡ e26defa5-10ff-4275-bae9-768f7fb8d9ba
+md"""
+We use the `DataFrames` package to process the CSV file, and again use Makie to visualise the data.
+"""
+
+# ╔═╡ e17f35e7-8d09-4da1-880f-563bc49b364c
+md"""
+Using the following command to read the csv file:
 """
 
 # ╔═╡ 329d30f1-797e-4522-9c20-e60d35079f5f
@@ -412,16 +527,24 @@ md"""
 adm = read_csv("$(OUTPUTDIR)/tutorial_adm.csv", DataFrame)
   ╠═╡ =#
 
+# ╔═╡ add6a25b-d948-4cd0-9412-56752793ca4b
+md"""
+And plot the Age-Depth Model:
+"""
+
 # ╔═╡ f550da45-1202-4f9d-9f0b-b96d5c929f58
 #=╠═╡
 let
 	fig = Figure()
 	time = adm[!, 1]
 
+	(xaxis, _) = box_axes(input.box)
 	ax = Axis(fig[1, 1], title="Age-Depth Model", xlabel="t [Myr]", ylabel="depth (m)")
+	
 
 	for i = 1:3
-		lines!(ax, time, adm[!, i+1], label="location $i")
+		xpos = uconvert(u"km", xaxis[export_locations[i][1]])
+		lines!(ax, time, adm[!, i+1], label="$(xpos) offshore")
 	end
 
 	fig[1,2] = Legend(fig, ax)
@@ -429,12 +552,37 @@ let
 end
   ╠═╡ =#
 
-# ╔═╡ c2166805-da62-4adf-8514-fd28924d115e
+# ╔═╡ 64c3ce44-de95-4f7b-954d-52f743fc5033
 md"""
-# Tabular Sea Level
-
-We've already seen how we can read CSV files. To make this part a bit easier, CarboKitten ships with the Cenozoic sea level dataset by Miller et al. 2020.
+## Plot the stratigraphic column
 """
+
+# ╔═╡ 0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
+#=╠═╡
+let
+	fig = Figure()
+
+	y = export_locations[1][2]
+	(xaxis, _) = box_axes(input.box)
+	
+	for i = 1:3
+		header, column = read_column(tutorial_output, export_locations[i]...)
+
+		xpos = uconvert(u"km", xaxis[export_locations[i][1]])
+		ax = Axis(fig[1,i], title="$(xpos) offshore", ylabel="height (m)", xticksvisible=false, xtickformat="", width=70)
+		stratigraphic_column!(ax, header, column)
+	end
+	
+	fig
+end
+  ╠═╡ =#
+
+# ╔═╡ c2166805-da62-4adf-8514-fd28924d115e
+Markdown.parse("""
+# Using an empirical sea-level curve
+
+We've already seen how we can read CSV files. To make this part a bit easier, CarboKitten ships with the Cenozoic sea level dataset by $(cite(:miller2020)).
+""")
 
 # ╔═╡ 71f2c3ad-80ea-4678-87cf-bb95ef5b57ff
 miller_df = miller_2020()
@@ -470,7 +618,7 @@ md"""
 
 # ╔═╡ 6f60233c-739d-40d5-8c43-d30647006351
 md"""
-The `Interpolations` package has a convenient linear interpolation function. It does require input values to be sorted.
+As the observed data is not regularly sampled, we need to interpolate the dataset. The `Interpolations` package has a convenient linear interpolation function. It does require input values to be sorted.
 """
 
 # ╔═╡ 54d26634-765f-4291-8a82-34e2e6e2fa09
@@ -482,7 +630,7 @@ miller_sea_level = linear_interpolation(miller_df.time, miller_df.sealevel);
 # ╔═╡ ca0498b0-c425-4949-b1d9-03df4067db2e
 md"""
 !!! info "Exercise: run the model"
-	Create a sea level function by interpolating the Lisiecki data set. Make sure to start the simulation at t=-2.0 Myr, for example:
+	Create a sea level function by interpolating the Lisiecki et al. data set. Make sure to start the simulation at t=-2.0 Myr, for example:
 
 	```julia
 	time = TimeProperties(
@@ -491,6 +639,106 @@ md"""
 		steps = 2000
 	)
 	```
+
+	Try to plot the cross-section and adm from this simulation.
+"""
+
+# ╔═╡ 3afb006d-b6ff-4ae7-8e60-115d98e9d562
+md"""
+!!! info "Exercise: Input your own sea-level curve"
+	We've seen how to load CSV data, and how we can interpolate tabular data to create a new sea-level curve. Can you run the model using your own sea-level data?
+"""
+
+# ╔═╡ 04a28420-a758-4597-a679-b675844d9c7e
+md"""
+# Interactive Exploration
+"""
+
+# ╔═╡ cfb15723-694b-4dc1-bd37-21d17074ab98
+md"""
+In Pluto we can create interactive visualizations. Sliding `y` will cause a reload of the data slices, which can be a bit slow.
+
+!!! tip "Macros"
+	In Julia, the `@` character indicates the use of a macro. It's Ok not to understand: macro is a different word for magic smoke screen.
+
+	If you'd like to learn more about interactivity in notebooks, check out the [`PlutoUI` demo notebook](https://featured.plutojl.org/basic/plutoui.jl).
+"""
+
+# ╔═╡ 1fc8dffe-8e56-4da9-a7e0-07793d1d0455
+@bind y PlutoUI.Slider(1:50, default=25)
+
+# ╔═╡ 8dfe7d41-2915-48b7-9866-b36ae7fe6443
+y
+
+# ╔═╡ 8e0bdea3-77a7-452f-a3ca-b2a0b5bbf5f0
+md"""
+We load the data using the `read_slice` function from `CarboKitten.Export`. This extracts a slice along the $x$-axis (onshore-offshore profile).
+"""
+
+# ╔═╡ a3485ec5-bdf1-4577-9d31-3ea21eba6a53
+#=╠═╡
+header, data_slice = read_slice(tutorial_output, :, y);
+  ╠═╡ =#
+
+# ╔═╡ fbf6306d-de6c-4581-9f19-4ac066162709
+md"""
+Within this slice we can select a single stratigraphic column by setting the $x$ coordinate."""
+
+# ╔═╡ 1d952bc7-4375-4f6b-a47a-a2b0ea915360
+@bind x PlutoUI.Slider(1:50)
+
+# ╔═╡ eb4a1b28-4ba4-4cd1-9490-e27105b19921
+x
+
+# ╔═╡ c820f883-fa5b-4a43-a03f-e6961dbe4001
+#=╠═╡
+let
+	fig = Figure()
+	ax = Axis(fig[1, 1])
+	(_, yaxis) = box_axes(input.box)
+	ypos = yaxis[y]
+	sediment_profile!(ax, header, data_slice)
+	ax.title = "sediment profile @ y = $(uconvert(u"km", ypos))"
+	vlines!(ax, header.axes.x[x] |> in_units_of(u"km"), color=:black)
+	fig
+end
+  ╠═╡ =#
+
+# ╔═╡ 5ca6c8ed-cfd1-478d-a9fe-67fb4ff2ef0f
+#=╠═╡
+let
+	fig = Figure()
+	(xaxis, yaxis) = box_axes(input.box)
+	xpos = uconvert(u"km", xaxis[x])
+	ypos = uconvert(u"km", yaxis[y])
+	ax = Axis(fig[1, 1], title="age depth model @ (x = $(xpos) offshore, y = $(ypos))", ylabel="height [m]", xlabel="time [Myr]")
+	column = DataColumn(
+		(x, y),
+		data_slice.disintegration[:, x, :],
+        data_slice.production[:, x, :],
+        data_slice.deposition[:, x, :],
+        data_slice.sediment_elevation[x, :])
+	adm = age_depth_model(column.sediment_elevation) |> in_units_of(u"m")
+	lines!(ax, header.axes.t |> in_units_of(u"Myr"), adm)
+
+	ax2 = Axis(fig[1, 2], title="strat. col.", width=70, xtickformat="", xticksvisible=false)
+	stratigraphic_column!(ax2, header, column)
+	fig
+end
+  ╠═╡ =#
+
+# ╔═╡ c85294f2-3508-48c0-b67d-d82df646ae33
+Markdown.parse("""
+# Task: Platform Morphology
+
+Researchers have found different morphologies of carbonate platforms. For example, some of them show a 'steep cliff' (rimmed-shelf) while some others show a 'smooth' ramp. See for instance $(cite(:pomar2001)).
+
+Different carbonate producers (i.e., T, M, C) produce carbonate with different production rate under different water-depth. Could the production rate be a key controller for the morphology of the carbonate platform? That is to say, can you vary the parameters as illustrated in section on Facies Definitions to try to produce two carbonate platforms, one with 'rimmed-shelf' and another one with ramp'?
+""")
+
+# ╔═╡ 754f7cf0-f3a7-4cff-b20e-ed16874860c7
+md"""
+# Bibliography
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -502,15 +750,17 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+ShortCodes = "f62ebe17-55c5-4640-972f-b59c0dd11ccf"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
 CSV = "~0.10.15"
-CarboKitten = "~0.2.0"
+CarboKitten = "~0.3.0"
 DataFrames = "~1.7.0"
 GLMakie = "~0.10.16"
 Interpolations = "~0.15.1"
 PlutoUI = "~0.7.60"
+ShortCodes = "~0.3.6"
 Unitful = "~1.21.0"
 """
 
@@ -520,7 +770,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.1"
 manifest_format = "2.0"
-project_hash = "f5a77729b093d48a52cd4a05603888bf5f2fd325"
+project_hash = "11ad17d1cfe92666d01eddc06aac34d75b7f3402"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -693,9 +943,9 @@ version = "1.18.2+1"
 
 [[deps.CarboKitten]]
 deps = ["AxisArrays", "CSV", "CategoricalArrays", "DataFrames", "DelimitedFiles", "HDF5", "Logging", "ModuleMixins", "Pkg", "ProgressLogging", "Random", "TOML", "TerminalLoggers", "Transducers", "Unitful"]
-git-tree-sha1 = "8e78eac7e2ab7d32dc003adc3768b03397479f88"
+git-tree-sha1 = "5e68dfeeead0e4dde020585dc00910457a142742"
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
-version = "0.2.0"
+version = "0.3.0"
 weakdeps = ["GeometryBasics", "Makie", "Statistics"]
 
     [deps.CarboKitten.extensions]
@@ -743,9 +993,9 @@ version = "0.4.0"
 
 [[deps.ColorSchemes]]
 deps = ["ColorTypes", "ColorVectorSpace", "Colors", "FixedPointNumbers", "PrecompileTools", "Random"]
-git-tree-sha1 = "13951eb68769ad1cd460cdb2e64e5e95f1bf123d"
+git-tree-sha1 = "c785dfb1b3bfddd1da557e861b919819b82bbe5b"
 uuid = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
-version = "3.27.0"
+version = "3.27.1"
 
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -950,9 +1200,9 @@ version = "3.3.10+1"
 
 [[deps.FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
-git-tree-sha1 = "62ca0547a14c57e98154423419d8a342dca75ca9"
+git-tree-sha1 = "91e0e5c68d02bcdaae76d3c8ceb4361e8f28d2e9"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-version = "1.16.4"
+version = "1.16.5"
 
 [[deps.FilePaths]]
 deps = ["FilePathsBase", "MacroTools", "Reexport", "Requires"]
@@ -1018,9 +1268,9 @@ version = "2.13.2+0"
 
 [[deps.FreeTypeAbstraction]]
 deps = ["ColorVectorSpace", "Colors", "FreeType", "GeometryBasics"]
-git-tree-sha1 = "84dfe824bd6fdf2a5d73bb187ff31b5549b2a79c"
+git-tree-sha1 = "77e2b094e61d939f9626181ab23d0b76e78f9fd3"
 uuid = "663a7486-cb36-511b-a19d-713bb74d65c9"
-version = "0.10.4"
+version = "0.10.5"
 
 [[deps.FriBidi_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1116,10 +1366,10 @@ version = "0.17.2"
     MPI = "da04e1cc-30fd-572f-bb4f-1f8673147195"
 
 [[deps.HDF5_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
-git-tree-sha1 = "82a471768b513dc39e471540fdadc84ff80ff997"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LLVMOpenMP_jll", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
+git-tree-sha1 = "38c8874692d48d5440d5752d6c74b0c6b0b60739"
 uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"
-version = "1.14.3+3"
+version = "1.14.2+1"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
@@ -1135,9 +1385,9 @@ version = "2.11.2+1"
 
 [[deps.HypergeometricFunctions]]
 deps = ["LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
-git-tree-sha1 = "7c4195be1649ae622304031ed46a2f4df989f1eb"
+git-tree-sha1 = "b1c2585431c382e3fe5805874bda6aea90a95de9"
 uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
-version = "0.3.24"
+version = "0.3.25"
 
 [[deps.Hyperscript]]
 deps = ["Test"]
@@ -1171,9 +1421,9 @@ version = "0.1.7"
 
 [[deps.ImageCore]]
 deps = ["ColorVectorSpace", "Colors", "FixedPointNumbers", "MappedArrays", "MosaicViews", "OffsetArrays", "PaddedViews", "PrecompileTools", "Reexport"]
-git-tree-sha1 = "b219503865f42a12ad20ea67082e0fdb69b73ad9"
+git-tree-sha1 = "8c193230235bbcee22c8066b0374f63b5683c2d3"
 uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
-version = "0.10.3"
+version = "0.10.5"
 
 [[deps.ImageIO]]
 deps = ["FileIO", "IndirectArrays", "JpegTurbo", "LazyModules", "Netpbm", "OpenEXR", "PNGFiles", "QOI", "Sixel", "TiffImages", "UUIDs", "WebP"]
@@ -1322,6 +1572,18 @@ deps = ["Dates", "Mmap", "Parsers", "Unicode"]
 git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.4"
+
+[[deps.JSON3]]
+deps = ["Dates", "Mmap", "Parsers", "PrecompileTools", "StructTypes", "UUIDs"]
+git-tree-sha1 = "1d322381ef7b087548321d3f878cb4c9bd8f8f9b"
+uuid = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+version = "1.14.1"
+
+    [deps.JSON3.extensions]
+    JSON3ArrowExt = ["ArrowTypes"]
+
+    [deps.JSON3.weakdeps]
+    ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
 
 [[deps.JpegTurbo]]
 deps = ["CEnum", "FileIO", "ImageCore", "JpegTurbo_jll", "TOML"]
@@ -1556,11 +1818,17 @@ deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 version = "2.28.6+0"
 
+[[deps.Memoize]]
+deps = ["MacroTools"]
+git-tree-sha1 = "2b1dfcba103de714d31c033b5dacc2e4a12c7caa"
+uuid = "c03570c3-d221-55d1-a50c-7939bbd78826"
+version = "0.4.4"
+
 [[deps.MeshIO]]
 deps = ["ColorTypes", "FileIO", "GeometryBasics", "Printf"]
-git-tree-sha1 = "dc182956229ff16d5a4d90a562035e633bd2561d"
+git-tree-sha1 = "14a12d9153b1a1a22d669eede58b2ea2164ff138"
 uuid = "7269a6da-0436-5bbc-96c2-40638cbb6118"
-version = "0.4.12"
+version = "0.4.13"
 
 [[deps.MicroCollections]]
 deps = ["Accessors", "BangBang", "InitialValues"]
@@ -1659,10 +1927,10 @@ uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.1+2"
 
 [[deps.OpenMPI_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
-git-tree-sha1 = "e25c1778a98e34219a00455d6e4384e017ea9762"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML", "Zlib_jll"]
+git-tree-sha1 = "bfce6d523861a6c562721b262c0d1aaeead2647f"
 uuid = "fe0851c0-eecd-5654-98d4-656369965a5c"
-version = "4.1.6+0"
+version = "5.0.5+0"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1895,9 +2163,9 @@ version = "0.7.0"
 
 [[deps.SIMD]]
 deps = ["PrecompileTools"]
-git-tree-sha1 = "98ca7c29edd6fc79cd74c61accb7010a4e7aee33"
+git-tree-sha1 = "52af86e35dd1b177d051b12681e1c581f53c281b"
 uuid = "fdea26ae-647d-5447-a871-4b548cad5224"
-version = "3.6.0"
+version = "3.7.0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -1931,6 +2199,12 @@ version = "0.4.1"
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
 uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
 version = "1.11.0"
+
+[[deps.ShortCodes]]
+deps = ["Base64", "CodecZlib", "Downloads", "JSON3", "Memoize", "URIs", "UUIDs"]
+git-tree-sha1 = "5844ee60d9fd30a891d48bab77ac9e16791a0a57"
+uuid = "f62ebe17-55c5-4640-972f-b59c0dd11ccf"
+version = "0.3.6"
 
 [[deps.Showoff]]
 deps = ["Dates", "Grisu"]
@@ -2071,6 +2345,12 @@ version = "0.6.18"
     GPUArraysCore = "46192b85-c4d5-4398-a991-12ede77f4527"
     SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
     StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
+[[deps.StructTypes]]
+deps = ["Dates", "UUIDs"]
+git-tree-sha1 = "159331b30e94d7b11379037feeb9b690950cace8"
+uuid = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
+version = "1.11.0"
 
 [[deps.StyledStrings]]
 uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
@@ -2459,28 +2739,31 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╠═ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
-# ╠═3c4cef70-df77-46ba-b623-fd46b5500e51
 # ╟─0ce8de55-3304-431d-a2aa-110b46a25c9b
 # ╟─9babc2b0-9c26-11ef-3459-0d113ec3c402
 # ╟─17722d8b-baca-4f16-981f-1501c734a95f
 # ╟─22ec7e16-b8c0-414d-9700-52bf379e1051
+# ╟─d573309f-c99a-43e9-a89f-083ef4ade5d8
 # ╟─3b7fef8b-efb9-467d-b6db-f7cfa132be69
 # ╠═bcea7127-3c21-4c35-af42-3d2c71464409
 # ╟─cf61bc3f-a20a-45b7-a885-22b70075fc42
 # ╟─68fac1d8-f402-429e-90a4-25fcfa188c2e
-# ╠═d72d7e42-8392-44a0-a8b3-d59475be8dc7
+# ╟─002cb6d7-ee29-408f-a289-36ab913c7f85
+# ╟─545a6a8d-70d5-470a-a615-4305efa0ecd1
 # ╠═325e3d04-2ff2-4c27-91bf-265820ac6763
+# ╟─dd4cde67-4329-4135-80d7-1c8950404349
 # ╟─9aafba01-fc4c-4dc1-85b6-9f33a4cfc77a
 # ╠═b3b271cb-143f-44ba-a593-80b9e6c96392
-# ╟─1d5cf6cc-745d-4a5a-80ae-b1b6c057af0b
-# ╟─c974cb9a-e1c0-4402-880c-7990d217da89
 # ╟─316b049d-698d-4d5e-9c18-73701ef8b492
+# ╟─687e5908-03d7-44ee-a9d8-83f32cf9e447
 # ╠═74f4674f-dbea-44ad-8d54-9861b35139cd
+# ╟─19da029b-8752-4177-8ba4-cc2097adec95
 # ╟─66e30189-ae72-4ec1-b7bd-1136ddfce2ee
 # ╠═4fe0f485-2db0-4685-b5b9-e9ba6009e4a6
 # ╠═5432b762-50fa-4ac4-97e6-0477236cb94a
 # ╠═e118a117-9a00-4589-906d-c31d2057bcef
+# ╟─56765b03-9d25-49c6-9aec-75e1e32e6a43
+# ╟─c974cb9a-e1c0-4402-880c-7990d217da89
 # ╟─8f883ea5-d90e-41e7-9809-3f170183a640
 # ╠═51f2b3db-7b2d-4d62-8c3a-6608c01bffb7
 # ╠═b6ae4907-ac04-4a37-975f-42d85d572f91
@@ -2499,21 +2782,32 @@ version = "1.4.1+1"
 # ╟─5c90b464-858a-4a5d-a2c7-fda775057ef6
 # ╠═68f2dd79-6777-4267-ae67-5167f764b7b9
 # ╟─2e168646-5b9e-437b-b0b2-d637a4beb577
-# ╠═d0bfae1a-deef-4625-a242-0a9b899bf83d
 # ╠═68ab2b1c-67fb-48f1-ac81-c7efac04d96a
+# ╠═94aea87e-89e0-4aa3-816e-397873fffc77
+# ╠═549c852c-44d8-483d-b54c-cdf68ff6020b
 # ╟─43405e49-2739-4e79-8204-e489db6c1fd5
 # ╠═ae3a74ea-f6b5-442c-973b-1cec48627968
 # ╠═8946d268-4407-4fe4-86ae-67b3a37b34be
 # ╠═0fd7ea33-ff06-4355-9278-125c8ed66df4
+# ╟─39e681ae-3ce4-41eb-a48a-9a42a4667183
 # ╟─a3e5f420-a59d-4725-8f8f-e5b8f06987db
 # ╠═3723832f-344c-4471-acb0-cef7d4e5ca94
 # ╠═ec4f0021-12af-4f8c-8acb-970e6820d2a4
+# ╟─e80aaf02-c5bf-4555-a82d-b09dcf785381
 # ╠═7f05b817-f933-4280-b2ed-ae318a535123
 # ╟─2a24237e-5c1f-47e1-8f33-cca3ef563930
+# ╟─adf67033-5941-4be6-bb17-c0958348b905
+# ╟─e26defa5-10ff-4275-bae9-768f7fb8d9ba
 # ╠═31e7c759-f980-4618-be90-892865751e58
 # ╠═61ae751b-0c05-4e96-8be9-3f85cb6afc51
+# ╟─e17f35e7-8d09-4da1-880f-563bc49b364c
 # ╠═329d30f1-797e-4522-9c20-e60d35079f5f
+# ╟─add6a25b-d948-4cd0-9412-56752793ca4b
 # ╠═f550da45-1202-4f9d-9f0b-b96d5c929f58
+# ╟─64c3ce44-de95-4f7b-954d-52f743fc5033
+# ╠═dec0cd85-bbd7-4a74-83a8-b9425e053f86
+# ╠═e892bc37-81d3-4b8f-9486-de0d717cd67f
+# ╠═0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
 # ╟─c2166805-da62-4adf-8514-fd28924d115e
 # ╠═17501c93-f432-4f1a-b815-5ac9c5a29f8f
 # ╠═71f2c3ad-80ea-4678-87cf-bb95ef5b57ff
@@ -2526,5 +2820,24 @@ version = "1.4.1+1"
 # ╠═54d26634-765f-4291-8a82-34e2e6e2fa09
 # ╠═1977eab2-f277-41c4-ac00-826bafa8de4d
 # ╟─ca0498b0-c425-4949-b1d9-03df4067db2e
+# ╟─3afb006d-b6ff-4ae7-8e60-115d98e9d562
+# ╟─04a28420-a758-4597-a679-b675844d9c7e
+# ╠═99d20556-eefb-4597-88a3-0b61bd3cb5c8
+# ╠═e1c9135e-4906-4bd1-ba9a-058f7de7d5ac
+# ╠═5eb8bf63-de51-4f4f-ba23-53e4a68e5762
+# ╟─cfb15723-694b-4dc1-bd37-21d17074ab98
+# ╠═1fc8dffe-8e56-4da9-a7e0-07793d1d0455
+# ╠═8dfe7d41-2915-48b7-9866-b36ae7fe6443
+# ╟─8e0bdea3-77a7-452f-a3ca-b2a0b5bbf5f0
+# ╠═a3485ec5-bdf1-4577-9d31-3ea21eba6a53
+# ╟─fbf6306d-de6c-4581-9f19-4ac066162709
+# ╠═1d952bc7-4375-4f6b-a47a-a2b0ea915360
+# ╠═eb4a1b28-4ba4-4cd1-9490-e27105b19921
+# ╟─c820f883-fa5b-4a43-a03f-e6961dbe4001
+# ╟─5ca6c8ed-cfd1-478d-a9fe-67fb4ff2ef0f
+# ╟─c85294f2-3508-48c0-b67d-d82df646ae33
+# ╟─754f7cf0-f3a7-4cff-b20e-ed16874860c7
+# ╟─44308ced-efd2-42fd-94ab-baa178352ed9
+# ╟─ebcb24b3-1ea3-49a8-a6d8-bf1f2cee657e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

@@ -7,7 +7,7 @@ using InteractiveUtils
 # ╔═╡ 63be1f6e-7756-4118-946c-46fffd8155f4
 using CarboKitten
 
-# ╔═╡ 264d92cd-e3d7-48e1-a715-e14bf63eae39
+# ╔═╡ 900bc3aa-9644-4cca-8055-78c6a79b74d1
 begin
 	using Unitful
 	using CarboKitten.Components
@@ -16,9 +16,127 @@ begin
 	using CarboKitten.Boxes: Box, Coast
 	using CarboKitten.BoundaryTrait
 	const PATH = "../../data/output"
-	const TAG_R = "alcap-ramp"
-	
+	const TAG = "alcap-default"
 end
+
+# ╔═╡ ce52b9bc-4c64-4928-8896-c97e33b26a78
+md"""
+This is one solution for the task in the tutorial. There are certainly other solutions, and if you are interested, please dive in this~
+"""
+
+# ╔═╡ b8cf158a-4845-4ed8-97ef-4366436bb7b9
+md"""
+# Recap the task:
+
+>Researchers have found different morphologies of carbonate platforms. For example, some of them show a 'steep cliff' (rimmed-shelf) while some others show a 'smooth' ramp. Different carbonate producers (i.e., T, M, C) produce carbonate with different production rate under different water-depth. Could the production rate be a key controller for the morphology of the carbonate platform? That is to say, can you vary the parameters as illustrated in section on Facies Definitions to try to produce two carbonate platforms, one with 'rimmed-shelf' and another one with ramp'?
+"""
+
+
+# ╔═╡ 05b92240-a0f7-11ef-0463-9998898db4f7
+md"""
+If you have already installed CarboKitten, please skip this step.
+"""
+
+# ╔═╡ 6ae7df92-d630-4d40-ba05-b84c72d26a1e
+md"""
+# The default scenario
+## importing dependencies
+Recap how the default scenario look like
+"""
+
+# ╔═╡ 12a4878f-ee97-4e58-a349-3233e48b594e
+begin
+	const FACIES = [
+    ALCAP.Facies(
+        viability_range=(4, 10),
+        activation_range=(6, 10),
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2",
+        diffusion_coefficient=10000u"m"),
+    ALCAP.Facies(
+        viability_range=(4, 10),
+        activation_range=(6, 10),
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2",
+        diffusion_coefficient=5000u"m"),
+    ALCAP.Facies(
+        viability_range=(4, 10),
+        activation_range=(6, 10),
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2",
+        diffusion_coefficient=7000u"m")
+		]
+
+		const PERIOD = 0.2u"Myr"
+		const AMPLITUDE = 4.0u"m"
+end
+
+# ╔═╡ 552feab9-187a-47f2-9662-5166ca8559b0
+md"""
+The following cells show the default scenario. They are disabled for now because they take some time to run. If you forgot how the default scenario look like, please enable the cells and run to have a look.
+"""
+
+# ╔═╡ 650fbcee-e5d6-459c-8e96-839fd217e440
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+	const INPUT = ALCAP.Input(
+	    tag="$TAG",
+	    box=Box{Coast}(grid_size=(100, 50), phys_scale=300.0u"m"),
+	    time=TimeProperties(
+	        Δt=0.0002u"Myr",
+	        steps=5000,
+	        write_interval=1),
+	    ca_interval=1,
+	    bedrock_elevation=(x, y) -> -x / 300.0,
+	    sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
+	    subsidence_rate=50.0u"m/Myr",
+	    disintegration_rate=50.0u"m/Myr",
+	    insolation=400.0u"W/m^2",
+	    sediment_buffer_size=50,
+	    depositional_resolution=0.5u"m",
+	    facies=FACIES)
+end
+  ╠═╡ =#
+
+# ╔═╡ 2848ef2d-f75d-4838-898a-e7222a2f3836
+# ╠═╡ disabled = true
+#=╠═╡
+md"""
+run the model
+"""
+  ╠═╡ =#
+
+# ╔═╡ 36e4518e-b0b2-4366-b598-5327f728e60e
+#=╠═╡
+H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+  ╠═╡ =#
+
+# ╔═╡ e58944d8-9ae5-40fd-b9fe-4833678bac03
+# ╠═╡ disabled = true
+#=╠═╡
+md"""
+Plotting the cross section
+"""
+  ╠═╡ =#
+
+# ╔═╡ 5ec012bf-c421-4e24-a123-80a4614a8251
+# ╠═╡ disabled = true
+#=╠═╡
+summary_plot("$(PATH)/$(TAG).h5")
+  ╠═╡ =#
+
+# ╔═╡ 2212e2ec-fd33-4914-8fc6-5fb350c947fd
+md"""
+# Create ramp scenario
+Set the name of the scenario.
+"""
+
+# ╔═╡ 264d92cd-e3d7-48e1-a715-e14bf63eae39
+const TAG_R = "alcap-ramp"
 
 # ╔═╡ 11f68bd5-c6d7-4933-9aeb-da30998beb19
 begin
@@ -27,25 +145,9 @@ begin
 	summary_plot("$(PATH)/$(TAG_R).h5")
 end
 
-# ╔═╡ ce52b9bc-4c64-4928-8896-c97e33b26a78
-md"""
-This is one solution for the task in the tutorial. There are certainly other solutions, and if you are interested, please dive in this~
-"""
-
-# ╔═╡ 05b92240-a0f7-11ef-0463-9998898db4f7
-md"""
-If you have already installed CarboKitten, please skip this step.
-"""
-
-# ╔═╡ 2212e2ec-fd33-4914-8fc6-5fb350c947fd
-md"""
-# Create ramp scenario
-## importing dependencies
-"""
-
 # ╔═╡ dc087dfa-b018-45d2-9335-b1b44afa70d5
 md"""
-Changes facies production profile. Herein, we changed `maximum_growth_rate` and `extinction_coefficient`. 
+Changes facies production profile. Herein, we changed `maximum_growth_rate` from default *500*, *400* and *100* m/Myr of the three facies to *100*, *80* and *70* m/Myr, and the `extinction rate` from *0.8*, *0.1*, *0.005* m^-1 to *0.03*, *0.01*, *0.005* m^-1. 
 """
 
 # ╔═╡ f5afc91c-34a7-48cb-896f-a93f85acb7f8
@@ -77,18 +179,14 @@ end
 
 # ╔═╡ d1e97bef-ef32-4f3c-bd0d-ba39c916202f
 md"""
-Define sea-level and other parameters.
+Same sea-level and other parameters.
 """
 
 # ╔═╡ e0b239c5-faad-4a95-a3fc-a88bc1b8a6ee
 begin
-	
-	const PERIOD = 0.2u"Myr"
-	const AMPLITUDE = 4.0u"m"
-	
 	const INPUT_R = ALCAP.Input(
 	    tag="$TAG_R",
-	    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+	    box=Box{Coast}(grid_size=(100, 50), phys_scale=300.0u"m"),
 	    time=TimeProperties(
 	        Δt=0.0002u"Myr",
 	        steps=5000,
@@ -108,7 +206,7 @@ end
 
 # ╔═╡ 2e3d45f6-7a85-47a8-9351-58feaec6e251
 md"""
-run the model
+run the model. When the progressing bar hit 100%, it means the run is completed.
 """
 
 # ╔═╡ 4472ea75-a22e-4442-9b19-35b16bf2596d
@@ -119,10 +217,15 @@ md"""
 Plot the cross-section
 """
 
+# ╔═╡ 2487f168-5b93-4835-a266-630ad3c55c47
+md"""
+From the corss-section, we can see that compared to the default scenario, the result of this run do not show a steep slope. 
+"""
+
 # ╔═╡ 8b455149-c168-4b27-bea1-8542f6744451
 md"""
 # Create shelf scenario
-Herein, we changed the `maximum_growth_rate`.
+Herein, we changed the `maximum_growth_rate`of the first facies from default *500* m/myr to *800* m/Myr.
 """
 
 # ╔═╡ 58043c79-2cb9-4d1e-ae54-5135bd205ff5
@@ -159,14 +262,14 @@ end
 
 # ╔═╡ 40f759b5-2e9a-4aea-b6a5-e298682cd755
 md"""
-Same sea level curve and other settings.s
+Same sea level curve and other settings.
 """
 
 # ╔═╡ 5f3e08b1-eeaf-44ab-b818-aaa5922ceb6a
 begin
 const INPUT_S = ALCAP.Input(
     tag="$TAG_S",
-    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=300.0u"m"),
     time=TimeProperties(
         Δt=0.0002u"Myr",
         steps=5000,
@@ -184,7 +287,7 @@ end
 
 # ╔═╡ dc723dc9-3189-40ef-abe1-f0f3e5df5142
 md"""
-Run the model and Plot the cross-section
+Run the model and Plot the cross-section.
 """
 
 # ╔═╡ c5e16aee-0b89-4a7a-822b-6f025514083c
@@ -193,10 +296,25 @@ H5Writer.run(Model{ALCAP}, INPUT_S, "$(PATH)/$(TAG_S).h5")
 # ╔═╡ 4fd366ef-59d8-401b-aaa1-07d0cf8910ec
 summary_plot("$(PATH)/$(TAG_S).h5")
 
+# ╔═╡ 89963118-6c7c-44e9-a9ca-7d71f9a23713
+md"""
+Compared to the default run, the shelf has a steeper slope.
+"""
+
 # ╔═╡ 1d37f073-0aa1-4de1-92af-b31fbb2d8984
 md"""
+# Open discussion
+
 Seems that changing facies production could change reef morphology!
 But why? Do you have any intuitions?
+"""
+
+# ╔═╡ 347f52c6-da70-461e-8c87-e5f974074407
+md"""
+The key differences between ramp and shelf morphology is:
+ramp has relatively even thickness of sediment with along slope, while a shelf accumulates more sediments in shallow marine. 
+
+Therefore, if the carbonate producers show significant higher production rates in shallow water depth than the deep water depth, it is likely to produce a shelf morphology.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -2103,27 +2221,40 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╠═ce52b9bc-4c64-4928-8896-c97e33b26a78
+# ╟─ce52b9bc-4c64-4928-8896-c97e33b26a78
+# ╟─b8cf158a-4845-4ed8-97ef-4366436bb7b9
 # ╠═63be1f6e-7756-4118-946c-46fffd8155f4
-# ╠═05b92240-a0f7-11ef-0463-9998898db4f7
-# ╠═2212e2ec-fd33-4914-8fc6-5fb350c947fd
+# ╟─05b92240-a0f7-11ef-0463-9998898db4f7
+# ╟─6ae7df92-d630-4d40-ba05-b84c72d26a1e
+# ╠═900bc3aa-9644-4cca-8055-78c6a79b74d1
+# ╠═12a4878f-ee97-4e58-a349-3233e48b594e
+# ╟─552feab9-187a-47f2-9662-5166ca8559b0
+# ╠═650fbcee-e5d6-459c-8e96-839fd217e440
+# ╟─2848ef2d-f75d-4838-898a-e7222a2f3836
+# ╠═36e4518e-b0b2-4366-b598-5327f728e60e
+# ╟─e58944d8-9ae5-40fd-b9fe-4833678bac03
+# ╠═5ec012bf-c421-4e24-a123-80a4614a8251
+# ╟─2212e2ec-fd33-4914-8fc6-5fb350c947fd
 # ╠═264d92cd-e3d7-48e1-a715-e14bf63eae39
-# ╠═dc087dfa-b018-45d2-9335-b1b44afa70d5
+# ╟─dc087dfa-b018-45d2-9335-b1b44afa70d5
 # ╠═f5afc91c-34a7-48cb-896f-a93f85acb7f8
-# ╠═d1e97bef-ef32-4f3c-bd0d-ba39c916202f
+# ╟─d1e97bef-ef32-4f3c-bd0d-ba39c916202f
 # ╠═e0b239c5-faad-4a95-a3fc-a88bc1b8a6ee
-# ╠═2e3d45f6-7a85-47a8-9351-58feaec6e251
+# ╟─2e3d45f6-7a85-47a8-9351-58feaec6e251
 # ╠═4472ea75-a22e-4442-9b19-35b16bf2596d
-# ╠═4a8d6d24-30a3-4ca9-84f3-fcff3fd29808
+# ╟─4a8d6d24-30a3-4ca9-84f3-fcff3fd29808
 # ╠═11f68bd5-c6d7-4933-9aeb-da30998beb19
-# ╠═8b455149-c168-4b27-bea1-8542f6744451
+# ╟─2487f168-5b93-4835-a266-630ad3c55c47
+# ╟─8b455149-c168-4b27-bea1-8542f6744451
 # ╠═58043c79-2cb9-4d1e-ae54-5135bd205ff5
 # ╠═4d853def-0c02-417f-a556-1add2aa2319a
-# ╠═40f759b5-2e9a-4aea-b6a5-e298682cd755
+# ╟─40f759b5-2e9a-4aea-b6a5-e298682cd755
 # ╠═5f3e08b1-eeaf-44ab-b818-aaa5922ceb6a
-# ╠═dc723dc9-3189-40ef-abe1-f0f3e5df5142
+# ╟─dc723dc9-3189-40ef-abe1-f0f3e5df5142
 # ╠═c5e16aee-0b89-4a7a-822b-6f025514083c
 # ╠═4fd366ef-59d8-401b-aaa1-07d0cf8910ec
-# ╠═1d37f073-0aa1-4de1-92af-b31fbb2d8984
+# ╟─89963118-6c7c-44e9-a9ca-7d71f9a23713
+# ╟─1d37f073-0aa1-4de1-92af-b31fbb2d8984
+# ╟─347f52c6-da70-461e-8c87-e5f974074407
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

@@ -2,7 +2,7 @@
 module EmpiricalDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
-using ...Config: Box
+using ...Boxes: Box
 using Unitful
 
 # ~/~ begin <<docs/src/denudation/empirical.md#empirical-denudation>>[init]

@@ -1,5 +1,9 @@
 # Production
 
+```component-dag
+CarboKitten.Components.Production
+```
+
 The `Production` module specifies the production rate following the model by Bosscher & Schlager 1992 [Bosscher1992](@cite).
 The growth rate is given as
 
@@ -34,7 +38,7 @@ module ProductionSpec
                 box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
                 time = TimeProperties(Δt=1.0u"kyr", steps=10),
                 sea_level = t -> 0.0u"m",
-		        bedrock_elevation = (x, y) -> -10u"m",
+		        initial_topography = (x, y) -> -10u"m",
 		        subsidence_rate = 0.0u"m/Myr",
                 facies = [facies],
                 insolation = 400.0u"W/m^2")
@@ -42,7 +46,7 @@ module ProductionSpec
             state = initial_state(input)
             prod = uniform_production(input)(state)
             @test all(prod[1:end-1,:] .>= prod[2:end,:])
-        end     
+        end
     end
 end
 ```
@@ -94,6 +98,10 @@ end
 
 ## CA Production
 
+```component-dag
+CarboKitten.Components.CAProduction
+```
+
 The `CAProduction` component gives production that depends on the provided CA.
 
 ``` {.julia file=src/Components/CAProduction.jl}
@@ -116,7 +124,7 @@ The `CAProduction` component gives production that depends on the provided CA.
                 output[f, :, :] = ifelse.(state.ca .== f, p.(f, w(state)), 0.0u"m")
             end
             return output
-        end 
+        end
     end
 end
 ```

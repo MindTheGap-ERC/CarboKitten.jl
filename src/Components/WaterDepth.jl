@@ -3,13 +3,12 @@
 @mixin TimeIntegration, Boxes
 using ..Common
 using HDF5
-using CarboKitten.Config: axes
 
 export water_depth
 
 @kwdef struct Input <: AbstractInput
     sea_level          # function (t::Time) -> Length
-    bedrock_elevation  # function (x::Location, y::Location) -> Length
+    initial_topography  # function (x::Location, y::Location) -> Length
     subsidence_rate::Rate
 end
 
@@ -22,8 +21,8 @@ function initial_state(input::AbstractInput)
 end
 
 function water_depth(input::AbstractInput)
-    x, y = axes(input.box)
-    eta0 = input.bedrock_elevation.(x, y')
+    x, y = box_axes(input.box)
+    eta0 = input.initial_topography.(x, y')
 
     return function (state::AbstractState)
         t = TimeIntegration.time(input, state)
@@ -35,10 +34,10 @@ end
 function write_header(fid, input::AbstractInput)
     gid = fid["input"]
     attr = attributes(gid)
-    x, y = Common.axes(input.box)
+    x, y = box_axes(input.box)
     t = TimeIntegration.write_times(input)
 
-    gid["bedrock_elevation"] = input.bedrock_elevation.(x, y') |> in_units_of(u"m")
+    gid["initial_topography"] = input.initial_topography.(x, y') |> in_units_of(u"m")
     gid["sea_level"] = input.sea_level.(t) .|> in_units_of(u"m")
     attr["subsidence_rate"] = input.subsidence_rate |> in_units_of(u"m/Myr")
 end

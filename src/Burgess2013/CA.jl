@@ -3,7 +3,7 @@ module CA
 
 using ...BoundaryTrait
 using ...Stencil
-using ...Config: Box
+using ...Boxes: Box
 
 export run_ca
 

@@ -31,7 +31,7 @@ const INPUT = ActiveLayer.Input(
     Δt                    = 0.001u"Myr",
     t_end                 = 1.0u"Myr",
 
-    bedrock_elevation     = (x, y) -> -30.0u"m",
+    initial_topography     = (x, y) -> -30.0u"m",
     initial_sediment      = initial_sediment,
     production            = (x, y) -> 0.0u"m/Myr",
 
@@ -55,7 +55,7 @@ function main(input)
     ax2 = Axis(fig[1,1], xlabel="x (km)", ylabel="η (m)")
 
     for r in result
-        η = input.bedrock_elevation.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
+        η = input.initial_topography.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
 
         lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"))
     end

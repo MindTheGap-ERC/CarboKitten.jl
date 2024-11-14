@@ -6,9 +6,10 @@ using Unitful
     import CarboKitten.Denudation.EmpiricalDenudationMod: empirical_denudation, slope_kernel
     import CarboKitten.Denudation.PhysicalErosionMod: physical_erosion, mass_erosion, total_mass_redistribution
     using CarboKitten.Stencil: Periodic, Reflected, stencil
-    using CarboKitten.Config: Box, Vectors, TimeProperties
+    using CarboKitten.Config: Vectors, TimeProperties
+    using CarboKitten.Boxes: Box
     using CarboKitten.Burgess2013.CA: step_ca, run_ca
-    using CarboKitten.Model.WithDenudation: Input, Facies
+    using CarboKitten.Models.WithDenudation: Input, Facies
     using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpiricalDenudation
 
 
@@ -53,11 +54,11 @@ using Unitful
                 2  0  1  0  1
                 1  3  3  3  0
                 1  3  2  3  2]
-    
+
     struct test_state
         ca::Array{Int}
     end
-    
+
     STATE1 = test_state(ca_init)
 
     denudation_mass_HIGH_CO2 = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
@@ -66,7 +67,7 @@ using Unitful
     denudation_mass_HIGH_P = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
     denudation_mass_phys = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
     denudation_mass_phys_flat = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
-    redistribution_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...) 
+    redistribution_mass = zeros(typeof(0.0u"m/kyr"),box.grid_size...)
 
     water_depth = [ 0.989943  0.48076   0.518983  0.997996   0.895681
                     0.872733  0.208779  0.882917  0.550494   0.674066
@@ -80,7 +81,7 @@ using Unitful
     slopefn(water_depth, slope, box.phys_scale ./u"m")
     slope_flat = zeros(box.grid_size...)
     slopefn(water_depth_flat, slope_flat, box.phys_scale ./u"m")
-    
+
     (denudation_mass_HIGH_CO2) = denudation(box, DENUDATION_HIGH_CO2, water_depth, slope,MODEL1,STATE1)
     (denudation_mass_LOW_CO2) = denudation(box, DENUDATION_LOW_CO2, water_depth, slope,MODEL1,STATE1)
     (denudation_mass_LOW_P) = denudation(box, DENUDATION_LOW_P, water_depth, slope,MODEL1,STATE1)

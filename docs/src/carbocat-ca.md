@@ -61,7 +61,7 @@ module CA
 
 using ...BoundaryTrait
 using ...Stencil
-using ...Config: Box
+using ...Boxes: Box
 
 export run_ca
 
@@ -195,7 +195,7 @@ We may test that running the above function ten times gives the same result as t
 ``` {.julia file=test/CASpec.jl}
 @testset "CA" begin
     using CarboKitten.BoundaryTrait: Periodic
-    using CarboKitten.Config: Box
+    using CarboKitten.Boxes: Box
     using CarboKitten.Burgess2013.CA: step_ca, run_ca
     using Unitful
 

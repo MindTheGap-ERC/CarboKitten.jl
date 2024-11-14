@@ -1,5 +1,9 @@
 # Tags
 
+```component-dag
+CarboKitten.Components.Tag
+```
+
 This module allows simulations to be tagged with a string.
 
 ``` {.julia file=src/Components/Tag.jl}

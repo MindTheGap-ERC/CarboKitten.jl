@@ -13,7 +13,7 @@ using CarboKitten.Transport.ActiveLayer: pde_stencil, Amount, Rate
     box
     Δt::typeof(1.0u"Myr")
     t_end::typeof(1.0u"Myr")
-    bedrock_elevation   # function (x::u"m", y::u"m") -> u"m"
+    initial_topography   # function (x::u"m", y::u"m") -> u"m"
     initial_sediment    # function (x::u"m", y::u"m") -> u"m"
     production          # function (x::u"m", y::u"m") -> u"m/s"
     disintegration_rate::typeof(1.0u"m/Myr")
@@ -34,7 +34,7 @@ const input = Input(
     Δt=0.001u"Myr",
     t_end=1.0u"Myr",
 
-    bedrock_elevation = (x, y) -> -x / 300.0,
+    initial_topography = (x, y) -> -x / 300.0,
     initial_sediment = (x, y) -> 0.0u"m",
 
     production = production_patch(
@@ -67,7 +67,7 @@ end
 function propagator(input)
     δ = Matrix{Amount}(undef, input.box.grid_size...)
     x, y = axes(input.box)
-    μ0 = input.bedrock_elevation.(x, y')
+    μ0 = input.initial_topography.(x, y')
 
     function active_layer(state)
         max_amount = input.disintegration_rate * input.Δt

@@ -116,54 +116,20 @@ It seems Eq. 5 in BS92 (the most important equation in the paper mind you!) is m
 
 The most impressive result in BS92 is the last figure. They show an input curve for $s(t)$ but give no functional description. The curve starts with a linear drop from 0 to 120m depth over a time of 20000 years, then slowly rises with $s(t) = a +  bt + A \sin(2\pi t / P)$, with a period $P = \sim 15-20 {\rm kyr}$, amplitude $A = \sim 40 {\rm m}$. It might be easiest to take a screenshot of the PDF and convert the graph into a table.
 
-```@raw html
-<details><summary>Extracting Sealevel Curve from an image</summary>
-```
-
-``` {.julia .task file=examples/model/bs92/fig8-sealevel.jl}
-#| creates: data/bs92-sealevel-curve.csv
-#| requires: data/bs92-sealevel-input.png
-
-module Script
-    using Images
-    using DataFrames
-    using CSV
-
-    function main()
-        img = load("data/bs92-sealevel-input.png")
-        img_gray = Gray.(img)
-        signal = 1.0 .- channelview(img_gray)
-        signal ./= sum(signal; dims=[1])
-        (n_y, n_x) = size(signal)
-        y = sum(signal .* (1:n_y); dims=[1]) / n_y * 200.0
-        df = DataFrame(
-            time = LinRange(0.0, 80_000.0, n_x),
-            depth = y[1, :])
-        CSV.write("data/bs92-sealevel-curve.csv", df)
-    end
-end
-
-Script.main()
-```
-
-```@raw html
-</details>
-```
-
 Using `DifferentialEquations.jl` we can integrate Equation @eq:growth-eqn. Interestingly, the only integrator that gave me noise free results is `Euler`. This may be due to the sudden shut-down of production at $w = 0$.
 
 ``` {.julia file=examples/model/bs92/using_ode.jl}
 module BS92
 
-using CSV
-using DataFrames
+using CarboKitten.DataSets: bosscher_schlager_1992
 using Interpolations
+using Unitful
 
 <<b92-model>>
 
 function sealevel_curve()
-     data = DataFrame(CSV.File("data/bs92-sealevel-curve.csv"))
-     linear_interpolation(data.time, data.depth)
+     data = bosscher_schlager_1992()
+     linear_interpolation(data.time / u"yr", data.sealevel / u"m")
 end
 
 struct Scenario
@@ -194,7 +160,7 @@ Note the simplicity of this result: there is no dependency on space, only on the
 
 ``` {.julia .task file=examples/model/bs92/fig8.jl}
 #| creates: docs/src/_fig/bs92-fig8.svg
-#| requires: data/bs92-sealevel-curve.csv examples/model/bs92/using_ode.jl
+#| requires: examples/model/bs92/using_ode.jl
 #| collect: figures
 
 module Script
@@ -227,9 +193,13 @@ Script.main()
 
 ## BS92 in CarboKitten stack
 
+```component-dag
+CarboKitten.Models.BS92
+```
+
 Within the CarboKitten design, we can express the BS92 model a bit more succinctly. The following produces output that is fully compatible with other CarboKitten models and the included post processing and visualization stack. The `H5Writer` module provides a `run` method that expects the `initial_state`, `step!` and `write_header` methods to be available.
 
-``` {.julia file=src/Model/BS92.jl}
+``` {.julia file=src/Models/BS92.jl}
 @compose module BS92
 @mixin Tag, H5Writer, Production
 
@@ -268,45 +238,41 @@ end
 
 ``` {.julia .task file=examples/model/bs92/run.jl}
 #| creates: data/output/bs92.h5
-#| requires: data/bs92-sealevel-curve.csv
 
 module Script
 
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model.BS92
+using CarboKitten
+using CarboKitten.DataSets: bosscher_schlager_1992
 
-using CSV
-using DataFrames
 using Interpolations
 using Unitful
 
 function sealevel_curve()
-    data = DataFrame(CSV.File("data/bs92-sealevel-curve.csv"))
-    linear_interpolation(data.time, data.depth)
+    data = bosscher_schlager_1992()
+    linear_interpolation(data.time, data.sealevel)
 end
 
-const INPUT = Input(
+const INPUT = BS92.Input(
     tag = "example model BS92",
-    box = Common.Box{Shelf}(grid_size=(100, 1), phys_scale=600.0u"m"),
+    box = Box{Coast}(grid_size=(100, 1), phys_scale=600.0u"m"),
     time = TimeProperties(
       Δt = 10.0u"yr",
       steps = 8000,
       write_interval = 100),
     sea_level = let sc = sealevel_curve()
-      t -> -sc(t / u"yr") * u"m"
+      t -> -sc(t)
     end,
-    bedrock_elevation = (x, y) -> - x / 300.0,
+    initial_topography = (x, y) -> - x / 300.0,
     subsidence_rate = 0.0u"m/yr",
     insolation = 400.0u"W/m^2",
-    facies = [Facies(
+    facies = [BS92.Facies(
       maximum_growth_rate = 0.005u"m/yr",
       saturation_intensity = 50.0u"W/m^2",
       extinction_coefficient = 0.05u"m^-1"
     )])
 
 function main()
-    H5Writer.run(Model{BS92}, INPUT, "data/output/bs92.h5")
+    run_model(Model{BS92}, INPUT, "data/output/bs92.h5")
 end
 
 end
@@ -323,3 +289,63 @@ using GLMakie
 using CarboKitten.Visualization
 save("docs/src/_fig/bs92-summary.png", summary_plot("data/output/bs92.h5"))
 ```
+
+## Multiple facies
+
+Using the above implementation of the model by Bosscher and Schlager, we can run the same model with multiple facies. We use the same parameters as Burgess2013, but divide the `maximum_growth_rate` by four, since we have no CA running and all facies produce at the same time.
+
+
+``` {.julia .task file=examples/model/bs92/multi-facies-run.jl}
+#| creates: data/output/bs92-multi-facies.h5
+
+module Script
+
+using CarboKitten
+
+const FACIES = [
+    BS92.Facies(
+         maximum_growth_rate=500u"m/Myr"/4,
+         extinction_coefficient=0.8u"m^-1",
+         saturation_intensity=60u"W/m^2"),
+    BS92.Facies(
+         maximum_growth_rate=400u"m/Myr"/4,
+         extinction_coefficient=0.1u"m^-1",
+         saturation_intensity=60u"W/m^2"),
+    BS92.Facies(
+         maximum_growth_rate=100u"m/Myr"/4,
+         extinction_coefficient=0.005u"m^-1",
+         saturation_intensity=60u"W/m^2")]
+
+const INPUT = BS92.Input(
+    tag = "example model BS92",
+    box = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
+    time = TimeProperties(
+        Δt = 200.0u"yr",
+        steps = 5000,
+        write_interval = 1),
+    sea_level = t -> 4.0u"m" * sin(2π * t / 0.2u"Myr"),
+    initial_topography = (x, y) -> - x / 300.0,
+    subsidence_rate = 50.0u"m/Myr",
+    insolation = 400.0u"W/m^2",
+    facies = FACIES)
+
+function main()
+    run_model(Model{BS92}, INPUT, "data/output/bs92-multi-facies.h5")
+end
+
+end
+
+Script.main()
+```
+
+``` {.julia .task file=examples/model/bs92/multi-facies-plot.jl}
+#| creates: docs/src/_fig/bs92-multi-facies.png
+#| requires: data/output/bs92-multi-facies.h5
+#| collect: figures
+
+using GLMakie
+using CarboKitten.Visualization
+save("docs/src/_fig/bs92-multi-facies.png", summary_plot("data/output/bs92-multi-facies.h5", wheeler_smooth=(3, 5)))
+```
+
+![BS92 with multiple facies](fig/bs92-multi-facies.png)

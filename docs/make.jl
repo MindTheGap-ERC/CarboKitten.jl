@@ -7,6 +7,8 @@ using CarboKitten
 bib = CitationBibliography(joinpath(@__DIR__, "src", "ref.bib"))
 # makedocs(; plugins=[bib], ...)
 
+include("component_graphs.jl")
+
 module Entangled
 using DataStructures: DefaultDict
 
@@ -64,10 +66,12 @@ path = joinpath(@__DIR__, "transpiled")
 rm(path; force=true, recursive=true)
 mkpath(path)
 Entangled.transpile_file.(joinpath(@__DIR__, "src"), sources, path)
+run(`touch $(joinpath(path, "first_tutorial.md"))`)
 copydir(joinpath(@__DIR__, "src/fig"), joinpath(path, "fig"))
 
 makedocs(
     source=path,
+    modules = [CarboKitten],
     sitename="CarboKitten",
     # repo=Remotes.GitHub("MindTheGap-ERC", "CarboKitten"),
     pages=[
@@ -77,6 +81,10 @@ makedocs(
             "Model with CA and Production" => "ca-with-production.md",
             # "With Denudation" => "ca-prod-with-denudation.md",
             "ALCAPS" => "model-alcap.md"
+        ],
+        "Examples" => [
+            "Tutorial (Pluto notebook)" => "first_tutorial.md",
+            "Tabular Sea Levels" => "cases/tabular-sea-level.md"
         ],
         "Architecture" => "architecture.md",
         "Components" => [
@@ -89,7 +97,7 @@ makedocs(
             "Water Depth" => "components/waterdepth.md",
             "Production" => "components/production.md",
             "HDF5 Writer" => "components/hdf5.md",
-            "Sediment Buffer" => "components/sediment_buffer.md",
+            "Sediment Buffers" => "components/sediment_buffer.md",
             "Active Layer Transport" => "active-layer-transport.md",
         ],
         "Visualizations" => "visualization.md",
@@ -109,13 +117,15 @@ makedocs(
         "Algorithms" => [
             "Unitful" => "unitful.md",
             "Boxes" => "boxes.md",
-            "Sediment Buffers" => "sediment-buffer.md",
             "Stencils" => "stencils.md",
             "Utility" => "utility.md"
         ],
+        "API Documentation" => "api.md",
         "References" => "references.md"
     ],
     plugins=[bib])
+
+cp(joinpath(@__DIR__, "notebooks/first_tutorial.html"), joinpath(@__DIR__, "build/first_tutorial/index.html"), force=true)
 
 deploydocs(
     repo="github.com/MindTheGap-ERC/CarboKitten.jl"

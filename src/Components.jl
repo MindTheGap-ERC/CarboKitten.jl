@@ -18,6 +18,7 @@ include("Components/CAProduction.jl")
 
 include("Components/SedimentBuffer.jl")
 include("Components/ActiveLayer.jl")
+include("Components/ActiveLayerOnshore.jl")
 
 include("Components/H5Writer.jl")
 

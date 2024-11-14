@@ -96,6 +96,10 @@ begin
 		:paola1992 => DOI("10.1111/j.1365-2117.1992.tb00145.x"),
 		:miller2020 => DOI("10.1594/PANGAEA.923126"))
 
+	for d in values(refs)
+		ShortCodes.getdoi(d)
+	end
+
 	function cite(ref)
 		r = refs[ref]
 		authors = [strip(split(a, ",")[1]) for a in split(r.author, ";")]
@@ -353,10 +357,10 @@ Here, we define the `sea_level` as a sine wave with fixed amplitude and period.
 
 # ╔═╡ 7d72a3bb-5ed8-4ebf-a45d-59e1bb267e9a
 function sea_level(t)
-	amplitude = 4.0u"m"
-	period = 0.2u"Myr"
-	
-	return amplitude * sin(2π * t / period)
+	a1 = 4.0u"m"
+	p1 = 0.2u"Myr"
+
+	return a1 * sin(2π * t / p1)
 end
 
 # ╔═╡ 30245436-9731-4cae-a150-fcba4360527e

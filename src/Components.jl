@@ -2,7 +2,8 @@
 module Components
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
-    CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer
+    CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
+    ActiveLayerOnshore
 
 using ModuleMixins: @compose
 

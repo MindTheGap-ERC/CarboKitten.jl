@@ -58,14 +58,14 @@ ot_output = let
         extinction_coefficient = 0.1u"m^-1",
         saturation_intensity = 60u"W/m^2",
 		diffusion_coefficient = 50u"m/yr",
-		onshore_velocity = ov(10.0u"m", -1.0u"m/yr")),
+		onshore_velocity = ov(20.0u"m", 3.0u"m/yr")),
 
 	    OT.Facies(
         maximum_growth_rate = 100u"m/Myr",
         extinction_coefficient = 0.005u"m^-1",
         saturation_intensity = 60u"W/m^2",
 		diffusion_coefficient = 20u"m/yr",
-		onshore_velocity = ov(10.0u"m", 1.0u"m/yr"))
+		onshore_velocity = ov(20.0u"m", 5.0u"m/yr"))
 	]
 
 	function sea_level(t)

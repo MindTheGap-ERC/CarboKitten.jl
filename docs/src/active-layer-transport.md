@@ -171,23 +171,24 @@ using ...Stencil: stencil
 const Rate = typeof(1.0u"m/Myr")
 const Amount = typeof(1.0u"m")
 
-function pde_stencil(box::Box{BT}, ν) where {BT <: Boundary{2}}
+function pde_stencil(box::Box{BT}, Δt::Unitful.Time{Float64}, ν::Unitful.Velocity{Float64}) where {BT<:Boundary{2}}
     Δx = box.phys_scale
+    d = ν * Δt
 
     function kernel(x)
-        adv = ν * ((x[3, 2][1] - x[1, 2][1]) * (x[3, 2][2] - x[1, 2][2]) +
-                    (x[2, 3][1] - x[2, 1][1]) * (x[2, 3][2] - x[2, 1][2])) /
-                  (2Δx)^2
+        adv = d * ((x[3, 2][1] - x[1, 2][1]) * (x[3, 2][2] - x[1, 2][2]) +
+                   (x[2, 3][1] - x[2, 1][1]) * (x[2, 3][2] - x[2, 1][2])) /
+              (2Δx)^2
 
-        dif = ν * x[2, 2][2] * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
-                  x[2, 1][1] - 4*x[2, 2][1]) / (Δx)^2
+        dif = d * x[2, 2][2] * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
+                                x[2, 1][1] - 4 * x[2, 2][1]) / (Δx)^2
 
         prd = x[2, 2][2]
 
         return max(0.0u"m", adv + dif + prd)
     end
 
-    stencil(Tuple{Amount, Amount}, Amount, BT, (3, 3), kernel)
+    stencil(Tuple{Amount,Amount}, Amount, BT, (3, 3), kernel)
 end
 
 end
@@ -416,7 +417,7 @@ using CarboKitten.Transport.ActiveLayer: pde_stencil
 using Unitful
 
 @kwdef struct Facies <: AbstractFacies
-    diffusion_coefficient::typeof(1.0u"m")
+    diffusion_coefficient::typeof(1.0u"m/yr")
 end
 
 @kwdef struct Input <: AbstractInput
@@ -431,9 +432,9 @@ modifies the state, popping sediment from the `sediment_buffer` and returns an a
 """
 function disintegration(input)
     max_h = input.disintegration_rate * input.time.Δt
-    output = Array{Float64, 3}(undef, n_facies(input), input.box.grid_size...)
+    output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
 
-    return function(state)
+    return function (state)
         h = min.(max_h, state.sediment_height)
         state.sediment_height .-= h
         pop_sediment!(state.sediment_buffer, h ./ input.depositional_resolution .|> NoUnits, output)
@@ -451,13 +452,13 @@ function transportation(input)
     x, y = box_axes(input.box)
     μ0 = input.initial_topography.(x, y')
     # We always return this array
-    transported_output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
+    transported_output = Array{Amount,3}(undef, n_facies(input), input.box.grid_size...)
     stencils = [
-        let stc = pde_stencil(input.box, f.diffusion_coefficient)
-            (μ, p) -> @views stc(tuple.(μ, p[i,:,:]), transported_output[i,:,:])
-        end for (i, f) in enumerate(input.facies) ]
+        let stc = pde_stencil(input.box, input.time.Δt, f.diffusion_coefficient)
+            (μ, p) -> @views stc(tuple.(μ, p[i, :, :]), transported_output[i, :, :])
+        end for (i, f) in enumerate(input.facies)]
 
-    return function(state, active_layer::Array{Amount, 3})
+    return function (state, active_layer::Array{Amount,3})
         μ = state.sediment_height .+ μ0
         for stc in stencils
             stc(μ, active_layer)

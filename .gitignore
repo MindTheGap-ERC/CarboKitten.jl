@@ -1,5 +1,5 @@
 docs/build
-data/*.h5
+*.h5
 data/*.csv
 data/*.toml
 .vscode

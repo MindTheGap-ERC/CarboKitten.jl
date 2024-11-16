@@ -9,7 +9,7 @@ using CarboKitten.Transport.ActiveLayer: pde_stencil
 using Unitful
 
 @kwdef struct Facies <: AbstractFacies
-    diffusion_coefficient::typeof(1.0u"m")
+    diffusion_coefficient::typeof(1.0u"m/yr")
 end
 
 @kwdef struct Input <: AbstractInput
@@ -24,9 +24,9 @@ modifies the state, popping sediment from the `sediment_buffer` and returns an a
 """
 function disintegration(input)
     max_h = input.disintegration_rate * input.time.Δt
-    output = Array{Float64, 3}(undef, n_facies(input), input.box.grid_size...)
+    output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
 
-    return function(state)
+    return function (state)
         h = min.(max_h, state.sediment_height)
         state.sediment_height .-= h
         pop_sediment!(state.sediment_buffer, h ./ input.depositional_resolution .|> NoUnits, output)
@@ -44,13 +44,13 @@ function transportation(input)
     x, y = box_axes(input.box)
     μ0 = input.initial_topography.(x, y')
     # We always return this array
-    transported_output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
+    transported_output = Array{Amount,3}(undef, n_facies(input), input.box.grid_size...)
     stencils = [
-        let stc = pde_stencil(input.box, f.diffusion_coefficient)
-            (μ, p) -> @views stc(tuple.(μ, p[i,:,:]), transported_output[i,:,:])
-        end for (i, f) in enumerate(input.facies) ]
+        let stc = pde_stencil(input.box, input.time.Δt, f.diffusion_coefficient)
+            (μ, p) -> @views stc(tuple.(μ, p[i, :, :]), transported_output[i, :, :])
+        end for (i, f) in enumerate(input.facies)]
 
-    return function(state, active_layer::Array{Amount, 3})
+    return function (state, active_layer::Array{Amount,3})
         μ = state.sediment_height .+ μ0
         for stc in stencils
             stc(μ, active_layer)

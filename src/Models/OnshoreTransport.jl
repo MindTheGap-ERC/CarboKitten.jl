@@ -28,9 +28,9 @@ end
 
 function step!(input::Input)
     step_ca! = CellularAutomaton.step!(input)
-    disintegrate! = disintegration(input)
+    disintegrate! = ActiveLayerOnshore.odisintegration(input)
     produce = production(input)
-    transport = transportation(input)
+    transport = ActiveLayerOnshore.otransportation(input)
 
     function (state::State)
         if mod(state.step, input.ca_interval) == 0

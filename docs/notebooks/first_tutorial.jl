@@ -125,7 +125,7 @@ end
 
 # ╔═╡ 0ce8de55-3304-431d-a2aa-110b46a25c9b
 md"""
-This CarboKitten tutorial is aimed at people that are completely new to Julia. Please, follow the button on the top-right to download this notebook, and put it in an new directory.
+This CarboKitten tutorial is aimed at people that are completely new to Julia. Please follow the button on the top-right to download this notebook, and put it in an new directory.
 """
 
 # ╔═╡ 9babc2b0-9c26-11ef-3459-0d113ec3c402
@@ -168,7 +168,7 @@ julia> using Pluto
  └ (y/n/o) [y]: 
 ```
 
-A Please type `Pluto.run()` and press Enter to start the Pluto Notebook as follows:
+Please type `Pluto.run()` and press Enter to start the Pluto Notebook as follows:
 
 ```
 ┌ Info: 
@@ -182,7 +182,7 @@ A Please type `Pluto.run()` and press Enter to start the Pluto Notebook as follo
 └ 
 ```
 
-fter a while you should see a pop-up window.
+After a while you should see a pop-up window.
 
 
 Open the notebook that you downloaded. 

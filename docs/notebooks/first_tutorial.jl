@@ -191,7 +191,7 @@ Open the notebook that you downloaded.
 # ╔═╡ d573309f-c99a-43e9-a89f-083ef4ade5d8
 md"""
 !!! danger "☕ Coffee time! ☕"
-	When you open the notebook and click "Run notebook code" at the top-right corner, Pluto will download and compile all the needed packages. Depending on your machine this may take 5-10 minutes.
+	When you open the notebook and click "Run notebook code" at the top-right corner, Pluto will download and compile all the needed packages. Depending on your machine this may take 5-10 minutes. We would love to hear your feedback: please share it via (this form)[https://forms.office.com/e/8RnBXqxq2D].
 """
 
 # ╔═╡ 3b7fef8b-efb9-467d-b6db-f7cfa132be69

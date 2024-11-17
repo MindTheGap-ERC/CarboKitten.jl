@@ -168,7 +168,7 @@ julia> using Pluto
  └ (y/n/o) [y]: 
 ```
 
-After a while you should see the following message. Please type `Pluto.run()` and press Enter to start the Pluto Notebook:
+A Please type `Pluto.run()` and press Enter to start the Pluto Notebook as follows:
 
 ```
 ┌ Info: 
@@ -182,13 +182,16 @@ After a while you should see the following message. Please type `Pluto.run()` an
 └ 
 ```
 
-Enter `Pluto.run()` to start the Pluto, and open the notebook that you downloaded from the menu on the top-right of this page.
+fter a while you should see a pop-up window.
+
+
+Open the notebook that you downloaded. 
 """
 
 # ╔═╡ d573309f-c99a-43e9-a89f-083ef4ade5d8
 md"""
 !!! danger "☕ Coffee time! ☕"
-	When you open the notebook and click "run", Pluto will download and compile all the needed packages. Depending on your machine this may take 5-10 minutes.
+	When you open the notebook and click "Run notebook code" at the top-right corner, Pluto will download and compile all the needed packages. Depending on your machine this may take 5-10 minutes.
 """
 
 # ╔═╡ 3b7fef8b-efb9-467d-b6db-f7cfa132be69
@@ -2815,7 +2818,7 @@ version = "1.4.1+1"
 # ╟─c2166805-da62-4adf-8514-fd28924d115e
 # ╠═17501c93-f432-4f1a-b815-5ac9c5a29f8f
 # ╠═71f2c3ad-80ea-4678-87cf-bb95ef5b57ff
-# ╠═04824ca5-3e40-40e7-8211-990c18af21e6
+# ╟─04824ca5-3e40-40e7-8211-990c18af21e6
 # ╟─31a137be-f726-47f9-be2d-a6f91e4084dc
 # ╠═3d550592-93a0-4eeb-891e-f690a3b1d686
 # ╟─c0970bfe-db0a-46cc-a3e2-13e1ee78ee8e

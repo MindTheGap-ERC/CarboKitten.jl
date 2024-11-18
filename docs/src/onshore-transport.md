@@ -24,25 +24,15 @@ $$\partial_t \eta_f = \nu_f P_f \nabla^2 \eta + (\nu_f \nabla P_f - P_f w_f') \c
 
 So we modify the advection component in the active layer approach with $P_f w_f'$, the derivative of the wave induced flux with respect to water depth and add a new term $\nabla P_f \cdot w_f$.
 
-## Input
-
-One new facies parameter is added:
-
-``` {.julia #onshore-facies}
-struct Facies <: AbstractFacies
-    onshore_velocity
-end
-```
-
-The `onshore_velocity` should be a function returning two vectors, the velocity and shear of the transport.
-
 ``` {.julia file=src/Components/ActiveLayerOnshore.jl}
 @compose module ActiveLayerOnshore
 @mixin WaterDepth, FaciesBase, SedimentBuffer, ActiveLayer
 using ..Common
 using ...Stencil: stencil
 
-<<onshore-facies>>
+struct Facies <: AbstractFacies
+    onshore_velocity
+end
 
 """
     pde_stencil(box, ν, wf)
@@ -136,9 +126,9 @@ end
 
 function step!(input::Input)
     step_ca! = CellularAutomaton.step!(input)
-    disintegrate! = ActiveLayerOnshore.odisintegration(input)
+    disintegrate! = disintegration(input)
     produce = production(input)
-    transport = ActiveLayerOnshore.otransportation(input)
+    transport = transportation(input)
 
     function (state::State)
         if mod(state.step, input.ca_interval) == 0

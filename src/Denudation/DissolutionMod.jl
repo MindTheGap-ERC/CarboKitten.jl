@@ -56,7 +56,7 @@ function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state
     precip = p.precip ./u"m"
     pco2 = p.pco2 ./1.0u"atm"
     reactionrate = p.reactionrate ./u"m/yr"
-    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(state.ca)...)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(state.ca)...)
 
     for idx in CartesianIndices(state.ca)
         f = state.ca[idx]
@@ -64,7 +64,7 @@ function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state
             continue
         end
         if water_depth[idx] >= 0
-            denudation_rate[idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[f])
+            denudation_rate[f, idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[f])
         end
     end
     return denudation_rate

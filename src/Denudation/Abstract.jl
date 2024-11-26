@@ -38,7 +38,7 @@ Takes `state`, `water_depth` in meters and `denudation_mass` as a 3D array (faci
 """
 function redistribution(input)
     function (state, water_depth, denudation_mass)
-        return redistribution(input.box, input.denudation, denudation_mass, water_depth) .* input.time.Δt
+        return redistribution(input.box, input.denudation, denudation_mass, water_depth)
     end
 end
 

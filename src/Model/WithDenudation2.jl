@@ -40,10 +40,9 @@ function step!(input::Input)
     slopefn = slope_function(input,input.box)
     # Somehow deal with the units here
 
-    slope = zeros(Float64, box.grid_size...)
-    #slopefn = stencil(Float64, BT, (3, 3), slope_kernel) 
     
-
+    #slopefn = stencil(Float64, BT, (3, 3), slope_kernel) 
+    slope = Array{Float64}(undef, input.box.grid_size...)
     denuded_sediment = Array{Float64}(undef, n_facies(input), input.box.grid_size...)
 
     function (state::State)
@@ -51,7 +50,7 @@ function step!(input::Input)
             step_ca!(state)
         end
 
-        w = water_depth_fn(state)
+        w = water_depth_fn(state) ./u"m"
         slopefn(w, slope, input.box.phys_scale ./ u"m")
 
         # submarine: production and transport
@@ -61,25 +60,25 @@ function step!(input::Input)
         active_layer = p .+ d
         sediment = transport(state, active_layer)
 
-        push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|> NoUnits)
 
         # subaerial: denudation and redistribution
         # this code should go into the Denudation component
-        denudation_mass = min.(denudate(state, w, slope), state.sediment_height)
+        denudation_mass = denudate(state,w,slope) |> x -> sum(x,dims=1) |> x -> dropdims(x,dims=1) |> x -> min.(x, state.sediment_height)
+        #min.(sum(denudate(state,w,slope),dims=1), state.sediment_height) 
+        size(denudation_mass)
         if denudation_mass !== nothing
             state.sediment_height -= denudation_mass
             pop_sediment!(state.sediment_buffer, denudation_mass ./ input.depositional_resolution .|> NoUnits, denuded_sediment)
 
-            # update amount of disintegrated material for later output
             d += denuded_sediment .* input.depositional_resolution
-
+            println(denuded_sediment)
             redistribution_mass = redistribute(state, w, denuded_sediment .* input.depositional_resolution)
-
-            # update amount of sediment
-            if redistribution_mass !== nothing
-                sediment += redistribution_mass
+            if redistribution_mass !== nothing 
+                sediment .+= redistribution_mass
             end
         end
+
+        push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|> NoUnits)
 
         state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
         state.step += 1

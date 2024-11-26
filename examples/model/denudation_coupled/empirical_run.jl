@@ -17,7 +17,7 @@ const m = u"m"
 const Myr = u"Myr"
 
 const PATH = "data/output"
-const TAG = "dissolution"
+const TAG = "empirical"
 
 const FACIES = [
     WDn.Facies(
@@ -60,7 +60,7 @@ const FACIES = [
 
 const PERIOD = 0.2Myr
 const AMPLITUDE = 4.0m
-const DENUDATION = Dissolution(temp=273.0u"K", precip=1.0u"m", pco2=10^(-1.5) * u"atm", reactionrate=2e-3u"m/yr")
+const DENUDATION = EmpiricalDenudation(precip=1.0u"m")
 
 
 const INPUT = WDn.Input(

@@ -36,7 +36,7 @@ end
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, state)
     precip = p.precip ./ u"m"
-    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(slope)...)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(slope)...)
 
     for idx in CartesianIndices(state.ca)
         f = state.ca[idx]
@@ -44,7 +44,7 @@ function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, s
             continue
         end
         if water_depth[idx] >= 0
-            denudation_rate[idx] = empirical_denudation.(precip, slope[idx])
+            denudation_rate[f,idx] = empirical_denudation.(precip, slope[idx])
         end
     end
     return denudation_rate

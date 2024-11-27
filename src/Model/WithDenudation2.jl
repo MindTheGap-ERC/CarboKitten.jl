@@ -65,13 +65,13 @@ function step!(input::Input)
         # this code should go into the Denudation component
         denudation_mass = denudate(state,w,slope) |> x -> sum(x,dims=1) |> x -> dropdims(x,dims=1) |> x -> min.(x, state.sediment_height)
         #min.(sum(denudate(state,w,slope),dims=1), state.sediment_height) 
-        size(denudation_mass)
+        
         if denudation_mass !== nothing
             state.sediment_height -= denudation_mass
             pop_sediment!(state.sediment_buffer, denudation_mass ./ input.depositional_resolution .|> NoUnits, denuded_sediment)
 
             d += denuded_sediment .* input.depositional_resolution
-            println(denuded_sediment)
+        
             redistribution_mass = redistribute(state, w, denuded_sediment .* input.depositional_resolution)
             if redistribution_mass !== nothing 
                 sediment .+= redistribution_mass

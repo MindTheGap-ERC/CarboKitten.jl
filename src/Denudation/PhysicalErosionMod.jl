@@ -64,7 +64,7 @@ function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth, m
 end
 
 function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth) where {BT<:Boundary{2}}
-    mass = Array{Amount, 3}(undef, length(denudation_mass[:,1,1]), box.grid_size...)
+    mass = zeros(Amount, length(denudation_mass[:,1,1]), box.grid_size...)
     @views for f in 1:length(denudation_mass[:,1,1])
         total_mass_redistribution(box, denudation_mass[f,:,:], water_depth, mass[f,:,:])
     end

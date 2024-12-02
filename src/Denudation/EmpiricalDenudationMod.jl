@@ -26,7 +26,7 @@ function slope_kernel(w::Any, cellsize::Float64)
     dzdx = (-w[1, 1] - 2 * w[2, 1] - w[3, 1] + w[1, 3] + 2 * w[2, 3] + w[3, 3]) / (8 * cellsize)
     dzdy = (-w[1, 1] - 2 * w[1, 2] - w[1, 3] + w[3, 1] + 2 * w[3, 2] + w[1, 1]) / (8 * cellsize)
 
-    if abs(w[2, 2]) <= abs(min(w...))
+    if abs(w[2, 2]) <= min.(abs.(w)...)
         return 0.0
     else
         atan(sqrt(dzdx^2 + dzdy^2)) * (180 / π)
@@ -43,7 +43,7 @@ function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, s
         if f == 0
             continue
         end
-        if water_depth[idx] >= 0
+        if water_depth[idx] <= 0
             denudation_rate[f,idx] = empirical_denudation.(precip, slope[idx])
         end
     end

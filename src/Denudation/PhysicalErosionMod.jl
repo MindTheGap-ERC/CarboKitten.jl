@@ -49,7 +49,7 @@ function mass_erosion(box::Box{BT}, denudation_mass, water_depth::Array{Float64}
     return (redistribution_kernel(wd, cell_size) .* denudation_mass[i])
 end
 
-function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth, f::Int64, mass) where {BT<:Boundary{2}}
+function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth, mass) where {BT<:Boundary{2}}
         for i in CartesianIndices(mass)
             redis = mass_erosion(box, denudation_mass, water_depth, i)
 
@@ -68,9 +68,10 @@ end
 function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth) where {BT<:Boundary{2}}
     mass = zeros(Amount, length(denudation_mass[:,1,1]), box.grid_size...)
     @views for f in 1:length(denudation_mass[:,1,1])
-        mass[f,:,:] = total_mass_redistribution(box, denudation_mass[f,:,:], water_depth,f, mass[f,:,:])
+        total_mass_redistribution(box, denudation_mass[f,:,:], water_depth, mass[f,:,:])
     end
     return mass
+
 end
 
 function denudation(::Box, p::PhysicalErosion, water_depth::Any, slope, facies, state)

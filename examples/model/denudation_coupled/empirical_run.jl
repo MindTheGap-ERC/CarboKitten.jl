@@ -59,7 +59,7 @@ const FACIES = [
 ]
 
 const PERIOD = 0.2Myr
-const AMPLITUDE = 4.0m
+const AMPLITUDE = 20.0m
 const DENUDATION = EmpiricalDenudation(precip=1.0u"m")
 
 

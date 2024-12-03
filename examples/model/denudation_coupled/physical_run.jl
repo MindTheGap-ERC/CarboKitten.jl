@@ -30,7 +30,7 @@ const FACIES = [
         reactive_surface=1000u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
-        erodibility = 0.23u"m/yr"
+        erodibility = 0.0023u"m/yr"
         ),
     WDn.Facies(
         viability_range=(4, 10),
@@ -42,7 +42,7 @@ const FACIES = [
         reactive_surface=1000u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
-        erodibility = 0.23u"m/yr"
+        erodibility = 0.0023u"m/yr"
         ),
     WDn.Facies(
         viability_range=(4, 10),
@@ -54,12 +54,12 @@ const FACIES = [
         reactive_surface=1000u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
-        erodibility = 0.23u"m/yr"
+        erodibility = 0.0023u"m/yr"
         )
 ]
 
 const PERIOD = 0.2Myr
-const AMPLITUDE = 4.0m
+const AMPLITUDE = 20.0m
 const DENUDATION = PhysicalErosion()
 
 

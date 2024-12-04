@@ -17,7 +17,7 @@ const m = u"m"
 const Myr = u"Myr"
 
 const PATH = "data/output"
-const TAG = "dissolution"
+const TAG = "nodenudation"
 
 const FACIES = [
     WDn.Facies(
@@ -27,7 +27,7 @@ const FACIES = [
         extinction_coefficient=0.8u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=10000u"m",
-        reactive_surface=10u"m^2/m^3",
+        reactive_surface=1000u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
         erodibility = 0.23u"m/yr"
@@ -39,7 +39,7 @@ const FACIES = [
         extinction_coefficient=0.1u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=5000u"m",
-        reactive_surface=50u"m^2/m^3",
+        reactive_surface=1000u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
         erodibility = 0.23u"m/yr"
@@ -51,7 +51,7 @@ const FACIES = [
         extinction_coefficient=0.005u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=7000u"m",
-        reactive_surface=100u"m^2/m^3",
+        reactive_surface=1000u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
         erodibility = 0.23u"m/yr"
@@ -60,7 +60,7 @@ const FACIES = [
 
 const PERIOD = 0.2Myr
 const AMPLITUDE = 20.0m
-const DENUDATION = Dissolution(temp=293.0u"K", precip=1.0u"m", pco2=10^(-2.5) * u"atm", reactionrate=2e-3u"m/yr")
+const DENUDATION = NoDenudation()
 
 
 const INPUT = WDn.Input(

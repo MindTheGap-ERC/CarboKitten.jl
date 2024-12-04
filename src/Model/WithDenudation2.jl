@@ -63,10 +63,11 @@ function step!(input::Input)
 
         # subaerial: denudation and redistribution
         # this code should go into the Denudation component
-        denudation_mass = denudate(state,w,slope) |> x -> sum(x,dims=1) |> x -> dropdims(x,dims=1) |> x -> min.(x, state.sediment_height)
         #min.(sum(denudate(state,w,slope),dims=1), state.sediment_height) 
-        
+        denudation_mass = denudate(state,w,slope)
         if denudation_mass !== nothing
+            denudation_mass = denudate(state,w,slope) |> x -> sum(x,dims=1) |> x -> dropdims(x,dims=1) |> x -> min.(x, state.sediment_height)
+
             state.sediment_height -= denudation_mass
             pop_sediment!(state.sediment_buffer, denudation_mass ./ input.depositional_resolution .|> NoUnits, denuded_sediment)
 

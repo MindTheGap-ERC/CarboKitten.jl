@@ -18,7 +18,11 @@ Returns denudation mass in units of meters.
 function denudation(input)
 
     function (state, water_depth, slope)
+        if denudation(input.box, input.denudation, water_depth, slope, input.facies,state) !== nothing
         return denudation(input.box, input.denudation, water_depth, slope, input.facies,state) .* input.time.Δt
+        else
+        return nothing
+        end
     end
 end
 

@@ -12,8 +12,6 @@ using Interpolations
 using CategoricalArrays
 
 # ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[init]
-# ~/~ end
-# ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[1]
 function miller_2020()
     dir = artifact_dir()
     filename = joinpath(dir, "Miller2020", "Cenozoic_sea_level_reconstruction.tab")
@@ -26,7 +24,7 @@ function miller_2020()
         reference=categorical(data[:,3]))
 end
 # ~/~ end
-# ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[2]
+# ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[1]
 function sea_level()
     df = miller_2020()
     lisiecki_df = df[df.refkey .== "846 Lisiecki", :]
@@ -37,14 +35,14 @@ function sea_level()
         lisiecki_df.sealevel)
 end
 # ~/~ end
-# ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[3]
+# ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[2]
 const TIME_PROPERTIES = TimeProperties(
     t0 = -2.0u"Myr",
     Δt = 200.0u"yr",
     steps = 5000
 )
 # ~/~ end
-# ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[4]
+# ~/~ begin <<docs/src/cases/tabular-sea-level.md#tabular-sea-level>>[3]
 const PATH = "data/output"
 const TAG = "lisiecki-sea-level"
 

@@ -111,7 +111,8 @@ makedocs(
             "Chemical Dissolution" => "denudation/chemical.md",
             "Physical Erosion" => "denudation/physical_erosion.md"
         ],
-        "Output" => [
+        "Input & Output" => [
+            "Input Methods" => "input-methods.md",
             "CSV Export" => "data-export.md"
         ],
         "Algorithms" => [

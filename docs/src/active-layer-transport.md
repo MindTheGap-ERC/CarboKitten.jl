@@ -76,7 +76,7 @@ Our input structure facilitates a single facies, specifying an initial bedrock e
     box
     Δt::typeof(1.0u"Myr")
     t_end::typeof(1.0u"Myr")
-    bedrock_elevation   # function (x::u"m", y::u"m") -> u"m"
+    initial_topography   # function (x::u"m", y::u"m") -> u"m"
     initial_sediment    # function (x::u"m", y::u"m") -> u"m"
     production          # function (x::u"m", y::u"m") -> u"m/s"
     disintegration_rate::typeof(1.0u"m/Myr")
@@ -101,7 +101,7 @@ const input = Input(
     Δt=0.001u"Myr",
     t_end=1.0u"Myr",
 
-    bedrock_elevation = (x, y) -> -x / 300.0,
+    initial_topography = (x, y) -> -x / 300.0,
     initial_sediment = (x, y) -> 0.0u"m",
 
     production = production_patch(
@@ -136,7 +136,7 @@ using .ActiveLayer: input
 
 function main()
   (x, y) = axes(input.box)
-  η = input.bedrock_elevation.(x, y')
+  η = input.initial_topography.(x, y')
   p = input.production.(x, y')
 
   fig = Figure()
@@ -165,7 +165,7 @@ module ActiveLayer
 
 using Unitful
 using ...BoundaryTrait
-using ...Config: Box
+using ...Boxes: Box
 using ...Stencil: stencil
 
 const Rate = typeof(1.0u"m/Myr")
@@ -216,7 +216,7 @@ end
 function propagator(input)
     δ = Matrix{Amount}(undef, input.box.grid_size...)
     x, y = axes(input.box)
-    μ0 = input.bedrock_elevation.(x, y')
+    μ0 = input.initial_topography.(x, y')
 
     function active_layer(state)
         max_amount = input.disintegration_rate * input.Δt
@@ -280,7 +280,7 @@ function main()
       Iterators.filter(x -> mod(x[1], 100) == 0, enumerate(run_model(input)))) |> collect
 
     (x, y) = axes(input.box)
-    η = input.bedrock_elevation.(x, y') .+ result[10][2].sediment .- input.subsidence_rate * result[10][2].time
+    η = input.initial_topography.(x, y') .+ result[10][2].sediment .- input.subsidence_rate * result[10][2].time
     # p = input.production.(x, y')
 
     fig = Figure(size=(800, 1000))
@@ -290,7 +290,7 @@ function main()
     ax2 = Axis(fig[3,1], xlabel="x (km)", ylabel="η (m)")
 
     for i in 1:10
-        η = input.bedrock_elevation.(x, y') .+ result[i][2].sediment .- input.subsidence_rate * result[i][2].time
+        η = input.initial_topography.(x, y') .+ result[i][2].sediment .- input.subsidence_rate * result[i][2].time
 
         lines!(ax2, x |> in_units_of(u"km"), η[:, 25] |> in_units_of(u"m"))
     end
@@ -335,7 +335,7 @@ const INPUT = ActiveLayer.Input(
     Δt                    = 0.001u"Myr",
     t_end                 = 1.0u"Myr",
 
-    bedrock_elevation     = (x, y) -> -30.0u"m",
+    initial_topography     = (x, y) -> -30.0u"m",
     initial_sediment      = initial_sediment,
     production            = (x, y) -> 0.0u"m/Myr",
 
@@ -382,7 +382,7 @@ function main(input)
     ax2 = Axis(fig[1,1], xlabel="x (km)", ylabel="η (m)")
 
     for r in result
-        η = input.bedrock_elevation.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
+        η = input.initial_topography.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
 
         lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"))
     end
@@ -400,6 +400,10 @@ ActiveLayerErosion.main(ActiveLayerErosion.INPUT)
 ```
 
 ## Active Layer Component
+
+```component-dag
+CarboKitten.Components.ActiveLayer
+```
 
 ``` {.julia file=src/Components/ActiveLayer.jl}
 @compose module ActiveLayer
@@ -444,8 +448,8 @@ Prepares the transportation step. Returns a function `f(state::State, active_lay
 transporting the active layer, returning a transported `Amount` of sediment.
 """
 function transportation(input)
-    x, y = axes(input.box)
-    μ0 = input.bedrock_elevation.(x, y')
+    x, y = box_axes(input.box)
+    μ0 = input.initial_topography.(x, y')
     # We always return this array
     transported_output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
     stencils = [

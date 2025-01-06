@@ -7,7 +7,7 @@ Doesn't do any denudation: used for testing purposes.
 module NoDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
-using ...Config: Box
+using ...Boxes: Box
 using Unitful
 
 struct NoDenudation <: DenudationType end

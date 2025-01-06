@@ -13,7 +13,7 @@ using CarboKitten.Stencil: convolution
 const na = [CartesianIndex()]
 
 elevation(h::Header, d::DataSlice) =
-    let bl = h.bedrock_elevation[d.slice..., na],
+    let bl = h.initial_topography[d.slice..., na],
         sr = h.axes.t[end] * h.subsidence_rate
 
         bl .+ d.sediment_elevation .- sr

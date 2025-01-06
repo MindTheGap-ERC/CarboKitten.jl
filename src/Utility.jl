@@ -131,6 +131,8 @@ holds:
     enumerate(flatten(s)) == flatten(enumerate_seq(s))
 """
 enumerate_seq(s::T) where T = TagVectors{T}(s)
+
+export enumerate_seq
 # ~/~ end
 
 end

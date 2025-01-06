@@ -18,7 +18,7 @@
                 output[f, :, :] = ifelse.(state.ca .== f, p.(f, w(state)), 0.0u"m")
             end
             return output
-        end 
+        end
     end
 end
 # ~/~ end

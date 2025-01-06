@@ -1,5 +1,9 @@
 # Cellular Automata
 
+```component-dag
+CarboKitten.Components.CellularAutomaton
+```
+
 ``` {.julia file=test/Components/CellularAutomatonSpec.jl}
 module CellularAutomatonSpec
 
@@ -47,8 +51,8 @@ end
     using ...Burgess2013.CA: step_ca
 
     @kwdef struct Facies <: AbstractFacies
-        viability_range::Tuple{Int,Int}
-        activation_range::Tuple{Int,Int}
+        viability_range::Tuple{Int,Int} = (4, 10)
+        activation_range::Tuple{Int,Int} = (6, 10)
     end
 
     @kwdef struct Input <: AbstractInput

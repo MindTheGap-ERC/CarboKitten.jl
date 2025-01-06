@@ -2,7 +2,7 @@
 module EmpiricalDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
-using ...Config: Box
+using ...Boxes: Box
 using Unitful
 export slope_kernel
 # ~/~ begin <<docs/src/denudation/empirical.md#empirical-denudation>>[init]

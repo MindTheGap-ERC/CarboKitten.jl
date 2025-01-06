@@ -1,232 +1,98 @@
-module WithDenudation
+# ~/~ begin <<docs/src/models/with-denudation.md#src/Model/WithDenudation2.jl>>[init]
+@compose module WithDenudation2
+@mixin Tag, H5Writer, CAProduction, ActiveLayer, DenudationConfig
 
-using CarboKitten
-using ...Stencil: Periodic, stencil
-using ...Utility
-using ...BoundaryTrait: Boundary
-using ...Denudation: denudation, redistribution
+using ..Common
+using ..CAProduction: production
+using ..TimeIntegration
+using ..WaterDepth
+using ModuleMixins: @for_each
+using ..DenudationConfig
+using ...Denudation
+using ...Stencil
+using ...BoundaryTrait
 using ...Denudation.EmpiricalDenudationMod: slope_kernel
-using ...Burgess2013.CA: step_ca, run_ca
-using ...Config: TimeProperties
-using ...Boxes: Box
-using Unitful
-using HDF5
-using .Iterators: drop, peel, partition, map, take
-using ...Denudation.Abstract: DenudationType
+export Input, Facies
 
-@kwdef struct Facies
-    viability_range::Tuple{Int,Int}
-    activation_range::Tuple{Int,Int}
-
-    maximum_growth_rate::typeof(1.0u"m/Myr")
-    extinction_coefficient::typeof(1.0u"m^-1")
-    saturation_intensity::typeof(1.0u"W/m^2")
-
-    reactive_surface::typeof(1.0u"m^2/m^3") #reactive surface
-    mass_density::typeof(1.0u"kg/m^3") #density of different carb factory
-    infiltration_coefficient::Float64 #infiltration coeff
-end
-
-#abstract type DenudationType end
-
-@kwdef struct Input
-    box::Box
-    time::TimeProperties
-
-    sea_level       # Myr -> m
-    subsidence_rate::typeof(1.0u"m/Myr")
-    initial_depth  # m -> m
-
-    facies::Vector{Facies}
-    insolation::typeof(1.0u"W/m^2")
-
-    denudation::DenudationType
-end
-
-struct ProductionFrame
-    production::Array{typeof(1.0u"m/Myr"),3}
-end
-
-struct DenudationFrame
-    denudation::Union{Array{typeof(1.0u"m/Myr"),2},Nothing}
-    redistribution::Union{Array{typeof(1.0u"m/Myr"),2},Nothing}
-end
-
-struct OutputFrame
-    production::Array{typeof(1.0u"m/Myr"),3}
-    denudation::Union{Array{typeof(1.0u"m/Myr"),2},Nothing}
-    redistribution::Union{Array{typeof(1.0u"m/Myr"),2},Nothing}
-end
-# FIXME: deduplicate
-mutable struct State
-    time::typeof(1.0u"Myr")
-    ca::Array{Int}
-    ca_priority::Vector{Int}
-    height::Array{typeof(1.0u"m"),2}
-end
-# FIXME: deduplicate
-function initial_state(input::Input)  # -> State
-    height = zeros(Float64, input.box.grid_size...) * u"m"
-    for i in CartesianIndices(height)
-        height[i] = input.initial_depth(i[2] * input.box.phys_scale)
-    end
-    n_facies = length(input.facies)
-    ca = rand(0:n_facies, input.box.grid_size...)
-    state = State(0.0u"Myr", ca, 1:n_facies, height)
-
-    step = step_ca(input.box, input.facies)
-    for _ = 1:20
-        step(state)
-    end
-    return state
-end
-
-# propagator for production
-function prod_propagator(input::Input, box::Box{BT}) where {BT<:Boundary}
-    n_facies = length(input.facies)
-
-    function water_depth(s::State)
-        sea_level = input.sea_level(s.time) .* u"m"
-        s.height .- sea_level
+function initial_state(input::Input)
+    ca_state = CellularAutomaton.initial_state(input)
+    for _ in 1:20
+        CellularAutomaton.step!(input)(ca_state)
     end
 
-    function (s::State)
-        production = zeros(typeof(0.0u"m/Myr"), box.grid_size..., n_facies)
-        w = water_depth(s)
-        for idx in CartesianIndices(s.ca)
-            f = s.ca[idx]
-            if f == 0
-                continue
-            end
-            production[Tuple(idx)..., f] = production_rate(input.insolation, input.facies[f], w[idx])
-        end
-        return ProductionFrame(production)
-    end
+    sediment_height = zeros(Height, input.box.grid_size...)
+    sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
 
-
+    return State(
+        step=0, sediment_height=sediment_height,
+        sediment_buffer=sediment_buffer,
+        ca=ca_state.ca, ca_priority=ca_state.ca_priority)
 end
 
-
-function denu_propagator(input::Input, box::Box{BT}) where {BT<:Boundary}
+function step!(input::Input)
+    step_ca! = CellularAutomaton.step!(input)
+    disintegrate! = disintegration(input)
+    produce = production(input)
+    transport = transportation(input)
     denudate = denudation(input)
     redistribute = redistribution(input)
+    water_depth_fn = water_depth(input)
+    slopefn = slope_function(input,input.box)
+    # Somehow deal with the units here
 
-    function water_depth(s::State)
-        sea_level = input.sea_level(s.time) .* u"m"
-        s.height .- sea_level
-    end
+    
+    #slopefn = stencil(Float64, BT, (3, 3), slope_kernel) 
+    slope = Array{Float64}(undef, input.box.grid_size...)
+    denuded_sediment = Array{Float64}(undef, n_facies(input), input.box.grid_size...)
 
     function (state::State)
-        w = water_depth(state) ./ u"m"
-        slope = zeros(Float64, box.grid_size...)
-        slopefn = stencil(Float64, BT, (3, 3), slope_kernel)
-        slopefn(w, slope, box.phys_scale ./ u"m")
-
-        denudation_mass = denudate(state, w, slope)
-        redistribution_mass = redistribute(state, w, denudation_mass)
-
-        return DenudationFrame(denudation_mass, redistribution_mass)
-    end
-
-end
-
-function updater(input)
-    n_facies = length(input.facies)
-    function update(state, Δ::ProductionFrame)
-        state.height .-= sum(Δ.production; dims=3) .* input.time.Δt
-        state.time += input.time.Δt
-    end
-
-    function update(state, Δ::DenudationFrame)
-        # FIXME: implement
-        if Δ.denudation !== nothing
-            state.height .+= Δ.denudation .* input.time.Δt
-        end
-        if Δ.redistribution !== nothing
-            state.height .-= Δ.redistribution .* input.time.Δt
-        end
-        state.time += input.time.Δt
-    end
-
-    update
-end
-function run_model(input::Input, box::Box{BT}) where {BT<:Boundary}
-    Channel{OutputFrame}() do ch
-        s = initial_state(input)
-        p = prod_propagator(input, box)
-        d = denu_propagator(input, box)  # FIXME: implement
-        u = updater(input)
-
-        while true
-            Δ_prod = p(s)
-            u(s, Δ_prod)
-            Δ_denu = d(s)
-            u(s, Δ_denu)
-            put!(ch, OutputFrame(Δ_prod.production, Δ_denu.denudation, Δ_denu.redistribution))
-        end
-    end
-end
-
-function stack_frames(fs::Vector{OutputFrame})  # -> Frame
-    OutputFrame(sum(f.production for f in fs), sum(f.denudation for f in fs), sum(f.redistribution for f in fs))#
-end
-
-function main(input::Input, output::String)
-    x_axis = (0:(input.box.grid_size[2]-1)) .* input.box.phys_scale
-    y_axis = (0:(input.box.grid_size[1]-1)) .* input.box.phys_scale
-    initial_height = input.initial_depth.(x_axis)
-    n_writes = input.time.steps ÷ input.time.write_interval
-    t = collect((0:(n_writes-1)) .* (input.time.Δt * input.time.write_interval))
-
-    h5open(output, "w") do fid
-        gid = create_group(fid, "input")
-        gid["x"] = collect(x_axis) |> in_units_of(u"m")
-        gid["y"] = collect(y_axis) |> in_units_of(u"m")
-        gid["height"] = collect(initial_height) |> in_units_of(u"m")
-        gid["t"] = t |> in_units_of(u"Myr")
-        attr = attributes(gid)
-        attr["delta_t"] = input.time.Δt |> in_units_of(u"Myr")
-        attr["write_interval"] = input.time.write_interval
-        attr["time_steps"] = input.time.steps
-        attr["sea_level"] = input.sea_level.(t)
-        attr["subsidence_rate"] = input.subsidence_rate |> in_units_of(u"m/Myr")
-        println("Subsidence rate saved successfully.")
-
-        box = input.box
-        results = map(stack_frames, partition(run_model(input, box), input.time.write_interval))
-        testframe = first(results)
-
-        n_facies = length(input.facies)
-        ds = create_dataset(fid, "sediment", datatype(Float64),
-            dataspace(input.box.grid_size..., n_facies, input.time.steps),
-            chunk=(input.box.grid_size..., n_facies, 1))
-
-        denudation = nothing
-        if testframe.denudation !== nothing
-            denudation = create_dataset(fid, "denudation", datatype(Float64),
-                dataspace(input.box.grid_size..., input.time.steps),
-                chunk=(input.box.grid_size..., 1))
+        if mod(state.step, input.ca_interval) == 0
+            step_ca!(state)
         end
 
-        redistribution = nothing
-        if testframe.redistribution !== nothing
-            redistribution = create_dataset(fid, "redistribution", datatype(Float64),
-                dataspace(input.box.grid_size..., input.time.steps),
-                chunk=(input.box.grid_size..., 1))
-        end
+        w = water_depth_fn(state) ./u"m"
+        slopefn(w, slope, input.box.phys_scale ./ u"m")
 
-        for (step, frame) in enumerate(take(results, n_writes))
-            ds[:, :, :, step] = frame.production |> in_units_of(u"m/Myr")
+        # submarine: production and transport
+        p = produce(state)
+        d = disintegrate!(state)
 
-            if denudation !== nothing
-                denudation[:, :, step] = frame.denudation |> in_units_of(u"m/kyr")
-            end
+        active_layer = p .+ d
+        sediment = transport(state, active_layer)
 
-            if redistribution !== nothing
-                redistribution[:, :, step] = frame.redistribution |> in_units_of(u"m/kyr")
+
+        # subaerial: denudation and redistribution
+        # this code should go into the Denudation component
+        #min.(sum(denudate(state,w,slope),dims=1), state.sediment_height) 
+        denudation_mass = denudate(state,w,slope)
+        if denudation_mass !== nothing
+            denudation_mass = denudate(state,w,slope) |> x -> sum(x,dims=1) |> x -> dropdims(x,dims=1) |> x -> min.(x, state.sediment_height)
+
+            state.sediment_height -= denudation_mass
+            pop_sediment!(state.sediment_buffer, denudation_mass ./ input.depositional_resolution .|> NoUnits, denuded_sediment)
+
+            d += denuded_sediment .* input.depositional_resolution
+        
+            redistribution_mass = redistribute(state, w, denuded_sediment .* input.depositional_resolution)
+            if redistribution_mass !== nothing 
+                sediment .+= redistribution_mass
             end
         end
+
+        push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|> NoUnits)
+
+        state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
+        state.step += 1
+
+        return H5Writer.DataFrame(
+            production = p,
+            disintegration = d,
+            deposition = sediment)
     end
 end
 
-end  # module
+function write_header(fid, input::AbstractInput)
+    @for_each(P -> P.write_header(fid, input), PARENTS)
+end
+end
+# ~/~ end

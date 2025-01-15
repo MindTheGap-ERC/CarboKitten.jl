@@ -20,6 +20,7 @@ CSV(tuple.(10:20:70, 25),
   :sediment_accumulation_curve => "run_06_sac.csv",
   :age_depth_model             => "run_06_adm.csv",
   :stratigraphic_column        => "run_06_sc.csv",
+  :water_depth                 => "run_06_wd.csv",
   :metadata                    => "run_06.toml")
 ```
 
@@ -28,6 +29,7 @@ There is a `data_export` function that can be overloaded with any `ExportSpcific
 - `:sediment_accumulation_curve`  (SAC) is another term for `sediment_height` elsewhere in the code.
 - `:age_depth_model` (ADM) is a monotonic version of the SAC, relating depth to age.
 - `:stratigraphic_column` amount of deposited material per facies per time step, corrected for disintegrated material. The cumulative sum of the SC should add up to the ADM.
+- `:water_depth` the water depth as a function of time.
 - `:metadata` some metadata, written as a TOML file.
 
 ## Tests
@@ -492,6 +494,7 @@ const Amount = typeof(1.0u"m")
                 :sediment_accumulation_curve => joinpath(path, "sac.csv"),
                 :age_depth_model => joinpath(path, "adm.csv"),
                 :stratigraphic_column => joinpath(path, "sc.csv"),
+                :water_depth => joinpath(path, "wd.csv"),
                 :metadata => joinpath(path, "metadata.toml"))
             data_export(spec, HEADER1, DATA1)
             for f in values(spec.output_files)

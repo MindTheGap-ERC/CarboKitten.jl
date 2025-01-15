@@ -45,7 +45,7 @@ function mass_erosion(box::Box{BT}, denudation_mass, water_depth::Array{Float64}
         wd[k] = offset_value(BT, water_depth, i, Δi)
     end
     cell_size = box.phys_scale ./ u"m"
-    
+
     return (redistribution_kernel(wd, cell_size) .* denudation_mass[i])
 end
 

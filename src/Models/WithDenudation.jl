@@ -1,14 +1,12 @@
-# ~/~ begin <<docs/src/models/with-denudation.md#src/Model/WithDenudation2.jl>>[init]
+# ~/~ begin <<docs/src/models/with-denudation.md#src/Models/WithDenudation.jl>>[init]
 @compose module WithDenudation
-@mixin Tag, H5Writer, CAProduction, ActiveLayer, DenudationConfig
+@mixin Tag, H5Writer, CAProduction, ActiveLayer, Denudation
 
 using ..Common
 using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
-using ..DenudationConfig
-using ...Denudation
 using ...Stencil
 using ...BoundaryTrait
 using ...Denudation.EmpiricalDenudationMod: slope_kernel

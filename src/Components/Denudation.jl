@@ -1,14 +1,16 @@
 # ~/~ begin <<docs/src/components/denudation.md#src/Components/Denudation.jl>>[init]
-@compose module DenudationConfig
+@compose module Denudation
     @mixin Boxes, WaterDepth, SedimentBuffer, FaciesBase
     using ..Common
     using CarboKitten.Denudation: DenudationType
     using CarboKitten.BoundaryTrait
     using CarboKitten.Stencil: stencil
-    using CarboKitten.Denudation.EmpiricalDenudationMod: slope_kernel
+    using CarboKitten.Denudation: Dissolution, EmpiricalDenudation, PhysicalErosion, NoDenudation, denudation, redistribution, slope_kernel
 
     export slope_function
-    
+    export Dissolution, EmpiricalDenudation, PhysicalErosion, NoDenudation, denudation, redistribution, slope_kernel
+
+
     @kwdef struct Facies <: AbstractFacies
         reactive_surface::typeof(1.0u"m^2/m^3") #reactive surface
         mass_density::typeof(1.0u"kg/m^3") #density of different carb factory

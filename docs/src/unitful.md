@@ -94,6 +94,10 @@ Now, suppose we have a `Vector` of which we don't know the exact units, but we w
 
 ``` {.julia #utility}
 function in_units_of(unit)
+    function magnitude(a)
+        error("Units of $(a*unit) not compatible with $unit")
+    end
+
     function magnitude(a::AbstractArray{Quantity{RT, NoDims, U}, dim}) where {RT <: Real, U, dim}
         return a .|> NoUnits
     end

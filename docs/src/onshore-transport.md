@@ -15,8 +15,7 @@ $$q_f = -\nu_f P_f \nabla \eta + P_f w_f(\eta).$$
 
 This leads to the modified advection-diffusion equation:
 
-$$\partial_t \eta_f = \nu_f (P_f \nabla^2 \eta + \nabla P_f \cdot \nabla \eta)
-- \nabla \cdot (P_f w_f(\eta)) + P_f.$$
+$$\partial_t \eta_f = \nu_f (P_f \nabla^2 \eta + \nabla P_f \cdot \nabla \eta) - \nabla \cdot (P_f w_f(\eta)) + P_f.$$
 
 Using the chain-rule $\nabla \cdot (P_f w_f(\eta)) = P_f (w_f' \cdot \nabla \eta) + \nabla P_f \cdot w_f$, we arrive at:
 

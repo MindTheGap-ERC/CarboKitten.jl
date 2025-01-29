@@ -157,3 +157,24 @@ end
 
 end
 ```
+
+## Xi & Burgess 2022
+
+```julia
+using GLMakie
+using Unitful
+
+const g = 9.8u"m/s^2"
+
+v(l, wd) = sqrt(l * g / 2pi) * tanh(2pi/l * wd)
+
+let
+    fig = Figure()
+    ax = Axis(fig[1,1], yreversed=true, xlabel="v [m/s]", ylabel="wd [m]")
+
+    wd = LinRange(0, 50, 100)u"m"
+    lines!(ax, v.(20.0u"m", wd) / u"m/s" .|> NoUnits, wd / u"m" .|> NoUnits)
+
+    fig
+end
+```

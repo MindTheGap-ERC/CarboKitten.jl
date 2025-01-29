@@ -1,7 +1,3 @@
-# ~/~ begin <<docs/src/model-alcap.md#examples/model/alcap/run.jl>>[init]
-#| requires: src/Model/ALCAP2.jl
-#| creates: data/output/alcap2.h5
-
 module Script
 
 using Unitful
@@ -96,4 +92,3 @@ end
 end
 
 Script.main()
-# ~/~ end

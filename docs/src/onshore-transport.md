@@ -160,20 +160,29 @@ end
 
 ## Xi & Burgess 2022
 
+Xi & Burgess use the following equation for the phase velocity of waves as a function of depth:
+
+$$v(w) = \sqrt{\frac{\lambda g}k} {\rm tanh} (k w),$$
+
+where $k = 2\pi/\lambda$ and $g$ is the gravitational acceleration. It could be that the square root should be extended over the ${\rm tanh}$ function, following the derivation on **Airy wave theory** on Wikipedia. It should be noted that this velocity is the phase-velocity of surface waves, given the total depth of the water. To evaluate the transport velocity at deeper levels, we need to look at the **Stokes drift**. This will effectively multiply the phase velocity with a factor $\exp(-kw)$. We'll leave the proportionality as an input parameter.
+
+$$v(w) \propto \tanh{k w} \exp{-kw}$$
+
+
 ```julia
 using GLMakie
 using Unitful
 
 const g = 9.8u"m/s^2"
 
-v(l, wd) = sqrt(l * g / 2pi) * tanh(2pi/l * wd)
+v(A, k, w) = A * tanh(k * w) * exp(-k * w)
 
 let
     fig = Figure()
     ax = Axis(fig[1,1], yreversed=true, xlabel="v [m/s]", ylabel="wd [m]")
 
-    wd = LinRange(0, 50, 100)u"m"
-    lines!(ax, v.(20.0u"m", wd) / u"m/s" .|> NoUnits, wd / u"m" .|> NoUnits)
+    wd = LinRange(0, 50, 10000)u"m"
+    lines!(ax, v.(1.0u"m/s" * 3.331, 0.05u"1/m", wd) / u"m/s" .|> NoUnits, wd / u"m" .|> NoUnits)
 
     fig
 end

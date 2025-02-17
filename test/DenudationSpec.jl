@@ -105,8 +105,7 @@ using Unitful
     end
 
     (redistribution_mass) = redistribution(box,DENUDATION_PHYS,denudation_mass_phys .*1.0u"Myr",water_depth)
-    # println(redistribution_mass)
-    # println(denudation_mass_phys.*1.0u"Myr")
+
     @test sum(denudation_mass_HIGH_CO2) > sum(denudation_mass_LOW_CO2)
     @test sum(denudation_mass_LOW_P) < sum(denudation_mass_HIGH_P)
     @test sum(denudation_mass_phys) > sum(denudation_mass_phys_flat)

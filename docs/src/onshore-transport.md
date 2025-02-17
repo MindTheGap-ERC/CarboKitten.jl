@@ -28,68 +28,68 @@ So we modify the advection component in the active layer approach with $P_f w_f'
 @mixin WaterDepth, FaciesBase, SedimentBuffer, ActiveLayer
 using ..Common
 using ...Stencil: stencil
+export otransportation
 
 struct Facies <: AbstractFacies
-    onshore_velocity
+  onshore_velocity
 end
 
-"""
-    pde_stencil(box, ν, wf)
+function onshore_transport_stencil(box::Box{BT}, Δt, ν, sf::F) where {BT<:Boundary{2},F}
+  Δx = box.phys_scale
 
-Creates a stencil function for active layer onshore transport, where
-`d` is the diffusion coefficient and `wf` is a function of waterdepth
-returning the sediment velocity and its derivative (shear) as 2-vectors.
+  function kernel(x)
+    (w, P) = x[2, 2]
+    sv, ss = sf(w)
+    d = ν * Δt
 
-The resulting stencil acts on an array of `Tuple{Length, Amount}`, being
-waterdepth and entrained sediment, writing to an array of `Amount` being
-deposited sediment.
-"""
-function onshore_transport_stencil(box::Box{BT}, ν, Δt, sf::F) where {BT<:Boundary{2},F}
-    Δx = box.phys_scale
+    adv = -((x[3, 2][1] - x[1, 2][1]) / (2Δx) * (d * (x[3, 2][2] - x[1, 2][2]) / (2Δx) - P * ss[1] * Δt) +
+            (x[2, 3][1] - x[2, 1][1]) / (2Δx) * (d * (x[2, 3][2] - x[2, 1][2]) / (2Δx) - P * ss[2] * Δt))
 
-    function kernel(x)
-        (w, P) = x[2, 2][2]
-        sv, ss = sf(w)
-        d = ν * Δt
+    dif = -d * P * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
+                    x[2, 1][1] - 4 * x[2, 2][1]) / (Δx)^2
 
-        adv = -((x[3, 2][1] - x[1, 2][1]) / (2Δx) * (d * (x[3, 2][2] - x[1, 2][2]) / (2Δx) - P * ss[1]) +
-                (x[2, 3][1] - x[2, 1][1]) / (2Δx) * (d * (x[2, 3][2] - x[2, 1][2]) / (2Δx) - P * ss[2]))
+    prd = sv[1] * (x[3, 2][2] - x[1, 2][2]) * Δt / (2Δx) + sv[2] * (x[2, 3][2] - x[2, 1][2]) * Δt / (2Δx) + x[2, 2][2]
+    ν, Δt
+    return max(0.0u"m", adv + dif + prd)
+  end
 
-        dif = -d * P * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
-                        x[2, 1][1] - 4 * x[2, 2][1]) / (Δx)^2
-
-        prd = sv[1] * (x[3, 2] - x[1, 2]) / (2Δx) + sv[2] * (x[2, 3] - x[2, 1]) / (2Δx) + x[2, 2][2]
-
-        return max(0.0u"m", adv + dif + prd)
-    end
-
-    stencil(Tuple{Amount,Amount}, Amount, BT, (3, 3), kernel)
+  stencil(Tuple{Amount,Amount}, Amount, BT, (3, 3), kernel)
 end
 
-"""
-    transportation(input)
+function odisintegration(input)
+  max_h = input.disintegration_rate * input.time.Δt
+  w = water_depth(input)
+  output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
 
-Computes the transport using Active Layer with Onshore vector.
-"""
-function transportation(input)
-    w = water_depth(input)
+  return function (state)
+    wn = w(state)
+    h = min.(max_h, state.sediment_height)
+    h[wn.<=0.0u"m"] .= 0.0u"m"
+    state.sediment_height .-= h
+    pop_sediment!(state.sediment_buffer, h ./ input.depositional_resolution .|> NoUnits, output)
+    return output .* input.depositional_resolution
+  end
+end
 
-    # We always return this array
-    transported_output = Array{Amount,3}(undef, n_facies(input), input.box.grid_size...)
-    stencils = [
-        let stc = onshore_transport_stencil(input.box, f.diffusion_coefficient, f.onshore_velocity)
-            (w, p) -> @views stc(tuple.(w, p[i, :, :]), transported_output[i, :, :])
-        end for (i, f) in enumerate(input.facies)]
+function otransportation(input)
+  w = water_depth(input)
 
-    return function (state, active_layer::Array{Amount,3})
-        wd = w(state)
+  # We always return this array
+  transported_output = Array{Amount,3}(undef, n_facies(input), input.box.grid_size...)
+  stencils = [
+    let stc = onshore_transport_stencil(input.box, input.time.Δt, f.diffusion_coefficient, f.onshore_velocity)
+      (w, p) -> @views stc(tuple.(w, p[i, :, :]), transported_output[i, :, :])
+    end for (i, f) in enumerate(input.facies)]
 
-        for stc in stencils
-            stc(wd, active_layer)
-        end
+  return function (state, active_layer::Array{Amount,3})
+    wd = w(state)
 
-        return transported_output
+    for stc in stencils
+      stc(wd, active_layer)
     end
+
+    return transported_output
+  end
 end
 
 end
@@ -125,9 +125,9 @@ end
 
 function step!(input::Input)
     step_ca! = CellularAutomaton.step!(input)
-    disintegrate! = disintegration(input)
+    disintegrate! = ActiveLayerOnshore.odisintegration(input)
     produce = production(input)
-    transport = transportation(input)
+    transport = ActiveLayerOnshore.otransportation(input)
 
     function (state::State)
         if mod(state.step, input.ca_interval) == 0

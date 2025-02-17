@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.1"
+julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "0c1c4d9ae80042cc8b572bc95241fa826aad8fad"
+project_hash = "c1c7c315aaf3443631bfcf4f71bf5ae1ee6dde44"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1298,6 +1298,12 @@ deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pk
 git-tree-sha1 = "110897e7db2d6836be22c18bffd9422218ee6284"
 uuid = "d3a379c0-f9a3-5b72-a4c0-6bf4d2e8af0f"
 version = "2.12.0+0"
+
+[[deps.Loess]]
+deps = ["Distances", "LinearAlgebra", "Statistics", "StatsAPI"]
+git-tree-sha1 = "f749e7351f120b3566e5923fefdf8e52ba5ec7f9"
+uuid = "4345ca2d-374a-55d4-8d30-97f9976e7612"
+version = "0.6.4"
 
 [[deps.LogExpFunctions]]
 deps = ["DocStringExtensions", "IrrationalConstants", "LinearAlgebra"]

@@ -8,7 +8,7 @@ using Unitful
 using CarboKitten.Components
 using CarboKitten.Components.Common
 using CarboKitten.Components.Denudation
-using CarboKitten.Model: WithDenudation as WDn
+using CarboKitten.Models: WithDenudation as WDn
 using CarboKitten.Export: data_export, CSV
 using CarboKitten.Denudation
 

@@ -53,6 +53,11 @@ function karst_denudation_parameters(temp::Float64)
 end
 ```
 
+``` {.julia .task file=examples/denudation/dissolution-test.jl}
+#| requires: examples/denudation/dissolution-test.jl
+#| creates: docs/src/_fig/KHTemp.png, docs/src/_fig/Equilibrium_Concs.png, docs/src/_fig/DissolutionExample.png
+#| collect: figures
+```
 and ```equilibrium``` function to calculate the $[Ca^{2+}]_{eq}$:
 
 ``` {.julia #karst-equilibrium-function}

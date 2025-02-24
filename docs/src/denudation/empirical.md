@@ -2,7 +2,7 @@
 
 Chlorine(Cl) isotopes are an emerging tool to decipher the denudation rates (chemical dissolution + physical erosion) in carbonate-dominated area.
 
-Research based on the karst region and carbonate platform terrace suggested that the denudation rates are mainly controlled by precipitation and slopes, although the debates about which factor is more important is still ongoing ([yang_combined_2020](@cite), [thomas_limited_2018](@cite)). In general, the precipitation mainly controls the chemical dissolution while the slopes mainly controls the physical ersions. In addition, the type of carbonates may also play an important role ([krklec_long-term_2022](@cite)), but given this feature is studied poorly so we will ditch it for now. We have checked and compiled the denudation rates (mm/kyr) along with precipitation and slopes serve as a starting point to create a function relates denudation rates (mm/kyr) to precipitation and slopes. The compiled data could be found in OSFdatabase. This is an empirical relationship and have a relatively large uncertainty in terms of fitting.
+Research based on the karst region and carbonate platform terrace suggested that the denudation rates are mainly controlled by precipitation and slopes, although the debates about which factor is more important is still ongoing ([yang_combined_2020](@cite), [thomas_limited_2018](@cite)). In general, the precipitation mainly controls the chemical dissolution while the slopes mainly controls the physical erosions. In addition, the type of carbonates may also play an important role ([krklec_long-term_2022](@cite)), but given this feature is studied poorly so we will ditch it for now. We have checked and compiled the denudation rates (mm/kyr) along with precipitation and slopes serve as a starting point to create a function relates denudation rates (mm/kyr) to precipitation and slopes. The compiled data could be found in OSF database. This is an empirical relationship and have a relatively large uncertainty in terms of fitting.
 
 ![Precipitation and denudation](../fig/Precipitation-Denudation.svg)
 
@@ -14,9 +14,10 @@ Research based on the karst region and carbonate platform terrace suggested that
 
 We can see that both the slope and precipitation could increase the denudation rates, and reaches a 'steady state' after a certain point.
 
-Therefore, we could use the function form of $D = P * S$, where $D$ means denudation rates, $P$ means effects of precipitation while $S$ means effects of Slope. By doing so, we can consider both effects. Such formula structure is similar to RUSLE (Revised Universal Soil Loss Equation) model, a widely used Landscape Evolution Model (LEM) (e.g., [thapa_spatial_2020](@cite)). We use [sigmoidal function](https://en.wikipedia.org/wiki/Sigmoid_function) to approximate the influence of $P$ or $S$ on $D$, by fitting the function with the observed data and rendering parameter `a`, `b`, `c`, `d`, `e`, `f`. These are impleted as `empirical_denudation`. For more information please refer to the methodology section in the associated preprint.
+Therefore, we could use the function form of $D = P * S$, where $D$ means denudation rates, $P$ means effects of precipitation while $S$ means effects of Slope. By doing so, we can consider both effects. Such formula structure is similar to RUSLE (Revised Universal Soil Loss Equation) model, a widely used Landscape Evolution Model (LEM) (e.g., [thapa_spatial_2020](@cite)). We use [sigmoidal function](https://en.wikipedia.org/wiki/Sigmoid_function) to approximate the influence of $P$ or $S$ on $D$, by fitting the function with the observed data and rendering parameter `a`, `b`, `c`, `d`, `e`, `f`. These are impleted as `empirical_denudation`. 
 
 ``` {.julia #empirical-denudation}
+
 function empirical_denudation(precip::Float64, slope::Any)
     local a = 9.1363
     local b = -0.008519
@@ -28,6 +29,12 @@ function empirical_denudation(precip::Float64, slope::Any)
 end
 ```
 
+``` {.julia file=examples/denudation/empirical-test.jl}
+#| requires: examples/denudation/empirical-test.jl
+#| creates: docs/src/_fig/EmpiricalPrecipitation.png
+#| collect: figures
+```
+
 This function needs two inputs: precipitation and slopes. The precipitation is defined as an input parameters in `EmpiricalDenudation`.
 
 ``` {.julia #empirical-denudation}
@@ -35,6 +42,7 @@ This function needs two inputs: precipitation and slopes. The precipitation is d
     precip::typeof(1.0u"m")
 end
 ```
+*Fig 3. An instance of the function showing denudation rates increases with precipitation.
 
 While the slope for each cell is calculated by comparing the height (or water-depth) with the neighboring 8 cells, and is implemented in function `slope_kernel` . The slope is returned in degrees of inclination. This approach has been widely used in industry and [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm) is an example.
 

@@ -4,7 +4,7 @@ module EmpiricalDenudationMod
 import ..Abstract: DenudationType, denudation, redistribution
 using ...Boxes: Box
 using Unitful
-export slope_kernel
+export slope_kernel, empirical_denudation
 # ~/~ begin <<docs/src/denudation/empirical.md#empirical-denudation>>[init]
 function empirical_denudation(precip::Float64, slope::Any)
     local a = 9.1363

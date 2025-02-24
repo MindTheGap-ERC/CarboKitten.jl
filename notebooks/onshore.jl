@@ -41,7 +41,7 @@ summary_plot(alcap_output)
 
 # ╔═╡ e1d2171e-eef4-423a-acf9-1cbb4de2b5bd
 ot_output = let	
-	function ov(lambda, T, wave_amp, water_depth, cutoff_depth; calibration_factor=1.e-8)
+	function ov(lambda, T, wave_amp, water_depth, cutoff_depth; calibration_factor=3.e-7)
 	    function (z)
 	        if z > cutoff_depth
 	            # Return zero velocity and gradient if depth is greater than cutoff
@@ -55,7 +55,7 @@ ot_output = let
 	        h = water_depth        # Water depth [m]
 	
 	        # Stokes drift [m/s], scaled by the calibration factor
-	        u_s = -calibration_factor * (1 / 2) * σ * k * a^2 * cosh(2 * k * (z + h)) /
+	        u_s = calibration_factor * (1 / 2) * σ * k * a^2 * cosh(2 * k * (z + h)) /
 	              sinh(k * h)^2
 	
 	        # Derivative of Stokes drift wrt depth [1/s], 

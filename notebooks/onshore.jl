@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.0
+# v0.20.3
 
 using Markdown
 using InteractiveUtils
@@ -22,6 +22,9 @@ using GLMakie
 # ╔═╡ 26014b0c-b1a6-4c14-b996-5cc98af32a49
 using CarboKitten.Visualization: summary_plot
 
+# ╔═╡ 5eb0ace5-c35f-4ffa-9081-3fd712960339
+using Unitful: μm, yr, s, m, π, cosh, sinh, @u_str
+
 # ╔═╡ 8285516a-650d-4392-a4a4-342bb64b396c
 using HDF5
 
@@ -36,17 +39,35 @@ alcap_output = run_model(Model{ALCAP}, ALCAP.Example.INPUT, "../data/output/alca
 summary_plot(alcap_output)
   ╠═╡ =#
 
-# ╔═╡ 5eb0ace5-c35f-4ffa-9081-3fd712960339
-
-
 # ╔═╡ e1d2171e-eef4-423a-acf9-1cbb4de2b5bd
-ot_output = let
-	function ov(a, b)
-		function (w)
-			[(-max(0.0u"m/yr", b * (a - w) / a), 0.0u"m/yr"),
-			 ((w <= a ? -b/a : 0.0u"yr^-1"), 0.0u"yr^-1")]
-		end
+ot_output = let	
+	function ov(lambda, T, wave_amp, water_depth, cutoff_depth; calibration_factor=3.e-7)
+	    function (z)
+	        if z > cutoff_depth
+	            # Return zero velocity and gradient if depth is greater than cutoff
+	            return [(0.0u"m/yr", 0.0u"m/yr"), (0.0u"yr^-1", 0.0u"yr^-1")]
+	        end
+	
+	        # Constants and calculations
+	        k = 2π / lambda        # Wave number [1/m]
+	        σ = 2π / T             # Angular frequency [1/s]
+	        a = wave_amp           # Wave amplitude [m]
+	        h = water_depth        # Water depth [m]
+	
+	        # Stokes drift [m/s], scaled by the calibration factor
+	        u_s = calibration_factor * (1 / 2) * σ * k * a^2 * cosh(2 * k * (z + h)) /
+	              sinh(k * h)^2
+	
+	        # Derivative of Stokes drift wrt depth [1/s], 
+			# scaled by the calibration factor
+	        du_s_dz = calibration_factor * σ * k^2 * a^2 * sinh(2 * k * (z + h)) /
+	                  sinh(k * h)^2
+	
+	        # Return tuple for velocity and its gradient
+	        [(u_s, 0.0u"m/yr"), (du_s_dz, 0.0u"yr^-1")]
+	    end
 	end
+
 	
 	FACIES = [
 	    OT.Facies(
@@ -54,21 +75,21 @@ ot_output = let
         extinction_coefficient = 0.8u"m^-1",
         saturation_intensity = 60u"W/m^2",
 		diffusion_coefficient = 10.0u"m/yr",
-		onshore_velocity = ov(10.0u"m", 0.0u"m/yr")),
+		onshore_velocity = ov(40.0u"m", 10.0u"s", 1.0u"m", 10.0u"m", 5.0u"m")), 
 
 	    OT.Facies(
         maximum_growth_rate = 400u"m/Myr",
         extinction_coefficient = 0.1u"m^-1",
         saturation_intensity = 60u"W/m^2",
 		diffusion_coefficient = 10.0u"m/yr",
-		onshore_velocity = ov(20.0u"m", 0.0u"m/yr")),
+	    onshore_velocity = ov(40.0u"m", 10.0u"s", 1.0u"m", 10.0u"m", 5.0u"m")), 
 
 	    OT.Facies(
         maximum_growth_rate = 100u"m/Myr",
         extinction_coefficient = 0.005u"m^-1",
         saturation_intensity = 60u"W/m^2",
 		diffusion_coefficient = 10.0u"m/yr",
-		onshore_velocity = ov(20.0u"m", 5.0u"m/yr"))
+		onshore_velocity = ov(40.0u"m", 10.0u"s", 1.0u"m", 10.0u"m", 5.0u"m"))
 	]
 
 	function sea_level(t)

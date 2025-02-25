@@ -45,15 +45,14 @@ function transportation(input)
     μ0 = input.initial_topography.(x, y')
     # We always return this array
     transported_output = Array{Amount,3}(undef, n_facies(input), input.box.grid_size...)
-    stencils = [
-        let stc = pde_stencil(input.box, input.time.Δt, f.diffusion_coefficient)
-            (μ, p) -> @views stc(tuple.(μ, p[i, :, :]), transported_output[i, :, :])
-        end for (i, f) in enumerate(input.facies)]
+    box = input.box
+    Δt = input.time.Δt
+    fs = input.facies
 
     return function (state, active_layer::Array{Amount,3})
         μ = state.sediment_height .+ μ0
-        for stc in stencils
-            stc(μ, active_layer)
+        for (i, f) in pairs(fs)
+            pde_stencil(box, Δt, f.diffusion_coefficient, view(transported_output, i, :, :), μ, active_layer)
         end
 
         return transported_output

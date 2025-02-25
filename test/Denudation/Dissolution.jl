@@ -5,6 +5,7 @@ using CarboKitten.Stencil: Periodic, Reflected, stencil
 using CarboKitten.Denudation.EmpiricalDenudationMod: slope_kernel
 using CarboKitten.Denudation.DissolutionMod: denudation, Dissolution
 using Unitful
+
 WD = [0.0663001  0.115606  0.646196
 0.601523   0.130196  0.390821
 0.864734   0.902935  0.670354]
@@ -39,4 +40,5 @@ slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
 slopefn(WD, SLOPE, BOX.phys_scale ./u"m")
 denudation(BOX, DIS, WD, SLOPE, Facies, STATE)
 @test (denudation(BOX, DIS, WD, SLOPE, Facies, STATE) |> sum) ≈ 0.0u"m/yr"
+
 end

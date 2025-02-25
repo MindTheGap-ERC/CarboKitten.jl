@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/denudation/empirical.md#examples/denudation/dissolution-test.jl>>[init]
+# ~/~ begin <<docs/src/denudation/chemical.md#examples/denudation/dissolution-test.jl>>[init]
 #| requires: examples/denudation/dissolution-test.jl
 #| creates: docs/src/_fig/KHTemp.png, docs/src/_fig/Equilibrium_Concs.png, docs/src/_fig/DissolutionExample.png
 #| collect: figures

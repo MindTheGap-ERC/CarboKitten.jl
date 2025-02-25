@@ -10,4 +10,5 @@ w3[5] = 0
 @test slope_kernel(w,1.0) == 0.0
 @test slope_kernel(w1,1.0) < slope_kernel(w2,1.0) 
 @test slope_kernel(w3,1.0) == 0.0
+
 end

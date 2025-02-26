@@ -13,7 +13,7 @@ Using these helper functions we can now define a *stencil* operation. Given the 
 
 ``` {.julia #stencil-operation}
 """
-    stencil(f, Boundary, Size, out, inp...)
+    stencil!(f, Boundary, Size, out, inp...)
 
 Performs stencil operation. The function `f` should take a number of
 abstract arrays (same as the number of `inp` values),
@@ -23,7 +23,7 @@ e.g. `Size(3, 3)` to get a 3 by 3 stencil.
 
 Prefer to use this version over the older implementations.
 """
-function stencil!(f, ::Type{BT}, ::Size{sz}, out::AbstractArray, inp::AbstractArray...) where {dim, sz, BT <: BoundaryType{dim}}
+function stencil!(f, ::Type{BT}, ::Size{sz}, out::AbstractArray, inp::AbstractArray...) where {dim, sz, BT <: Boundary{dim}}
     @assert all(size(a) == size(out) for a in inp)
     center = CartesianIndex((div.(sz, 2) .+ 1)...)
     for i in eachindex(IndexCartesian(), out)
@@ -231,4 +231,26 @@ end
 end 
 
 Script.plot_boundary_types()
+```
+
+## Tests
+
+``` {.julia file=test/StencilSpec.jl}
+@testset "CarboKitten.Stencil" begin
+
+using StaticArrays
+using CarboKitten
+using CarboKitten.Stencil: stencil!
+
+let a = ones(Float64, 10, 10),
+    b = zeros(Float64, 10, 10)
+
+    stencil!(Periodic{2}, Size(3, 3), b, a) do a
+        sum(a)
+    end
+
+    @test all(b .== 9)
+end
+
+end
 ```

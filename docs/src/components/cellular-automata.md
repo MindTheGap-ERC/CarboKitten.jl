@@ -133,7 +133,6 @@ end
 
 Script.main()
 ```
-:::
 
 ![CA](../fig/ca-long-term.svg)
 

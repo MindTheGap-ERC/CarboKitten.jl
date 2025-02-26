@@ -104,7 +104,6 @@ makedocs(
         "Visualizations" => "visualization.md",
         "CarboCAT" => [
             "Summary" => "carbocat.md",
-            "Cellular Automaton" => "carbocat-ca.md",
         ],
         "Denudation" => [
             "Denudation" => "denudation/denudation.md",

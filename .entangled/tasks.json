@@ -153,37 +153,34 @@
     {
       "description": null,
       "creates": [
-<<<<<<< HEAD
-        "docs/src/_fig/active-layer-production-patch.png"
+        "data/output/alcap-example.h5"
       ],
       "requires": [
-        "examples/transport/active-layer.jl"
+        "src/Models/ALCAP.jl"
       ],
       "runner": "julia",
       "stdout": null,
       "stdin": null,
       "script": null,
-      "path": "examples/transport/active-layer-plot-production.jl"
+      "path": "examples/model/alcap/run.jl"
     },
     {
       "description": null,
       "creates": [
-        "docs/src/_fig/active-layer-test.png"
+        "docs/src/_fig/alcaps-alternative.png"
       ],
       "requires": [
-        "examples/transport/active-layer.jl"
+        "data/output/alcap-example.h5"
       ],
       "runner": "julia",
       "stdout": null,
       "stdin": null,
       "script": null,
-      "path": "examples/transport/active-layer-plot-result.jl"
+      "path": "examples/model/alcap/plot.jl"
     },
     {
       "description": null,
       "creates": [
-=======
->>>>>>> main
         "docs/src/_fig/eca.png"
       ],
       "requires": [
@@ -226,8 +223,6 @@
     {
       "description": null,
       "creates": [
-<<<<<<< HEAD
-=======
         "docs/src/_fig/active-layer-production-patch.png"
       ],
       "requires": [
@@ -256,40 +251,18 @@
     {
       "description": null,
       "creates": [
->>>>>>> main
-        "data/output/alcap-example.h5"
-      ],
-      "requires": [
-        "src/Models/ALCAP.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/model/alcap/run.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/alcaps-alternative.png"
-      ],
-      "requires": [
-        "data/output/alcap-example.h5"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/model/alcap/plot.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-<<<<<<< HEAD
         "docs/src/_fig/ca-long-term.svg"
       ],
       "requires": [],
-=======
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/ca/burgess-2013.jl"
+    },
+    {
+      "description": null,
+      "creates": [
         "docs/src/_fig/KHTemp.png,",
         "docs/src/_fig/Equilibrium_Concs.png,",
         "docs/src/_fig/DissolutionExample.png"
@@ -297,14 +270,10 @@
       "requires": [
         "examples/denudation/dissolution-test.jl"
       ],
->>>>>>> main
       "runner": "julia",
       "stdout": null,
       "stdin": null,
       "script": null,
-<<<<<<< HEAD
-      "path": "examples/ca/burgess-2013.jl"
-=======
       "path": "examples/denudation/dissolution-test.jl"
     },
     {
@@ -320,7 +289,6 @@
       "stdin": null,
       "script": null,
       "path": "examples/denudation/physical-test.jl"
->>>>>>> main
     },
     {
       "description": null,
@@ -361,26 +329,17 @@
         "docs/src/_fig/production_curve.svg",
         "docs/src/_fig/sediment_profile.png",
         "docs/src/_fig/glamour_view.png",
-<<<<<<< HEAD
-        "docs/src/_fig/active-layer-production-patch.png",
-        "docs/src/_fig/active-layer-test.png",
+        "docs/src/_fig/alcaps-alternative.png",
         "docs/src/_fig/eca.png",
         "docs/src/_fig/life.gif",
         "docs/src/_fig/boundary_types.png",
-        "docs/src/_fig/alcaps-alternative.png",
+        "docs/src/_fig/active-layer-production-patch.png",
+        "docs/src/_fig/active-layer-test.png",
         "docs/src/_fig/ca-long-term.svg",
-=======
-        "docs/src/_fig/eca.png",
-        "docs/src/_fig/life.gif",
-        "docs/src/_fig/boundary_types.png",
-        "docs/src/_fig/active-layer-production-patch.png",
-        "docs/src/_fig/active-layer-test.png",
-        "docs/src/_fig/alcaps-alternative.png",
         "docs/src/_fig/KHTemp.png,",
         "docs/src/_fig/Equilibrium_Concs.png,",
         "docs/src/_fig/DissolutionExample.png",
         "docs/src/_fig/PhysicalSlope.png",
->>>>>>> main
         "docs/src/_fig/miller-sea-level.svg",
         "docs/src/_fig/lisiecki-selection.svg",
         "docs/src/_fig/lisiecki-sea-level-summary.png"

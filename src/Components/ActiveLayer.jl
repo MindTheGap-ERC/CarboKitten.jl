@@ -20,7 +20,7 @@ function define_h(input::AbstractInput,state::AbstractState)
     max_h = input.disintegration_rate * input.time.Δt
     w = water_depth(input)(state)
     h = zeros(typeof(max_h), input.box.grid_size...)
-    for i in CartesianIndices(input.box.grid_size)
+    for i in eachindex(input.box.grid_size)
         if w[i] > 0.0u"m"
             h[i] = min.(max_h, state.sediment_height[i])
         end

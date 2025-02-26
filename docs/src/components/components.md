@@ -96,12 +96,8 @@ end
 module Components
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
-<<<<<<< HEAD
-    CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
-    ActiveLayerOnshore
-=======
-    CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer, Denudation
->>>>>>> main
+       CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
+       ActiveLayerOnshore, Denudation
 
 using ModuleMixins: @compose
 

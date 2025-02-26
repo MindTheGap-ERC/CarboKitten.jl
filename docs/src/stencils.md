@@ -12,6 +12,31 @@ Note that for larger convolution kernels, it is often more efficient to perform 
 Using these helper functions we can now define a *stencil* operation. Given the boundary trait, a stencil size and a response function, we can transform an array to a next generation.
 
 ``` {.julia #stencil-operation}
+"""
+    stencil(f, Boundary, Size, out, inp...)
+
+Performs stencil operation. The function `f` should take a number of
+abstract arrays (same as the number of `inp` values),
+and return a single value of the same type as elements in `out`.
+The `Size` parameter should be a type parameter size of the stencil,
+e.g. `Size(3, 3)` to get a 3 by 3 stencil.
+
+Prefer to use this version over the older implementations.
+"""
+function stencil!(f, ::Type{BT}, ::Size{sz}, out::AbstractArray, inp::AbstractArray...) where {dim, sz, BT <: BoundaryType{dim}}
+    @assert all(size(a) == size(out) for a in inp)
+    center = CartesianIndex((div.(sz, 2) .+ 1)...)
+    for i in eachindex(IndexCartesian(), out)
+        nb = (SArray{Tuple{sz...}}(
+                offset_value(BT, a, i, j - center)
+                for j in CartesianIndices(sz))
+              for a in inp)
+        out[i] = f(nb...)
+    end
+    return out
+end
+
+
 function stencil(::Type{TIn}, ::Type{TOut}, ::Type{BT}, n::NTuple{dim,Int}, f::Function) where {TIn, TOut, dim, BT <: Boundary{dim}}
     m = n .÷ 2
     stencil_shape = range.(.-m, m)
@@ -49,6 +74,8 @@ We will now test this function first on an Elementary CA (ECA), Conway's Game of
 
 ``` {.julia file=src/Stencil.jl}
 module Stencil
+
+using StaticArrays
 
 using ..Boxes: AbstractBox
 using ..BoundaryTrait

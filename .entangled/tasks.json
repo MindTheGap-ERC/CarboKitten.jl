@@ -251,6 +251,18 @@
     {
       "description": null,
       "creates": [
+        "docs/src/_fig/ca-long-term.svg"
+      ],
+      "requires": [],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/ca/burgess-2013.jl"
+    },
+    {
+      "description": null,
+      "creates": [
         "data/output/lisiecki-sea-level.h5"
       ],
       "requires": [],
@@ -293,6 +305,7 @@
         "docs/src/_fig/eca.png",
         "docs/src/_fig/life.gif",
         "docs/src/_fig/boundary_types.png",
+        "docs/src/_fig/ca-long-term.svg",
         "docs/src/_fig/miller-sea-level.svg",
         "docs/src/_fig/lisiecki-selection.svg",
         "docs/src/_fig/lisiecki-sea-level-summary.png"

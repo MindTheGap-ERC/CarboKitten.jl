@@ -38,16 +38,6 @@ The minimal Carbocat model would consist of only species habitation and producti
 
 :::details
 
-### Some submodules
-
-``` {.julia file=src/Burgess2013.jl}
-module Burgess2013
-
-include("Burgess2013/CA.jl")
-
-end
-```
-
 ### Crowding
 
 In crowded areas carbonate production rates are reduced. For cells where

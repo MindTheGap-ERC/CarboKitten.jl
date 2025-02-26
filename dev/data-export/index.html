@@ -12,7 +12,8 @@ CSV(tuple.(10:20:70, 25),
   :sediment_accumulation_curve =&gt; &quot;run_06_sac.csv&quot;,
   :age_depth_model             =&gt; &quot;run_06_adm.csv&quot;,
   :stratigraphic_column        =&gt; &quot;run_06_sc.csv&quot;,
-  :metadata                    =&gt; &quot;run_06.toml&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">CarboKitten.Export.CSV([(10, 25), (30, 25), (50, 25), (70, 25)], IdDict(:age_depth_model =&gt; &quot;run_06_adm.csv&quot;, :metadata =&gt; &quot;run_06.toml&quot;, :sediment_accumulation_curve =&gt; &quot;run_06_sac.csv&quot;, :stratigraphic_column =&gt; &quot;run_06_sc.csv&quot;))</code></pre><p>There is a <code>data_export</code> function that can be overloaded with any <code>ExportSpcification</code>. When given a <code>CSV</code> specification, files are written as given.</p><ul><li><code>:sediment_accumulation_curve</code>  (SAC) is another term for <code>sediment_height</code> elsewhere in the code.</li><li><code>:age_depth_model</code> (ADM) is a monotonic version of the SAC, relating depth to age.</li><li><code>:stratigraphic_column</code> amount of deposited material per facies per time step, corrected for disintegrated material. The cumulative sum of the SC should add up to the ADM.</li><li><code>:metadata</code> some metadata, written as a TOML file.</li></ul><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><p>We have a test case with just three pixels.</p><ol><li>Uniform production</li><li>Uniform production, top-hat disintegration, making the sediment accumulation non-monotonic</li><li>Linearly increasing production (not sure what this adds)</li></ol><div class="noweb-label">⪡export-test-case⪢≣</div><pre><code class="language- julia hljs">const AXES1 = Axes(
+  :water_depth                 =&gt; &quot;run_06_wd.csv&quot;,
+  :metadata                    =&gt; &quot;run_06.toml&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">CarboKitten.Export.CSV([(10, 25), (30, 25), (50, 25), (70, 25)], IdDict(:age_depth_model =&gt; &quot;run_06_adm.csv&quot;, :metadata =&gt; &quot;run_06.toml&quot;, :sediment_accumulation_curve =&gt; &quot;run_06_sac.csv&quot;, :water_depth =&gt; &quot;run_06_wd.csv&quot;, :stratigraphic_column =&gt; &quot;run_06_sc.csv&quot;))</code></pre><p>There is a <code>data_export</code> function that can be overloaded with any <code>ExportSpcification</code>. When given a <code>CSV</code> specification, files are written as given.</p><ul><li><code>:sediment_accumulation_curve</code>  (SAC) is another term for <code>sediment_height</code> elsewhere in the code.</li><li><code>:age_depth_model</code> (ADM) is a monotonic version of the SAC, relating depth to age.</li><li><code>:stratigraphic_column</code> amount of deposited material per facies per time step, corrected for disintegrated material. The cumulative sum of the SC should add up to the ADM.</li><li><code>:water_depth</code> the water depth as a function of time.</li><li><code>:metadata</code> some metadata, written as a TOML file.</li></ul><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><p>We have a test case with just three pixels.</p><ol><li>Uniform production</li><li>Uniform production, top-hat disintegration, making the sediment accumulation non-monotonic</li><li>Linearly increasing production (not sure what this adds)</li></ol><div class="noweb-label">⪡export-test-case⪢≣</div><pre><code class="language- julia hljs">const AXES1 = Axes(
     x=[0.0, 1.0, 2.0] * u&quot;m&quot;,
     y=[1.0] * u&quot;m&quot;,
     t=(0.0:0.1:1.0) * u&quot;Myr&quot;)
@@ -224,6 +225,12 @@ function data_export(::Type{CSVExportTrait{:stratigraphic_column}},
     write_unitful_csv(io, sc)
 end
 
+function data_export(::Type{CSVExportTrait{:water_depth}},
+    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    wd = extract_wd(header, data, grid_locations)
+    write_unitful_csv(io, wd)
+end
+
 &quot;&quot;&quot;
     extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
 
@@ -248,9 +255,22 @@ function extract_sc(header::Header, data::Data, grid_locations::Vector{NTuple{2,
     DataFrame(&quot;time&quot; =&gt; header.axes.t[1:end-1],
         (&quot;sc$(i)_f$(f)&quot; =&gt; stratigraphic_column(header, data, loc, f)
          for f in 1:n_facies, (i, loc) in enumerate(grid_locations))...)
+end
+
+&quot;&quot;&quot;
+    extract_wd(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+Extract the water depth from the data. Returns a `DataFrame` with `time` and `wd&lt;n&gt;` columns where `&lt;n&gt;`
+is in the range `1:length(grid_locations)`.
+&quot;&quot;&quot;
+function extract_wd(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    na = [CartesianIndex()]
+    wd = header.subsidence_rate .* header.axes.t[na, na, :] .- header.initial_topography[:, :, na] .- data.sediment_elevation
+    DataFrame(&quot;time&quot; =&gt; header.axes.t,
+        (&quot;wd$(i)&quot; =&gt; wd[loc..., :] for (i, loc) in enumerate(grid_locations))...)
 end</code></pre><div class="noweb-label">file:<i>src/Export.jl</i></div><pre><code class="language- julia hljs">module Export
 
-export Data, DataSlice, DataColumn, Header, CSV, read_data, read_slice,  read_column, data_export
+export Data, DataSlice, DataColumn, Header, CSV, read_data, read_slice, read_column, data_export
 
 using HDF5
 import CSV: write as write_csv
@@ -392,6 +412,7 @@ const Amount = typeof(1.0u&quot;m&quot;)
                 :sediment_accumulation_curve =&gt; joinpath(path, &quot;sac.csv&quot;),
                 :age_depth_model =&gt; joinpath(path, &quot;adm.csv&quot;),
                 :stratigraphic_column =&gt; joinpath(path, &quot;sc.csv&quot;),
+                :water_depth =&gt; joinpath(path, &quot;wd.csv&quot;),
                 :metadata =&gt; joinpath(path, &quot;metadata.toml&quot;))
             data_export(spec, HEADER1, DATA1)
             for f in values(spec.output_files)
@@ -411,4 +432,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../denudation/physical_erosion/">« Physical Erosion</a><a class="docs-footer-nextpage" href="../unitful/">Unitful »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 15 January 2025 15:31">Wednesday 15 January 2025</span>. Using Julia version 1.10.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../denudation/physical_erosion/">« Physical Erosion</a><a class="docs-footer-nextpage" href="../unitful/">Unitful »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 26 February 2025 13:44">Wednesday 26 February 2025</span>. Using Julia version 1.10.8.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

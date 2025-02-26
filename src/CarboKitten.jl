@@ -59,7 +59,7 @@ n_writes(time::TimeProperties) = div(time.steps, time.write_interval)
 """
     time_axis(time::TimeProperties)
 
-Retrieve the time values for which output was/will be written.
+Retrieve the time values for which output was/will be written. Returns a range.
 """
 time_axis(time::TimeProperties) = (0:n_writes(time)) .* (time.Δt * time.write_interval) .+ time.t0
 

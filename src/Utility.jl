@@ -113,6 +113,10 @@ export enumerate_seq
 # ~/~ end
 # ~/~ begin <<docs/src/unitful.md#utility>>[0]
 function in_units_of(unit)
+    function magnitude(a)
+        error("Units of $(a*unit) not compatible with $unit")
+    end
+
     function magnitude(a::AbstractArray{Quantity{RT, NoDims, U}, dim}) where {RT <: Real, U, dim}
         return a .|> NoUnits
     end

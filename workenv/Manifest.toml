@@ -247,8 +247,8 @@ uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.2+1"
 
 [[deps.CarboKitten]]
-deps = ["AxisArrays", "CSV", "CategoricalArrays", "DataFrames", "DelimitedFiles", "HDF5", "Logging", "ModuleMixins", "Pkg", "ProgressLogging", "Random", "StaticArrays", "TOML", "TerminalLoggers", "Transducers", "Unitful"]
-path = ".."
+deps = ["AxisArrays", "CSV", "CategoricalArrays", "DataFrames", "DelimitedFiles", "HDF5", "Logging", "ModuleMixins", "Pkg", "ProgressLogging", "Random", "TOML", "TerminalLoggers", "Transducers", "Unitful"]
+git-tree-sha1 = "5e68dfeeead0e4dde020585dc00910457a142742"
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 version = "0.3.0"
 weakdeps = ["GeometryBasics", "Makie", "Statistics"]
@@ -1483,8 +1483,6 @@ version = "1.1.8"
 [[deps.ModuleMixins]]
 deps = ["MacroTools"]
 git-tree-sha1 = "1943ec2d24eefa05e841881bca03f010c059949f"
-repo-rev = "main"
-repo-url = "https://github.com/jhidding/ModuleMixins.jl"
 uuid = "2b5f0a26-aae2-5c4c-af55-bc6d20297121"
 version = "0.2.0"
 

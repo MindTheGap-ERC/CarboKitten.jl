@@ -31,7 +31,7 @@ end
 
 The `rules` function computes the next value of a cell, given the configured vector of facies, the current facies priority order, and a neighbourhood around the cell.
 
-``` {.julia #burgess2013-rules}
+``` {.julia #ca-step}
 function rules(facies, ca_priority, neighbourhood)
     cell_facies = neighbourhood[3, 3]
     neighbour_count(f) = sum(neighbourhood .== f)
@@ -185,6 +185,7 @@ end
 @compose module CellularAutomaton
     @mixin Boxes, FaciesBase
     using ..Common
+    using ...Stencil: stencil!
     using Random
 
     <<ca-input>>

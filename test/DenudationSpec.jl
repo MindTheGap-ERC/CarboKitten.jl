@@ -8,7 +8,6 @@ using Unitful
     using CarboKitten.Stencil: Periodic, Reflected, stencil
     using CarboKitten.Config: Vectors, TimeProperties
     using CarboKitten.Boxes: Box
-    using CarboKitten.Burgess2013.CA: step_ca, run_ca
     using CarboKitten.Models.WithDenudation: Input, Facies
     using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpiricalDenudation
 
@@ -24,7 +23,7 @@ using Unitful
         maximum_growth_rate = 500u"m/Myr",
         extinction_coefficient = 0.8u"m^-1",
         saturation_intensity = 60u"W/m^2",
-        diffusion_coefficient=10000u"m",
+        diffusion_coefficient=50u"m/yr",
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5,
@@ -35,7 +34,7 @@ using Unitful
         maximum_growth_rate = 400u"m/Myr",
         extinction_coefficient = 0.1u"m^-1",
         saturation_intensity = 60u"W/m^2",
-        diffusion_coefficient=10000u"m",
+        diffusion_coefficient= 50u"m/yr",
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5,
@@ -46,7 +45,7 @@ using Unitful
         maximum_growth_rate = 100u"m/Myr",
         extinction_coefficient = 0.005u"m^-1",
         saturation_intensity = 60u"W/m^2",
-        diffusion_coefficient=10000u"m",
+        diffusion_coefficient= 50u"m/yr",
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5,

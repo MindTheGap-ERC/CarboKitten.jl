@@ -2,6 +2,7 @@
 @compose module CellularAutomaton
     @mixin Boxes, FaciesBase
     using ..Common
+    using ...Stencil: stencil!
     using Random
 
     # ~/~ begin <<docs/src/components/cellular-automata.md#ca-input>>[init]
@@ -22,6 +23,26 @@
     end
     # ~/~ end
     # ~/~ begin <<docs/src/components/cellular-automata.md#ca-step>>[init]
+    function rules(facies, ca_priority, neighbourhood)
+        cell_facies = neighbourhood[3, 3]
+        neighbour_count(f) = sum(neighbourhood .== f)
+        if cell_facies == 0
+            for f in ca_priority
+                n = neighbour_count(f)
+                (a, b) = facies[f].activation_range
+                if a <= n && n <= b
+                    return f
+                end
+            end
+            0
+        else
+            n = neighbour_count(cell_facies) - 1
+            (a, b) = facies[cell_facies].viability_range
+            (a <= n && n <= b ? cell_facies : 0)
+        end
+    end
+    # ~/~ end
+    # ~/~ begin <<docs/src/components/cellular-automata.md#ca-step>>[1]
     """
         step_ca(box, facies)
 

@@ -68,9 +68,12 @@ export Box, box_axes, Boundary, Coast, Periodic, Reflected, TimeProperties
 export in_units_of
 export Model
 export @for_each
+export Size
 
 using ModuleMixins
 using Unitful
+using StaticArrays
+
 using ...CarboKitten: Model
 using ...BoundaryTrait
 using ...Config: TimeProperties

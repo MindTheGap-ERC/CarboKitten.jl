@@ -153,34 +153,6 @@
     {
       "description": null,
       "creates": [
-        "data/output/alcap-example.h5"
-      ],
-      "requires": [
-        "src/Models/ALCAP.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/model/alcap/run.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/alcaps-alternative.png"
-      ],
-      "requires": [
-        "data/output/alcap-example.h5"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/model/alcap/plot.jl"
-    },
-    {
-      "description": null,
-      "creates": [
         "docs/src/_fig/eca.png"
       ],
       "requires": [
@@ -251,6 +223,34 @@
     {
       "description": null,
       "creates": [
+        "data/output/alcap-example.h5"
+      ],
+      "requires": [
+        "src/Models/ALCAP.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/alcap/run.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/alcaps-alternative.png"
+      ],
+      "requires": [
+        "data/output/alcap-example.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/alcap/plot.jl"
+    },
+    {
+      "description": null,
+      "creates": [
         "docs/src/_fig/KHTemp.png,",
         "docs/src/_fig/Equilibrium_Concs.png,",
         "docs/src/_fig/DissolutionExample.png"
@@ -317,12 +317,12 @@
         "docs/src/_fig/production_curve.svg",
         "docs/src/_fig/sediment_profile.png",
         "docs/src/_fig/glamour_view.png",
-        "docs/src/_fig/alcaps-alternative.png",
         "docs/src/_fig/eca.png",
         "docs/src/_fig/life.gif",
         "docs/src/_fig/boundary_types.png",
         "docs/src/_fig/active-layer-production-patch.png",
         "docs/src/_fig/active-layer-test.png",
+        "docs/src/_fig/alcaps-alternative.png",
         "docs/src/_fig/KHTemp.png,",
         "docs/src/_fig/Equilibrium_Concs.png,",
         "docs/src/_fig/DissolutionExample.png",

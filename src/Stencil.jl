@@ -25,7 +25,7 @@ function stencil!(f, ::Type{BT}, ::Size{sz}, out::AbstractArray, inp::AbstractAr
     center = CartesianIndex((div.(sz, 2) .+ 1)...)
     for i in eachindex(IndexCartesian(), out)
         nb = (SArray{Tuple{sz...}}(
-                get_bounded(BT, a, i - center + j)
+                offset_value(BT, a, i, j - center)
                 for j in CartesianIndices(sz))
               for a in inp)
         out[i] = f(nb...)

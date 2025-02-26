@@ -10,7 +10,7 @@ include("./Denudation/EmpiricalDenudationMod.jl")
 
 using .Abstract: DenudationType, denudation, redistribution
 using .DissolutionMod: Dissolution
-using .EmpiricalDenudationMod: EmpiricalDenudation
+using .EmpiricalDenudationMod: EmpiricalDenudation, slope_kernel
 using .PhysicalErosionMod: PhysicalErosion
 using .NoDenudationMod: NoDenudation
 

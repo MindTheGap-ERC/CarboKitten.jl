@@ -38,8 +38,6 @@ function step!(input::Input)
     slopefn = slope_function(input,input.box)
     # Somehow deal with the units here
 
-
-    #slopefn = stencil(Float64, BT, (3, 3), slope_kernel)
     slope = Array{Float64}(undef, input.box.grid_size...)
     denuded_sediment = Array{Float64}(undef, n_facies(input), input.box.grid_size...)
 
@@ -61,7 +59,6 @@ function step!(input::Input)
 
         # subaerial: denudation and redistribution
         # this code should go into the Denudation component
-        #min.(sum(denudate(state,w,slope),dims=1), state.sediment_height)
         denudation_mass = denudate(state,w,slope)
         if denudation_mass !== nothing
             denudation_mass = denudate(state,w,slope) |> x -> sum(x,dims=1) |> x -> dropdims(x,dims=1) |> x -> min.(x, state.sediment_height)

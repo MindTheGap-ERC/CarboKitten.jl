@@ -1,24 +1,68 @@
 # Physical erosion and sediment redistribution
 
-This method not only considers the amount of materials that have been removed, but also how the eroded materials being distributed to the neighboring regions depending on slopes on each direction.
+This method not only considers the amount of materials that have been removed, but also how the eroded materials are being distributed to the neighboring regions depending on slopes on each direction.
 
 ## Physical erosion
 
-The equations used to estimate how much material could one cell provide to the lower cells is described underneath. The equation is found in [tucker_channel-hillslope_2001](@cite). We choose this equation mainly because it specifically deals with bedrock substrates instead of loose sediments. In the equation, $k_v$ is erodibility, and the default value is 0.23 according to the paper. $(1 - I_f)$ indicates run-off generated in one cell and slope is the slope calculated based on [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm). Note that the algorithms to calculate slope does not work on depressions.
+The equations used to estimate how much material could one cell provide to the lower cells is described underneath. The equation is found in [tucker_channel-hillslope_2001](@cite). We choose this equation mainly because it specifically deals with bedrock substrates instead of loose sediments. In the equation, $k_v$ is erodibility, and the default value is 0.0023 according to the paper. $(1 - I_f)$ indicates run-off generated in one cell and slope is the slope calculated based on [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm). Note that the algorithms to calculate slope does not work on depressions.
 
 $$D_{phys} = -k_v * (1 - I_f)^{1/3} |\nabla h|^{2/3}$$
 
+This equation for the physical dedundation rate, $D_{phys}$ is implemented in  code as follows:
 ``` {.julia #physical-erosion}
-function physical_erosion(slope::Float64, Facies::facies)
-    local kv = 0.23 #very arguable paramster
-    #stencil(Float64,Reflected{2},(3,3),function(w)
-    -kv .* (1-Facies.inf).^(1/3) .* slope.^(2/3)
+function physical_erosion(slope::Float64, inf::Float64, erodibility::Any)
+    -1 * -erodibility .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3)
 end
+```
+and the output of this function for a range of slope angles is plotted here:
+
+![Erodability as function of slope](../fig/PhysicalSlope.png)
+
+```@raw html
+<details><summary>Plotting code</summary>
+```
+
+``` {.julia .task file=examples/denudation/physical-test.jl}
+#| requires: examples/denudation/physical-test.jl
+#| creates: docs/src/_fig/PhysicalSlope.png
+#| collect: figures
+module PhysicalSpec
+
+using GLMakie
+using CarboKitten.Denudation.EmpiricalDenudationMod: slope_kernel
+using CarboKitten.Denudation.PhysicalErosionMod: physical_erosion, redistribution_kernel
+using CarboKitten.Stencil: Boundary, Periodic, offset_value, offset_index, stencil
+using CarboKitten.BoundaryTrait
+import CarboKitten.Config: Box
+
+SLOPE = collect(1:0.2:30)
+const inf = 0.5
+const erodibility = 0.0025
+
+DEN_MASS = Vector{Float64}(undef,size(SLOPE))
+
+for i in eachindex(SLOPE)
+    DEN_MASS[i] = physical_erosion(SLOPE[i],inf,erodibility)
+end
+
+w = 10 .* [ 0.0663001  0.115606  0.646196
+0.601523   0.130196  0.390821
+0.864734   0.902935  0.670354]
+
+fig = Figure()
+ax = Axis(fig[1,1],xlabel="Slope (degrees)", ylabel="Denudation rates (m/Myr)")
+lines!(ax,SLOPE,DEN_MASS)
+save("docs/src/_fig/PhysicalSlope.png",fig)
+
+end
+```
+```@raw html
+</details>
 ```
 
 ## Redistribution of sediments
 
-The redistribution of sediments after physical erosion is based on [van_de_wiel_embedding_2007](@cite): the eroded sediments calculated from the above equation are distributed to the neighboring 8 cells according to the slopes (defined as elevation differences/horizontal differences) towards each direction. The amount of sediments of one cell received is calculated by three functions below:
+The redistribution of sediments after physical erosion is based on [van_de_wiel_embedding_2007](@cite): the eroded sediments calculated from the above equation are distributed to the neighboring 8 cells according to the slopes (defined as elevation differences/horizontal differences) towards each direction. The amount of sediments of one cell received is calculated by following steps:
 
 ## Current implementation
 
@@ -36,10 +80,7 @@ using Unitful
 
 const Amount = typeof(1.0u"m")
 
-
-function physical_erosion(slope::Float64, inf::Float64, erodibility::Any)
-    -1 * -erodibility .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3)
-end
+<<physical-erosion>>
 
 function redistribution_kernel(w::Array{Float64}, cellsize::Float64)
     s = zeros(Float64, (3, 3))

@@ -35,10 +35,8 @@ function define_h(input::AbstractInput,state::AbstractState)
 end
 
 function disintegration(input)
-    #max_h = input.disintegration_rate * input.time.Δt
     output = Array{Float64, 3}(undef, n_facies(input), input.box.grid_size...)
         return function(state)
-                #h = min.(max_h, state.sediment_height)
                 h = define_h(input, state)
                 state.sediment_height .-= h
                 pop_sediment!(state.sediment_buffer, h ./ input.depositional_resolution .|> NoUnits, output)

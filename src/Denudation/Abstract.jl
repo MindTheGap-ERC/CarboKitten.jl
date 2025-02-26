@@ -11,7 +11,8 @@ abstract type DenudationType end
 """
     denudation(box, param, state)
 
-FIXME Computes the denudation for a single time-step, given denudation parameters `param` and a simulation state `state`. `param` should have a `DenudationType` type and `state` should contain the `height` property and `sealevel`.
+
+Computes the denudation for a single time-step, given denudation parameters `param` and a simulation state `state`. `param` should have a `DenudationType` type and `state` should contain the `height` property and `sealevel`.
 
 Returns denudation mass in units of meters.
 """

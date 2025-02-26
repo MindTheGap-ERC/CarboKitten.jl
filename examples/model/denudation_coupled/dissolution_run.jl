@@ -3,9 +3,8 @@ module Script
 using Unitful
 using CarboKitten.Components
 using CarboKitten.Components.Common
-using CarboKitten.Components.DenudationConfig
-using CarboKitten.Model: ALCAP2 as ALCAP
-using CarboKitten.Model: WithDenudation2 as WDn
+using CarboKitten.Components.Denudation
+using CarboKitten.Models: WithDenudation as WDn
 using CarboKitten.Export: data_export, CSV
 using CarboKitten.Denudation
 
@@ -61,13 +60,13 @@ const DENUDATION = Dissolution(temp=293.0u"K", precip=1.0u"m", pco2=10^(-2.5) * 
 
 const INPUT = WDn.Input(
     tag="$TAG",
-    box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0m),
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0m),
     time=TimeProperties(
         Δt=0.0002Myr,
         steps=5000,
         write_interval=1),
     ca_interval=1,
-    bedrock_elevation=(x, y) -> -x / 300.0,
+    initial_topography=(x, y) -> -x / 300.0,
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
     subsidence_rate=20.0m / Myr,
     disintegration_rate=500.0m / Myr,
@@ -78,7 +77,7 @@ const INPUT = WDn.Input(
     denudation = DENUDATION)
 
 function main()
-    H5Writer.run(Model{WDn}, INPUT, "$(PATH)/$(TAG).h5")
+    H5Writer.run_model(Model{WDn}, INPUT, "$(PATH)/$(TAG).h5")
 
     data_export(
         CSV(tuple.(10:20:70, 25),

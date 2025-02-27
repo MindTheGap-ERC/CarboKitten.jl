@@ -29,13 +29,15 @@ So we modify the advection component in the active layer approach with $P_f w_f'
 using ..Common
 using StaticArrays: Size
 using ...Stencil: stencil!
+using Unitful: Length
+
 export otransportation
 
 struct Facies <: AbstractFacies
   onshore_velocity
 end
 
-function onshore_transport_stencil(box::Box{BT}, Δt, ν, sf::F, out, w, C) where {BT<:Boundary{2},F}
+function onshore_transport_stencil(box::Box{BT}, Δt, ν, sf::F, out, w::AbstractArray{T}, C::AbstractArray{U}) where {BT<:Boundary{2},F,T<:Length,U<:Length}
   Δx = box.phys_scale
   d = ν * Δt
 

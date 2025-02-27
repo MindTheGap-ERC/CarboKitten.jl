@@ -11,7 +11,7 @@ using .H5Writer: run_model
 
 export Input, Facies
 
-function initial_state(input::Input)
+function initial_state(input::AbstractInput)
     ca_state = CellularAutomaton.initial_state(input)
     for _ in 1:20
         CellularAutomaton.step!(input)(ca_state)
@@ -26,7 +26,7 @@ function initial_state(input::Input)
         ca=ca_state.ca, ca_priority=ca_state.ca_priority)
 end
 
-function step!(input::Input)
+function step!(input::AbstractInput)
     step_ca! = CellularAutomaton.step!(input)
     disintegrate! = disintegration(input)
     produce = production(input)

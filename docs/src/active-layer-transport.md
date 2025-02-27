@@ -469,7 +469,9 @@ function transportation(input)
     return function (state, active_layer::Array{Amount,3})
         μ = state.sediment_height .+ μ0
         for (i, f) in pairs(fs)
-            pde_stencil(box, Δt, f.diffusion_coefficient, view(transported_output, i, :, :), μ, active_layer)
+            pde_stencil(box, Δt, f.diffusion_coefficient,
+                view(transported_output, i, :, :),
+                μ, view(active_layer, i, :, :))
         end
 
         return transported_output

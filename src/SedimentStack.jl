@@ -20,6 +20,12 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
   col[1,:] .+= frac .* (1.0 - bucket)
   Δ -= (1.0 - bucket)
   n = floor(Int64, Δ)
+  if n > size(col)[1] ÷ 2
+    @warn "pushing a too large parcel of sediment: Δ = $Δ"
+  end
+  if n > size(col)[1] - 2
+    @error "pushing a way too large parcel of sediment: Δ = $Δ"
+  end
   col[n+2:end,:] = col[1:end-n-1,:]
   # ~/~ end
   # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[3]

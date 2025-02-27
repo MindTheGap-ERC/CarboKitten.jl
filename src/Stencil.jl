@@ -21,7 +21,7 @@ e.g. `Size(3, 3)` to get a 3 by 3 stencil.
 Prefer to use this version over the older implementations.
 """
 function stencil!(f, ::Type{BT}, ::Size{sz}, out::AbstractArray, inp::AbstractArray...) where {dim, sz, BT <: Boundary{dim}}
-    @assert all(size(a) == size(out) for a in inp)
+    @assert all(size(a) == size(out) for a in inp) "inputs have wrong shape: $([size(a) for a in inp]), should be $(size(out))"
     center = CartesianIndex((div.(sz, 2) .+ 1)...)
     for i in eachindex(IndexCartesian(), out)
         nb = (SArray{Tuple{sz...}}(

@@ -42,11 +42,11 @@ function onshore_transport_stencil(box::Box{BT}, Δt, ν, sf::F, out, w, C) wher
   stencil!(BT, Size(3, 3), out, w, C) do w, C
     sv, ss = sf(w[2, 2])
 
-    adv = (w[3, 2] - w[1, 2]) / (2Δx) * (d * (C[3, 2] - C[1, 2]) / (2Δx) - C[2, 2] * ss[1] * Δt) +
-          (w[2, 3] - w[2, 1]) / (2Δx) * (d * (C[2, 3] - C[2, 1]) / (2Δx) - C[2, 2] * ss[2] * Δt)
+    adv = - (w[3, 2] - w[1, 2]) / (2Δx) * (d * (C[3, 2] - C[1, 2]) / (2Δx) + C[2, 2] * ss[1] * Δt) -
+            (w[2, 3] - w[2, 1]) / (2Δx) * (d * (C[2, 3] - C[2, 1]) / (2Δx) + C[2, 2] * ss[2] * Δt)
 
-    dif = d * C[2, 2] * (w[3, 2] + w[2, 3] + w[1, 2] +
-                         w[2, 1] - 4 * w[2, 2]) / (Δx)^2
+    dif = - d * C[2, 2] * (w[3, 2] + w[2, 3] + w[1, 2] +
+                           w[2, 1] - 4 * w[2, 2]) / (Δx)^2
 
     prd = - sv[1] * (C[3, 2] - C[1, 2]) * Δt / (2Δx) - sv[2] * (C[2, 3] - C[2, 1]) * Δt / (2Δx) + C[2, 2]
 
@@ -82,7 +82,10 @@ function otransportation(input)
     wd = w(state)
 
     for (i, f) in pairs(fs)
-      onshore_transport_stencil(box, Δt, f.diffusion_coefficient, f.onshore_velocity, view(transported_output, i, :, :), wd, active_layer)
+      onshore_transport_stencil(
+        box, Δt, f.diffusion_coefficient, f.onshore_velocity,
+        view(transported_output, i, :, :),
+        wd, view(active_layer, i, :, :))
     end
 
     return transported_output

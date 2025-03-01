@@ -115,5 +115,46 @@ const INPUT = Input(
 
 #### Stochastic functions
 
-Functions can capture pre-generated data, so you can generate a stochastic sea-level curve for use in CarboKitten.
+Functions can capture pre-generated data, so you can generate a stochastic sea-level curve for use in CarboKitten. There are multiple stochastic processes available in `DiffEqNoiseProcess.jl` and some of them may be relevant for modeling sea level. This example uses `OrnsteinUhlenbeckProcess`, which is a continuous time equivalent of an AR(1), but here calculated for specific positions determined based on the temporal resolution of the model, set in `TIME_PROPERTIES`.
 
+The outcome looks like an AR(1) process:
+
+![Sea-level modeled as Ornstein-Uhlenbeck process](fig/OU.png)
+
+```{julia file=examples/OU.jl}
+#| requires: examples/OU.jl
+#| creates: docs/src/_fig/OU.png
+#| collect: figures
+
+using DiffEqNoiseProcess
+using DifferentialEquations
+using CarboKitten
+
+using Unitful
+using CarboKitten.Components
+using GLMakie
+
+const TIME_PROPERTIES = TimeProperties(
+	Δt = 500u"yr",
+	steps = 2000
+)
+
+function main()
+const θ = 0.4 # drift
+const μ = 2.0 # mean
+const σ = 20 # variance
+
+OU = OrnsteinUhlenbeckProcess(θ, μ, σ, 0.0, 0.0)
+
+OU.dt = TIME_PROPERTIES.Δt / u"kyr" * 1000 |> NoUnits
+
+prob = NoiseProblem(OU, (0.0, TIME_PROPERTIES.steps * OU.dt))
+sol = solve(prob, dt=OU.dt)
+
+fig, ax = lines(time_axis(TIME_PROPERTIES) |> in_units_of(u"Myr"), collect(sol) .* u"m")
+    ax.xlabel = "time [Myr]"
+	ax.ylabel = "sea level [m]"
+    save("docs/src/_fig/OU.png",fig)
+
+end
+```

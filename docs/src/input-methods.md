@@ -62,7 +62,7 @@ This works even though `miller_df.time` is not equally spaced, which is why this
 
 Loess, or "Locally Estimated Scatterplot Smoothing", is very popular among geoscientists. The `Smoothers.jl` package needs to be installed for this to work (`Pkg.add("Smoothers")`). 
 
-![Loess smoothing of the sea level curve of Miller et al. (2020)](../fig/loess.png)
+![Loess smoothing of the sea level curve of Miller et al. (2020)](fig/loess.png)
 
 It should work as follows:
 

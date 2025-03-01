@@ -91,9 +91,6 @@ function main()
 
     sl = miller_df.sealevel / u"m" .|> NoUnits
     ti = miller_df.time / u"kyr" .|> NoUnits
-    
-plot(ti, sl, seriestype=:scatter)
-    plot!(ti, Smoothers.loess(ti, sl, q = 1000)(ti), legend=false, seriestype=:line)
 
 fig = Figure()
     ax = Axis(fig[1,1], xlabel="Time [kyr]", ylabel="Sea level [m]")

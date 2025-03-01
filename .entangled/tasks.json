@@ -100,7 +100,7 @@
         "docs/src/_fig/wheeler_diagram.png"
       ],
       "requires": [
-        "data/output/alcap-example.h5"
+        "src/Models/CAP.jl"
       ],
       "runner": "julia",
       "stdout": null,

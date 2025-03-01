@@ -60,15 +60,50 @@ This works even though `miller_df.time` is not equally spaced, which is why this
 
 ##### 2.2. Local regression (loess)
 
-Loess, or "Locally Estimated Scatterplot Smoothing", is very popular among geoscientists. It should work as follows:
+Loess, or "Locally Estimated Scatterplot Smoothing", is very popular among geoscientists. The `Smoothers.jl` package needs to be installed for this to work (`Pkg.add("Smoothers")`). 
 
-```{julia}
+![Loess smoothing of the sea level curve of Miller et al. (2020)](../fig/loess.png)
+
+It should work as follows:
+
+```{julia file=examples/tabular-sea-level/loess.jl}
+#| requires: examples/tabular-sea-level/loess.jl
+#| creates: docs/src/_fig/loess.png
+#| collect: figures
+
+using CarboKitten
+
+using Unitful
+using CarboKitten.Components
+
 using CarboKitten.DataSets: miller_2020
-miller_df = miller_2020()
+using Smoothers
+using GLMakie
 
-using Loess
-miller_sea_level = loess(miller_df.sealevel, miller_df.time, span=time.Δt)
+function main()
+    time = TimeProperties(
+        Δt=500u"yr",
+        steps=2000
+    )
+
+    miller_df = miller_2020()
+    sort!(miller_df, [:time])
+
+    sl = miller_df.sealevel / u"m" .|> NoUnits
+    ti = miller_df.time / u"kyr" .|> NoUnits
+    
+plot(ti, sl, seriestype=:scatter)
+    plot!(ti, Smoothers.loess(ti, sl, q = 1000)(ti), legend=false, seriestype=:line)
+
+fig = Figure()
+    ax = Axis(fig[1,1], xlabel="Time [kyr]", ylabel="Sea level [m]")
+    scatter!(ax, ti, sl)
+    lines!(ax, ti, Smoothers.loess(ti, sl, q = 1000)(ti); color = :tomato)
+    save("docs/src/_fig/loess.png",fig)
+end
 ```
+
+Choosing the `q` parameter proves difficult. Although the package `Smoothers.jl` indicates the default value will be estimated, in practice it seems to often result in `NaN`s. So always plot the result of smoothing to check it has been done correctly.
 
 ### Inline functions
 

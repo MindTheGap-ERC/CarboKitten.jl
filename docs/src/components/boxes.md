@@ -117,23 +117,7 @@ end
 ## Box properties
 
 ``` {.julia #box-type}
-abstract type AbstractBox{BT} end
-
-struct Box{BT} <: AbstractBox{BT}
-    grid_size::NTuple{2,Int}
-    phys_scale::typeof(1.0u"m")
-    phys_size::Vec2
-
-    function Box{BT}(;grid_size::NTuple{2, Int}, phys_scale::Quantity{Float64, 𝐋, U}) where {BT <: Boundary{2}, U}
-        new{BT}(grid_size, phys_scale, phys_size(grid_size, phys_scale))
-    end
-end
-
-function axes(box::Box)
-	y_axis = (0:(box.grid_size[2] - 1)) .* box.phys_scale
-	x_axis = (0:(box.grid_size[1] - 1)) .* box.phys_scale
-	return x_axis, y_axis
-end
+const axes = box_axes
 
 phys_size(grid_size, phys_scale) = (
     x = grid_size[1] * (phys_scale / m |> NoUnits),
@@ -184,11 +168,13 @@ end
 module Boxes
 
 using ..BoundaryTrait
+using ..CarboKitten: AbstractBox, Box, box_axes
 using ..Vectors
+
 using Unitful
 using Unitful.DefaultSymbols
 
-export AbstractBox, Box, axes
+export AbstractBox, Box, box_axes
 
 <<box-type>>
 <<vector-offset>>
@@ -221,7 +207,7 @@ using ..Common
 end
 
 function write_header(fid, input::AbstractInput)
-    x, y = Common.axes(input.box)
+    x, y = box_axes(input.box)
 
     gid = fid["input"]
     gid["x"] = collect(x) |> in_units_of(u"m")

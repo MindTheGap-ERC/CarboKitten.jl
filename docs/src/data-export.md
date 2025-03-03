@@ -20,6 +20,7 @@ CSV(tuple.(10:20:70, 25),
   :sediment_accumulation_curve => "run_06_sac.csv",
   :age_depth_model             => "run_06_adm.csv",
   :stratigraphic_column        => "run_06_sc.csv",
+  :water_depth                 => "run_06_wd.csv",
   :metadata                    => "run_06.toml")
 ```
 
@@ -28,6 +29,7 @@ There is a `data_export` function that can be overloaded with any `ExportSpcific
 - `:sediment_accumulation_curve`  (SAC) is another term for `sediment_height` elsewhere in the code.
 - `:age_depth_model` (ADM) is a monotonic version of the SAC, relating depth to age.
 - `:stratigraphic_column` amount of deposited material per facies per time step, corrected for disintegrated material. The cumulative sum of the SC should add up to the ADM.
+- `:water_depth` the water depth as a function of time.
 - `:metadata` some metadata, written as a TOML file.
 
 ## Tests
@@ -50,7 +52,7 @@ const HEADER1 = Header(
     write_interval=1,
     Δt=0.1u"Myr",
     time_steps=10,
-    bedrock_elevation=zeros(typeof(1.0u"m"), 3, 3),
+    initial_topography=zeros(typeof(1.0u"m"), 3, 3),
     sea_level=zeros(typeof(1.0u"m"), 10),
     subsidence_rate=10u"m/Myr")
 
@@ -252,7 +254,7 @@ function data_export(spec::CSV, header::Header, data::Data)
                     "number" => i,
                     "x" => header.axes.x[loc[1]],
                     "y" => header.axes.y[loc[2]],
-                    "bedrock_elevation" => header.bedrock_elevation[loc...])
+                    "initial_topography" => header.initial_topography[loc...])
                                 for (i, loc) in enumerate(spec.grid_locations)],
                 "files" => spec.output_files)
             open(filename, "w") do io
@@ -297,6 +299,12 @@ function data_export(::Type{CSVExportTrait{:stratigraphic_column}},
     write_unitful_csv(io, sc)
 end
 
+function data_export(::Type{CSVExportTrait{:water_depth}},
+    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    wd = extract_wd(header, data, grid_locations)
+    write_unitful_csv(io, wd)
+end
+
 """
     extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
 
@@ -322,12 +330,25 @@ function extract_sc(header::Header, data::Data, grid_locations::Vector{NTuple{2,
         ("sc$(i)_f$(f)" => stratigraphic_column(header, data, loc, f)
          for f in 1:n_facies, (i, loc) in enumerate(grid_locations))...)
 end
+
+"""
+    extract_wd(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+
+Extract the water depth from the data. Returns a `DataFrame` with `time` and `wd<n>` columns where `<n>`
+is in the range `1:length(grid_locations)`.
+"""
+function extract_wd(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    na = [CartesianIndex()]
+    wd = header.subsidence_rate .* header.axes.t[na, na, :] .- header.initial_topography[:, :, na] .- data.sediment_elevation
+    DataFrame("time" => header.axes.t,
+        ("wd$(i)" => wd[loc..., :] for (i, loc) in enumerate(grid_locations))...)
+end
 ```
 
 ``` {.julia file=src/Export.jl}
 module Export
 
-export Data, DataSlice, DataColumn, Header, CSV, read_data, read_slice, data_export
+export Data, DataSlice, DataColumn, Header, CSV, read_data, read_slice, read_column, data_export
 
 using HDF5
 import CSV: write as write_csv
@@ -358,7 +379,7 @@ end
     Δt::Time
     write_interval::Int
     time_steps::Int
-    bedrock_elevation::Matrix{Amount}
+    initial_topography::Matrix{Amount}
     sea_level::Vector{Length}
     subsidence_rate::Rate
 end
@@ -400,7 +421,7 @@ function read_header(fid)
         attrs["delta_t"][] * u"Myr",
         attrs["write_interval"][],
         attrs["time_steps"][],
-        fid["input/bedrock_elevation"][] * u"m",
+        fid["input/initial_topography"][] * u"m",
         fid["input/sea_level"][] * u"m",
         attrs["subsidence_rate"][] * u"m/Myr")
 end
@@ -424,10 +445,25 @@ read_slice(fid::HDF5.File, slice...) = DataSlice(
     fid["deposition"][:, slice..., :] * u"m",
     fid["sediment_height"][slice..., :] * u"m")
 
-function read_slice(filename, slice...)
+function read_slice(filename::AbstractString, slice...)
     h5open(filename) do fid
         header = read_header(fid)
         data = read_slice(fid, slice...)
+        header, data
+    end
+end
+
+read_column(fid::HDF5.File, slice...) = DataColumn(
+    slice,
+    fid["disintegration"][:, slice..., :] * u"m",
+    fid["production"][:, slice..., :] * u"m",
+    fid["deposition"][:, slice..., :] * u"m",
+    fid["sediment_height"][slice..., :] * u"m")
+
+function read_column(filename::AbstractString, slice...)
+    h5open(filename) do fid
+        header = read_header(fid)
+        data = read_column(fid, slice...)
         header, data
     end
 end
@@ -458,6 +494,7 @@ const Amount = typeof(1.0u"m")
                 :sediment_accumulation_curve => joinpath(path, "sac.csv"),
                 :age_depth_model => joinpath(path, "adm.csv"),
                 :stratigraphic_column => joinpath(path, "sc.csv"),
+                :water_depth => joinpath(path, "wd.csv"),
                 :metadata => joinpath(path, "metadata.toml"))
             data_export(spec, HEADER1, DATA1)
             for f in values(spec.output_files)

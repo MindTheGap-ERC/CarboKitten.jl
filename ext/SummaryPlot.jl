@@ -14,7 +14,7 @@ summary_plot(filename::AbstractString; kwargs...) = h5open(fid->summary_plot(fid
 function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
 	header = read_header(fid)
     y_slice = div(length(header.axes.y), 2) + 1
-    max_depth = minimum(header.bedrock_elevation)
+    max_depth = minimum(header.initial_topography)
 	data = read_slice(fid, :, y_slice)
 
 	n_facies = size(data.production)[1]

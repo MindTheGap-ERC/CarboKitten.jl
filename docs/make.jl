@@ -71,6 +71,7 @@ copydir(joinpath(@__DIR__, "src/fig"), joinpath(path, "fig"))
 
 makedocs(
     source=path,
+    modules = [CarboKitten],
     sitename="CarboKitten",
     # repo=Remotes.GitHub("MindTheGap-ERC", "CarboKitten"),
     pages=[
@@ -86,7 +87,7 @@ makedocs(
             "Tabular Sea Levels" => "cases/tabular-sea-level.md"
         ],
         "Architecture" => "architecture.md",
-        "Components" => [
+        "Model Components" => [
             "Components" => "components/components.md",
             "Tags" => "components/tag.md",
             "Boxes" => "components/boxes.md",
@@ -119,6 +120,7 @@ makedocs(
             "Stencils" => "stencils.md",
             "Utility" => "utility.md"
         ],
+        "API Documentation" => "api.md",
         "References" => "references.md"
     ],
     plugins=[bib])

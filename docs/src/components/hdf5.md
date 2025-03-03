@@ -12,6 +12,8 @@ We write output to HDF5.
     using HDF5
     using ProgressLogging
 
+    import ...CarboKitten: run_model, Model
+
     @mixin Boxes, TimeIntegration, FaciesBase, WaterDepth
 
     export run
@@ -67,7 +69,17 @@ We write output to HDF5.
         fid["deposition"][:, :, :, idx] = frame.deposition |> in_units_of(u"m")
     end
 
-    function run(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
+    """
+        run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
+
+    Run a model and write output to HDF5. Here `M` should be a model, i.e. a
+    module with `initial_state`, `step!` and `write_header` defined. Example:
+
+    ```julia
+    run_model(Model{ALCAP}, ALCAP.Example.INPUT, "example.h5")
+    ```
+    """
+    function run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
         state = M.initial_state(input)
         step! = M.step!(input)
 
@@ -86,6 +98,8 @@ We write output to HDF5.
                 write_state(fid, w+1, state)
             end
         end
+
+        return filename
     end
 end
 ```

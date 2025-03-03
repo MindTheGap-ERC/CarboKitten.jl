@@ -76,7 +76,7 @@ Our input structure facilitates a single facies, specifying an initial bedrock e
     box
     Δt::typeof(1.0u"Myr")
     t_end::typeof(1.0u"Myr")
-    bedrock_elevation   # function (x::u"m", y::u"m") -> u"m"
+    initial_topography   # function (x::u"m", y::u"m") -> u"m"
     initial_sediment    # function (x::u"m", y::u"m") -> u"m"
     production          # function (x::u"m", y::u"m") -> u"m/s"
     disintegration_rate::typeof(1.0u"m/Myr")
@@ -101,7 +101,7 @@ const input = Input(
     Δt=0.001u"Myr",
     t_end=1.0u"Myr",
 
-    bedrock_elevation = (x, y) -> -x / 300.0,
+    initial_topography = (x, y) -> -x / 300.0,
     initial_sediment = (x, y) -> 0.0u"m",
 
     production = production_patch(
@@ -136,7 +136,7 @@ using .ActiveLayer: input
 
 function main()
   (x, y) = axes(input.box)
-  η = input.bedrock_elevation.(x, y')
+  η = input.initial_topography.(x, y')
   p = input.production.(x, y')
 
   fig = Figure()
@@ -216,7 +216,7 @@ end
 function propagator(input)
     δ = Matrix{Amount}(undef, input.box.grid_size...)
     x, y = axes(input.box)
-    μ0 = input.bedrock_elevation.(x, y')
+    μ0 = input.initial_topography.(x, y')
 
     function active_layer(state)
         max_amount = input.disintegration_rate * input.Δt
@@ -280,7 +280,7 @@ function main()
       Iterators.filter(x -> mod(x[1], 100) == 0, enumerate(run_model(input)))) |> collect
 
     (x, y) = axes(input.box)
-    η = input.bedrock_elevation.(x, y') .+ result[10][2].sediment .- input.subsidence_rate * result[10][2].time
+    η = input.initial_topography.(x, y') .+ result[10][2].sediment .- input.subsidence_rate * result[10][2].time
     # p = input.production.(x, y')
 
     fig = Figure(size=(800, 1000))
@@ -290,7 +290,7 @@ function main()
     ax2 = Axis(fig[3,1], xlabel="x (km)", ylabel="η (m)")
 
     for i in 1:10
-        η = input.bedrock_elevation.(x, y') .+ result[i][2].sediment .- input.subsidence_rate * result[i][2].time
+        η = input.initial_topography.(x, y') .+ result[i][2].sediment .- input.subsidence_rate * result[i][2].time
 
         lines!(ax2, x |> in_units_of(u"km"), η[:, 25] |> in_units_of(u"m"))
     end
@@ -335,7 +335,7 @@ const INPUT = ActiveLayer.Input(
     Δt                    = 0.001u"Myr",
     t_end                 = 1.0u"Myr",
 
-    bedrock_elevation     = (x, y) -> -30.0u"m",
+    initial_topography     = (x, y) -> -30.0u"m",
     initial_sediment      = initial_sediment,
     production            = (x, y) -> 0.0u"m/Myr",
 
@@ -382,7 +382,7 @@ function main(input)
     ax2 = Axis(fig[1,1], xlabel="x (km)", ylabel="η (m)")
 
     for r in result
-        η = input.bedrock_elevation.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
+        η = input.initial_topography.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
 
         lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"))
     end
@@ -429,16 +429,26 @@ end
 Prepares the disintegration step. Returns a function `f!(state::State)`. The returned function
 modifies the state, popping sediment from the `sediment_buffer` and returns an array of `Amount`.
 """
-function disintegration(input)
+function define_h(input::AbstractInput,state::AbstractState)
     max_h = input.disintegration_rate * input.time.Δt
-    output = Array{Float64, 3}(undef, n_facies(input), input.box.grid_size...)
-
-    return function(state)
-        h = min.(max_h, state.sediment_height)
-        state.sediment_height .-= h
-        pop_sediment!(state.sediment_buffer, h ./ input.depositional_resolution .|> NoUnits, output)
-        return output .* input.depositional_resolution
+    w = water_depth(input)(state)
+    h = zeros(typeof(max_h), input.box.grid_size...)
+    for i in CartesianIndices(input.box.grid_size)
+        if w[i] > 0.0u"m"
+            h[i] = min.(max_h, state.sediment_height[i])
+        end
     end
+    return h
+end
+
+function disintegration(input)
+    output = Array{Float64, 3}(undef, n_facies(input), input.box.grid_size...)
+        return function(state)
+                h = define_h(input, state)
+                state.sediment_height .-= h
+                pop_sediment!(state.sediment_buffer, h ./ input.depositional_resolution .|> NoUnits, output)
+                return output .* input.depositional_resolution 
+        end
 end
 
 """
@@ -448,8 +458,8 @@ Prepares the transportation step. Returns a function `f(state::State, active_lay
 transporting the active layer, returning a transported `Amount` of sediment.
 """
 function transportation(input)
-    x, y = axes(input.box)
-    μ0 = input.bedrock_elevation.(x, y')
+    x, y = box_axes(input.box)
+    μ0 = input.initial_topography.(x, y')
     # We always return this array
     transported_output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
     stencils = [

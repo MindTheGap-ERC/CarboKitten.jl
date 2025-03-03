@@ -64,17 +64,18 @@ Depth = 1
 module Common
 export @u_str, Quantity, Amount, Time, Location, Rate, Intensity, Height
 export AbstractFacies, AbstractInput, AbstractState, AbstractFrame
-export Box, axes, Boundary, Shelf, Periodic, Reflected, TimeProperties
+export Box, box_axes, Boundary, Coast, Periodic, Reflected, TimeProperties
 export in_units_of
 export Model
 export @for_each
 
 using ModuleMixins
 using Unitful
-using CarboKitten.BoundaryTrait
-using CarboKitten.Config: TimeProperties
-using CarboKitten.Boxes: Box, axes
-using CarboKitten.Utility: in_units_of
+using ...CarboKitten: Model
+using ...BoundaryTrait
+using ...Config: TimeProperties
+using ...Boxes: Box, box_axes
+using ...Utility: in_units_of
 
 const Amount = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
@@ -88,8 +89,6 @@ abstract type AbstractInput end
 abstract type AbstractState end
 abstract type AbstractFrame end
 
-struct Model{M} end
-
 end
 ```
 
@@ -97,7 +96,7 @@ end
 module Components
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
-    CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer
+    CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer, Denudation
 
 using ModuleMixins: @compose
 
@@ -113,6 +112,7 @@ include("Components/CAProduction.jl")
 
 include("Components/SedimentBuffer.jl")
 include("Components/ActiveLayer.jl")
+include("Components/Denudation.jl")
 
 include("Components/H5Writer.jl")
 

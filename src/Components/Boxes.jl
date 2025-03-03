@@ -7,7 +7,7 @@ using ..Common
 end
 
 function write_header(fid, input::AbstractInput)
-    x, y = Common.axes(input.box)
+    x, y = box_axes(input.box)
 
     gid = fid["input"]
     gid["x"] = collect(x) |> in_units_of(u"m")

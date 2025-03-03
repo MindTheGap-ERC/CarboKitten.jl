@@ -1,6 +1,6 @@
-# Model with CA, Production and Active Layer transport (ALCAPS)
+# Model with CA, Production and Active Layer transport (ALCAP)
 
-The following **S**edimentation model includes the Burgess 2013 **C**ellular **A**utomaton, Bosscher & Schlager 1992 **P**roduction curves and an **A**ctive **L**ayer transport model, based on Paola 1992, henceforth ALCAPS.
+The following **S**edimentation model includes the Burgess 2013 **C**ellular **A**utomaton, Bosscher & Schlager 1992 **P**roduction curves and an **A**ctive **L**ayer transport model, based on Paola 1992, henceforth ALCAP.
 
 ![Result from alternative input](fig/alcaps-alternative.png)
 
@@ -46,7 +46,7 @@ const INPUT = ALCAP.Input(
         steps=5000,
         write_interval=1),
     ca_interval=1,
-    bedrock_elevation=(x, y) -> -x / 300.0,
+    initial_topography=(x, y) -> -x / 300.0,
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
     subsidence_rate=50.0u"m/Myr",
     disintegration_rate=50.0u"m/Myr",
@@ -57,15 +57,13 @@ const INPUT = ALCAP.Input(
 ```
 
 ``` {.julia .task file=examples/model/alcap/run.jl}
-#| requires: src/Model/ALCAP2.jl
+#| requires: src/Models/ALCAP.jl
 #| creates: data/output/alcap-example.h5
 
 module Script
 
 using Unitful
-using CarboKitten.Components
-using CarboKitten.Components.Common
-using CarboKitten.Model: ALCAP2 as ALCAP
+using CarboKitten
 using CarboKitten.Export: data_export, CSV
 
 const PATH = "data/output"
@@ -73,14 +71,15 @@ const PATH = "data/output"
 <<alcap-example-input>>
 
 function main()
-    H5Writer.run(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+    run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
 
     data_export(
         CSV(tuple.(10:20:70, 25),
-          :sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
-          :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
-          :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
-          :metadata => "$(PATH)/$(TAG).toml"),
+            :sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
+            :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
+            :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
+            :water_depth => "$(PATH)/$(TAG)_wd.csv",
+            :metadata => "$(PATH)/$(TAG).toml"),
         "$(PATH)/$(TAG).h5")
 end
 
@@ -111,14 +110,14 @@ save("docs/src/_fig/alcaps-alternative.png", summary_plot("data/output/alcap-exa
 ## Modular Implementation
 
 ```component-dag
-CarboKitten.Model.ALCAP2
+CarboKitten.Models.ALCAP
 ```
 
-``` {.julia file=src/Model/ALCAP/Example.jl}
+``` {.julia file=src/Models/ALCAP/Example.jl}
 module Example
 
 using Unitful
-using CarboKitten.Model: ALCAP2 as ALCAP
+using ..ALCAP: ALCAP
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
 
@@ -127,9 +126,8 @@ using CarboKitten.Config: TimeProperties
 end
 ```
 
-``` {.julia file=src/Model/ALCAP2.jl}
-# FIXME: rename this to ALCAP and remove old code
-@compose module ALCAP2
+``` {.julia file=src/Models/ALCAP.jl}
+@compose module ALCAP
 @mixin Tag, H5Writer, CAProduction, ActiveLayer
 
 using ..Common
@@ -137,7 +135,7 @@ using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
-using .H5Writer: run
+using .H5Writer: run_model
 
 export Input, Facies
 
@@ -173,7 +171,7 @@ function step!(input::Input)
         active_layer = p .+ d
         sediment = transport(state, active_layer)
 
-        push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|> NoUnits) 
+        push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|> NoUnits)
         state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
         state.step += 1
 
@@ -196,5 +194,5 @@ end
 ## API
 
 ```@autodocs
-Modules = [CarboKitten.Model.ALCAP2]
+Modules = [CarboKitten.Models.ALCAP]
 ```

@@ -3,6 +3,7 @@
 @mixin TimeIntegration, WaterDepth, FaciesBase
 using ..Common
 using ..WaterDepth: water_depth
+using ..TimeIntegration: time
 using HDF5
 
 export production_rate, uniform_production
@@ -18,12 +19,14 @@ end
 end
 
 function insolation(input::AbstractInput)
-    if input.insolation isa Quantity
-        return s -> input.insolation
+    insolation = input.insolation
+    tprop = input.time
+    if insolation isa Quantity
+        return s -> insolation
     end
     function (s::AbstractState)
-        t = time(s)
-        return input.insolation(t)
+        t = time(tprop, s)
+        return insolation(t)
     end
 end
 
@@ -56,12 +59,13 @@ end
 function uniform_production(input::AbstractInput)
     w = water_depth(input)
     na = [CartesianIndex()]
-    s = insolation(input)
+    insolation_func = insolation(input)
+    facies = input.facies
 
     return function (state::AbstractState)
         return production_rate.(
-            s(state),
-            input.facies[:, na, na],
+            insolation_func(state),
+            facies[:, na, na],
             w(state)[na, :, :])
     end
 end

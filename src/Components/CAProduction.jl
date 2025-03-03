@@ -12,11 +12,16 @@
 
         w = water_depth(input)
         s = insolation(input)
-        p(f, w, s) = production_rate(s, input.facies[f], w) .* input.time.Δt
+        n_f = n_facies(input)
+        facies = input.facies
+        Δt = input.time.Δt
 
         return function(state::AbstractState)
-            for f = 1:n_facies(input)
-                output[f, :, :] = ifelse.(state.ca .== f, p.(f, w(state), s(state)), 0.0u"m")
+            for f = 1:n_f
+                output[f, :, :] = ifelse.(
+                    state.ca .== f,
+                    production_rate.(s(state), facies, w(state)) .* Δt,
+                    0.0u"m")
             end
             return output
         end

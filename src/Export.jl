@@ -223,6 +223,33 @@ function stratigraphic_column(header::Header, data::DataColumn, facies::Int)
 
     sc
 end
+
+function stratigraphic_column(header::Header, data::DataColumn, facies::Int)
+    n_times = length(header.axes.t) - 1
+    sc = zeros(typeof(1.0u"m"), n_times)
+
+    for ts = 1:n_times
+        ts_down = ts - 1
+        acc = data.deposition[facies, ts] - data.deposition[facies, ts_down]
+        if acc > 0.0u"m"
+            sc[ts] = acc
+            continue
+        end
+        while acc < 0.0u"m"
+            ts_down < 1 && break
+            if -acc < sc[ts_down]
+                sc[ts_down] -= acc
+                break
+            else
+                acc += sc[ts_down]
+                sc[ts_down] = 0.0u"m"
+            end
+            ts_down -= 1
+        end
+    end
+
+    sc
+end
 # ~/~ end
 # ~/~ begin <<docs/src/data-export.md#export-function>>[3]
 struct CSVExportTrait{S} end

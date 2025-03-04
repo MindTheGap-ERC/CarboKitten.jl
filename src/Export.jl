@@ -228,13 +228,14 @@ function stratigraphic_column(header::Header, data::DataColumn, facies::Int)
     n_times = length(header.axes.t) - 1
     sc = zeros(typeof(1.0u"m"), n_times)
 
-    for ts = 1:n_times
-        ts_down = ts - 1
-        acc = data.deposition[facies, ts] - data.deposition[facies, ts_down]
+    for ts = 1:n_times-1
+        ts_up = ts + 1
+        acc = data.deposition[facies, ts_up] - data.deposition[facies, ts]
         if acc > 0.0u"m"
             sc[ts] = acc
             continue
         end
+        ts_down = ts - 1
         while acc < 0.0u"m"
             ts_down < 1 && break
             if -acc < sc[ts_down]

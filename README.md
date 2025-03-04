@@ -21,7 +21,7 @@ CarboKitten is written in Julia for performance and extensibility.
 
 ## Running
 
-CarboKitten requires Julia &ge 1.10.
+CarboKitten requires Julia &ge; 1.10.
 
 It is advised to run CarboKitten in a dedicated environment under version control. This way, your model runs can be made fully reproducible. Create a directory for you project:
 
@@ -118,6 +118,7 @@ After that, you may edit an example and rerun.
 │   └── src             # markdown source for docs
 ├── entangled.toml      # entangled config
 ├── examples            # example scripts
+├── ext                 # visualization extension
 ├── Makefile            # command-line short hands
 ├── Manifest.toml       #
 ├── Project.toml        # project dependencies

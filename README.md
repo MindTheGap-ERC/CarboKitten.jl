@@ -18,28 +18,54 @@ CarboKitten should be easy to get into and extend. All our code is extensively d
 
 CarboKitten is written in Julia for performance and extensibility.
 
-## Project layout
-
-```
-.
-├── data                # data files
-├── docs                # documentation
-│   ├── make.jl         # docs build script
-│   ├── Manifest.toml   #
-│   ├── Project.toml    # dependencies for building docs
-│   └── src             # markdown source for docs
-├── entangled.toml      # entangled config
-├── examples            # example scripts
-├── Makefile            # command-line short hands
-├── Manifest.toml       #
-├── Project.toml        # project dependencies
-├── pyproject.toml      # dependencies for running Entangled
-├── README.md           #
-├── src                 # tangled library source
-└── test                # unit tests
-```
-
 ## Running
+
+CarboKitten requires Julia &ge 1.10.
+
+It is advised to run CarboKitten in a dedicated environment under version control. This way, your model runs can be made fully reproducible. Create a directory for you project:
+
+```bash
+mkdir MyCarboKittenProject
+cd MyCarboKittenProject
+git init
+julia
+```
+
+Start Julia, get into `Pkg` mode by pressing `]` and generate a new project file:
+
+```juliarepl
+(@v1.11) pkg> activate .
+(MyCarboKittenProject) pkg> add CarboKitten
+```
+
+You can run the example model as follows:
+
+```julia
+using CarboKitten
+CarboKitten.init()   # enables progress logging in this session
+run_model(Model{ALCAP}, ALCAP.Example.INPUT, "example.h5")
+```
+
+If you wish to visualize the generated output, you'll need to install `GLMakie` first (in package mode):
+
+```juliarepl
+(MyCarboKittenProject) pkg> add GLMakie
+```
+
+Depending on your system, this may take a few minutes to build. After that, you should be able to run the following:
+
+```julia
+using GLMakie
+using CarboKitten.Visualization
+summary_plot("example.h5")
+```
+
+This should show a plot very similar to the one above. Don't worry if it takes a while to render. Subsequent runs in the same REPL should be a lot faster!
+
+## Development
+
+> [!NOTE]
+> The following instructions are only relevant if you want to develop on CarboKitten itself.
 
 Start the Julia REPL, and get into Pkg mode by pressing `]`. You may activate the package environment using `activate .` and then install the dependencies using `instantiate`. These steps only need to be run once.
 
@@ -77,7 +103,26 @@ include("examples/ca-with-prod.jl")
 
 After that, you may edit an example and rerun.
 
-## Development
+### Project layout
+
+```
+.
+├── data                # data files
+├── docs                # documentation
+│   ├── make.jl         # docs build script
+│   ├── Manifest.toml   #
+│   ├── Project.toml    # dependencies for building docs
+│   └── src             # markdown source for docs
+├── entangled.toml      # entangled config
+├── examples            # example scripts
+├── Makefile            # command-line short hands
+├── Manifest.toml       #
+├── Project.toml        # project dependencies
+├── pyproject.toml      # dependencies for running Entangled
+├── README.md           #
+├── src                 # tangled library source
+└── test                # unit tests
+```
 
 ### Global dependencies
 CarboKitten has some dependencies that are only needed for developing and running examples, but not for using the library on its own. Those are specified in the `workenv` package. So make sure `workenv` is activated (`Pkg.activate("./workenv")`) or

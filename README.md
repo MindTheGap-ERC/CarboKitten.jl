@@ -21,7 +21,7 @@ CarboKitten is written in Julia for performance and extensibility.
 
 ## Running
 
-CarboKitten requires Julia &ge; 1.10.
+CarboKitten requires Julia &ge; 1.10. Please follow the [download and install instructions at the Julia homepage](https://julialang.org/downloads/) if you've never used Julia before.
 
 It is advised to run CarboKitten in a dedicated environment under version control. This way, your model runs can be made fully reproducible. Create a directory for you project:
 
@@ -63,7 +63,7 @@ summary_plot("example.h5")
 
 This should show a plot very similar to the one above. Don't worry if it takes a while to render. Subsequent runs in the same REPL should be a lot faster!
 
-For more information on running CarboKitten, please read our extensive [documentation](https://mindthegap-erc.github.io/CarboKitten.jl).
+For more information on running CarboKitten, please read our extensive [documentation](https://mindthegap-erc.github.io/CarboKitten.jl), including the [full tutorial](https://mindthegap-erc.github.io/CarboKitten.jl/dev/first_tutorial/).
 
 ## Development
 

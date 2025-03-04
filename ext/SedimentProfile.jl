@@ -91,8 +91,10 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     c = reshape(colormax(data)[:, :], length(x) * (length(t) - 1))
     mesh!(ax, v, f, color=vcat(c, c), alpha=1.0, colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
-    verts = [(x[pt[1]], ξ[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
-    linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
+    if !isempty(hiatus[1])
+        verts = [(x[pt[1]], ξ[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
+        linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
+    end
 end
 
 function sediment_profile(header::Header, data_slice::DataSlice)

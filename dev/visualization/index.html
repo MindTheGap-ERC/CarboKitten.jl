@@ -369,8 +369,10 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     c = reshape(colormax(data)[:, :], length(x) * (length(t) - 1))
     mesh!(ax, v, f, color=vcat(c, c), alpha=1.0, colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
-    verts = [(x[pt[1]], ξ[pt...] |&gt; in_units_of(u&quot;m&quot;)) for pt in hiatus[1]]
-    linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
+    if !isempty(hiatus[1])
+        verts = [(x[pt[1]], ξ[pt...] |&gt; in_units_of(u&quot;m&quot;)) for pt in hiatus[1]]
+        linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
+    end
 end
 
 function sediment_profile(header::Header, data_slice::DataSlice)
@@ -443,9 +445,9 @@ Returns a tuple of `vertices` and `edges`, where `vertices` is a vector of 2-tup
 &quot;&quot;&quot;
 function skeleton(bitmap::AbstractMatrix{Bool}; minwidth=10)
     vertex_rows = (filter(r-&gt;length(r)&gt;=minwidth, find_ranges(row)) for row in eachrow(bitmap))
-    edges = flatten(map(splat(edges_between), pairs(enumerate_seq(vertex_rows))))
-    vertices = flatten(((i, middle(v)) for v in vs) for (i, vs) in enumerate(vertex_rows))
-    return collect(vertices), reshape(reinterpret(Int, collect(edges)), (2,:))&#39;
+    edges::Vector{Tuple{Int,Int}} = collect(flatten(map(splat(edges_between), pairs(enumerate_seq(vertex_rows)))))
+    vertices::Vector{Tuple{Float64,Float64}} = collect(flatten(((i, middle(v)) for v in vs) for (i, vs) in enumerate(vertex_rows)))
+    return vertices, reshape(reinterpret(Int, edges), (2,:))&#39;
 end
 
 end</code></pre><h2 id="Glamour-View-(3D)"><a class="docs-heading-anchor" href="#Glamour-View-(3D)">Glamour View (3D)</a><a id="Glamour-View-(3D)-1"></a><a class="docs-heading-anchor-permalink" href="#Glamour-View-(3D)" title="Permalink"></a></h2><p>Not very useful but highly glamourous.</p><p><img src="../fig/glamour_view.png" alt="Glamour view"/></p><div class="noweb-label">file:<i>examples/visualization/glamour_view.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/glamour_view.png
@@ -526,4 +528,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../active-layer-transport/">« Active Layer Transport</a><a class="docs-footer-nextpage" href="../carbocat/">Summary »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 4 March 2025 11:32">Tuesday 4 March 2025</span>. Using Julia version 1.10.8.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../active-layer-transport/">« Active Layer Transport</a><a class="docs-footer-nextpage" href="../carbocat/">Summary »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 4 March 2025 11:39">Tuesday 4 March 2025</span>. Using Julia version 1.10.8.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

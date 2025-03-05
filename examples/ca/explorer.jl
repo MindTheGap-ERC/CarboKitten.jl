@@ -1,7 +1,7 @@
 module CAExplorer
 
 using CarboKitten
-using CarboKitten.Burgess2013
+using CarboKitten.Components: CellularAutomaton as CA
 using CarboKitten.Stencil
 using CarboKitten.Utility
 using GLMakie
@@ -48,9 +48,9 @@ function main()
 
     ca = lift([s.value for s in sg.sliders]..., reset_button.clicks) do i, j, k, l, _
         facies = [
-            Facies((i, j), (k, l), 0, 0, 0),
-            Facies((i, j), (k, l), 0, 0, 0),
-            Facies((i, j), (k, l), 0, 0, 0),
+            CA.Facies((i, j), (k, l)),
+            CA.Facies((i, j), (k, l)),
+            CA.Facies((i, j), (k, l)),
         ]
         run_ca(Periodic{2}, facies, copy(init), 3)
     end

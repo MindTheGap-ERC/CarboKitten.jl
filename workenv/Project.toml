@@ -1,4 +1,5 @@
 [deps]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
@@ -14,6 +15,7 @@ Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 Inflate = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
+Loess = "4345ca2d-374a-55d4-8d30-97f9976e7612"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 ModuleMixins = "2b5f0a26-aae2-5c4c-af55-bc6d20297121"

@@ -29,7 +29,7 @@ The `insolation` input may be given as a scalar quantity, say `400u"W/m^2"`, or 
 @mixin TimeIntegration, WaterDepth, FaciesBase
 using ..Common
 using ..WaterDepth: water_depth
-using ..TimeIntegration: time
+using ..TimeIntegration: time, write_times
 using HDF5
 
 export production_rate, uniform_production

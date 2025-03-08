@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.4
+# v0.20.3
 
 using Markdown
 using InteractiveUtils
@@ -39,59 +39,100 @@ alcap_output = run_model(Model{ALCAP}, ALCAP.Example.INPUT, "../data/output/alca
 summary_plot(alcap_output)
   ╠═╡ =#
 
-# ╔═╡ e1d2171e-eef4-423a-acf9-1cbb4de2b5bd
-ot_output = let	
-	function ov(λ, T, wave_amp, water_depth; cal_fac=1.0e-7)
-	    function (z)		
+# ╔═╡ 515dcb55-f432-4bbd-9a71-b75d66942722
+ function stokes_drift_and_deriv(λ, T, wave_amp, water_depth; cal_fac=1u"s/yr")
+     return function (z)
+         # Constants and calculations
+	     k = 2π / λ        # Wave number [1/m]
+	     σ = 2π / T             # Angular frequency [1/s]
+	     a = wave_amp           # Wave amplitude [m]
+	     h = water_depth        # Water depth [m]
+		 (cal_fac * (1 / 2) * σ * k * a^2 * cosh(2 * k * (-z + h))/sinh(k * h)^2,         -cal_fac * σ * k^2 * a^2 * sinh(2 * k * (-z + h)) / sinh(k * h)^2) 
+	 end
+ end
 
-	        # Constants and calculations
-	        k = 2π / λ        # Wave number [1/m]
-	        σ = 2π / T             # Angular frequency [1/s]
-	        a = wave_amp           # Wave amplitude [m]
-	        h = water_depth        # Water depth [m]
+# ╔═╡ 185d6c22-966b-4f8e-a463-d162707747f6
+let basin_depth = 100.0u"m"
+	z = LinRange(0u"m", basin_depth, 1000)
+	drift_and_deriv = stokes_drift_and_deriv(40.0u"m", 10.0u"s", 1.0u"m", basin_depth)
+
+    f_values = drift_and_deriv.(z)
+	v = first.(f_values)
+	s = last.(f_values)
 	
-	        # Stokes drift [m/s], scaled by the calibration factor
-	        # u_s = -calibration_factor * (1 / 2) * σ * k * a^2 * cosh(2 * k * (z + h))/                sinh(k * h)^2
+	fig = Figure()
+	ax1 = Axis(fig[1, 1], title="stokes drift", yreversed=true, xlabel="velocity [m/yr]", ylabel="depth [m]")
+	ax2 = Axis(fig[1, 2], title="stokes drift shear", yreversed=true, xlabel="shear [1/yr]", ylabel="depth [m]")
+	lines!(ax1, v / u"m/yr", z / u"m")
+	lines!(ax2, s / u"1/yr", z / u"m")
+	ax1.xticklabelrotation = π/4  # Rotate labels by 45 degrees
+	ax2.xticklabelrotation = π/4
 
-			u_s = - cal_fac * 4 * π^2 * a^2 * exp(-4 * π * z / λ) / (λ * T)
-	
-	        # Derivative of Stokes drift wrt depth [1/s], 
-			# # scaled by the calibration factor
-	  #       du_s_dz = -calibration_factor * σ * k^2 * a^2 * sinh(2 * k * (z + h)) /
-	  #                  sinh(k * h)^2
+	fig
+end
 
-			du_s_dz=  cal_fac * 4^2 * π^3 * a^2 * exp(-4 * π * z / λ) / (λ^2 * T)
-	        # Return tuple for velocity and its gradient
-	        [(u_s, 0.0u"m/yr"), (du_s_dz, 0.0u"yr^-1")]
-	    end
+# ╔═╡ a91facaa-155a-48d8-9e21-e1036a1099eb
+stokes = w -> let (v, s) = stokes_drift_and_deriv(40.0u"m", 10.0u"s", 1.0u"m", 10.0u"m").(w)
+	(Vec2(-v, 0.0u"m/yr"), Vec2(-s, 0.0u"1/yr"))
+end
+
+# ╔═╡ 1be7c99d-e0b5-497c-be1b-2b49d15cc4fa
+v_prof(v_max, max_depth, w) = 
+	let k = sqrt(0.5) / max_depth,
+		A = 3.331 * v_max,
+		α = tanh(k * w),
+		β = exp(-k * w)
+		(A * α * β, -A * k * β * (1 - α - α^2))
 	end
 
+# ╔═╡ b22abeb4-1061-4874-b18b-efa2ab458c30
+let w = LinRange(0, 100.0, 1000)u"m"
+	f = v_prof.(10.0u"m/yr", 20.0u"m", w)
+
+	v = first.(f)
+	s = last.(f)
 	
+	fig = Figure()
+	ax1 = Axis(fig[1, 1], title="transport velocity", yreversed=true, xlabel="velocity [m/yr]", ylabel="depth [m]")
+	ax2 = Axis(fig[1, 2], title="transport shear", yreversed=true, xlabel="shear [1/yr]", ylabel="depth [m]")
+	lines!(ax1, v / u"m/yr", w / u"m")
+	lines!(ax2, s / u"1/yr", w / u"m")
+	fig
+end
+
+# ╔═╡ 7a69fce1-52c2-416b-a2ce-32065d103307
+ov_Johan = w -> let (v, s) = v_prof(10.0u"m/yr", 20.0u"m", w)
+	(Vec2(-v, 0.0u"m/yr"), Vec2(-s, 0.0u"1/yr"))
+end
+
+# ╔═╡ e1d2171e-eef4-423a-acf9-1cbb4de2b5bd
+ot_output = let	
 	FACIES = [
 	    OT.Facies(
         maximum_growth_rate = 500u"m/Myr",
         extinction_coefficient = 0.8u"m^-1",
         saturation_intensity = 60u"W/m^2",
 		diffusion_coefficient = 10.0u"m/yr",
-		onshore_velocity = ov(40.0u"m", 10.0u"s", 1.0u"m", 10.0u"m")), 
+		onshore_velocity = ov_Johan), 
 
 	    OT.Facies(
         maximum_growth_rate = 400u"m/Myr",
         extinction_coefficient = 0.1u"m^-1",
         saturation_intensity = 60u"W/m^2",
 		diffusion_coefficient = 10.0u"m/yr",
-	    onshore_velocity = ov(40.0u"m", 10.0u"s", 1.0u"m", 10.0u"m")), 
+		onshore_velocity = ov_Johan),
 
 	    OT.Facies(
         maximum_growth_rate = 100u"m/Myr",
         extinction_coefficient = 0.005u"m^-1",
         saturation_intensity = 60u"W/m^2",
 		diffusion_coefficient = 10.0u"m/yr",
-		onshore_velocity = ov(40.0u"m", 10.0u"s", 1.0u"m", 10.0u"m"))
+		onshore_velocity = ov_Johan)
 	]
 
 	function sea_level(t)
 		10.0u"m" * sin(2π * t / 0.2u"Myr") + 3.0u"m" * sin(2π * t / 0.03u"Myr")
+		# basin_depth
 	end
 	
 	INPUT = OT.Input(
@@ -143,6 +184,12 @@ end
 # ╠═fe8114d0-9776-4810-9f57-1a89e86c66dd
 # ╠═d3353fee-3199-4a0c-baa7-bea0cb228b13
 # ╠═5eb0ace5-c35f-4ffa-9081-3fd712960339
+# ╠═515dcb55-f432-4bbd-9a71-b75d66942722
+# ╠═185d6c22-966b-4f8e-a463-d162707747f6
+# ╠═a91facaa-155a-48d8-9e21-e1036a1099eb
+# ╠═1be7c99d-e0b5-497c-be1b-2b49d15cc4fa
+# ╠═b22abeb4-1061-4874-b18b-efa2ab458c30
+# ╠═7a69fce1-52c2-416b-a2ce-32065d103307
 # ╠═e1d2171e-eef4-423a-acf9-1cbb4de2b5bd
 # ╠═11fa7c68-40d0-49d8-b448-9db9626cc3dd
 # ╠═8285516a-650d-4392-a4a4-342bb64b396c

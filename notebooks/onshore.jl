@@ -132,7 +132,6 @@ ot_output = let
 
 	function sea_level(t)
 		10.0u"m" * sin(2π * t / 0.2u"Myr") + 3.0u"m" * sin(2π * t / 0.03u"Myr")
-		# basin_depth
 	end
 	
 	INPUT = OT.Input(

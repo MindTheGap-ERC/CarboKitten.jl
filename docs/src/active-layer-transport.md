@@ -54,7 +54,6 @@ Suppose we have an incline in one direction, as per usual on a coastal slice. Pr
 module ActiveLayer
 
 using Unitful
-using CarboKitten.Stencil: convolution, stencil
 using CarboKitten.Config: Box, axes
 using CarboKitten.BoundaryTrait: Shelf
 using CarboKitten.Utility: in_units_of
@@ -81,7 +80,7 @@ Our input structure facilitates a single facies, specifying an initial bedrock e
     production          # function (x::u"m", y::u"m") -> u"m/s"
     disintegration_rate::typeof(1.0u"m/Myr")
     subsidence_rate::typeof(1.0u"m/Myr")
-    diffusion_coefficient::typeof(1.0u"m")
+    diffusion_coefficient::typeof(1.0u"m/yr")
 end
 ```
 
@@ -112,7 +111,7 @@ const input = Input(
     disintegration_rate = 50.0u"m/Myr",
     subsidence_rate = 50.0u"m/Myr",
 
-    diffusion_coefficient = 10000.0u"m"
+    diffusion_coefficient = 10.0u"m/yr"
 )
 ```
 
@@ -217,21 +216,23 @@ function propagator(input)
     δ = Matrix{Amount}(undef, input.box.grid_size...)
     x, y = axes(input.box)
     μ0 = input.initial_topography.(x, y')
+    box = input.box
+    Δt = input.Δt
+    disintegration_rate = input.disintegration_rate
+    production = input.production
+    d = input.diffusion_coefficient
 
     function active_layer(state)
-        max_amount = input.disintegration_rate * input.Δt
+        max_amount = disintegration_rate * Δt
         amount = min.(max_amount, state.sediment)
         state.sediment .-= amount
 
-        input.production.(x, y') * input.Δt .+ amount
+        production.(x, y') * Δt .+ amount
     end
-
-    stc = pde_stencil(input.box, input.diffusion_coefficient)
-    apply_pde(μ::Matrix{Amount}, p::Matrix{Amount}) = stc(tuple.(μ, p), δ)
 
     function (state)
         p = active_layer(state)
-        apply_pde(state.sediment .+ μ0, p)
+        pde_stencil(box, Δt, d, δ, state.sediment .+ μ0, p)
         return Frame(state.time, δ)
     end
 end
@@ -341,7 +342,7 @@ const INPUT = ActiveLayer.Input(
 
     disintegration_rate   = 50.0u"m/Myr",
     subsidence_rate       = 50.0u"m/Myr",
-    diffusion_coefficient = 10000.0u"m")
+    diffusion_coefficient = 10.0u"m/yr")
 ```
 
 ![Active layer erosion test](fig/active-layer-erosion.png)

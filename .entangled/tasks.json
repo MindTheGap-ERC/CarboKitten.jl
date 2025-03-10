@@ -263,22 +263,6 @@
     {
       "description": null,
       "creates": [
-        "docs/src/_fig/KHTemp.png,",
-        "docs/src/_fig/Equilibrium_Concs.png,",
-        "docs/src/_fig/DissolutionExample.png"
-      ],
-      "requires": [
-        "examples/denudation/dissolution-test.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/denudation/dissolution-test.jl"
-    },
-    {
-      "description": null,
-      "creates": [
         "docs/src/_fig/PhysicalSlope.png"
       ],
       "requires": [
@@ -289,6 +273,22 @@
       "stdin": null,
       "script": null,
       "path": "examples/denudation/physical-test.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/KHTemp.png",
+        "docs/src/_fig/Equilibrium_Concs.png",
+        "docs/src/_fig/DissolutionExample.png"
+      ],
+      "requires": [
+        "examples/denudation/dissolution-test.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/denudation/dissolution-test.jl"
     },
     {
       "description": null,
@@ -336,10 +336,10 @@
         "docs/src/_fig/active-layer-production-patch.png",
         "docs/src/_fig/active-layer-test.png",
         "docs/src/_fig/ca-long-term.svg",
-        "docs/src/_fig/KHTemp.png,",
-        "docs/src/_fig/Equilibrium_Concs.png,",
-        "docs/src/_fig/DissolutionExample.png",
         "docs/src/_fig/PhysicalSlope.png",
+        "docs/src/_fig/KHTemp.png",
+        "docs/src/_fig/Equilibrium_Concs.png",
+        "docs/src/_fig/DissolutionExample.png",
         "docs/src/_fig/miller-sea-level.svg",
         "docs/src/_fig/lisiecki-selection.svg",
         "docs/src/_fig/lisiecki-sea-level-summary.png"

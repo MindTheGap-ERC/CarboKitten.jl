@@ -11,7 +11,7 @@ using CarboKitten.Export: data_export, CSV
 const PATH = "data/output"
 
 # ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]
-const TAG = "alcap-example-deposition_only"
+const TAG = "alcap-example-single-facies-run"
 
 const FACIES = [
     ALCAP.Facies(
@@ -20,21 +20,7 @@ const FACIES = [
         maximum_growth_rate=500u"m/Myr",
         extinction_coefficient=0.8u"m^-1",
         saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=10000u"m"),
-    ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
-        maximum_growth_rate=400u"m/Myr",
-        extinction_coefficient=0.1u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=5000u"m"),
-    ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
-        maximum_growth_rate=100u"m/Myr",
-        extinction_coefficient=0.005u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=7000u"m")
+        diffusion_coefficient=10000u"m")
 ]
 
 const PERIOD = 0.2u"Myr"

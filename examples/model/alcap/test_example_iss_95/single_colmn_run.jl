@@ -11,7 +11,7 @@ using CarboKitten.Export: data_export, CSV
 const PATH = "data/output"
 
 # ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]
-const TAG = "alcap-example-deposition_only"
+const TAG = "alcap-example-single-colmn-run"
 
 const FACIES = [
     ALCAP.Facies(
@@ -42,7 +42,7 @@ const AMPLITUDE = 4.0u"m"
 
 const INPUT = ALCAP.Input(
     tag="$TAG",
-    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    box=Box{Coast}(grid_size=(100, 25), phys_scale=150.0u"m"),
     time=TimeProperties(
         Δt=0.0002u"Myr",
         steps=5000,

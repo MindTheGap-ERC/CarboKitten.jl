@@ -99,11 +99,11 @@ makedocs(
             "HDF5 Writer" => "components/hdf5.md",
             "Sediment Buffers" => "components/sediment_buffer.md",
             "Active Layer Transport" => "active-layer-transport.md",
+            "Onshore Transport" => "onshore-transport.md"
         ],
         "Visualizations" => "visualization.md",
         "CarboCAT" => [
             "Summary" => "carbocat.md",
-            "Cellular Automaton" => "carbocat-ca.md",
         ],
         "Denudation" => [
             "Denudation" => "denudation/denudation.md",

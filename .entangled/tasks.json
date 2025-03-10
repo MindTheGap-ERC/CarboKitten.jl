@@ -153,6 +153,34 @@
     {
       "description": null,
       "creates": [
+        "data/output/alcap-example.h5"
+      ],
+      "requires": [
+        "src/Models/ALCAP.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/alcap/run.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/alcaps-alternative.png"
+      ],
+      "requires": [
+        "data/output/alcap-example.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/model/alcap/plot.jl"
+    },
+    {
+      "description": null,
+      "creates": [
         "docs/src/_fig/eca.png"
       ],
       "requires": [
@@ -223,46 +251,14 @@
     {
       "description": null,
       "creates": [
-        "data/output/alcap-example.h5"
+        "docs/src/_fig/ca-long-term.svg"
       ],
-      "requires": [
-        "src/Models/ALCAP.jl"
-      ],
+      "requires": [],
       "runner": "julia",
       "stdout": null,
       "stdin": null,
       "script": null,
-      "path": "examples/model/alcap/run.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/alcaps-alternative.png"
-      ],
-      "requires": [
-        "data/output/alcap-example.h5"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/model/alcap/plot.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/KHTemp.png,",
-        "docs/src/_fig/Equilibrium_Concs.png,",
-        "docs/src/_fig/DissolutionExample.png"
-      ],
-      "requires": [
-        "examples/denudation/dissolution-test.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/denudation/dissolution-test.jl"
+      "path": "examples/ca/burgess-2013.jl"
     },
     {
       "description": null,
@@ -277,6 +273,22 @@
       "stdin": null,
       "script": null,
       "path": "examples/denudation/physical-test.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/KHTemp.png",
+        "docs/src/_fig/Equilibrium_Concs.png",
+        "docs/src/_fig/DissolutionExample.png"
+      ],
+      "requires": [
+        "examples/denudation/dissolution-test.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/denudation/dissolution-test.jl"
     },
     {
       "description": null,
@@ -317,16 +329,17 @@
         "docs/src/_fig/production_curve.svg",
         "docs/src/_fig/sediment_profile.png",
         "docs/src/_fig/glamour_view.png",
+        "docs/src/_fig/alcaps-alternative.png",
         "docs/src/_fig/eca.png",
         "docs/src/_fig/life.gif",
         "docs/src/_fig/boundary_types.png",
         "docs/src/_fig/active-layer-production-patch.png",
         "docs/src/_fig/active-layer-test.png",
-        "docs/src/_fig/alcaps-alternative.png",
-        "docs/src/_fig/KHTemp.png,",
-        "docs/src/_fig/Equilibrium_Concs.png,",
-        "docs/src/_fig/DissolutionExample.png",
+        "docs/src/_fig/ca-long-term.svg",
         "docs/src/_fig/PhysicalSlope.png",
+        "docs/src/_fig/KHTemp.png",
+        "docs/src/_fig/Equilibrium_Concs.png",
+        "docs/src/_fig/DissolutionExample.png",
         "docs/src/_fig/miller-sea-level.svg",
         "docs/src/_fig/lisiecki-selection.svg",
         "docs/src/_fig/lisiecki-sea-level-summary.png"

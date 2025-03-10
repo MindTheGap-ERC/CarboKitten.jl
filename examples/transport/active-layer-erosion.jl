@@ -37,7 +37,7 @@ const INPUT = ActiveLayer.Input(
 
     disintegration_rate   = 50.0u"m/Myr",
     subsidence_rate       = 50.0u"m/Myr",
-    diffusion_coefficient = 10000.0u"m")
+    diffusion_coefficient = 10.0u"m/yr")
 # ~/~ end
 
 function main(input)

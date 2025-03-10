@@ -54,7 +54,6 @@ Suppose we have an incline in one direction, as per usual on a coastal slice. Pr
 module ActiveLayer
 
 using Unitful
-using CarboKitten.Stencil: convolution, stencil
 using CarboKitten.Config: Box, axes
 using CarboKitten.BoundaryTrait: Shelf
 using CarboKitten.Utility: in_units_of
@@ -81,7 +80,7 @@ Our input structure facilitates a single facies, specifying an initial bedrock e
     production          # function (x::u"m", y::u"m") -> u"m/s"
     disintegration_rate::typeof(1.0u"m/Myr")
     subsidence_rate::typeof(1.0u"m/Myr")
-    diffusion_coefficient::typeof(1.0u"m")
+    diffusion_coefficient::typeof(1.0u"m/yr")
 end
 ```
 
@@ -112,7 +111,7 @@ const input = Input(
     disintegration_rate = 50.0u"m/Myr",
     subsidence_rate = 50.0u"m/Myr",
 
-    diffusion_coefficient = 10000.0u"m"
+    diffusion_coefficient = 10.0u"m/yr"
 )
 ```
 
@@ -164,30 +163,30 @@ Below is the kernel encoding a central differencing scheme i.e. `[-1, 0, 1]/(2Δ
 module ActiveLayer
 
 using Unitful
+using StaticArrays
 using ...BoundaryTrait
 using ...Boxes: Box
-using ...Stencil: stencil
+using ...Stencil: stencil!
 
 const Rate = typeof(1.0u"m/Myr")
 const Amount = typeof(1.0u"m")
 
-function pde_stencil(box::Box{BT}, ν) where {BT <: Boundary{2}}
+function pde_stencil(box::Box{BT}, Δt, ν, out, η, C) where {BT<:Boundary{2}}
     Δx = box.phys_scale
+    d = ν * Δt
 
-    function kernel(x)
-        adv = ν * ((x[3, 2][1] - x[1, 2][1]) * (x[3, 2][2] - x[1, 2][2]) +
-                    (x[2, 3][1] - x[2, 1][1]) * (x[2, 3][2] - x[2, 1][2])) /
-                  (2Δx)^2
+    stencil!(BT, Size(3, 3), out, η, C) do η, C
+        adv = d * ((η[3, 2] - η[1, 2]) * (C[3, 2] - C[1, 2]) +
+                   (η[2, 3] - η[2, 1]) * (C[2, 3] - C[2, 1])) /
+              (2Δx)^2
 
-        dif = ν * x[2, 2][2] * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
-                  x[2, 1][1] - 4*x[2, 2][1]) / (Δx)^2
+        dif = d * C[2, 2] * (η[3, 2] + η[2, 3] + η[1, 2] +
+                             η[2, 1] - 4 * η[2, 2]) / (Δx)^2
 
-        prd = x[2, 2][2]
+        prd = C[2, 2]
 
-        return max(0.0u"m", adv + dif + prd)
+        max(0.0u"m", adv + dif + prd)
     end
-
-    stencil(Tuple{Amount, Amount}, Amount, BT, (3, 3), kernel)
 end
 
 end
@@ -217,21 +216,23 @@ function propagator(input)
     δ = Matrix{Amount}(undef, input.box.grid_size...)
     x, y = axes(input.box)
     μ0 = input.initial_topography.(x, y')
+    box = input.box
+    Δt = input.Δt
+    disintegration_rate = input.disintegration_rate
+    production = input.production
+    d = input.diffusion_coefficient
 
     function active_layer(state)
-        max_amount = input.disintegration_rate * input.Δt
+        max_amount = disintegration_rate * Δt
         amount = min.(max_amount, state.sediment)
         state.sediment .-= amount
 
-        input.production.(x, y') * input.Δt .+ amount
+        production.(x, y') * Δt .+ amount
     end
-
-    stc = pde_stencil(input.box, input.diffusion_coefficient)
-    apply_pde(μ::Matrix{Amount}, p::Matrix{Amount}) = stc(tuple.(μ, p), δ)
 
     function (state)
         p = active_layer(state)
-        apply_pde(state.sediment .+ μ0, p)
+        pde_stencil(box, Δt, d, δ, state.sediment .+ μ0, p)
         return Frame(state.time, δ)
     end
 end
@@ -341,7 +342,7 @@ const INPUT = ActiveLayer.Input(
 
     disintegration_rate   = 50.0u"m/Myr",
     subsidence_rate       = 50.0u"m/Myr",
-    diffusion_coefficient = 10000.0u"m")
+    diffusion_coefficient = 10.0u"m/yr")
 ```
 
 ![Active layer erosion test](fig/active-layer-erosion.png)
@@ -416,11 +417,23 @@ using CarboKitten.Transport.ActiveLayer: pde_stencil
 using Unitful
 
 @kwdef struct Facies <: AbstractFacies
-    diffusion_coefficient::typeof(1.0u"m")
+    diffusion_coefficient::typeof(1.0u"m/yr")
 end
 
 @kwdef struct Input <: AbstractInput
     disintegration_rate::Rate = 50.0u"m/Myr"
+end
+
+function define_h(input::AbstractInput,state::AbstractState)
+    max_h = input.disintegration_rate * input.time.Δt
+    w = water_depth(input)(state)
+    h = zeros(typeof(max_h), input.box.grid_size...)
+    for i in eachindex(input.box.grid_size)
+        if w[i] > 0.0u"m"
+            h[i] = min.(max_h, state.sediment_height[i])
+        end
+    end
+    return h
 end
 
 """
@@ -429,26 +442,14 @@ end
 Prepares the disintegration step. Returns a function `f!(state::State)`. The returned function
 modifies the state, popping sediment from the `sediment_buffer` and returns an array of `Amount`.
 """
-function define_h(input::AbstractInput,state::AbstractState)
-    max_h = input.disintegration_rate * input.time.Δt
-    w = water_depth(input)(state)
-    h = zeros(typeof(max_h), input.box.grid_size...)
-    for i in CartesianIndices(input.box.grid_size)
-        if w[i] > 0.0u"m"
-            h[i] = min.(max_h, state.sediment_height[i])
-        end
-    end
-    return h
-end
-
 function disintegration(input)
     output = Array{Float64, 3}(undef, n_facies(input), input.box.grid_size...)
-        return function(state)
-                h = define_h(input, state)
-                state.sediment_height .-= h
-                pop_sediment!(state.sediment_buffer, h ./ input.depositional_resolution .|> NoUnits, output)
-                return output .* input.depositional_resolution 
-        end
+    return function(state)
+        h = define_h(input, state)
+        state.sediment_height .-= h
+        pop_sediment!(state.sediment_buffer, h ./ input.depositional_resolution .|> NoUnits, output)
+        return output .* input.depositional_resolution 
+    end
 end
 
 """
@@ -461,16 +462,17 @@ function transportation(input)
     x, y = box_axes(input.box)
     μ0 = input.initial_topography.(x, y')
     # We always return this array
-    transported_output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
-    stencils = [
-        let stc = pde_stencil(input.box, f.diffusion_coefficient)
-            (μ, p) -> @views stc(tuple.(μ, p[i,:,:]), transported_output[i,:,:])
-        end for (i, f) in enumerate(input.facies) ]
+    transported_output = Array{Amount,3}(undef, n_facies(input), input.box.grid_size...)
+    box = input.box
+    Δt = input.time.Δt
+    fs = input.facies
 
-    return function(state, active_layer::Array{Amount, 3})
+    return function (state, active_layer::Array{Amount,3})
         μ = state.sediment_height .+ μ0
-        for stc in stencils
-            stc(μ, active_layer)
+        for (i, f) in pairs(fs)
+            pde_stencil(box, Δt, f.diffusion_coefficient,
+                view(transported_output, i, :, :),
+                μ, view(active_layer, i, :, :))
         end
 
         return transported_output

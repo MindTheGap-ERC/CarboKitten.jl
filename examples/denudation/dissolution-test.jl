@@ -1,6 +1,9 @@
 # ~/~ begin <<docs/src/denudation/chemical.md#examples/denudation/dissolution-test.jl>>[init]
 #| requires: examples/denudation/dissolution-test.jl
-#| creates: docs/src/_fig/KHTemp.png, docs/src/_fig/Equilibrium_Concs.png, docs/src/_fig/DissolutionExample.png
+#| creates:
+#|   - docs/src/_fig/KHTemp.png
+#|   - docs/src/_fig/Equilibrium_Concs.png
+#|   - docs/src/_fig/DissolutionExample.png
 #| collect: figures
 
 module DissolutionSpec
@@ -10,7 +13,6 @@ using CarboKitten.Denudation.DissolutionMod: equilibrium, dissolution, karst_den
 using CarboKitten: Box
 using CarboKitten.Stencil: Periodic, Reflected, stencil
 
-temp = collect(293:0.5:303)
 
 @kwdef struct facies
     infiltration_coefficient :: Float64
@@ -53,46 +55,52 @@ const WD = -10 .* [ 0.0663001  0.115606  0.646196
 0.601523   0.130196  0.390821
 0.864734   0.902935  0.670354]
 
-Eq_result = Array{Any,1}(undef,length(temp))
-Para_result = Array{Any,1}(undef,length(temp))
-Dis_result = Array{Any,1}(undef,length(temp))
-Dis_result_wd = Array{Any,1}(undef,length(WD))
+function main()
+    temp = collect(293:0.5:303)
 
-for i in eachindex(temp)
-    Para_result[i] = karst_denudation_parameters(temp[i])
+    Eq_result = Array{Any,1}(undef,length(temp))
+    Para_result = Array{Any,1}(undef,length(temp))
+    Dis_result = Array{Any,1}(undef,length(temp))
+    Dis_result_wd = Array{Any,1}(undef,length(WD))
+
+    for i in eachindex(temp)
+        Para_result[i] = karst_denudation_parameters(temp[i])
+    end
+    Para_result_KH = [x.KH for x in Para_result]
+
+    for i in eachindex(temp)
+       Eq_result[i] =  equilibrium(temp[i],DIS.pco2,DIS.precip,Facies)
+    end
+    Eq_result_concs = [x.concentration for x in Eq_result]
+    for i in eachindex(temp)
+        Dis_result[i] = dissolution(temp[i],DIS.precip,DIS.pco2,DIS.reactionrate,WD[1],Facies)
+    end
+    Dis_result
+    for i in eachindex(WD)
+        Dis_result_wd[i] = dissolution(temp[1],DIS.precip,DIS.pco2,DIS.reactionrate,WD[i],Facies)
+    end
+    Dis_result_wd
+
+    fig1 = Figure()
+    ax1 = Axis(fig1[1,1],xlabel="Temp (K)", ylabel=" concentration (mol/L)")
+    lines!(ax1,temp,Eq_result_concs)
+    save("docs/src/_fig/Equilibrium_Concs.png",fig1)
+
+    fig2 = Figure()
+    ax2 = Axis(fig2[1,1],xlabel="Temp (K)", ylabel="KH")
+    lines!(ax2,temp,Para_result_KH)
+    save("docs/src/_fig/KHTemp.png",fig2)
+
+    fig3 = Figure()
+    ax3 = Axis(fig3[1,1],xlabel="Temp (K)", ylabel="Denudation rates (m/Myr)")
+    lines!(ax3,temp,Dis_result)
+
+    ax4 = Axis(fig3[1,2],xlabel="Water Depth (m)", ylabel="Denudation rates (m/Myr)")
+    scatter!(ax4,vec(WD),Dis_result_wd)
+    fig3
+    save("docs/src/_fig/DissolutionExample.png",fig3)
 end
-Para_result_KH = [x.KH for x in Para_result]
-
-for i in eachindex(temp)
-   Eq_result[i] =  equilibrium(temp[i],DIS.pco2,DIS.precip,Facies)
 end
-Eq_result_concs = [x.concentration for x in Eq_result]
-for i in eachindex(temp)
-    Dis_result[i] = dissolution(temp[i],DIS.precip,DIS.pco2,DIS.reactionrate,WD[1],Facies)
-end
-Dis_result
-for i in eachindex(WD)
-    Dis_result_wd[i] = dissolution(temp[1],DIS.precip,DIS.pco2,DIS.reactionrate,WD[i],Facies)
-end
-Dis_result_wd
 
-fig1 = Figure()
-ax1 = Axis(fig1[1,1],xlabel="Temp (K)", ylabel=" concentration (mol/L)")
-lines!(ax1,temp,Eq_result_concs)
-save("docs/src/_fig/Equilibrium_Concs.png",fig1)
-
-fig2 = Figure()
-ax2 = Axis(fig2[1,1],xlabel="Temp (K)", ylabel="KH")
-lines!(ax2,temp,Para_result_KH)
-save("docs/src/_fig/KHTemp.png",fig2)
-
-fig3 = Figure()
-ax3 = Axis(fig3[1,1],xlabel="Temp (K)", ylabel="Denudation rates (m/Myr)")
-lines!(ax3,temp,Dis_result)
-
-ax4 = Axis(fig3[1,2],xlabel="Water Depth (m)", ylabel="Denudation rates (m/Myr)")
-scatter!(ax4,vec(WD),Dis_result_wd)
-fig3
-save("docs/src/_fig/DissolutionExample.png",fig3)
-end
+DissolutionSpec.main()
 # ~/~ end

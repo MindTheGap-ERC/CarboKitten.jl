@@ -2,7 +2,7 @@
 @compose module CAProduction
     @mixin TimeIntegration, CellularAutomaton, Production
     using ..Common
-    using ..Production: production_rate
+    using ..Production: production_rate, insolation
     using ..WaterDepth: water_depth
 
     function production(input::AbstractInput)
@@ -11,11 +11,17 @@
         output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
 
         w = water_depth(input)
-        p(f, w) = production_rate(input.insolation, input.facies[f], w) .* input.time.Δt
+        s = insolation(input)
+        n_f = n_facies(input)
+        facies = input.facies
+        Δt = input.time.Δt
 
         return function(state::AbstractState)
-            for f = 1:n_facies(input)
-                output[f, :, :] = ifelse.(state.ca .== f, p.(f, w(state)), 0.0u"m")
+            for f = 1:n_f
+                output[f, :, :] = ifelse.(
+                    state.ca .== f,
+                    production_rate.(s(state), facies, w(state)) .* Δt,
+                    0.0u"m")
             end
             return output
         end

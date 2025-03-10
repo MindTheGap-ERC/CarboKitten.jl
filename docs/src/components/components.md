@@ -62,7 +62,7 @@ Depth = 1
 
 ``` {.julia file=src/Components/Common.jl}
 module Common
-export @u_str, Amount, Time, Location, Rate, Intensity, Height
+export @u_str, Quantity, Amount, Time, Location, Rate, Intensity, Height
 export AbstractFacies, AbstractInput, AbstractState, AbstractFrame
 export Box, box_axes, Boundary, Coast, Periodic, Reflected, TimeProperties
 export in_units_of

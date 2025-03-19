@@ -77,6 +77,9 @@ include("./Denudation.jl")
 
 module Transport
 include("./Transport/ActiveLayer.jl")
+include("./Transport/DifferentialOperators.jl")
+include("./Transport/Solvers.jl")
+include("./Transport/Advection.jl")
 end
 
 include("./Components.jl")

@@ -97,6 +97,62 @@
     {
       "description": null,
       "creates": [
+        "docs/src/_fig/wheeler_diagram.png"
+      ],
+      "requires": [
+        "data/output/alcap-example.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/visualization/wheeler_diagram.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/production_curve.svg"
+      ],
+      "requires": [
+        "data/output/alcap-example.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/visualization/production_curve.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/sediment_profile.png"
+      ],
+      "requires": [
+        "data/output/alcap-example.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/visualization/sediment_profile.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/glamour_view.png"
+      ],
+      "requires": [
+        "data/output/cap1.h5"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/visualization/glamour_view.jl"
+    },
+    {
+      "description": null,
+      "creates": [
         "docs/src/_fig/active-layer-production-patch.png"
       ],
       "requires": [
@@ -207,62 +263,6 @@
     {
       "description": null,
       "creates": [
-        "docs/src/_fig/wheeler_diagram.png"
-      ],
-      "requires": [
-        "data/output/alcap-example.h5"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/visualization/wheeler_diagram.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/production_curve.svg"
-      ],
-      "requires": [
-        "data/output/alcap-example.h5"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/visualization/production_curve.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/sediment_profile.png"
-      ],
-      "requires": [
-        "data/output/alcap-example.h5"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/visualization/sediment_profile.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/glamour_view.png"
-      ],
-      "requires": [
-        "data/output/cap1.h5"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/visualization/glamour_view.jl"
-    },
-    {
-      "description": null,
-      "creates": [
         "docs/src/_fig/ca-long-term.svg"
       ],
       "requires": [],
@@ -337,6 +337,10 @@
         "docs/src/_fig/bs92-summary.png",
         "docs/src/_fig/bs92-multi-facies.png",
         "docs/src/_fig/cap1-summary.png",
+        "docs/src/_fig/wheeler_diagram.png",
+        "docs/src/_fig/production_curve.svg",
+        "docs/src/_fig/sediment_profile.png",
+        "docs/src/_fig/glamour_view.png",
         "docs/src/_fig/active-layer-production-patch.png",
         "docs/src/_fig/active-layer-test.png",
         "docs/src/_fig/alcaps-alternative.png",
@@ -344,10 +348,6 @@
         "docs/src/_fig/eca.png",
         "docs/src/_fig/life.gif",
         "docs/src/_fig/boundary_types.png",
-        "docs/src/_fig/wheeler_diagram.png",
-        "docs/src/_fig/production_curve.svg",
-        "docs/src/_fig/sediment_profile.png",
-        "docs/src/_fig/glamour_view.png",
         "docs/src/_fig/ca-long-term.svg",
         "docs/src/_fig/KHTemp.png",
         "docs/src/_fig/Equilibrium_Concs.png",

@@ -1,3 +1,5 @@
+module VariableInsolation
+
 using CarboKitten
 using Unitful
 using DelimitedFiles: readdlm
@@ -7,7 +9,7 @@ const PATH = "data/output"
 const TAG = "insolation-example"
 
 function insolation()
-    dir = "data"
+    dir = @__DIR__
     filename = joinpath(dir, "insolation.txt")
     insol = readdlm(filename, '\t', header=false) 
     return insol[2:end] .* u"W/m^2"
@@ -44,7 +46,7 @@ const INPUT = ALCAP.Input(
     tag="$TAG",
     box=Box{Coast}(grid_size=(100, 50), phys_scale=170.0u"m"),
     time=TimeProperties(
-        Δt=0.0002u"Myr",
+        Δt=200.0u"yr",
         steps=1000,
         write_interval=1),
     ca_interval=1,
@@ -56,3 +58,6 @@ const INPUT = ALCAP.Input(
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",
     facies=FACIES)
+
+end
+

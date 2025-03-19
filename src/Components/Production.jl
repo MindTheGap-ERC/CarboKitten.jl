@@ -5,6 +5,7 @@ using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
 using HDF5
+using Logging
 
 export production_rate, uniform_production
 
@@ -25,8 +26,10 @@ function insolation(input::AbstractInput)
         return s -> insolation
     end
     if insolation isa AbstractVector
+        @info "Reading insolation from a table"
         return s -> insolation[s.step+1]
     end
+    @info "Reading insolation from a function"
     function (s::AbstractState)
         t = time(tprop, s)
         return insolation(t)
@@ -36,12 +39,14 @@ end
 function write_header(fid, input::AbstractInput)
     if input.insolation isa Quantity
         fid["input"]["insolation"] = fill(input.insolation |> in_units_of(u"W/m^2"), input.time.steps + 1)
+    elseif input.insolation isa AbstractVector
+        fid["input"]["insolation"] = input.insolation |> in_units_of(u"W/m^2")
     else
         t = write_times(input)
         fid["input"]["insolation"] = input.insolation.(t) |> in_units_of(u"W/m^2")
     end
 
-    fid["input"]["insolation"] = insolation(input) |> in_units_of(u"W/m^2")
+    # fid["input"]["insolation"] = insolation(input) |> in_units_of(u"W/m^2")
     for (i, f) in enumerate(input.facies)
         attr = attributes(fid["input/facies$(i)"])
         attr["maximum_growth_rate"] = f.maximum_growth_rate |> in_units_of(u"m/Myr")

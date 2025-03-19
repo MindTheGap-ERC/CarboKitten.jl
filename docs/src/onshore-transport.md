@@ -170,22 +170,53 @@ where $k = 2\pi/\lambda$ and $g$ is the gravitational acceleration. It could be 
 
 $$v(w) \propto \tanh{k w} \exp{-kw}$$
 
+Derivative of $\tanh$ is $1 - \tanh^2$, so:
 
-```julia
-using GLMakie
+$$v(w) = A \tanh(k w) \exp(- k w)$$
+$$\begin{aligned}
+v'(w) &= A k [(1 - \tanh^2(k w)) \exp(- k w) - \tanh(k w) \exp(-k w)]\\
+      &= A k \exp(-k w) [1 - \tanh^2(k w) - \tanh(k w)]
+\end{aligned}$$
+
+``` {.julia #wave-transport-magnitude}
+v_prof(v_max, max_depth, w) = 
+  	let k = sqrt(0.5) / max_depth,
+		    A = 3.331 * v_max,
+		    α = tanh(k * w),
+		    β = exp(-k * w)
+		    (A * α * β, -A * k * β * (1 - α - α^2))
+	  end
+```
+
+![Plot of wave transport magnitude with a maximum velocity of 10 m/yr at a depth of 20 m.](fig/wave-transport-magnitude.svg)
+
+``` {.julia .task}
+#| creates: docs/src/_fig/wave-transport-magnitude.svg
+#| collect: figures
+module PlotWaveTransportMagnitude
+using CairoMakie
 using Unitful
 
-const g = 9.8u"m/s^2"
+<<wave-transport-magnitude>>
 
-v(A, k, w) = A * tanh(k * w) * exp(-k * w)
+function main()
+  w = LinRange(0, 100.0, 1000)u"m"
+	f = v_prof.(10.0u"m/yr", 20.0u"m", w)
 
-let
-    fig = Figure()
-    ax = Axis(fig[1,1], yreversed=true, xlabel="v [m/s]", ylabel="wd [m]")
-
-    wd = LinRange(0, 50, 10000)u"m"
-    lines!(ax, v.(1.0u"m/s" * 3.331, 0.05u"1/m", wd) / u"m/s" .|> NoUnits, wd / u"m" .|> NoUnits)
-
-    fig
+	v = first.(f)
+	s = last.(f)
+	
+	fig = Figure()
+	ax1 = Axis(fig[1, 1], title="transport velocity", yreversed=true, xlabel="velocity [m/yr]", ylabel="depth [m]")
+	ax2 = Axis(fig[1, 2], title="transport shear", yreversed=true, xlabel="shear [1/yr]", ylabel="depth [m]")
+	lines!(ax1, v / u"m/yr", w / u"m")
+	lines!(ax2, s / u"1/yr", w / u"m")
+	save("docs/src/_fig/wave-transport-magnitude.svg", fig)
 end
+
+end
+
+PlotWaveTransportMagnitude.main()
 ```
+
+## 

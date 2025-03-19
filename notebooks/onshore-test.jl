@@ -25,6 +25,180 @@ using GLMakie
 # ╔═╡ 7afe9f13-c15e-4571-964c-5ffce8a12f00
 using Unitful
 
+# ╔═╡ ed0e7604-c18f-413d-8386-26d2ec637168
+module TransportTest
+
+using Unitful
+using CarboKitten: Box, box_axes, Boundary
+using CarboKitten.Components.Common
+using CarboKitten.BoundaryTrait: Shelf
+using CarboKitten.Utility: in_units_of
+using CarboKitten.Stencil: stencil!
+
+const Amount = typeof(1.0u"m")
+const Length = typeof(1.0u"m")
+const Rate = typeof(1.0u"m/Myr")
+
+function onshore_transport_stencil(box::Box{BT}, Δt, ν, sf::F, out, w::AbstractArray{T}, C::AbstractArray{U}) where {BT<:Boundary{2},F,T<:Length,U<:Length}
+    Δx = box.phys_scale
+    d = ν * Δt
+
+    stencil!(BT, Size(3, 3), out, w, C) do w, C
+		upwind(v, a1, a2, a3) = if v < 0u"m/yr"
+			a3 - a2
+		else
+			a2 - a1
+		end
+		
+	    sv, ss = sf(w[2, 2])
+
+		grad_w = ((w[3, 2] - w[1, 2]) / (2Δx), (w[2, 3] - w[2, 1]) / (2Δx))
+	    adv = - grad_w[1] * (d * upwind(-grad_w[1]*u"m/yr", C[:, 2]...) / Δx + C[2, 2] * ss[1] * Δt) -
+                grad_w[2] * (d * upwind(-grad_w[2]*u"m/yr", C[2, :]...) / Δx + C[2, 2] * ss[2] * Δt)
+
+	    # adv = - upwind(sv[1], w[:, 2]...) / Δx * (d * upwind(sv[1], C[:, 2]...) / Δx + C[2, 2] * ss[1] * Δt) -
+	    #        upwind(sv[2], w[2, :]...) / Δx * (d * upwind(sv[2], C[2, :]...) / Δx + C[2, 2] * ss[2] * Δt)
+	
+	    dif = - d * C[2, 2] * (w[3, 2] + w[2, 3] + w[1, 2] +
+	                           w[2, 1] - 4 * w[2, 2]) / (Δx)^2
+
+		prd = - sv[1] * (C[3, 2] - C[1, 2]) * Δt / (2Δx) - sv[2] * (C[2, 3] - C[2, 1]) * Δt / (2Δx) + C[2, 2]
+	    # prd = - sv[1] * upwind(sv[1], C[:, 2]...) * Δt / Δx - sv[2] * upwind(sv[2], C[2, :]...) * Δt / Δx + C[2, 2]
+
+		# return adv + dif + prd
+	    return 	max(0.0u"m", prd)
+    end
+end
+
+@kwdef struct Input
+    box
+    Δt::typeof(1.0u"Myr")
+    t_end::typeof(1.0u"Myr")
+    initial_topography   # function (x::u"m", y::u"m") -> u"m"
+    initial_sediment    # function (x::u"m", y::u"m") -> u"m"
+    production          # function (x::u"m", y::u"m") -> u"m/s"
+    disintegration_rate::typeof(1.0u"m/Myr")
+    subsidence_rate::typeof(1.0u"m/Myr")
+    diffusion_coefficient::typeof(1.0u"m/yr")
+	wave_transport
+end
+
+mutable struct State
+    time::typeof(1.0u"Myr")
+    sediment::Matrix{typeof(1.0u"m")}
+end
+
+function initial_state(input)
+    x, y = box_axes(input.box)
+    State(0.0u"Myr", input.initial_sediment.(x, y'))
+end
+
+struct Frame
+    t::typeof(1.0u"Myr")
+    δ::Matrix{Amount}
+end
+
+function propagator(input)
+    δ = Matrix{Amount}(undef, input.box.grid_size...)
+    x, y = box_axes(input.box)
+    μ0 = input.initial_topography.(x, y')
+    box = input.box
+    Δt = input.Δt
+    disintegration_rate = input.disintegration_rate
+    production = input.production
+    d = input.diffusion_coefficient
+	v = input.wave_transport
+	σ = input.subsidence_rate
+
+    function active_layer(state)
+        max_amount = disintegration_rate * Δt
+        amount = min.(max_amount, state.sediment)
+        state.sediment .-= amount
+
+        production.(x, y') * Δt .+ amount
+    end
+
+    function (state)
+        p = active_layer(state)
+		water_depth = (σ * state.time) .- (μ0 .+ state.sediment)
+        onshore_transport_stencil(
+			box, Δt, d, v, δ, water_depth, p)
+        return Frame(state.time, δ)
+    end
+end
+
+function run_model(input)
+    state = initial_state(input)
+    prop = propagator(input)
+
+    Channel{State}() do ch
+        while state.time < input.t_end
+            Δ = prop(state)
+            state.sediment .+= Δ.δ
+            state.time += input.Δt
+            put!(ch, state)
+        end
+    end
+end
+
+end
+
+# ╔═╡ 38060f13-bf99-4f4a-9b73-1e28d77e8656
+module Erosion
+
+using Unitful
+using ..TransportTest: Input
+using CarboKitten: Box, Coast
+
+function initial_sediment(x, y)
+  if x < 5.0u"km"
+    return 30.0u"m"
+  end
+
+  if x > 10.0u"km" && x < 11.0u"km"
+    return 20.0u"m"
+  end
+
+  return 5.0u"m"
+end
+
+function gaussian_initial_sediment(x, y)
+	exp(-(x-10u"km")^2 / (2 * (0.5u"km")^2)) * 30.0u"m"
+end
+
+v_prof(v_max, max_depth, w) = 
+	let k = sqrt(0.5) / max_depth,
+		A = 3.331 * v_max,
+		α = tanh(k * w),
+		β = exp(-k * w)
+		(A * α * β, -A * k * β * (1 - α - α^2))
+	end
+
+v_const(v_max) = _ -> ((v_max, 0.0u"m/yr"), (0.0u"1/yr", 0.0u"1/yr"))
+
+const INPUT = Input(
+	box                   = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
+    Δt                    = 0.00001u"Myr",
+    t_end                 = 1.0u"Myr",
+
+    initial_topography     = (x, y) -> -30.0u"m",
+    initial_sediment      = gaussian_initial_sediment,
+    production            = (x, y) -> 0.0u"m/Myr",
+
+    disintegration_rate   = 1000.0u"m/Myr",
+    subsidence_rate       = 50.0u"m/Myr",
+    diffusion_coefficient = 0.0u"m/yr",
+	wave_transport        = v_const(-1.0u"m/yr")
+		# w -> let (v, s) = v_prof(-5u"m/yr", 20.0u"m", w)
+		# 	((v, 0.0u"m/yr"), (s, 0.0u"1/yr"))
+		# end
+)
+
+end
+
+# ╔═╡ e1df1edc-f84f-477e-8631-4856b028d48f
+box_axes
+
 # ╔═╡ 9fe4823d-ae06-46b9-9d10-3ffa03b8fe8b
 sea_level(t) = 10.0u"m" * sin(2π * t / 100.0u"kyr")
 
@@ -116,10 +290,16 @@ input = OT.Input(
 )
 
 # ╔═╡ 51c63f8c-e2bd-4605-83bd-3fbc367b1a3c
+# ╠═╡ disabled = true
+#=╠═╡
 run_model(Model{ALCAP}, input, "ot-test2.h5")
+  ╠═╡ =#
 
 # ╔═╡ 5a2134a0-dc90-4c9c-b83d-4a5171bdb4e7
+# ╠═╡ disabled = true
+#=╠═╡
 summary_plot("ot-test2.h5")
+  ╠═╡ =#
 
 # ╔═╡ 8d5725d6-456b-4637-9e35-df2b4fa1f5ed
 # ╠═╡ disabled = true
@@ -127,10 +307,39 @@ summary_plot("ot-test2.h5")
 summary_plot("ot-test.h5")
   ╠═╡ =#
 
+# ╔═╡ c8ef0c9b-7600-4363-99a2-2fa8ab3353d4
+md"""
+## Erosion
+"""
+
+# ╔═╡ bc4c03ef-5d53-4a99-8aca-b5cfef07ecea
+function plot_erosion(input)
+	y_idx = 1
+	result = Iterators.map(deepcopy,
+		Iterators.filter(x -> mod(x[1]-1, 4000) == 0, 
+		enumerate(TransportTest.run_model(input)))) |> collect
+
+	(x, y) = box_axes(input.box)
+
+	fig = Figure()
+	ax2 = Axis(fig[1, 1], xlabel="x (km)", ylabel="η (m)")
+
+	for r in result
+		η = input.initial_topography.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
+		lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"))
+	end
+
+	fig
+end
+
+# ╔═╡ bb6c2022-b668-4733-8799-cbe7c8f98231
+plot_erosion(Erosion.INPUT)
+
 # ╔═╡ Cell order:
 # ╠═1bd14d3c-f480-11ef-1a4e-e170792388dd
 # ╠═b5828d77-90b1-476c-976a-52cf5d471515
 # ╠═59dfd9ed-b91e-480d-8585-f358274f2b92
+# ╠═e1df1edc-f84f-477e-8631-4856b028d48f
 # ╠═32d22ca3-a1f5-4796-9b23-df8702374ef0
 # ╠═737dee0f-6a96-49e0-80cb-19e727fe34c7
 # ╠═a52fdcac-c5a4-47b2-b198-e82bb4e2b20c
@@ -138,12 +347,17 @@ summary_plot("ot-test.h5")
 # ╠═9fe4823d-ae06-46b9-9d10-3ffa03b8fe8b
 # ╠═5cf16ac9-14fb-4b4e-a74e-fe2c5708bffd
 # ╠═825a57a1-28b1-4995-88c3-486a87118787
-# ╟─b8e9bf4b-14a3-4049-8bbc-7db47a064bbe
+# ╠═b8e9bf4b-14a3-4049-8bbc-7db47a064bbe
 # ╠═5b99875c-97f6-4fed-bb46-18bc88e10a73
 # ╠═4ffdeb5b-b0bc-4932-bcb6-a6d50179d812
 # ╠═9ea62335-b2d6-4389-ad26-0f88811f50d2
-# ╠═c56cf301-4127-464e-93ae-e5466c94d2fa
-# ╠═c85bb265-2937-4c70-886b-06ecf8d195d1
+# ╟─c56cf301-4127-464e-93ae-e5466c94d2fa
+# ╟─c85bb265-2937-4c70-886b-06ecf8d195d1
 # ╠═51c63f8c-e2bd-4605-83bd-3fbc367b1a3c
 # ╠═5a2134a0-dc90-4c9c-b83d-4a5171bdb4e7
 # ╠═8d5725d6-456b-4637-9e35-df2b4fa1f5ed
+# ╠═ed0e7604-c18f-413d-8386-26d2ec637168
+# ╟─c8ef0c9b-7600-4363-99a2-2fa8ab3353d4
+# ╠═38060f13-bf99-4f4a-9b73-1e28d77e8656
+# ╠═bc4c03ef-5d53-4a99-8aca-b5cfef07ecea
+# ╠═bb6c2022-b668-4733-8799-cbe7c8f98231

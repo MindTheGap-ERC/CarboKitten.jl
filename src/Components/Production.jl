@@ -24,6 +24,9 @@ function insolation(input::AbstractInput)
     if insolation isa Quantity
         return s -> insolation
     end
+    if insolation isa AbstractVector
+        return s -> insolation[s.step+1]
+    end
     function (s::AbstractState)
         t = time(tprop, s)
         return insolation(t)

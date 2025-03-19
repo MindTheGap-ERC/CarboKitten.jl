@@ -197,6 +197,30 @@ function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, fa
     return stratigraphic_column(header, dc, facies)
 end
 
+function stratigraphic_column(deposition, disintegration)
+    @assert size(deposition) == size(disintegration)
+
+    n_facies = size(deposition)[2]
+    n_times = size(deposition)[1]
+
+    sc = zeros(typeof(1.0u"m"), n_times, n_facies)
+
+    for ts = 1:n_times
+        acc = deposition[ts, :] .- disintegration[ts, :]
+        if sum(acc) > 0.0u"m"
+            sc[ts, :] .= acc
+            continue
+        end
+
+        ts_down = ts - 1
+        while sum(acc) < 0.0u"m"
+
+        end
+    end
+
+    return sc
+end
+
 function stratigraphic_column(header::Header, data::DataColumn, facies::Int)
     n_times = length(header.axes.t) - 1
     sc = zeros(typeof(1.0u"m"), n_times)

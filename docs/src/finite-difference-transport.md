@@ -116,22 +116,13 @@ Note that $\partial_t C$ is a component of $\partial_t \eta$, and $\nabla \eta =
 
 ``` {.julia #advection-transport}
 d = diffusivity
-v = wave_velocity(w[2, 2])
-s = wave_shear(w[2, 2])
+v, s = wave_velocity(w[2, 2])
 
 dw = (central_difference(Val{1}, w, dx), central_difference(Val{2}, w, dx))
 adv = upwind(Val{1}, d * dw[1] + v[1], C, dx) + 
       upwind(Val{2}, d * dw[2] + v[2], C, dx)
 rct = (s[1] * dw[1] + s[2] * dw[2] - d * laplacian(w, dx)) * C[2, 2]
 return rct - adv
-```
-
-```julia
-diff = -d * C[2, 2] * laplacian(w, dx)
-adve = -d * (upwind(Val{1}, dw[1], C, dx) + upwind(Val{2}, dw[2], C, dx))
-wave_adv = -(upwind(Val{1}, v[1], C, dx) + upwind(Val{2}, v[2], C, dx))
-wave_shr = C[2, 2] * (s[1] * dw[1] + s[2] * dw[2])
-return diff + adve + wave_adv + wave_shr
 ```
 
 ``` {.julia file=src/Transport/Advection.jl}
@@ -143,17 +134,16 @@ using ..DifferentialOperators: central_difference, upwind, laplacian
 using Unitful
 
 """
-    transport!(box, diffusivity, wave_velocity, wave_shear,
+    transport!(box, diffusivity, wave_velocity,
                C, w, dC)
 
 Computes `dC` given a `box`, `diffusivity` constant in units of m/Myr,
-`wave_velocity` is a function of water depth in units of m/Myr.
-The `wave_shear` function of water depth in units of 1/Myr,
-should be the derivative of `wave_velocity` w.r.t. water depth.
-`C` is the concentration of entrained sediment, `w` the water depth,
-and `dC` the output derivative of `C`.
+`wave_velocity` is a function of water depth, returning both velocity in units
+of m/Myr, and shear in units of 1/Myr, which should be the derivative of the
+velocity w.r.t. water depth. `C` is the concentration of entrained sediment,
+`w` the water depth, and `dC` the output derivative of `C`.
 """
-function transport!(box::Box{BT}, diffusivity, wave_velocity, wave_shear, C, w, dC) where {BT}
+function transport!(box::Box{BT}, diffusivity, wave_velocity, C, w, dC) where {BT}
     dx = box.phys_scale
     stencil!(BT, Size(3, 3), dC, C, w) do C, w
         <<advection-transport>>
@@ -164,11 +154,11 @@ end
     transport(box, diffusivity, wave_velocity, wave_shear,
                C, w)
 
-Non-mutating version of `transport!`. Allocates and returns `dC`.
+Non-mutating version of [`transport!`](@ref). Allocates and returns `dC`.
 """
-function transport(box::Box{BT}, diffusivity, wave_velocity, wave_shear, C, w) where {BT}
+function transport(box::Box{BT}, diffusivity, wave_velocity, C, w) where {BT}
     dC = Array{typeof(1.0/u"yr")}(undef, box.grid_size...)
-    transport!(box, diffusivity, wave_velocity, wave_shear, C, w, dC)
+    transport!(box, diffusivity, wave_velocity, C, w, dC)
     return dC
 end
 
@@ -176,6 +166,8 @@ end
 ```
 
 ## Tests
+
+The following set of tests all involve mutilating a picture of a kitten. The default settings for `TestModel` have zero wave velocity and diffusivity. We'll enable them one by one. Note again, that what we call diffusivity, in the context of these tests doesn't necessarily behave like diffusion.
 
 ``` {.julia file=examples/transport/runner.jl}
 module Runner
@@ -216,8 +208,7 @@ using Unitful
     topography::Array{typeof(1.0u"m")}
 
     diffusivity = 0.0u"m/Myr"
-    wave_velocity = _ -> (0.0u"m/Myr", 0.0u"m/Myr")
-    wave_shear = _ -> (0.0u"1/Myr", 0.0u"1/Myr")
+    wave_velocity = _ -> ((0.0u"m/Myr", 0.0u"m/Myr"), (0.0u"1/Myr", 0.0u"1/Myr"))
 
     solver
 end
@@ -234,7 +225,7 @@ initial_state(input) = State(
 function step!(input, state)
     input.solver(
         (a, t) -> transport(
-            input.box, input.diffusivity, input.wave_velocity, input.wave_shear,
+            input.box, input.diffusivity, input.wave_velocity,
             a, .-input.topography),
         state.value, state.time, input.time.Δt)
     state.time += input.time.Δt
@@ -243,9 +234,16 @@ end
 end
 ```
 
-## Advection Only
+### Wave induced advection
 
-``` {.julia file=examples/transport/flying_cat.jl}
+With only wave induced advection enabled, we should see a clear translation of the picture of the kitten. The additional diffusion is so called *false diffusion*, a numerical artifact of the upwind differencing scheme.
+
+[Flying Cat](fig/flying_cat.png)
+
+``` {.julia .task file=examples/transport/flying_cat.jl}
+#| creates: docs/src/_fig/flying_cat.png
+#| collect: figures
+
 module FlyingCat
 
 include("runner.jl")
@@ -262,17 +260,17 @@ const BOX = CarboKitten.Box{Periodic{2}}(
 
 const INPUT = TestModel.Input(
     box = BOX,
-    time = TimeProperties(Δt=10u"yr", steps=50),
+    time = TimeProperties(Δt=100u"yr", steps=50),
     topography = zeros(typeof(1.0u"m"), BOX.grid_size),
     initial_state = load("data/cat256.pgm")'[:, end:-1:1] .|> Float64,
-    wave_velocity = _ -> (4u"m/yr", -3.0u"m/yr"),
+    wave_velocity = _ -> ((0.4u"m/yr", -0.3u"m/yr"), (0.0u"1/yr", 0.0u"1/yr")),
     solver = runge_kutta_4(BOX)
 )
 
 function run()
     x, y = box_axes(INPUT.box)
 
-    fig = Figure()
+    fig = Figure(size=(800, 400))
     ax1 = Axis(fig[1, 1], aspect=1)
     hm1 = heatmap!(ax1, x, y, INPUT.initial_state, colorrange=(0.0,0.7))
     Colorbar(fig[2, 1], hm1, vertical=false)
@@ -282,13 +280,24 @@ function run()
     hm2 = heatmap!(ax2, x, y, out.value, colorrange=(0.0,0.7))
     Colorbar(fig[2, 2], hm2, vertical=false)
 
-    return fig
+    save("docs/src/_fig/flying_cat.png", fig)
 end
 
 end
+
+FlyingCat.run()
 ```
 
-``` {.julia file=examples/transport/exploding_kitten.jl}
+### Diffusion
+
+Next, we only enable the diffusivity term. We set a topography of a single Gaussian peak in the center of the box. Sediment is dispersed down slope.
+
+![Exploding Kitten](fig/exploding_kitten.png)
+
+``` {.julia .task file=examples/transport/exploding_kitten.jl}
+#| creates: docs/src/_fig/exploding_kitten.png
+#| collect: figures
+
 module ExplodingKitten
 
 include("runner.jl")
@@ -315,16 +324,15 @@ const INPUT = TestModel.Input(
     box = BOX, 
     time = TimeProperties(Δt=100u"yr", steps=100),
     initial_state = load_cat(),
-    topography = ((x, y) -> 30.0u"m" * exp(-((x-6.4u"km")^2 + (y-6.4u"km")^2)/(2*(3.0u"km")^2)) - 30.0u"m").(X, Y'),
+    topography = ((x, y) -> 30.0u"m" * exp(-((x-7.2u"km")^2 + (y-7.2u"km")^2)/(2*(3.0u"km")^2)) - 30.0u"m").(X, Y'),
     diffusivity = 30.0u"m/yr",
-    #wave_velocity = (4u"m/yr", -2u"m/yr"),
     solver = runge_kutta_4(BOX)
 )
 
 function run()
     x, y = box_axes(INPUT.box)
 
-    fig = Figure()
+    fig = Figure(size=(800, 400))
     ax1 = Axis(fig[1, 1], aspect=1)
     hm1 = heatmap!(ax1, x, y, INPUT.topography / u"m")
     Colorbar(fig[2,1], hm1, vertical=false)
@@ -334,52 +342,11 @@ function run()
     hm2 = heatmap!(ax2, x, y, out.value, colorrange=(0.0,0.8))
     Colorbar(fig[2,2], hm2, vertical=false)
 
-    return fig
+    save("docs/src/_fig/exploding_kitten.png", fig)
 end
 
 end
+
+ExplodingKitten.run()
 ```
 
-``` {.julia file=examples/transport/fd.jl}
-using Unitful
-using CarboKitten
-
-
-
-module CatTopography
-
-using CarboKitten
-using FileIO
-using GLMakie
-
-using ..Solvers: forward_euler, runge_kutta_4
-using ..Diffusion: Diffusion
-using ..Transport: Transport
-using ..Runner: run_model
-
-const BOX = CarboKitten.Box{Periodic{2}}(grid_size=(256, 256), phys_scale=0.05u"km")
-const INPUT = Transport.Input(
-    box = BOX, 
-    time = TimeProperties(Δt=10u"yr", steps=20),
-    initial_state = ones(Float64, 256, 256),
-    topography = (load("data/cat256.pgm")'[:, end:-1:1] .|> Float64) * -50u"m",
-    diffusivity = 20u"m/Myr",
-    #wave_velocity = (4u"m/yr", -2u"m/yr"),
-    solver = runge_kutta_4(BOX)
-)
-
-function run()
-    x, y = box_axes(INPUT.box)
-
-    fig = Figure()
-    ax1 = Axis(fig[1, 1], aspect=1)
-    heatmap!(ax1, x, y, INPUT.topography, colormap=Reverse(:grays))
-    out = run_model(Model{Transport}, INPUT)
-    ax2 = Axis(fig[1, 2], aspect=1)
-    heatmap!(ax2, x, y, out.value, colormap=Reverse(:curl))
-
-    return fig
-end
-
-end
-```

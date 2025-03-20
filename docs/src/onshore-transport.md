@@ -23,6 +23,132 @@ $$\partial_t \eta_f = \nu_f P_f \nabla^2 \eta + (\nu_f \nabla P_f - P_f w_f') \c
 
 So we modify the advection component in the active layer approach with $P_f w_f'$, the derivative of the wave induced flux with respect to water depth and add a new term $\nabla P_f \cdot w_f$.
 
+``` {.julia file=src/Components/WaveTransport.jl}
+@compose module WaveTransport
+@mixin WaterDepth, FaciesBase, SedimentBuffer
+using ..Common
+using ...Transport.Advection: transport!
+
+struct Input <: AbstractInput
+    disintegration_rate::typeof(1.0u"m/Myr")
+    transport_solver = nothing
+    transport_substeps::Int
+end
+
+struct Facies <: AbstractFacies
+    diffusivity
+    wave_velocity
+end
+
+function disintegrator(input)
+    max_h = input.disintegration_rate * input.time.Δt
+    w = water_depth(input)
+    output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
+    depositional_resolution = input.depositional_resolution
+
+    return function (state)
+        wn = w(state)
+        h = min.(max_h, state.sediment_height)
+        h[wn.<=0.0u"m"] .= 0.0u"m"
+        state.sediment_height .-= h
+        pop_sediment!(state.sediment_buffer, h ./ depositional_resolution .|> NoUnits, output)
+        return output .* depositional_resolution
+    end
+end
+
+function transporter(input)
+    solver = if transport_solver === nothing
+        runge_kutta_4(input.box)
+    else
+        solver
+    end
+
+    w = water_depth(input)
+    box = input.box
+    Δt = input.time.Δt / input.transport_substeps
+    steps = input.transport_substeps
+    fs = input.facies
+
+    return function (state, C::Array{Amount,3})
+        wd = w(state)
+
+        for (i, f) in pairs(fs)
+            for j in 1:steps
+                input.solver(
+                    (C, _) -> transport(
+                        input.box, f.diffusivity, f.wave_velocity,
+                        view(active_layer, i, :, :), wd),
+                    C, state.time, Δt)
+            end
+        end
+    end
+end
+
+end
+```
+
+``` {.julia file=src/Models/WithWaveTransport.jl}
+@compose module WithWaveTransport
+@mixin Tag, H5Writer, CAProduction, WaveTransport
+
+using ..Common
+using ..CAProduction: production
+using ..TimeIntegration
+using ..WaterDepth
+using ModuleMixins: @for_each
+using .H5Writer: run_model
+
+export Input, Facies
+
+function initial_state(input::Input)
+    ca_state = CellularAutomaton.initial_state(input)
+    for _ in 1:20
+        CellularAutomaton.step!(input)(ca_state)
+    end
+
+    sediment_height = zeros(Height, input.box.grid_size...)
+    sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
+
+    return State(
+        step=0, sediment_height=sediment_height,
+        sediment_buffer=sediment_buffer,
+        ca=ca_state.ca, ca_priority=ca_state.ca_priority)
+end
+
+function step!(input::Input)
+    step_ca! = CellularAutomaton.step!(input)
+    disintegrate! = WaveTransport.disintegrator(input)
+    produce = production(input)
+    transport! = WaveTransport.transporter(input)
+
+    function (state::State)
+        if mod(state.step, input.ca_interval) == 0
+            step_ca!(state)
+        end
+
+        p = produce(state)
+        d = disintegrate!(state)
+
+        active_layer = p .+ d
+        transport!(state, active_layer)
+
+        push_sediment!(state.sediment_buffer, active_layer ./ input.depositional_resolution .|> NoUnits)
+        state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
+        state.step += 1
+
+        return H5Writer.DataFrame(
+            production = p,
+            disintegration = d,
+            deposition = active_layer)
+    end
+end
+
+function write_header(fid, input::AbstractInput)
+    @for_each(P -> P.write_header(fid, input), PARENTS)
+end
+
+end
+```
 ``` {.julia file=src/Components/ActiveLayerOnshore.jl}
 @compose module ActiveLayerOnshore
 @mixin WaterDepth, FaciesBase, SedimentBuffer, ActiveLayer

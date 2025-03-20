@@ -12,8 +12,7 @@ using Unitful
     topography::Array{typeof(1.0u"m")}
 
     diffusivity = 0.0u"m/Myr"
-    wave_velocity = _ -> (0.0u"m/Myr", 0.0u"m/Myr")
-    wave_shear = _ -> (0.0u"1/Myr", 0.0u"1/Myr")
+    wave_velocity = _ -> ((0.0u"m/Myr", 0.0u"m/Myr"), (0.0u"1/Myr", 0.0u"1/Myr"))
 
     solver
 end
@@ -30,7 +29,7 @@ initial_state(input) = State(
 function step!(input, state)
     input.solver(
         (a, t) -> transport(
-            input.box, input.diffusivity, input.wave_velocity, input.wave_shear,
+            input.box, input.diffusivity, input.wave_velocity,
             a, .-input.topography),
         state.value, state.time, input.time.Δt)
     state.time += input.time.Δt

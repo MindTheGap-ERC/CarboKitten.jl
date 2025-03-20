@@ -38,8 +38,8 @@ end
 
 Non-mutating version of [`transport!`](@ref). Allocates and returns `dC`.
 """
-function transport(box::Box{BT}, diffusivity, wave_velocity, C, w) where {BT}
-    dC = Array{typeof(1.0/u"yr")}(undef, box.grid_size...)
+function transport(box::Box{BT}, diffusivity, wave_velocity, C::AbstractArray{T}, w) where {BT, T}
+	dC = Array{typeof(1.0 * unit(T) / u"Myr")}(undef, box.grid_size...)
     transport!(box, diffusivity, wave_velocity, C, w, dC)
     return dC
 end

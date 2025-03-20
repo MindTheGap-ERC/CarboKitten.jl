@@ -73,11 +73,12 @@ module Solvers
 
 using Unitful
 
-function runge_kutta_4(box)
-    k1 = Array{typeof(1.0u"1/yr")}(undef, box.grid_size...)
-    k2 = Array{typeof(1.0u"1/yr")}(undef, box.grid_size...)
-    k3 = Array{typeof(1.0u"1/yr")}(undef, box.grid_size...)
-    k4 = Array{typeof(1.0u"1/yr")}(undef, box.grid_size...)
+function runge_kutta_4(::Type{T}, box) where {T}
+    U = typeof(1.0 * unit(T) / u"Myr")
+    k1 = Array{U}(undef, box.grid_size...)
+    k2 = Array{U}(undef, box.grid_size...)
+    k3 = Array{U}(undef, box.grid_size...)
+    k4 = Array{U}(undef, box.grid_size...)
     function (df, y, t, dt)
         k1 .= df(y, t)
         k2 .= df(y .+ dt/2 .* k1, t + dt/2)
@@ -156,8 +157,8 @@ end
 
 Non-mutating version of [`transport!`](@ref). Allocates and returns `dC`.
 """
-function transport(box::Box{BT}, diffusivity, wave_velocity, C, w) where {BT}
-    dC = Array{typeof(1.0/u"yr")}(undef, box.grid_size...)
+function transport(box::Box{BT}, diffusivity, wave_velocity, C::AbstractArray{T}, w) where {BT, T}
+	dC = Array{typeof(1.0 * unit(T) / u"Myr")}(undef, box.grid_size...)
     transport!(box, diffusivity, wave_velocity, C, w, dC)
     return dC
 end
@@ -264,7 +265,7 @@ const INPUT = TestModel.Input(
     topography = zeros(typeof(1.0u"m"), BOX.grid_size),
     initial_state = load("data/cat256.pgm")'[:, end:-1:1] .|> Float64,
     wave_velocity = _ -> ((0.4u"m/yr", -0.3u"m/yr"), (0.0u"1/yr", 0.0u"1/yr")),
-    solver = runge_kutta_4(BOX)
+    solver = runge_kutta_4(Float64, BOX)
 )
 
 function run()
@@ -326,7 +327,7 @@ const INPUT = TestModel.Input(
     initial_state = load_cat(),
     topography = ((x, y) -> 30.0u"m" * exp(-((x-7.2u"km")^2 + (y-7.2u"km")^2)/(2*(3.0u"km")^2)) - 30.0u"m").(X, Y'),
     diffusivity = 30.0u"m/yr",
-    solver = runge_kutta_4(BOX)
+    solver = runge_kutta_4(Float64, BOX)
 )
 
 function run()

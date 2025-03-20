@@ -22,7 +22,7 @@ const INPUT = TestModel.Input(
     topography = zeros(typeof(1.0u"m"), BOX.grid_size),
     initial_state = load("data/cat256.pgm")'[:, end:-1:1] .|> Float64,
     wave_velocity = _ -> ((0.4u"m/yr", -0.3u"m/yr"), (0.0u"1/yr", 0.0u"1/yr")),
-    solver = runge_kutta_4(BOX)
+    solver = runge_kutta_4(Float64, BOX)
 )
 
 function run()

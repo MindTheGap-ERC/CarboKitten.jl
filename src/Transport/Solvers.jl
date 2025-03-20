@@ -3,11 +3,12 @@ module Solvers
 
 using Unitful
 
-function runge_kutta_4(box)
-    k1 = Array{typeof(1.0u"1/yr")}(undef, box.grid_size...)
-    k2 = Array{typeof(1.0u"1/yr")}(undef, box.grid_size...)
-    k3 = Array{typeof(1.0u"1/yr")}(undef, box.grid_size...)
-    k4 = Array{typeof(1.0u"1/yr")}(undef, box.grid_size...)
+function runge_kutta_4(::Type{T}, box) where {T}
+    U = typeof(1.0 * unit(T) / u"Myr")
+    k1 = Array{U}(undef, box.grid_size...)
+    k2 = Array{U}(undef, box.grid_size...)
+    k3 = Array{U}(undef, box.grid_size...)
+    k4 = Array{U}(undef, box.grid_size...)
     function (df, y, t, dt)
         k1 .= df(y, t)
         k2 .= df(y .+ dt/2 .* k1, t + dt/2)

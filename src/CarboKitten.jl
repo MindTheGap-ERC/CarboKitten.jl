@@ -94,6 +94,8 @@ include("./Models/CAP.jl")
 include("./Models/ALCAP.jl")
 include("./Models/WithDenudation.jl")
 include("./Models/OnshoreTransport.jl")
+include("./Models/WithWaveTransport.jl")
+
 end
 
 include("./Export.jl")

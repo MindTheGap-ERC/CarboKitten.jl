@@ -30,7 +30,7 @@ const INPUT = TestModel.Input(
     initial_state = load_cat(),
     topography = ((x, y) -> 30.0u"m" * exp(-((x-7.2u"km")^2 + (y-7.2u"km")^2)/(2*(3.0u"km")^2)) - 30.0u"m").(X, Y'),
     diffusivity = 30.0u"m/yr",
-    solver = runge_kutta_4(BOX)
+    solver = runge_kutta_4(Float64, BOX)
 )
 
 function run()

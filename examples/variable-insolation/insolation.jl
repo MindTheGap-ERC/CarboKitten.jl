@@ -1,3 +1,5 @@
+using CarboKitten
+
 module VariableInsolation
 
 using CarboKitten
@@ -60,4 +62,6 @@ const INPUT = ALCAP.Input(
     facies=FACIES)
 
 end
+
+run_model(Model{ALCAP}, VariableInsolation.INPUT, "data/output/varins.h5")
 

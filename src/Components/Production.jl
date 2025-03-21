@@ -38,11 +38,11 @@ end
 
 function write_header(fid, input::AbstractInput)
     if input.insolation isa Quantity
-        fid["input"]["insolation"] = fill(input.insolation |> in_units_of(u"W/m^2"), input.time.steps + 1)
+        fid["input"]["insolation"] = fill(input.insolation |> in_units_of(u"W/m^2"), input.time.steps)
     elseif input.insolation isa AbstractVector
         fid["input"]["insolation"] = input.insolation |> in_units_of(u"W/m^2")
     else
-        t = write_times(input)
+        t = write_times(input)[1:end-1]
         fid["input"]["insolation"] = input.insolation.(t) |> in_units_of(u"W/m^2")
     end
 

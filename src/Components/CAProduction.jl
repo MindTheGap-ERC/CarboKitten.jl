@@ -4,6 +4,7 @@
     using ..Common
     using ..Production: production_rate, insolation
     using ..WaterDepth: water_depth
+    using Logging
 
     function production(input::AbstractInput)
         w = water_depth(input)
@@ -17,10 +18,11 @@
         Δt = input.time.Δt
 
         return function(state::AbstractState)
+            insolation = s(state)
             for f = 1:n_f
                 output[f, :, :] = ifelse.(
                     state.ca .== f,
-                    production_rate.(s(state), facies, w(state)) .* Δt,
+                    production_rate.(insolation, (facies[f],), w(state)) .* Δt,
                     0.0u"m")
             end
             return output

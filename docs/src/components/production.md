@@ -64,11 +64,11 @@ end
 
 function write_header(fid, input::AbstractInput)
     if input.insolation isa Quantity
-        fid["input"]["insolation"] = fill(input.insolation |> in_units_of(u"W/m^2"), input.time.steps + 1)
+        fid["input"]["insolation"] = fill(input.insolation |> in_units_of(u"W/m^2"), input.time.steps)
     elseif input.insolation isa AbstractVector
         fid["input"]["insolation"] = input.insolation |> in_units_of(u"W/m^2")
     else
-        t = write_times(input)
+        t = write_times(input)[1:end-1]
         fid["input"]["insolation"] = input.insolation.(t) |> in_units_of(u"W/m^2")
     end
 
@@ -113,6 +113,7 @@ The `CAProduction` component gives production that depends on the provided CA.
     using ..Common
     using ..Production: production_rate, insolation
     using ..WaterDepth: water_depth
+    using Logging
 
     function production(input::AbstractInput)
         w = water_depth(input)
@@ -126,10 +127,11 @@ The `CAProduction` component gives production that depends on the provided CA.
         Δt = input.time.Δt
 
         return function(state::AbstractState)
+            insolation = s(state)
             for f = 1:n_f
                 output[f, :, :] = ifelse.(
                     state.ca .== f,
-                    production_rate.(s(state), facies, w(state)) .* Δt,
+                    production_rate.(insolation, (facies[f],), w(state)) .* Δt,
                     0.0u"m")
             end
             return output

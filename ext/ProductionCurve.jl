@@ -40,7 +40,7 @@ end
 
 function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")
     a = HDF5.attributes(g)
-    insolation = a["insolation"][] * u"W/m^2"
+    insolation = 400.0u"W/m^2"  # a["insolation"][] * u"W/m^2"
 
     ax.title = "production at $(sprint(show, insolation; context=:fancy_exponent=>true))"
     ax.xlabel = "production [m/Myr]"

@@ -26,7 +26,7 @@ Returns a tuple of `vertices` and `edges`, where `vertices` is a vector of 2-tup
 function skeleton(bitmap::AbstractMatrix{Bool}; minwidth=10)
     vertex_rows = (filter(r->length(r)>=minwidth, find_ranges(row)) for row in eachrow(bitmap))
     edges::Vector{Tuple{Int,Int}} = collect(flatten(map(splat(edges_between), pairs(enumerate_seq(vertex_rows)))))
-    vertices::Vector{Tuple{Float64,Float64}} = collect(flatten(((i, middle(v)) for v in vs) for (i, vs) in enumerate(vertex_rows)))
+    vertices::Vector{Tuple{Int,Int}} = collect(flatten(((i, middle(v)) for v in vs) for (i, vs) in enumerate(vertex_rows)))
     return vertices, reshape(reinterpret(Int, edges), (2,:))'
 end
 

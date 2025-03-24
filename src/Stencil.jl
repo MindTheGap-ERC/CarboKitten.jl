@@ -1,12 +1,46 @@
 # ~/~ begin <<docs/src/stencils.md#src/Stencil.jl>>[init]
 module Stencil
 
+using StaticArrays
+
 using ..Boxes: AbstractBox
 using ..BoundaryTrait
 
 export stencil, convolution
 
 # ~/~ begin <<docs/src/stencils.md#stencil-operation>>[init]
+"""
+    stencil!(f, Boundary, Size, out, inp...)
+
+Performs stencil operation. The function `f` should take a number of
+abstract arrays (same as the number of `inp` values),
+and return a single value of the same type as elements in `out`.
+The `Size` parameter should be a type parameter size of the stencil,
+e.g. `Size(3, 3)` to get a 3 by 3 stencil.
+
+Prefer to use this version over the older implementations.
+"""
+function stencil!(f::F, ::Type{BT}, ::Size{sz}, out, inp...) where {F, dim, sz, BT <: Boundary{dim}}
+    stencil_multi!(f, BT, Size(sz), out, inp)
+end
+
+function stencil_multi!(f::F, ::Type{BT}, ::Size{sz}, out, inp) where {F, dim, sz, BT <: Boundary{dim}}
+    @assert(
+        all(size(a) == size(out) for a in inp),
+        "inputs have wrong shape: $([size(a) for a in inp]), should be $(size(out))")
+
+    center = CartesianIndex((div.(sz, 2) .+ 1)...)
+    for i in eachindex(IndexCartesian(), out)
+        nb = (SArray{Tuple{sz...}}(
+                offset_value(BT, a, i, j - center)
+                for j in CartesianIndices(sz))
+              for a in inp)
+        out[i] = f(nb...)
+    end
+    return out
+end
+
+
 function stencil(::Type{TIn}, ::Type{TOut}, ::Type{BT}, n::NTuple{dim,Int}, f::Function) where {TIn, TOut, dim, BT <: Boundary{dim}}
     m = n .÷ 2
     stencil_shape = range.(.-m, m)

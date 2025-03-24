@@ -239,7 +239,7 @@ end
 
 With only wave induced advection enabled, we should see a clear translation of the picture of the kitten. The additional diffusion is so called *false diffusion*, a numerical artifact of the upwind differencing scheme.
 
-[Flying Cat](fig/flying_cat.png)
+![Flying Cat](fig/flying_cat.png)
 
 ``` {.julia .task file=examples/transport/flying_cat.jl}
 #| creates: docs/src/_fig/flying_cat.png

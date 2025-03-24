@@ -44,7 +44,7 @@ function step!(input::Input)
         transport!(state, active_layer)
 
         push_sediment!(state.sediment_buffer, active_layer ./ input.depositional_resolution .|> NoUnits)
-        state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
+        state.sediment_height .+= sum(active_layer; dims=1)[1,:,:]
         state.step += 1
 
         return H5Writer.DataFrame(

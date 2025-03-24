@@ -414,6 +414,7 @@ export disintegrator, transporter
 
 using ..Common
 using CarboKitten.Transport.Advection: transport
+using CarboKitten.Transport.Solvers: runge_kutta_4
 using Unitful
 
 @kwdef struct Facies <: AbstractFacies
@@ -457,7 +458,7 @@ transporting the active layer, returning a transported `Amount` of sediment.
 """
 function transporter(input)
     solver = if input.transport_solver === nothing
-        runge_kutta_4(input.box)
+        runge_kutta_4(typeof(1.0u"m"), input.box)
     else
         input.transport_solver
     end
@@ -476,8 +477,8 @@ function transporter(input)
                 solver(
                     (C, _) -> transport(
                         input.box, f.diffusion_coefficient, f.wave_velocity,
-                        view(active_layer, i, :, :), wd),
-                    C, state.time, Δt)
+                        C, wd),
+                    view(C, i, :, :), TimeIntegration.time(input, state), Δt)
             end
         end
     end

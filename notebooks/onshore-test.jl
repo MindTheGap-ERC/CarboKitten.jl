@@ -330,9 +330,6 @@ summary_plot("ot-test2.h5")
 summary_plot("ot-test.h5")
   ╠═╡ =#
 
-# ╔═╡ d77eb785-61f8-43ad-a066-3242f1089cfe
-
-
 # ╔═╡ c8ef0c9b-7600-4363-99a2-2fa8ab3353d4
 md"""
 ## Translation
@@ -392,7 +389,6 @@ plot_erosion(Translation.INPUT)
 # ╠═5a2134a0-dc90-4c9c-b83d-4a5171bdb4e7
 # ╠═8d5725d6-456b-4637-9e35-df2b4fa1f5ed
 # ╠═ed0e7604-c18f-413d-8386-26d2ec637168
-# ╠═d77eb785-61f8-43ad-a066-3242f1089cfe
 # ╠═ccb90573-368d-496d-9e3e-ddc135514ca1
 # ╠═f5aba037-80e1-4c93-b5d0-67f7f4592e6e
 # ╟─c8ef0c9b-7600-4363-99a2-2fa8ab3353d4

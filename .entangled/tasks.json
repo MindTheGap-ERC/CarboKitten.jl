@@ -97,6 +97,60 @@
     {
       "description": null,
       "creates": [
+        "docs/src/_fig/eca.png"
+      ],
+      "requires": [
+        "src/Stencil.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/ca/eca.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/life.gif"
+      ],
+      "requires": [
+        "src/Stencil.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": null,
+      "path": "examples/ca/life.jl"
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/boundary_types.png"
+      ],
+      "requires": [
+        "src/Stencil.jl"
+      ],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": "#| creates: docs/src/_fig/boundary_types.png\n#| requires: src/Stencil.jl\n#| collect: figures\n\nmodule Script\n\nusing CarboKitten.BoundaryTrait\nusing CarboKitten.Stencil\nusing CairoMakie\n\nfunction plot_boundary_types()\n    n = 16\n    y0 = zeros(Float64, n, n)\n    y0[1, 1] = 1\n    y0[n, n] = 2\n    x = collect(-2:0.25:2)\n    k = exp.(-(x.^2 .+ x'.^2))\n    k ./= sum(k)\n\n    y_periodic = Array{Float64}(undef, n, n)\n    convolution(Periodic{2}, k)(y0, y_periodic)\n    y_reflected = Array{Float64}(undef, n, n)\n    convolution(Reflected{2}, k)(y0, y_reflected)\n    y_constant = Array{Float64}(undef, n, n)\n    convolution(Constant{2, 0.1}, k)(y0, y_constant)\n\n    fig = Figure(size=(900, 300))\n    for (i, y) in enumerate([y_periodic, y_reflected, y_constant])\n        ax = Axis(fig[1,i]; aspect=1)\n        heatmap!(ax, y; colormap=:viridis)\n    end\n    save(\"docs/src/_fig/boundary_types.png\", fig)\nend\nend \n\nScript.plot_boundary_types()",
+      "path": null
+    },
+    {
+      "description": null,
+      "creates": [
+        "docs/src/_fig/wave-transport-magnitude.svg"
+      ],
+      "requires": [],
+      "runner": "julia",
+      "stdout": null,
+      "stdin": null,
+      "script": "#| creates: docs/src/_fig/wave-transport-magnitude.svg\n#| collect: figures\nmodule PlotWaveTransportMagnitude\nusing CairoMakie\nusing Unitful\n\nv_prof(v_max, max_depth, w) = \n  \tlet k = sqrt(0.5) / max_depth,\n\t\t    A = 3.331 * v_max,\n\t\t    \u03b1 = tanh(k * w),\n\t\t    \u03b2 = exp(-k * w)\n\t\t    (A * \u03b1 * \u03b2, -A * k * \u03b2 * (1 - \u03b1 - \u03b1^2))\n\t  end\n\nfunction main()\n  w = LinRange(0, 100.0, 1000)u\"m\"\n\tf = v_prof.(10.0u\"m/yr\", 20.0u\"m\", w)\n\n\tv = first.(f)\n\ts = last.(f)\n\t\n\tfig = Figure()\n\tax1 = Axis(fig[1, 1], title=\"transport velocity\", yreversed=true, xlabel=\"velocity [m/yr]\", ylabel=\"depth [m]\")\n\tax2 = Axis(fig[1, 2], title=\"transport shear\", yreversed=true, xlabel=\"shear [1/yr]\", ylabel=\"depth [m]\")\n\tlines!(ax1, v / u\"m/yr\", w / u\"m\")\n\tlines!(ax2, s / u\"1/yr\", w / u\"m\")\n\tsave(\"docs/src/_fig/wave-transport-magnitude.svg\", fig)\nend\n\nend\n\nPlotWaveTransportMagnitude.main()",
+      "path": null
+    },
+    {
+      "description": null,
+      "creates": [
         "docs/src/_fig/wheeler_diagram.png"
       ],
       "requires": [
@@ -209,48 +263,6 @@
     {
       "description": null,
       "creates": [
-        "docs/src/_fig/eca.png"
-      ],
-      "requires": [
-        "src/Stencil.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/ca/eca.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/life.gif"
-      ],
-      "requires": [
-        "src/Stencil.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": null,
-      "path": "examples/ca/life.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/boundary_types.png"
-      ],
-      "requires": [
-        "src/Stencil.jl"
-      ],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": "#| creates: docs/src/_fig/boundary_types.png\n#| requires: src/Stencil.jl\n#| collect: figures\n\nmodule Script\n\nusing CarboKitten.BoundaryTrait\nusing CarboKitten.Stencil\nusing CairoMakie\n\nfunction plot_boundary_types()\n    n = 16\n    y0 = zeros(Float64, n, n)\n    y0[1, 1] = 1\n    y0[n, n] = 2\n    x = collect(-2:0.25:2)\n    k = exp.(-(x.^2 .+ x'.^2))\n    k ./= sum(k)\n\n    y_periodic = Array{Float64}(undef, n, n)\n    convolution(Periodic{2}, k)(y0, y_periodic)\n    y_reflected = Array{Float64}(undef, n, n)\n    convolution(Reflected{2}, k)(y0, y_reflected)\n    y_constant = Array{Float64}(undef, n, n)\n    convolution(Constant{2, 0.1}, k)(y0, y_constant)\n\n    fig = Figure(size=(900, 300))\n    for (i, y) in enumerate([y_periodic, y_reflected, y_constant])\n        ax = Axis(fig[1,i]; aspect=1)\n        heatmap!(ax, y; colormap=:viridis)\n    end\n    save(\"docs/src/_fig/boundary_types.png\", fig)\nend\nend \n\nScript.plot_boundary_types()",
-      "path": null
-    },
-    {
-      "description": null,
-      "creates": [
         "docs/src/_fig/flying_cat.png"
       ],
       "requires": [],
@@ -271,18 +283,6 @@
       "stdin": null,
       "script": null,
       "path": "examples/transport/exploding_kitten.jl"
-    },
-    {
-      "description": null,
-      "creates": [
-        "docs/src/_fig/wave-transport-magnitude.svg"
-      ],
-      "requires": [],
-      "runner": "julia",
-      "stdout": null,
-      "stdin": null,
-      "script": "#| creates: docs/src/_fig/wave-transport-magnitude.svg\n#| collect: figures\nmodule PlotWaveTransportMagnitude\nusing CairoMakie\nusing Unitful\n\nv_prof(v_max, max_depth, w) = \n  \tlet k = sqrt(0.5) / max_depth,\n\t\t    A = 3.331 * v_max,\n\t\t    \u03b1 = tanh(k * w),\n\t\t    \u03b2 = exp(-k * w)\n\t\t    (A * \u03b1 * \u03b2, -A * k * \u03b2 * (1 - \u03b1 - \u03b1^2))\n\t  end\n\nfunction main()\n  w = LinRange(0, 100.0, 1000)u\"m\"\n\tf = v_prof.(10.0u\"m/yr\", 20.0u\"m\", w)\n\n\tv = first.(f)\n\ts = last.(f)\n\t\n\tfig = Figure()\n\tax1 = Axis(fig[1, 1], title=\"transport velocity\", yreversed=true, xlabel=\"velocity [m/yr]\", ylabel=\"depth [m]\")\n\tax2 = Axis(fig[1, 2], title=\"transport shear\", yreversed=true, xlabel=\"shear [1/yr]\", ylabel=\"depth [m]\")\n\tlines!(ax1, v / u\"m/yr\", w / u\"m\")\n\tlines!(ax2, s / u\"1/yr\", w / u\"m\")\n\tsave(\"docs/src/_fig/wave-transport-magnitude.svg\", fig)\nend\n\nend\n\nPlotWaveTransportMagnitude.main()",
-      "path": null
     },
     {
       "description": null,
@@ -361,6 +361,10 @@
         "docs/src/_fig/bs92-summary.png",
         "docs/src/_fig/bs92-multi-facies.png",
         "docs/src/_fig/cap1-summary.png",
+        "docs/src/_fig/eca.png",
+        "docs/src/_fig/life.gif",
+        "docs/src/_fig/boundary_types.png",
+        "docs/src/_fig/wave-transport-magnitude.svg",
         "docs/src/_fig/wheeler_diagram.png",
         "docs/src/_fig/production_curve.svg",
         "docs/src/_fig/sediment_profile.png",
@@ -368,12 +372,8 @@
         "docs/src/_fig/active-layer-production-patch.png",
         "docs/src/_fig/active-layer-test.png",
         "docs/src/_fig/alcaps-alternative.png",
-        "docs/src/_fig/eca.png",
-        "docs/src/_fig/life.gif",
-        "docs/src/_fig/boundary_types.png",
         "docs/src/_fig/flying_cat.png",
         "docs/src/_fig/exploding_kitten.png",
-        "docs/src/_fig/wave-transport-magnitude.svg",
         "docs/src/_fig/ca-long-term.svg",
         "docs/src/_fig/KHTemp.png",
         "docs/src/_fig/Equilibrium_Concs.png",

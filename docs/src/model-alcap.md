@@ -43,7 +43,7 @@ const INPUT = ALCAP.Input(
     box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TimeProperties(
         Δt=0.0002u"Myr",
-        steps=5000,
+        steps=1000,
         write_interval=1),
     ca_interval=1,
     initial_topography=(x, y) -> -x / 300.0,
@@ -172,7 +172,7 @@ function step!(input::Input)
         transport!(state, active_layer)
 
         push_sediment!(state.sediment_buffer, active_layer ./ input.depositional_resolution .|> NoUnits)
-        state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
+        state.sediment_height .+= sum(active_layer; dims=1)[1,:,:]
         state.step += 1
 
         return H5Writer.DataFrame(

@@ -11,7 +11,10 @@
         output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
 
         w = water_depth(input)
-        p(f, w) = production_rate(input.insolation, input.facies[f], w) .* input.time.Δt
+        insolation = input.insolation
+        facies = input.facies
+        dt = input.time.Δt
+        p(f, w) = production_rate(insolation, facies[f], w) .* dt
 
         return function(state::AbstractState)
             for f = 1:n_facies(input)

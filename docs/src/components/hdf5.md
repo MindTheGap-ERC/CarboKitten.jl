@@ -64,9 +64,12 @@ We write output to HDF5.
     end
 
     function write_frame(fid, idx::Int, frame::DataFrame)
-        fid["production"][:, :, :, idx] = frame.production |> in_units_of(u"m")
-        fid["disintegration"][:, :, :, idx] = frame.disintegration |> in_units_of(u"m")
-        fid["deposition"][:, :, :, idx] = frame.deposition |> in_units_of(u"m")
+        try_write(tgt, ::Nothing) = ()
+        try_write(tgt, src::AbstractArray) = tgt[:, :, :, idx] = (src |> in_units_of(u"m"))
+
+        try_write(fid["production"],  frame.production)
+        try_write(fid["disintegration"], frame.disintegration)
+        try_write(fid["deposition"], frame.deposition)
     end
 
     """

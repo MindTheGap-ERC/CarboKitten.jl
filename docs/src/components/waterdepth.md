@@ -43,11 +43,13 @@ end
 function water_depth(input::AbstractInput)
     x, y = box_axes(input.box)
     eta0 = input.initial_topography.(x, y')
+    sea_level = input.sea_level
+    subsidence_rate = input.subsidence_rate
 
     return function (state::AbstractState)
         t = TimeIntegration.time(input, state)
-        return input.sea_level(t) .- eta0 .+
-               (input.subsidence_rate * t) .- state.sediment_height
+        return sea_level(t) .- eta0 .+
+               (subsidence_rate * t) .- state.sediment_height
     end
 end
 

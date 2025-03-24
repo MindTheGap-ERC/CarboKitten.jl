@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Cellular Automata · CarboKitten</title><meta name="title" content="Cellular Automata · CarboKitten"/><meta property="og:title" content="Cellular Automata · CarboKitten"/><meta property="twitter:title" content="Cellular Automata · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../model-alcap/">ALCAPS</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/">Components</a></li><li><a class="tocitem" href="../tag/">Tags</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../time/">Time</a></li><li><a class="tocitem" href="../facies/">Facies</a></li><li class="is-active"><a class="tocitem" href>Cellular Automata</a></li><li><a class="tocitem" href="../waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../production/">Production</a></li><li><a class="tocitem" href="../hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li></ul></li><li><a class="tocitem" href="../../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../../carbocat/">Summary</a></li><li><a class="tocitem" href="../../carbocat-ca/">Cellular Automaton</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Output</span><ul><li><a class="tocitem" href="../../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Model Components</a></li><li class="is-active"><a href>Cellular Automata</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Cellular Automata</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/components/cellular-automata.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Cellular-Automata"><a class="docs-heading-anchor" href="#Cellular-Automata">Cellular Automata</a><a id="Cellular-Automata-1"></a><a class="docs-heading-anchor-permalink" href="#Cellular-Automata" title="Permalink"></a></h1><div class="component-dag" style="overflow: scroll"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Cellular Automata · CarboKitten</title><meta name="title" content="Cellular Automata · CarboKitten"/><meta property="og:title" content="Cellular Automata · CarboKitten"/><meta property="twitter:title" content="Cellular Automata · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../model-alcap/">ALCAPS</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/">Components</a></li><li><a class="tocitem" href="../tag/">Tags</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../time/">Time</a></li><li><a class="tocitem" href="../facies/">Facies</a></li><li class="is-active"><a class="tocitem" href>Cellular Automata</a><ul class="internal"><li><a class="tocitem" href="#Plot"><span>Plot</span></a></li><li><a class="tocitem" href="#Tests"><span>Tests</span></a></li><li><a class="tocitem" href="#Component"><span>Component</span></a></li></ul></li><li><a class="tocitem" href="../waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../production/">Production</a></li><li><a class="tocitem" href="../hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><a class="tocitem" href="../../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Output</span><ul><li><a class="tocitem" href="../../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Model Components</a></li><li class="is-active"><a href>Cellular Automata</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Cellular Automata</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/components/cellular-automata.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Cellular-Automata"><a class="docs-heading-anchor" href="#Cellular-Automata">Cellular Automata</a><a id="Cellular-Automata-1"></a><a class="docs-heading-anchor-permalink" href="#Cellular-Automata" title="Permalink"></a></h1><div class="component-dag" style="overflow: scroll"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Generated by graphviz version 2.50.0 (20211204.2007)
@@ -91,7 +91,105 @@
 </g>
 </g>
 </svg>
-</div><div class="noweb-label">file:<i>test/Components/CellularAutomatonSpec.jl</i></div><pre><code class="language- julia hljs">module CellularAutomatonSpec
+</div><p>This component implements the cellular automaton as described by [<a href="../../references/#Burgess2013">3</a>]. </p><p>We depend on the box properties being defined. Each <code>Facies</code> should have a <code>viability_range</code> and <code>activation_range</code> defined. Two other parameters are the <code>ca_interval</code> setting how many time steps between every CA advancement, and the <code>ca_random_seed</code> setting the random seed for generating the initial noise.</p><div class="noweb-label">⪡ca-input⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Facies &lt;: AbstractFacies
+    viability_range::Tuple{Int,Int} = (4, 10)
+    activation_range::Tuple{Int,Int} = (6, 10)
+end
+
+@kwdef struct Input &lt;: AbstractInput
+    ca_interval::Int      = 1
+    ca_random_seed::Int   = 0
+end</code></pre><p>The state of the CA is stored in <code>ca</code> and <code>ca_priority</code>.</p><div class="noweb-label">⪡ca-state⪢≣</div><pre><code class="language- julia hljs">@kwdef mutable struct State &lt;: AbstractState
+    ca::Matrix{Int}
+    ca_priority::Vector{Int}
+end</code></pre><p>The <code>rules</code> function computes the next value of a cell, given the configured vector of facies, the current facies priority order, and a neighbourhood around the cell.</p><div class="noweb-label">⪡ca-step⪢≣</div><pre><code class="language- julia hljs">function rules(facies, ca_priority, neighbourhood)
+    cell_facies = neighbourhood[3, 3]
+    neighbour_count(f) = sum(neighbourhood .== f)
+    if cell_facies == 0
+        for f in ca_priority
+            n = neighbour_count(f)
+            (a, b) = facies[f].activation_range
+            if a &lt;= n &amp;&amp; n &lt;= b
+                return f
+            end
+        end
+        0
+    else
+        n = neighbour_count(cell_facies) - 1
+        (a, b) = facies[cell_facies].viability_range
+        (a &lt;= n &amp;&amp; n &lt;= b ? cell_facies : 0)
+    end
+end</code></pre><p>The paper talks about cycling the order of preference for occupying an empty cell at each iteration. This means that the rules change slightly every iteration. We need this extra function so that we know the boundary type <code>BT</code> at compile time.</p><div class="noweb-label">⪡ca-step⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
+    step_ca(box, facies)
+
+Creates a propagator for the state, updating the celullar automaton in place.
+
+Contract: the `state` should have `ca::Matrix{Int}` and `ca_priority::Vector{Int}`
+members.
+&quot;&quot;&quot;
+function step_ca(box::Box{BT}, facies) where {BT&lt;:Boundary{2}}
+    tmp = Matrix{Int}(undef, box.grid_size)
+    facies_ = facies
+
+    function (state)
+        stencil!(BT, Size(5, 5), tmp, state.ca) do nb
+            rules(facies_, state.ca_priority, nb)
+        end
+        state.ca, tmp = tmp, state.ca
+        state.ca_priority = circshift(state.ca_priority, 1)
+        return state
+    end
+end</code></pre><h2 id="Plot"><a class="docs-heading-anchor" href="#Plot">Plot</a><a id="Plot-1"></a><a class="docs-heading-anchor-permalink" href="#Plot" title="Permalink"></a></h2><div class="noweb-label">file:<i>examples/ca/burgess-2013.jl</i></div><pre><code class="language- julia hljs">#| creates: [&quot;docs/src/_fig/ca-long-term.svg&quot;]
+#| collect: figures
+module Script
+using CarboKitten
+using CarboKitten.Components: CellularAutomaton as CA
+using CairoMakie
+
+function main()
+  input = CA.Input(
+      box = CarboKitten.Box{Periodic{2}}(
+        grid_size=(50, 50), phys_scale=1.0u&quot;m&quot;),
+      facies = fill(CA.Facies(), 3)
+  )
+
+  state = CA.initial_state(input)
+  step! = CA.step!(input)
+
+  for _ in 1:1000
+    step!(state)
+  end
+
+  fig = Figure(size=(1000, 500))
+  axes_indices = Iterators.flatten(eachrow(CartesianIndices((2, 4))))
+  xaxis, yaxis = box_axes(input.box)
+  i = 1000
+  for row in 1:2
+    for col in 1:4
+      ax = Axis(fig[row, col], aspect=AxisAspect(1), title=&quot;step $(i)&quot;)
+
+      if row == 2
+        ax.xlabel = &quot;x [m]&quot;
+      end
+      if col == 1
+        ax.ylabel = &quot;y [m]&quot;
+      end
+
+      heatmap!(ax, xaxis/u&quot;m&quot;, yaxis/u&quot;m&quot;, state.ca)
+      step!(state)
+      i += 1
+    end
+    for _ in 1:996
+      step!(state)
+      i += 1
+    end
+  end
+  save(&quot;docs/src/_fig/ca-long-term.svg&quot;, fig)
+end
+
+end
+
+Script.main()</code></pre><p><img src="../../fig/ca-long-term.svg" alt="CA"/></p><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><div class="noweb-label">file:<i>test/Components/CellularAutomatonSpec.jl</i></div><pre><code class="language- julia hljs">module CellularAutomatonSpec
 
 using Test
 using CarboKitten.Components.Common
@@ -126,26 +224,15 @@ using CarboKitten.Components: CellularAutomaton as CA
     end
 end
 
-end</code></pre><div class="noweb-label">file:<i>src/Components/CellularAutomaton.jl</i></div><pre><code class="language- julia hljs">@compose module CellularAutomaton
+end</code></pre><h2 id="Component"><a class="docs-heading-anchor" href="#Component">Component</a><a id="Component-1"></a><a class="docs-heading-anchor-permalink" href="#Component" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Components/CellularAutomaton.jl</i></div><pre><code class="language- julia hljs">@compose module CellularAutomaton
     @mixin Boxes, FaciesBase
     using ..Common
+    using ...Stencil: stencil!
     using Random
-    using ...Burgess2013.CA: step_ca
 
-    @kwdef struct Facies &lt;: AbstractFacies
-        viability_range::Tuple{Int,Int} = (4, 10)
-        activation_range::Tuple{Int,Int} = (6, 10)
-    end
-
-    @kwdef struct Input &lt;: AbstractInput
-        ca_interval::Int      = 1
-        ca_random_seed::Int   = 0
-    end
-
-    @kwdef mutable struct State &lt;: AbstractState
-        ca::Matrix{Int}
-        ca_priority::Vector{Int}
-    end
+    &lt;&lt;ca-input&gt;&gt;
+    &lt;&lt;ca-state&gt;&gt;
+    &lt;&lt;ca-step&gt;&gt;
 
     function initial_state(input::AbstractInput)
         n_facies = length(input.facies)
@@ -161,4 +248,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../facies/">« Facies</a><a class="docs-footer-nextpage" href="../waterdepth/">Water Depth »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Monday 10 March 2025 14:49">Monday 10 March 2025</span>. Using Julia version 1.10.8.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../facies/">« Facies</a><a class="docs-footer-nextpage" href="../waterdepth/">Water Depth »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.1 on <span class="colophon-date" title="Monday 24 March 2025 10:07">Monday 24 March 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -125,8 +125,45 @@ end
 
 end
 
-# ╔═╡ 38060f13-bf99-4f4a-9b73-1e28d77e8656
+# ╔═╡ ccb90573-368d-496d-9e3e-ddc135514ca1
 module Erosion
+
+using CarboKitten
+using ..TransportTest
+
+function initial_sediment(x, y)
+  if x < 5.0u"km"
+    return 30.0u"m"
+  end
+
+  if x > 10.0u"km" && x < 11.0u"km"
+    return 20.0u"m"
+  end
+
+  return 5.0u"m"
+end
+
+v_const(v_max) = _ -> ((v_max, 0.0u"m/yr"), (0.0u"1/yr", 0.0u"1/yr"))
+
+const INPUT = TransportTest.Input(
+    box                   = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
+    Δt                    = 0.001u"Myr",
+    t_end                 = 1.0u"Myr",
+
+    initial_topography     = (x, y) -> -30.0u"m",
+    initial_sediment      = initial_sediment,
+    production            = (x, y) -> 0.0u"m/Myr",
+
+    disintegration_rate   = 50.0u"m/Myr",
+    subsidence_rate       = 50.0u"m/Myr",
+    diffusivity           = 10.0u"m/yr",
+
+	wave_transport        = v_const(0.0u"m/Myr"))
+
+end
+
+# ╔═╡ 38060f13-bf99-4f4a-9b73-1e28d77e8656
+module Translation
 
 using Unitful
 using ..TransportTest: Input
@@ -167,9 +204,9 @@ const INPUT = Input(
     initial_sediment      = gaussian_initial_sediment,
     production            = (x, y) -> 0.0u"m/Myr",
 
-    disintegration_rate   = 5000.0u"m/Myr",
+    disintegration_rate   = 50000.0u"m/Myr",
     subsidence_rate       = 50.0u"m/Myr",
-    diffusivity           = 0.0u"m/yr",
+    diffusivity           = 0.0u"km/Myr",
 	wave_transport        = v_const(-0.005u"m/yr"),
 	transport_substeps    = 10
 		# w -> let (v, s) = v_prof(-5u"m/yr", 20.0u"m", w)
@@ -298,17 +335,17 @@ summary_plot("ot-test.h5")
 
 # ╔═╡ c8ef0c9b-7600-4363-99a2-2fa8ab3353d4
 md"""
-## Erosion
+## Translation
 """
 
 # ╔═╡ 91c5858e-e975-4bcd-b157-010f884a1eac
 150.0u"m"/0.0001u"Myr" |> u"m/yr"
 
 # ╔═╡ bc4c03ef-5d53-4a99-8aca-b5cfef07ecea
-function plot_erosion(input)
+function plot_erosion(input, every=40)
 	y_idx = 1
 	result = Iterators.map(deepcopy,
-		Iterators.filter(x -> mod(x[1]-1, 40) == 0, 
+		Iterators.filter(x -> mod(x[1]-1, every) == 0, 
 		enumerate(TransportTest.run_model(input)))) |> collect
 
 	(x, y) = box_axes(input.box)
@@ -324,8 +361,11 @@ function plot_erosion(input)
 	fig
 end
 
-# ╔═╡ bb6c2022-b668-4733-8799-cbe7c8f98231
+# ╔═╡ f5aba037-80e1-4c93-b5d0-67f7f4592e6e
 plot_erosion(Erosion.INPUT)
+
+# ╔═╡ bb6c2022-b668-4733-8799-cbe7c8f98231
+plot_erosion(Translation.INPUT)
 
 # ╔═╡ b121fa61-c014-4ee0-9db0-b8a0a238b9dd
 
@@ -353,6 +393,8 @@ plot_erosion(Erosion.INPUT)
 # ╠═8d5725d6-456b-4637-9e35-df2b4fa1f5ed
 # ╠═ed0e7604-c18f-413d-8386-26d2ec637168
 # ╠═d77eb785-61f8-43ad-a066-3242f1089cfe
+# ╠═ccb90573-368d-496d-9e3e-ddc135514ca1
+# ╠═f5aba037-80e1-4c93-b5d0-67f7f4592e6e
 # ╟─c8ef0c9b-7600-4363-99a2-2fa8ab3353d4
 # ╠═38060f13-bf99-4f4a-9b73-1e28d77e8656
 # ╠═91c5858e-e975-4bcd-b157-010f884a1eac

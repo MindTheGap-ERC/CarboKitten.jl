@@ -10,11 +10,11 @@ include("Unitful.jl")
 
 @testset "CarboKitten" begin
     include("UtilitySpec.jl")
-    include("CASpec.jl")
+    include("StencilSpec.jl")
     include("DenudationSpec.jl")
     include("SedimentStackSpec.jl")
 
-    include("Components/TimeIntegrationSpec.jl")
+    include("Components/CellularAutomatonSpec.jl")
     include("Components/FaciesBaseSpec.jl")
     include("Components/TimeIntegrationSpec.jl")
     include("Components/BoxesSpec.jl")

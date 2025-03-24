@@ -2,7 +2,8 @@
 module Components
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
-    CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer, Denudation
+       CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
+       ActiveLayerOnshore, Denudation
 
 using ModuleMixins: @compose
 
@@ -18,6 +19,7 @@ include("Components/CAProduction.jl")
 
 include("Components/SedimentBuffer.jl")
 include("Components/ActiveLayer.jl")
+include("Components/ActiveLayerOnshore.jl")
 include("Components/Denudation.jl")
 
 include("Components/H5Writer.jl")

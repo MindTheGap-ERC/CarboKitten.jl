@@ -457,8 +457,10 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     c = reshape(colormax(data)[:, :], length(x) * (length(t) - 1))
     mesh!(ax, v, f, color=vcat(c, c), alpha=1.0, colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
-    verts = [(x[pt[1]], ξ[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
-    linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
+    if !isempty(hiatus[1])
+        verts = [(x[pt[1]], ξ[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
+        linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
+    end
 end
 
 function sediment_profile(header::Header, data_slice::DataSlice)
@@ -543,9 +545,9 @@ Returns a tuple of `vertices` and `edges`, where `vertices` is a vector of 2-tup
 """
 function skeleton(bitmap::AbstractMatrix{Bool}; minwidth=10)
     vertex_rows = (filter(r->length(r)>=minwidth, find_ranges(row)) for row in eachrow(bitmap))
-    edges = flatten(map(splat(edges_between), pairs(enumerate_seq(vertex_rows))))
-    vertices = flatten(((i, middle(v)) for v in vs) for (i, vs) in enumerate(vertex_rows))
-    return collect(vertices), reshape(reinterpret(Int, collect(edges)), (2,:))'
+    edges::Vector{Tuple{Int,Int}} = collect(flatten(map(splat(edges_between), pairs(enumerate_seq(vertex_rows)))))
+    vertices::Vector{Tuple{Float64,Float64}} = collect(flatten(((i, middle(v)) for v in vs) for (i, vs) in enumerate(vertex_rows)))
+    return vertices, reshape(reinterpret(Int, edges), (2,:))'
 end
 
 end

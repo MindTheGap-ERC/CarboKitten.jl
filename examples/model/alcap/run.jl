@@ -46,7 +46,7 @@ const INPUT = ALCAP.Input(
     box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TimeProperties(
         Δt=0.0002u"Myr",
-        steps=500,
+        steps=5000,
         write_interval=1),
     ca_interval=1,
     initial_topography=(x, y) -> -x / 300.0,

@@ -43,7 +43,7 @@ const INPUT = ALCAP.Input(
     box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TimeProperties(
         Δt=0.0002u"Myr",
-        steps=500,
+        steps=1000,
         write_interval=1),
     ca_interval=1,
     initial_topography=(x, y) -> -x / 300.0,
@@ -53,7 +53,6 @@ const INPUT = ALCAP.Input(
     insolation=400.0u"W/m^2",
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",
-    transport_solver=forward_euler,
     facies=FACIES)
 ```
 

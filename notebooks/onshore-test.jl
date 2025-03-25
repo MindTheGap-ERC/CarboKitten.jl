@@ -81,14 +81,17 @@ function propagator(input)
     d = input.diffusivity
 	v = input.wave_transport
 	σ = input.subsidence_rate
+	max_amount = disintegration_rate * Δt
+
+	@info "disintegration per time step: $max_amount"
+	
 	solver = if input.transport_solver === nothing
 		runge_kutta_4(Amount, box)
 	else
 		input.transport_solver
 	end
-
-    function active_layer(state)
-        max_amount = disintegration_rate * Δt
+	
+    function active_layer(state)    
         amount = min.(max_amount, state.sediment)
         state.sediment .-= amount
 
@@ -97,6 +100,7 @@ function propagator(input)
 
     function (state)
         p = active_layer(state)
+		# @info "production between $(minimum(p)) - $(maximum(p))"
 		water_depth = (σ * state.time) .- (μ0 .+ state.sediment)
 
 		for j in 1:input.transport_substeps
@@ -105,7 +109,7 @@ function propagator(input)
 				p, state.time, Δt / input.transport_substeps)
         end
 
-        return Frame(state.time, p)
+        return Frame(state.time, ifelse.(p .< 0.0u"m", 0.0u"m", p))
     end
 end
 
@@ -216,8 +220,80 @@ const INPUT = Input(
 
 end
 
+# ╔═╡ 8b71a88e-5e92-47f2-988a-3ee74ef53631
+using Printf
+
 # ╔═╡ cac22975-0fa6-4bba-9d2e-7274f18c9799
 using ProfileCanvas
+
+# ╔═╡ 4906149e-26b4-41f8-b61e-deede84a678f
+module WithShear
+
+using Unitful
+using ..TransportTest: Input
+using CarboKitten: Box, Coast
+
+function initial_sediment(x, y)
+  if x < 5.0u"km"
+    return 30.0u"m"
+  end
+
+  if x > 10.0u"km" && x < 11.0u"km"
+    return 20.0u"m"
+  end
+
+  return 5.0u"m"
+end
+
+function gaussian_initial_sediment(x, y)
+	exp(-(x-10u"km")^2 / (2 * (0.5u"km")^2)) * 30.0u"m"
+end
+
+v_prof(v_max, max_depth, w) = 
+	let k = sqrt(0.5) / max_depth,
+		A = 3.331 * v_max,
+		α = tanh(k * w),
+		β = exp(-k * w)
+		(A * α * β, -A * k * β * (1 - α - α^2))
+	end
+
+v_const(v_max) = _ -> ((v_max, 0.0u"m/yr"), (0.0u"1/yr", 0.0u"1/yr"))
+
+const INPUT_flat = Input(
+	box                   = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
+    Δt                    = 0.001u"Myr",
+    t_end                 = 1.0u"Myr",
+
+    initial_topography     = (x, y) -> -x / 300.0,
+    initial_sediment      = gaussian_initial_sediment,
+    production            = (x, y) -> 0.0u"m/Myr",
+
+    disintegration_rate   = 50.0u"m/Myr",
+    subsidence_rate       = 0.0u"m/Myr",
+    diffusivity           = 5.0u"m/yr",
+	wave_transport 		  = v_const(-0.1u"m/yr"),
+	transport_substeps    = 10
+)
+
+const INPUT_shear = Input(
+	box                   = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
+    Δt                    = 0.001u"Myr",
+    t_end                 = 1.0u"Myr",
+
+    initial_topography     = (x, y) -> -x / 300.0,
+    initial_sediment      = gaussian_initial_sediment,
+    production            = (x, y) -> 0.0u"m/Myr",
+
+    disintegration_rate   = 50.0u"m/Myr",
+    subsidence_rate       = 0.0u"m/Myr",
+    diffusivity           = 5.0u"m/yr",
+	wave_transport        = w -> let (v, s) = v_prof(-0.4u"m/yr", 20.0u"m", w)
+			((v, 0.0u"m/yr"),  (s, 0.0u"1/yr"))
+		end,
+	transport_substeps    = 10
+)
+
+end
 
 # ╔═╡ e1df1edc-f84f-477e-8631-4856b028d48f
 box_axes
@@ -271,64 +347,8 @@ velocity = w -> let (v, s) = v_prof(2.0u"m/yr", 10.0u"m", w)
 	(Vec2(-v, 0.0u"m/yr"), Vec2(-s, 0.0u"1/yr"))
 end
 
-# ╔═╡ c56cf301-4127-464e-93ae-e5466c94d2fa
-facies = [
-    OT.Facies(
-        maximum_growth_rate=500u"m/Myr",
-        extinction_coefficient=0.8u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=50.0u"m/yr",
-		onshore_velocity=velocity),
-    OT.Facies(
-        maximum_growth_rate=400u"m/Myr",
-        extinction_coefficient=0.1u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=25.0u"m/yr",
-		onshore_velocity=velocity),
-    OT.Facies(
-        maximum_growth_rate=100u"m/Myr",
-        extinction_coefficient=0.005u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=12.5u"m/yr",
-		onshore_velocity=velocity)
-]
-
-# ╔═╡ c85bb265-2937-4c70-886b-06ecf8d195d1
-input = OT.Input(
-	tag = "ot-test-small",
-	box = CarboKitten.Box{Periodic{2}}((100, 100), 150.0u"m"),
-	time = TimeProperties(
-		Δt = 100.0u"yr",
-		steps = 5000,
-		write_interval = 1),
-	ca_interval = 10,
-	facies = facies,
-	sea_level = sea_level,
-	initial_topography = initial_topography,
-	subsidence_rate = 50.0u"m/Myr",
-	insolation = 400.0u"W/m^2",
-	sediment_buffer_size = 100,
-	depositional_resolution = 0.5u"m",
-	disintegration_rate = 0.1u"m/kyr"
-)
-
-# ╔═╡ 51c63f8c-e2bd-4605-83bd-3fbc367b1a3c
-# ╠═╡ disabled = true
-#=╠═╡
-run_model(Model{ALCAP}, input, "ot-test2.h5")
-  ╠═╡ =#
-
-# ╔═╡ 5a2134a0-dc90-4c9c-b83d-4a5171bdb4e7
-# ╠═╡ disabled = true
-#=╠═╡
-summary_plot("ot-test2.h5")
-  ╠═╡ =#
-
-# ╔═╡ 8d5725d6-456b-4637-9e35-df2b4fa1f5ed
-# ╠═╡ disabled = true
-#=╠═╡
-summary_plot("ot-test.h5")
-  ╠═╡ =#
+# ╔═╡ 2b77be87-4c38-4b1b-82d1-be610298de2a
+minimum(randn(10))
 
 # ╔═╡ c8ef0c9b-7600-4363-99a2-2fa8ab3353d4
 md"""
@@ -352,20 +372,33 @@ function plot_erosion(input, every=40)
 
 	for r in result
 		η = input.initial_topography.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
-		lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"))
+		lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"), label=@sprintf("%.3f Myr", ustrip(r[2].time)))
 	end
+
+	Legend(fig[1, 2], ax2)
 
 	fig
 end
 
 # ╔═╡ f5aba037-80e1-4c93-b5d0-67f7f4592e6e
-plot_erosion(Erosion.INPUT)
+plot_erosion(Erosion.INPUT, 100)
+
+# ╔═╡ 8cce1b9f-1081-4a01-948a-4af2a30703f5
+unit(3.0u"m")
 
 # ╔═╡ bb6c2022-b668-4733-8799-cbe7c8f98231
 plot_erosion(Translation.INPUT)
 
 # ╔═╡ b121fa61-c014-4ee0-9db0-b8a0a238b9dd
+md"""
+## With shear
+"""
 
+# ╔═╡ 03bddab5-7252-4c86-a225-ee1ccee0d0b0
+save("flat-profile.png", plot_erosion(WithShear.INPUT_flat, 100))
+
+# ╔═╡ 28974b43-f8f6-4184-b9b1-362353645b38
+plot_erosion(WithShear.INPUT_shear, 100)
 
 # ╔═╡ Cell order:
 # ╠═1bd14d3c-f480-11ef-1a4e-e170792388dd
@@ -383,18 +416,19 @@ plot_erosion(Translation.INPUT)
 # ╠═5b99875c-97f6-4fed-bb46-18bc88e10a73
 # ╠═4ffdeb5b-b0bc-4932-bcb6-a6d50179d812
 # ╠═9ea62335-b2d6-4389-ad26-0f88811f50d2
-# ╟─c56cf301-4127-464e-93ae-e5466c94d2fa
-# ╟─c85bb265-2937-4c70-886b-06ecf8d195d1
-# ╠═51c63f8c-e2bd-4605-83bd-3fbc367b1a3c
-# ╠═5a2134a0-dc90-4c9c-b83d-4a5171bdb4e7
-# ╠═8d5725d6-456b-4637-9e35-df2b4fa1f5ed
 # ╠═ed0e7604-c18f-413d-8386-26d2ec637168
+# ╠═2b77be87-4c38-4b1b-82d1-be610298de2a
 # ╠═ccb90573-368d-496d-9e3e-ddc135514ca1
 # ╠═f5aba037-80e1-4c93-b5d0-67f7f4592e6e
 # ╟─c8ef0c9b-7600-4363-99a2-2fa8ab3353d4
 # ╠═38060f13-bf99-4f4a-9b73-1e28d77e8656
 # ╠═91c5858e-e975-4bcd-b157-010f884a1eac
+# ╠═8b71a88e-5e92-47f2-988a-3ee74ef53631
 # ╠═bc4c03ef-5d53-4a99-8aca-b5cfef07ecea
+# ╠═8cce1b9f-1081-4a01-948a-4af2a30703f5
 # ╠═bb6c2022-b668-4733-8799-cbe7c8f98231
 # ╠═cac22975-0fa6-4bba-9d2e-7274f18c9799
 # ╠═b121fa61-c014-4ee0-9db0-b8a0a238b9dd
+# ╠═4906149e-26b4-41f8-b61e-deede84a678f
+# ╠═03bddab5-7252-4c86-a225-ee1ccee0d0b0
+# ╠═28974b43-f8f6-4184-b9b1-362353645b38

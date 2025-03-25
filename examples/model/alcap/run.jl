@@ -11,7 +11,7 @@ using CarboKitten.Export: data_export, CSV
 const PATH = "data/output"
 
 # ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]
-const TAG = "alcap-example-deposition_only"
+const TAG = "alcap-example"
 
 const FACIES = [
     ALCAP.Facies(
@@ -51,7 +51,7 @@ const INPUT = ALCAP.Input(
     initial_topography=(x, y) -> -x / 300.0,
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
     subsidence_rate=50.0u"m/Myr",
-    disintegration_rate=50.0u"m/Myr",
+    disintegration_rate=100.0u"m/Myr",
     insolation=400.0u"W/m^2",
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",

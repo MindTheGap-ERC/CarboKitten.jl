@@ -81,10 +81,6 @@ using Smoothers
 using GLMakie
 
 function main()
-    time = TimeProperties(
-        Δt=500u"yr",
-        steps=2000
-    )
 
     miller_df = miller_2020()
     sort!(miller_df, [:time])
@@ -121,37 +117,46 @@ The outcome looks like an AR(1) process:
 
 ![Sea-level modeled as Ornstein-Uhlenbeck process](fig/OU.png)
 
-```{julia file=examples/OU.jl}
-#| requires: examples/OU.jl
-#| creates: docs/src/_fig/OU.png
-#| collect: figures
-
-using DiffEqNoiseProcess
-using DifferentialEquations
+```@example
 using CarboKitten
 
 using Unitful
 using CarboKitten.Components
 using GLMakie
+using Random
 
 const TIME_PROPERTIES = TimeProperties(
 	Δt = 500u"yr",
 	steps = 2000
 )
 
+function generate_ar1(mean, n, drift, variance)
+"""
+Arguments
+- `mean`: Mean of the process
+- `length`: Length of the process (number of steps)
+- `drift`: Drift parameter
+- `variance`: Variance of the process 
+"""
+    ar1 = Vector{Float64}(undef, n)
+    ar1[1] = mean  # start with the mean for simplicity
+
+    for i in 2:n
+        ar1[i] = drift * ar1[i-1] + (1 - drift) * mean + randn() * sqrt(variance)
+    end
+
+    return ar1
+end
+
 function main()
+
 const θ = 0.4 # drift
 const μ = 2.0 # mean
 const σ = 20 # variance
 
-OU = OrnsteinUhlenbeckProcess(θ, μ, σ, 0.0, 0.0)
+OU = generate_ar1(μ, length(time_axis(TIME_PROPERTIES)), θ, σ)
 
-OU.dt = TIME_PROPERTIES.Δt / u"kyr" * 1000 |> NoUnits
-
-prob = NoiseProblem(OU, (0.0, TIME_PROPERTIES.steps * OU.dt))
-sol = solve(prob, dt=OU.dt)
-
-fig, ax = lines(time_axis(TIME_PROPERTIES) |> in_units_of(u"Myr"), collect(sol) .* u"m")
+fig, ax = lines(time_axis(TIME_PROPERTIES) |> in_units_of(u"Myr"), collect(OU) .* u"m")
     ax.xlabel = "time [Myr]"
 	ax.ylabel = "sea level [m]"
     save("docs/src/_fig/OU.png",fig)

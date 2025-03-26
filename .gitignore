@@ -14,7 +14,11 @@ docs/src/_fig/*.svg
 docs/src/_fig/*.gif
 
 .entangled/filedb.json
+.entangled/tasks.json
 
 scratch
 
 notebooks/*.h5
+notebooks/*.png
+notebooks/*.svg
+

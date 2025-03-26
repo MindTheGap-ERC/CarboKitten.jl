@@ -203,10 +203,12 @@ function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
 
     ax.ylabel = "time [Myr]"
     ax.xlabel = "position [km]"
+    xkm = header.axes.x |> in_units_of(u"km")
+    tmyr = header.axes.t |> in_units_of(u"Myr")
 
-    sa = heatmap!(ax, header.axes.x / u"km", header.axes.t / u"Myr", mag;
+    sa = heatmap!(ax, xkm, tmyr, mag;
         colormap=colormap, colorrange=range ./ u"m/Myr")
-    contour!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
+    contour!(ax, xkm, tmyr, wd;
         levels=[0], color=:red, linewidth=2, linestyle=:dash)
     return sa
 end
@@ -225,12 +227,14 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
     ax.ylabel = "time [Myr]"
     ax.xlabel = "position [km]"
 
-    ft = heatmap!(ax, header.axes.x / u"km", header.axes.t / u"Myr", dominant_facies;
+    xkm = header.axes.x |> in_units_of(u"km")
+    tmyr = header.axes.t |> in_units_of(u"Myr")
+    ft = heatmap!(ax, xkm, tmyr, dominant_facies;
         colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
         colorrange=(0.5, n_facies + 0.5))
-    contourf!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
+    contourf!(ax, xkm, tmyr, wd;
         levels=[0.0, 10000.0], colormap=Reverse(:grays))
-    contour!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
+    contour!(ax, xkm, tmyr, wd;
         levels=[0], color=:black, linewidth=2)
     return ft
 end
@@ -322,7 +326,7 @@ end
 
 function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")
     a = HDF5.attributes(g)
-    insolation = a["insolation"][] * u"W/m^2"
+    insolation = 400.0u"W/m^2"  # a["insolation"][] * u"W/m^2"
 
     ax.title = "production at $(sprint(show, insolation; context=:fancy_exponent=>true))"
     ax.xlabel = "production [m/Myr]"

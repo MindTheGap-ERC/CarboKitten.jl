@@ -133,7 +133,7 @@ const FACIES = [
         maximum_growth_rate=500u"m/Myr",
         extinction_coefficient=0.8u"m^-1",
         saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=25.0u"m/yr",
+        diffusion_coefficient=10.0u"m/yr",
 		wave_velocity=wave_velocity(-0.01u"m/yr")),
     ALCAP.Facies(
         viability_range=(4, 10),
@@ -141,7 +141,7 @@ const FACIES = [
         maximum_growth_rate=400u"m/Myr",
         extinction_coefficient=0.1u"m^-1",
         saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=10.0u"m/yr",
+        diffusion_coefficient=5.0u"m/yr",
 		wave_velocity=wave_velocity(-1.0u"m/yr")),
     ALCAP.Facies(
         viability_range=(4, 10),
@@ -182,6 +182,15 @@ end
 end
 
 
+# ╔═╡ 5fb3fffe-3ee3-47c7-abb8-efd166a0013a
+using HDF5
+
+# ╔═╡ a02c8a4b-e265-4d73-8f1a-8ca988d8c09e
+using CarboKitten.Export: read_header
+
+# ╔═╡ 4c88a358-c083-4882-8ce4-b6ccc1c6f167
+using Unitful
+
 # ╔═╡ 4331ed00-8489-4a34-9e19-984798ac815c
 # Script.main()
 
@@ -197,6 +206,20 @@ fig = summary_plot("../data/output/ot-island.h5")
 # ╔═╡ 56806154-db7d-4ae6-beff-bc6f963d8e64
 save("ot-island.png", fig)
 
+# ╔═╡ 0e770c25-a0a8-4edc-89bc-8728c57ed5d9
+h5open("../data/output/ot-island.h5") do fid
+	h = read_header(fid)
+	s = fid["sediment_height"][:, :, end] * u"m"
+	t = h.initial_topography .+ s .- (h.axes.t[end] * h.subsidence_rate)
+
+	fig = Figure()
+	ax = Axis(fig[1, 1])
+	hm = heatmap!(ax, h.axes.x, h.axes.y, t / u"m", colorrange=(-2.0, 1.0), colormap=:curl)
+	Colorbar(fig[1, 2], hm)
+
+	fig
+end
+
 # ╔═╡ Cell order:
 # ╠═66816e88-a59c-4ce9-93fa-2a9959b740f1
 # ╠═6941c10a-097f-11f0-1abd-2bd1f922bf6e
@@ -208,3 +231,7 @@ save("ot-island.png", fig)
 # ╠═71c098a6-864b-45b5-b365-6d3eed5baec2
 # ╠═3ec2198e-fbae-46ce-92f7-eb0ce3830885
 # ╠═56806154-db7d-4ae6-beff-bc6f963d8e64
+# ╠═5fb3fffe-3ee3-47c7-abb8-efd166a0013a
+# ╠═a02c8a4b-e265-4d73-8f1a-8ca988d8c09e
+# ╠═4c88a358-c083-4882-8ce4-b6ccc1c6f167
+# ╠═0e770c25-a0a8-4edc-89bc-8728c57ed5d9

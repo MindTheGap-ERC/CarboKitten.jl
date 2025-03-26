@@ -121,7 +121,7 @@ wave_velocity(v_max) = w -> let (v, s) = v_prof(v_max, 10.0u"m", w)
 		((v, 0.0u"m/Myr"), (s, 0.0u"1/Myr"))
 	end
 
-initial_topography(x, y) = -((x - 7.5u"km")^2 + (y - 7.5u"km")^2) / 1000.0u"km"
+initial_topography(x, y) = -sqrt((x - 7.5u"km")^2 + (y - 7.5u"km")^2) / 150.0
 
 const PATH = "../data/output"
 const TAG = "ot-island"
@@ -150,18 +150,18 @@ const FACIES = [
         extinction_coefficient=0.005u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=5.0u"m/yr",
-		wave_velocity=wave_velocity(-0.2u"m/yr"))
+		wave_velocity=wave_velocity(-1.0u"m/yr"))
 ]
 
 const PERIOD = 0.2u"Myr"
 const AMPLITUDE = 4.0u"m"
-const BOX = Box{Periodic{2}}(grid_size=(100, 100), phys_scale=150.0u"m")
+const BOX = Box{Periodic{2}}(grid_size=(50, 50), phys_scale=300.0u"m")
 const INPUT = ALCAP.Input(
     tag="$TAG",
     box=BOX,
     time=TimeProperties(
         Δt=0.0002u"Myr",
-        steps=2000,
+        steps=5000,
         write_interval=1),
     ca_interval=1,
     initial_topography=initial_topography,
@@ -172,20 +172,11 @@ const INPUT = ALCAP.Input(
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",
     transport_solver=forward_euler, # runge_kutta_4(typeof(1.0u"m"), BOX),
-	transport_substeps=10,
+	transport_substeps=5,
     facies=FACIES)
 
 function main()
     run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
-
-    data_export(
-        CSV(tuple.(10:20:70, 25),
-            :sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
-            :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
-            :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
-            :water_depth => "$(PATH)/$(TAG)_wd.csv",
-            :metadata => "$(PATH)/$(TAG).toml"),
-        "$(PATH)/$(TAG).h5")
 end
 
 end
@@ -198,10 +189,13 @@ end
 summary_plot("../data/output/ot-example.h5")
 
 # ╔═╡ 71c098a6-864b-45b5-b365-6d3eed5baec2
-# Island.main()
+Island.main()
 
 # ╔═╡ 3ec2198e-fbae-46ce-92f7-eb0ce3830885
-summary_plot("../data/output/ot-island.h5")
+fig = summary_plot("../data/output/ot-island.h5")
+
+# ╔═╡ 56806154-db7d-4ae6-beff-bc6f963d8e64
+save("ot-island.png", fig)
 
 # ╔═╡ Cell order:
 # ╠═66816e88-a59c-4ce9-93fa-2a9959b740f1
@@ -213,3 +207,4 @@ summary_plot("../data/output/ot-island.h5")
 # ╠═f755055d-ee7f-4951-ac13-34f8a13f9396
 # ╠═71c098a6-864b-45b5-b365-6d3eed5baec2
 # ╠═3ec2198e-fbae-46ce-92f7-eb0ce3830885
+# ╠═56806154-db7d-4ae6-beff-bc6f963d8e64

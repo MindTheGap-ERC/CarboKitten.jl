@@ -281,13 +281,13 @@ const INPUT_shear = Input(
     t_end                 = 1.0u"Myr",
 
     initial_topography     = (x, y) -> -x / 300.0,
-    initial_sediment      = gaussian_initial_sediment,
+    initial_sediment      = (x, y) -> 10u"m",
     production            = (x, y) -> 0.0u"m/Myr",
 
     disintegration_rate   = 50.0u"m/Myr",
     subsidence_rate       = 0.0u"m/Myr",
     diffusivity           = 5.0u"m/yr",
-	wave_transport        = w -> let (v, s) = v_prof(-0.4u"m/yr", 20.0u"m", w)
+	wave_transport        = w -> let (v, s) = v_prof(-0.5u"m/yr", 20.0u"m", w)
 			((v, 0.0u"m/yr"),  (s, 0.0u"1/yr"))
 		end,
 	transport_substeps    = 10

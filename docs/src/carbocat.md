@@ -26,7 +26,7 @@ where $h$ is the depth of the sea floor, $g_m$ is the maximum growth rate, $I_0$
 
 These species can be anything, just remember that they are the progenitor of some (limestone) facies type. In the original 2013 model, this stage is implemented by a celullar automaton (or CA). The CA has the nice property of giving pseudo-random output with at least some degree of coherence. There is no physical basis to the CA model, but neither is there very much data to test a physical model against.
 
-We have [implemented the CA used in Burgess 2013](carbocat-ca.md). Using three species with identical 4-6-10-10 rules (survival between 4 to 10 neighbours, birth between 6-10 live neighbours).
+We have [implemented the CA used in Burgess 2013](components/cellular-automata.md). Using three species with identical 4-6-10-10 rules (survival between 4 to 10 neighbours, birth between 6-10 live neighbours).
 
 ![](fig/b13-fig3.png)
 
@@ -37,16 +37,6 @@ An interesting question is under what rules is this CA stable (i.e. keeps evolvi
 The minimal Carbocat model would consist of only species habitation and production.
 
 :::details
-
-### Some submodules
-
-``` {.julia file=src/Burgess2013.jl}
-module Burgess2013
-
-include("Burgess2013/CA.jl")
-
-end
-```
 
 ### Crowding
 

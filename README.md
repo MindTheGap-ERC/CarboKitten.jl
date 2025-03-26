@@ -1,6 +1,7 @@
 # CarboKitten
 **Modeling Carbonate Platforms in Julia**
 
+[![Documentation Badge](https://img.shields.io/badge/Documentation-CarboKitten.jl-blue)](https://mindthegap-erc.github.io/CarboKitten.jl)
 [![Entangled badge](https://img.shields.io/badge/entangled-Use%20the%20source!-%2300aeff)](https://entangled.github.io/)
 
 CarboKitten is a reimplementation of Peter Burgess' CarboCAT, a model for generating carbonate platform stratigraphies. CarboKitten is a three-dimensional model, having two spatial dimensions and one for stored stediment.
@@ -18,28 +19,56 @@ CarboKitten should be easy to get into and extend. All our code is extensively d
 
 CarboKitten is written in Julia for performance and extensibility.
 
-## Project layout
-
-```
-.
-├── data                # data files
-├── docs                # documentation
-│   ├── make.jl         # docs build script
-│   ├── Manifest.toml   #
-│   ├── Project.toml    # dependencies for building docs
-│   └── src             # markdown source for docs
-├── entangled.toml      # entangled config
-├── examples            # example scripts
-├── Makefile            # command-line short hands
-├── Manifest.toml       #
-├── Project.toml        # project dependencies
-├── pyproject.toml      # dependencies for running Entangled
-├── README.md           #
-├── src                 # tangled library source
-└── test                # unit tests
-```
-
 ## Running
+
+CarboKitten requires Julia &ge; 1.10. Please follow the [download and install instructions at the Julia homepage](https://julialang.org/downloads/) if you've never used Julia before.
+
+It is advised to run CarboKitten in a dedicated environment under version control. This way, your model runs can be made fully reproducible. Create a directory for you project:
+
+```bash
+mkdir MyCarboKittenProject
+cd MyCarboKittenProject
+git init
+julia
+```
+
+Start Julia, get into `Pkg` mode by pressing `]` and generate a new project file:
+
+```juliarepl
+(@v1.11) pkg> activate .
+(MyCarboKittenProject) pkg> add CarboKitten
+```
+
+You can run the example model as follows:
+
+```julia
+using CarboKitten
+CarboKitten.init()   # enables progress logging in this session
+run_model(Model{ALCAP}, ALCAP.Example.INPUT, "example.h5")
+```
+
+If you wish to visualize the generated output, you'll need to install `GLMakie` first (in package mode):
+
+```juliarepl
+(MyCarboKittenProject) pkg> add GLMakie
+```
+
+Depending on your system, this may take a few minutes to build. After that, you should be able to run the following:
+
+```julia
+using GLMakie
+using CarboKitten.Visualization
+summary_plot("example.h5")
+```
+
+This should show a plot very similar to the one above. Don't worry if it takes a while to render. Subsequent runs in the same REPL should be a lot faster!
+
+For more information on running CarboKitten, please read our extensive [documentation](https://mindthegap-erc.github.io/CarboKitten.jl), including the [full tutorial](https://mindthegap-erc.github.io/CarboKitten.jl/dev/first_tutorial/).
+
+## Development
+
+> [!NOTE]
+> The following instructions are only relevant if you want to develop on CarboKitten itself.
 
 Start the Julia REPL, and get into Pkg mode by pressing `]`. You may activate the package environment using `activate .` and then install the dependencies using `instantiate`. These steps only need to be run once.
 
@@ -77,7 +106,27 @@ include("examples/ca-with-prod.jl")
 
 After that, you may edit an example and rerun.
 
-## Development
+### Project layout
+
+```
+.
+├── data                # data files
+├── docs                # documentation
+│   ├── make.jl         # docs build script
+│   ├── Manifest.toml   #
+│   ├── Project.toml    # dependencies for building docs
+│   └── src             # markdown source for docs
+├── entangled.toml      # entangled config
+├── examples            # example scripts
+├── ext                 # visualization extension
+├── Makefile            # command-line short hands
+├── Manifest.toml       #
+├── Project.toml        # project dependencies
+├── pyproject.toml      # dependencies for running Entangled
+├── README.md           #
+├── src                 # tangled library source
+└── test                # unit tests
+```
 
 ### Global dependencies
 CarboKitten has some dependencies that are only needed for developing and running examples, but not for using the library on its own. Those are specified in the `workenv` package. So make sure `workenv` is activated (`Pkg.activate("./workenv")`) or

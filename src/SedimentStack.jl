@@ -5,70 +5,82 @@ export push_sediment!, pop_sediment!, peek_sediment
 
 # ~/~ begin <<docs/src/components/sediment_buffer.md#sediment-stack-impl>>[init]
 function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
-  # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[init]
-  Δ = sum(parcel)
-  bucket = sum(col[1, :])
-  # ~/~ end
-  # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[1]
-  if bucket + Δ < 1.0
-    col[1,:] .+= parcel
-    return
-  end
-  # ~/~ end
-  # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[2]
-  frac = parcel ./ Δ
-  col[1,:] .+= frac .* (1.0 - bucket)
-  Δ -= (1.0 - bucket)
-  n = floor(Int64, Δ)
-  if n > size(col)[1] ÷ 2
-    @warn "pushing a too large parcel of sediment: Δ = $Δ"
-  end
-  if n > size(col)[1] - 2
-    @error "pushing a way too large parcel of sediment: Δ = $Δ"
-  end
-  col[n+2:end,:] = col[1:end-n-1,:]
-  # ~/~ end
-  # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[3]
-  na = [CartesianIndex()]
-  col[2:n+1,:] .= frac[na,:]
-  Δ -= n
-  col[1,:] .= frac .* Δ
-  # ~/~ end
+    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[init]
+    mass = sum(parcel)
+    bucket = sum(col[1, :])
+    @assert bucket >= 0.0 && bucket <= 1.0
+    # ~/~ end
+    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[1]
+    if bucket + mass < 1.0
+        col[1,:] .+= parcel
+        return
+    end
+    # ~/~ end
+    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[2]
+    frac = parcel ./ mass
+    col[1,:] .+= frac .* (1.0 - bucket)
+    mass -= (1.0 - bucket)
+    n = floor(Int64, mass)
+
+    if n > size(col)[1] ÷ 2
+        @warn "pushing a too large parcel of sediment: Δ = $mass, reduce your timestep"
+    end
+    if n > size(col)[1] - 2
+        @error "pushing a way too large parcel of sediment: Δ = $mass, parcel = $parcel"
+        error("fatal error, too much sediment for buffer")
+    end
+    col[n+2:end,:] .= col[1:end-n-1,:]
+    # ~/~ end
+    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[3]
+    na = [CartesianIndex()]
+    col[2:n+1,:] .= frac[na,:]
+    mass -= n
+    col[1,:] .= frac .* mass
+    # ~/~ end
 end
 # ~/~ end
 # ~/~ begin <<docs/src/components/sediment_buffer.md#sediment-stack-impl>>[1]
-@inline function pop_fraction(col::AbstractMatrix{F}, Δ::F) where F <: Real
-  bucket = sum(col[1,:])
-  if Δ == 0 || bucket == 0
-    return zeros(F, size(col)[2])
-  end
-
-  @assert Δ < bucket "pop_fraction can only pop from the top cell: $(col), $(Δ)"
-  parcel = (Δ / bucket) .* col[1,:]
-  col[1,:] .-= parcel
-  return parcel
+@inline function pop_fraction(col::AbstractMatrix{F}, mass::F) where F <: Real
+    bucket = sum(col[1,:])
+    if mass == 0 || bucket == 0
+        return zeros(F, size(col)[2])
+    end
+  
+    @assert mass < bucket "pop_fraction can only pop from the top cell: $(col), $(Δ)"
+    parcel = (mass / bucket) .* col[1,:]
+    col[1,:] .-= parcel
+    return parcel
 end
 
 function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
-  # ~/~ begin <<docs/src/components/sediment_buffer.md#pop-sediment>>[init]
-  bucket = sum(col[1,:])
-  if Δ < bucket
-    return pop_fraction(col, Δ)
-  end
-  # ~/~ end
-  # ~/~ begin <<docs/src/components/sediment_buffer.md#pop-sediment>>[1]
-  parcel = copy(col[1,:])
-  Δ -= bucket
-  n = floor(Int64, Δ)
-
-  parcel .+= sum(col[2:n+1,:]; dims=1)'
-  col[1:end-n-1, :] = col[n+2:end, :]
-  col[end-n-1:end, :] .= 0
-  Δ -= n
-
-  parcel .+= pop_fraction(col, Δ)
-  return parcel
-  # ~/~ end
+    # ~/~ begin <<docs/src/components/sediment_buffer.md#pop-sediment>>[init]
+    bucket = sum(col[1,:])
+    @assert bucket >= 0.0
+  
+    if Δ < bucket
+      return pop_fraction(col, Δ)
+    end
+    # ~/~ end
+    # ~/~ begin <<docs/src/components/sediment_buffer.md#pop-sediment>>[1]
+    parcel = copy(col[1,:])
+    Δ -= bucket
+    n = floor(Int64, Δ)
+  
+    if n > (size(col)[1] - 2)
+        @error "too much material popped of the stack: Δ = $Δ"
+        parcel .+= sum(col; dims=1)'
+        col .= 0.0
+        return parcel
+    end
+  
+    parcel .+= sum(col[2:n+1,:]; dims=1)'
+    col[1:end-n-1, :] = col[n+2:end, :]
+    col[end-n-1:end, :] .= 0
+    Δ -= n
+  
+    parcel .+= pop_fraction(col, Δ)
+    return parcel
+    # ~/~ end
 end
 # ~/~ end
 
@@ -78,7 +90,6 @@ function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) w
     push_sediment!(sediment[:, :, i[1], i[2]], p[:, i[1], i[2]])
   end
 end
-
 
 function peek_sediment(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
   if Δ == 0

@@ -66,10 +66,11 @@ Loess, or "Locally Estimated Scatterplot Smoothing", is very popular among geosc
 
 It should work as follows:
 
-```{julia file=examples/tabular-sea-level/loess.jl}
-#| requires: examples/tabular-sea-level/loess.jl
+``` {.julia .task file=examples/tabular-sea-level/loess.jl}
 #| creates: docs/src/_fig/loess.png
 #| collect: figures
+
+module Script
 
 using CarboKitten
 
@@ -88,12 +89,16 @@ function main()
     sl = miller_df.sealevel / u"m" .|> NoUnits
     ti = miller_df.time / u"kyr" .|> NoUnits
 
-fig = Figure()
+    fig = Figure()
     ax = Axis(fig[1,1], xlabel="Time [kyr]", ylabel="Sea level [m]")
     scatter!(ax, ti, sl)
     lines!(ax, ti, Smoothers.loess(ti, sl, q = 1000)(ti); color = :tomato)
     save("docs/src/_fig/loess.png",fig)
 end
+
+end
+
+Script.main()
 ```
 
 Choosing the `q` parameter proves difficult. Although the package `Smoothers.jl` indicates the default value will be estimated, in practice it seems to often result in `NaN`s. So always plot the result of smoothing to check it has been done correctly.
@@ -117,7 +122,12 @@ The outcome looks like an AR(1) process:
 
 ![Sea-level modeled as Ornstein-Uhlenbeck process](fig/OU.png)
 
-```@example
+``` {.julia .task file=examples/tabular-sea-level/ornstein-uhlenbeck.jl}
+#| creates: docs/src/_fig/OU.png
+#| collect: figures
+
+module Script
+
 using CarboKitten
 
 using Unitful
@@ -148,11 +158,11 @@ Arguments
     return ar1
 end
 
-function main()
-
 const θ = 0.4 # drift
 const μ = 2.0 # mean
 const σ = 20 # variance
+
+function main()
 
 OU = generate_ar1(μ, length(time_axis(TIME_PROPERTIES)), θ, σ)
 
@@ -162,4 +172,8 @@ fig, ax = lines(time_axis(TIME_PROPERTIES) |> in_units_of(u"Myr"), collect(OU) .
     save("docs/src/_fig/OU.png",fig)
 
 end
+
+end
+
+Script.main()
 ```

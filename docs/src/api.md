@@ -26,6 +26,12 @@ Modules = [CarboKitten.Utility, CarboKitten.Skeleton, CarboKitten.Stencil]
 Modules = [CarboKitten.Export]
 ```
 
+## Transport
+
+```@autodocs
+Modules = [CarboKitten.Transport.Advection]
+```
+
 ## Submodules
 
 ```@autodocs

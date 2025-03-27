@@ -1,8 +1,7 @@
-using CarboKitten
-
 module VariableInsolation
 
 using CarboKitten
+>>>>>>> main
 using Unitful
 using DelimitedFiles: readdlm
 

@@ -2,10 +2,6 @@
 
 In CarboKitten, the sea-level curve is given as a function of time. This means you can generate sea levels automatically, or if you like interpolate them on a table. In this demo, we show how we can read values from a file and interpolate those for input into the CarboKitten ALCAP model.
 
-``` {.julia #tabular-sea-level}
-
-```
-
 CarboKitten has convenience functions for reading tabular data, both TSV and CSV are supported.
 
 ## The data

@@ -14,7 +14,7 @@ using Revise
 using CarboKitten
 
 # ╔═╡ 32d22ca3-a1f5-4796-9b23-df8702374ef0
-using CarboKitten.Models: OnshoreTransport as OT, ALCAP
+using CarboKitten.Models: ALCAP
 
 # ╔═╡ 737dee0f-6a96-49e0-80cb-19e727fe34c7
 using CarboKitten.Visualization: summary_plot
@@ -264,8 +264,8 @@ const INPUT_flat = Input(
     Δt                    = 0.001u"Myr",
     t_end                 = 1.0u"Myr",
 
-    initial_topography     = (x, y) -> -x / 300.0,
-    initial_sediment      = gaussian_initial_sediment,
+    initial_topography    = (x, y) -> -x / 375.0 - 10u"m",
+    initial_sediment      = (x, y) -> 10u"m",
     production            = (x, y) -> 0.0u"m/Myr",
 
     disintegration_rate   = 50.0u"m/Myr",
@@ -280,7 +280,7 @@ const INPUT_shear = Input(
     Δt                    = 0.001u"Myr",
     t_end                 = 1.0u"Myr",
 
-    initial_topography     = (x, y) -> -x / 300.0,
+    initial_topography    = (x, y) -> -x / 375.0 - 10u"m",
     initial_sediment      = (x, y) -> 10u"m",
     production            = (x, y) -> 0.0u"m/Myr",
 
@@ -394,11 +394,17 @@ md"""
 ## With shear
 """
 
-# ╔═╡ 03bddab5-7252-4c86-a225-ee1ccee0d0b0
-save("flat-profile.png", plot_erosion(WithShear.INPUT_flat, 100))
+# ╔═╡ df8ad06a-cc8d-45d1-acac-9a491902d908
+fig_flat = plot_erosion(WithShear.INPUT_flat, 100)
+
+# ╔═╡ d04dafb8-20d8-48e3-807c-51cf8fcc3033
+save("flat-profile.png", fig_flat)
 
 # ╔═╡ 28974b43-f8f6-4184-b9b1-362353645b38
 plot_erosion(WithShear.INPUT_shear, 100)
+
+# ╔═╡ 417465da-a4c2-46f6-aef7-c5a880e809fa
+15000 / 40
 
 # ╔═╡ Cell order:
 # ╠═1bd14d3c-f480-11ef-1a4e-e170792388dd
@@ -430,5 +436,7 @@ plot_erosion(WithShear.INPUT_shear, 100)
 # ╠═cac22975-0fa6-4bba-9d2e-7274f18c9799
 # ╠═b121fa61-c014-4ee0-9db0-b8a0a238b9dd
 # ╠═4906149e-26b4-41f8-b61e-deede84a678f
-# ╠═03bddab5-7252-4c86-a225-ee1ccee0d0b0
+# ╠═df8ad06a-cc8d-45d1-acac-9a491902d908
+# ╠═d04dafb8-20d8-48e3-807c-51cf8fcc3033
 # ╠═28974b43-f8f6-4184-b9b1-362353645b38
+# ╠═417465da-a4c2-46f6-aef7-c5a880e809fa

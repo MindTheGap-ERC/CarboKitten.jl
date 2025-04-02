@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.3"
+julia_version = "1.11.4"
 manifest_format = "2.0"
-project_hash = "726a4dd9b7c1b9c59bf09e171e7e2076130b2c65"
+project_hash = "de47b5b177c69e9aee42cb573d57ceea4530b3c8"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
@@ -109,6 +109,17 @@ deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.6.0"
 
+[[deps.EarCut_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "e3290f2d49e661fbd94046d7e3726ffcb2d41053"
+uuid = "5ae413db-bbd1-5e63-b57d-d24a61df00f5"
+version = "2.2.4+0"
+
+[[deps.Extents]]
+git-tree-sha1 = "063512a13dbe9c40d999c439268539aa552d1ae6"
+uuid = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
+version = "0.1.5"
+
 [[deps.FilePathsBase]]
 deps = ["Compat", "Dates"]
 git-tree-sha1 = "2ec417fc319faa2d768621085cc1feebbdee686b"
@@ -131,6 +142,23 @@ version = "1.11.0"
 deps = ["Random"]
 uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 version = "1.11.0"
+
+[[deps.GeoFormatTypes]]
+git-tree-sha1 = "8e233d5167e63d708d41f87597433f59a0f213fe"
+uuid = "68eda718-8dee-11e9-39e7-89f7f65f511f"
+version = "0.4.4"
+
+[[deps.GeoInterface]]
+deps = ["DataAPI", "Extents", "GeoFormatTypes"]
+git-tree-sha1 = "294e99f19869d0b0cb71aef92f19d03649d028d5"
+uuid = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
+version = "1.4.1"
+
+[[deps.GeometryBasics]]
+deps = ["EarCut_jll", "Extents", "GeoInterface", "IterTools", "LinearAlgebra", "PrecompileTools", "Random", "StaticArrays"]
+git-tree-sha1 = "65e3f5c519c3ec6a4c59f4c3ba21b6ff3add95b0"
+uuid = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
+version = "0.5.7"
 
 [[deps.HDF5]]
 deps = ["Compat", "HDF5_jll", "Libdl", "MPIPreferences", "Mmap", "Preferences", "Printf", "Random", "Requires", "UUIDs"]
@@ -178,6 +206,11 @@ version = "1.11.0"
 git-tree-sha1 = "6da3c4316095de0f5ee2ebd875df8721e7e0bdbe"
 uuid = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
 version = "1.3.1"
+
+[[deps.IterTools]]
+git-tree-sha1 = "42d5f897009e7ff2cf88db414a389e5ed1bdd023"
+uuid = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
+version = "1.10.0"
 
 [[deps.IteratorInterfaceExtensions]]
 git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"

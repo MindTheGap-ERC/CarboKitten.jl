@@ -35,7 +35,7 @@ function stencil_multi!(f::F, ::Type{BT}, ::Size{sz}, out, inp) where {F, dim, s
     center = CartesianIndex((div.(sz, 2) .+ 1)...)
     for i in eachindex(IndexCartesian(), out)
         nb = (SArray{Tuple{sz...}}(
-                offset_value(BT, a, i, j - center)
+                get_bounded(BT, a, i + j - center)
                 for j in CartesianIndices(sz))
               for a in inp)
         out[i] = f(nb...)

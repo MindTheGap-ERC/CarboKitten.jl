@@ -413,9 +413,10 @@ CarboKitten.Components.ActiveLayer
 export disintegrator, transporter
 
 using ..Common
-using CarboKitten.Transport.Advection: transport
-using CarboKitten.Transport.Solvers: runge_kutta_4
+using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
+using CarboKitten.Transport.Solvers: runge_kutta_4, forward_euler
 using Unitful
+using GeometryBasics
 
 @kwdef struct Facies <: AbstractFacies
     diffusion_coefficient::typeof(1.0u"m/yr") = 0.0u"m/Myr"
@@ -424,8 +425,52 @@ end
 
 @kwdef struct Input <: AbstractInput
     disintegration_rate::Rate = 50.0u"m/Myr"
-    transport_solver = nothing
-    transport_substeps::Int = 1 
+    transport_solver = Val{:RK4}
+    transport_substeps = :adaptive 
+end
+
+courant_max(::Type{Val{:RK4}}) = 2.0
+courant_max(::Type{Val{:forward_euler}}) = 1.0
+
+transport_solver(f, _) = f
+transport_solver(::Type{Val{:RK4}}, box) = runge_kutta_4(typeof(1.0u"m"), box)
+transport_solver(::Type{Val{:forward_euler}}, _) = forward_euler
+
+function adaptive_transporter(input)
+    solver = transport_solver(input.transport_solver, input.box)
+
+    w = water_depth(input)
+    box = input.box
+    Δt = input.time.Δt  # / input.transport_substeps
+    fs = input.facies
+    adv = Matrix{Vec2{Rate}}(undef, box.grid_size...)
+    rct = Matrix{typeof(1.0u"1/Myr")}(undef, box.grid_size...)
+    dC = Matrix{Rate}(undef, box.grid_size...)
+    cm = courant_max(input.transport_solver)
+
+    return function (state, C::Array{Amount,3})
+        wd = w(state)
+
+        for (i, f) in pairs(fs)
+            advection_coef!(box, f.diffusion_coefficient, f.wave_velocity, wd, adv, rct)
+            m = max_dt(adv, box.phys_scale, cm)
+            steps = ceil(Int, Δt / m)
+
+            # @debug "step $(state.step) - transport substeps $(steps)"
+            subdt = Δt / steps
+            for j in 1:steps
+                solver(
+                    (C, _) -> transport_dC!(input.box, adv, rct, C, dC),
+                    view(C, i, :, :), TimeIntegration.time(input, state), subdt)
+            end
+        end
+
+        for i in eachindex(C)
+            if C[i] < zero(Amount)
+                C[i] = zero(Amount)
+            end
+        end
+    end
 end
 
 """
@@ -460,11 +505,11 @@ Prepares the transportation step. Returns a function `f(state::State, active_lay
 transporting the active layer, returning a transported `Amount` of sediment.
 """
 function transporter(input)
-    solver = if input.transport_solver === nothing
-        runge_kutta_4(typeof(1.0u"m"), input.box)
-    else
-        input.transport_solver
+    if input.transport_substeps == :adaptive
+        return adaptive_transporter(input)
     end
+
+    solver = transport_solver(input.transport_solver, input.box)
 
     w = water_depth(input)
     box = input.box

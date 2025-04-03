@@ -19,3 +19,6 @@ docs/src/_fig/*.gif
 scratch
 
 notebooks/*.h5
+notebooks/*.png
+notebooks/*.svg
+

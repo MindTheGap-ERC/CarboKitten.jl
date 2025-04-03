@@ -2,7 +2,7 @@
 # FIXME: Rename this module
 module BoundaryTrait
 
-export Boundary, Reflected, Periodic, Constant, Coast, Shelf, offset_index, offset_value, canonical
+export Boundary, Reflected, Periodic, Constant, Coast, Shelf, offset_index, offset_value, canonical, get_bounded
 
 # ~/~ begin <<docs/src/components/boxes.md#boundary-types>>[init]
 abstract type Boundary{dim} end
@@ -12,6 +12,23 @@ struct Constant{dim,value} <: Boundary{dim} end
 struct Coast <: Boundary{2} end
 
 const Shelf = Coast  # FIXME: Old name, should be removed
+
+@inline modflip(a, l) = let b = mod1(a, 2l)
+    b > l ? 2l - b + 1 : b
+end
+
+@inline get_bounded(::Type{Constant{dim, value}}, a, i) where {dim, value} =
+    checkbounds(Bool, a, i) ? a[i] : val
+
+@inline get_bounded(::Type{Periodic{dim}}, a, i) where {dim} =
+    checkbounds(Bool, a, i) ? a[i] : a[mod1.(Tuple(i), size(a))...]
+
+@inline get_bounded(::Type{Reflected{dim}}, a, i) where {dim} =
+    checkbounds(Bool, a, i) ? a[i] : a[modflip.(Tuple(i), size(a))...]
+
+@inline get_bounded(::Type{Coast}, a, i) =
+    checkbounds(Bool, a, i) ? a[i] : a[modflip(i[1], size(a)[1]), mod1(i[2], size(a)[2])]
+
 # ~/~ end
 # ~/~ begin <<docs/src/components/boxes.md#offset-indexing>>[init]
 function offset_index(::Type{BT}, shape::NTuple{dim,Int}, i::CartesianIndex, Δi::CartesianIndex) where {dim, BT <: Boundary{dim}}

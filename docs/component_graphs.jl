@@ -51,6 +51,7 @@ Returns the name.
 function get_field_name(expr)
 	@capture(expr, fname_::ftype_ = fdefault_) && return fname
 	@capture(expr, fname_::ftype_) && return fname
+	@capture(expr, fname_ = fdefault_) && return fname
 	@capture(expr, fname_) && return fname
 end
 
@@ -121,7 +122,16 @@ function Selectors.runner(::Type{DAGExpander}, node, page, doc)
 	end)
 	mod = eval(expr)
 	io = IOBuffer()
-	show(io, MIME("image/svg"), dependency_graph(mod))
+    try
+	    show(io, MIME("image/svg"), dependency_graph(mod))
+    catch e
+        node.element = Documenter.RawNode(:html, """<div class=\"component-dag\">Error rendering DAG:
+        <pre>
+        $(string(dependency_graph(mod)))
+        </pre>
+        </div>""")
+        return
+    end
 	seekstart(io)
 	svg = read(io, String)
 	node.element = Documenter.RawNode(:html, "<div class=\"component-dag\" style=\"overflow: scroll\">$(svg)</div>")

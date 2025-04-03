@@ -119,7 +119,8 @@ makedocs(
             "Unitful" => "unitful.md",
             "Boxes" => "boxes.md",
             "Stencils" => "stencils.md",
-            "Utility" => "utility.md"
+            "Utility" => "utility.md",
+            "Finite Difference" => "finite-difference-transport.md"
         ],
         "API Documentation" => "api.md",
         "References" => "references.md"

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Input Methods · CarboKitten</title><meta name="title" content="Input Methods · CarboKitten"/><meta property="og:title" content="Input Methods · CarboKitten"/><meta property="twitter:title" content="Input Methods · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../onshore-transport/">Onshore Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li class="is-active"><a class="tocitem" href>Input Methods</a><ul class="internal"><li><a class="tocitem" href="#Sea-level"><span>Sea level</span></a></li></ul></li><li><a class="tocitem" href="../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Input &amp; Output</a></li><li class="is-active"><a href>Input Methods</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Input Methods</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/input-methods.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Input-Methods"><a class="docs-heading-anchor" href="#Input-Methods">Input Methods</a><a id="Input-Methods-1"></a><a class="docs-heading-anchor-permalink" href="#Input-Methods" title="Permalink"></a></h1><p>Every model in CarboKitten has its own specific needs in terms of input. However, there are many common idioms used here.</p><h2 id="Sea-level"><a class="docs-heading-anchor" href="#Sea-level">Sea level</a><a id="Sea-level-1"></a><a class="docs-heading-anchor-permalink" href="#Sea-level" title="Permalink"></a></h2><p>The sea level curve is probably the input parameter that is most often of interest. CarboKitten expects the sea level to be passed on as a function of time. So time must also be defined. In the tutorial you find the following example:</p><pre><code class="language-julia hljs">time = TimeProperties(
+	Δt = 500u&quot;yr&quot;,
+	steps = 2000
+)</code></pre><p>To retrieve the range of times which will be written as the model output, one can use the <a href="../api/#CarboKitten.time_axis">time_axis()</a> function.</p><h3 id="Sea-level-from-file"><a class="docs-heading-anchor" href="#Sea-level-from-file">Sea level from file</a><a id="Sea-level-from-file-1"></a><a class="docs-heading-anchor-permalink" href="#Sea-level-from-file" title="Permalink"></a></h3><p>Reading a single vector of numbers from a <code>example.txt</code> file in the <code>data</code> folder (it will be similar for other formats):</p><pre><code class="language-julia hljs">dir = &quot;data&quot;
+filename = joinpath(dir, &quot;example.txt&quot;)
+sea_level = readdlm(filename, &#39;\t&#39;, header=false) * u&quot;m&quot;</code></pre><p>Remember that the topmost value in the file will be the first one to be read. In geological datasets this is often the <strong>youngest</strong> value, but because CarboKitten is a <strong>forward</strong> model, the first value in the vector of sea level values will be the one used first, so effectively the oldest. Sort your sea level values in the order of decreasing age, or oldest first, for CarboKitten to read them correctly.</p><p>Consider several situations involving the file with the values of sea level and the model run:</p><h4 id="1.-The-file-has-regularly-spaced-(equidistant)-observations"><a class="docs-heading-anchor" href="#1.-The-file-has-regularly-spaced-(equidistant)-observations">1. The file has regularly spaced (equidistant) observations</a><a id="1.-The-file-has-regularly-spaced-(equidistant)-observations-1"></a><a class="docs-heading-anchor-permalink" href="#1.-The-file-has-regularly-spaced-(equidistant)-observations" title="Permalink"></a></h4><p>Whether the temporal resolution is lower, the same or higher than the model step, we recommend using <code>linear_interpolation</code> from the package <code>Interpolations.jl</code> or an equivalent function. You will have to interpolate the values to the density determined by Δt. </p><h5 id="Running-a-model-at-a-resolution-higher-than-the-resolution-of-the-sea-level-data"><a class="docs-heading-anchor" href="#Running-a-model-at-a-resolution-higher-than-the-resolution-of-the-sea-level-data">Running a model at a resolution higher than the resolution of the sea level data</a><a id="Running-a-model-at-a-resolution-higher-than-the-resolution-of-the-sea-level-data-1"></a><a class="docs-heading-anchor-permalink" href="#Running-a-model-at-a-resolution-higher-than-the-resolution-of-the-sea-level-data" title="Permalink"></a></h5><p>The model may give nicer results at lower Δt than the resolution of the empirical sea level data. This will require &quot;making up&quot; data by interpolation. Keep in mind that scientifically you <strong>don&#39;t know</strong> what happened at the interpolated points, so the sea level curve and the carbonate platform generated will be smoother than they would have been if the sea level had been measured at this resolution. You may use the parameter <code>write_times</code> from the component <code>TimeIntegration</code> to model at a higher temporal resolution, but save the results only at a resolution of the input data.</p><pre><code class="language-julia hljs">using Interpolations
+
+SL  = linear_interpolation(time_axis(time), sea_level)</code></pre><h4 id="2.-The-file-has-irregularly-(not-equidistant)-observations"><a class="docs-heading-anchor" href="#2.-The-file-has-irregularly-(not-equidistant)-observations">2. The file has irregularly (not equidistant) observations</a><a id="2.-The-file-has-irregularly-(not-equidistant)-observations-1"></a><a class="docs-heading-anchor-permalink" href="#2.-The-file-has-irregularly-(not-equidistant)-observations" title="Permalink"></a></h4><h5 id="2.1.-Interpolation-on-irregular-grid"><a class="docs-heading-anchor" href="#2.1.-Interpolation-on-irregular-grid">2.1. Interpolation on irregular grid</a><a id="2.1.-Interpolation-on-irregular-grid-1"></a><a class="docs-heading-anchor-permalink" href="#2.1.-Interpolation-on-irregular-grid" title="Permalink"></a></h5><p>Take the example from the <a href="https://mindthegap-erc.github.io/CarboKitten.jl/dev/first_tutorial/">tutorial</a>:</p><pre><code class="language- hljs">using CarboKitten.DataSets: miller_2020
+miller_df = miller_2020()
+
+using Interpolations
+sort!(miller_df, [:time])
+miller_sea_level = linear_interpolation(miller_df.time, miller_df.sealevel)</code></pre><p>This works even though <code>miller_df.time</code> is not equally spaced, which is why this function is very safe if you change your input data a lot. But what happens under the hood is that <a href="https://juliamath.github.io/Interpolations.jl/latest/api/#Interpolations.linear_interpolation">extrapolation</a> according to the method that is default for <code>linear_interpolation</code>. It may not be the best method for your data, so we recommend checking that and reporting on the type of interpolation used.</p><h5 id="2.2.-Local-regression-(loess)"><a class="docs-heading-anchor" href="#2.2.-Local-regression-(loess)">2.2. Local regression (loess)</a><a id="2.2.-Local-regression-(loess)-1"></a><a class="docs-heading-anchor-permalink" href="#2.2.-Local-regression-(loess)" title="Permalink"></a></h5><p>Loess, or &quot;Locally Estimated Scatterplot Smoothing&quot;, is very popular among geoscientists. The <code>Smoothers.jl</code> package needs to be installed for this to work (<code>Pkg.add(&quot;Smoothers&quot;)</code>). </p><p><img src="../fig/loess.png" alt="Loess smoothing of the sea level curve of Miller et al. (2020)"/></p><p>It should work as follows:</p><div class="noweb-label">file:<i>examples/tabular-sea-level/loess.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/loess.png
+#| collect: figures
+
+module Script
+
+using CarboKitten
+
+using Unitful
+using CarboKitten.Components
+
+using CarboKitten.DataSets: miller_2020
+using Smoothers
+using GLMakie
+
+function main()
+
+    miller_df = miller_2020()
+    sort!(miller_df, [:time])
+
+    sl = miller_df.sealevel / u&quot;m&quot; .|&gt; NoUnits
+    ti = miller_df.time / u&quot;kyr&quot; .|&gt; NoUnits
+
+    fig = Figure()
+    ax = Axis(fig[1,1], xlabel=&quot;Time [kyr]&quot;, ylabel=&quot;Sea level [m]&quot;)
+    scatter!(ax, ti, sl)
+    lines!(ax, ti, Smoothers.loess(ti, sl, q = 1000)(ti); color = :tomato)
+    save(&quot;docs/src/_fig/loess.png&quot;,fig)
+end
+
+end
+
+Script.main()</code></pre><p>Choosing the <code>q</code> parameter proves difficult. Although the package <code>Smoothers.jl</code> indicates the default value will be estimated, in practice it seems to often result in <code>NaN</code>s. So always plot the result of smoothing to check it has been done correctly.</p><h3 id="Inline-functions"><a class="docs-heading-anchor" href="#Inline-functions">Inline functions</a><a id="Inline-functions-1"></a><a class="docs-heading-anchor-permalink" href="#Inline-functions" title="Permalink"></a></h3><p>If the function is very simple, you can enter it as an inline anonymous function (also known as a lambda). The following would generate a sinusoid with an amplitude of 10m and a period of 100,000 years.</p><pre><code class="language-julia hljs">const INPUT = Input(
+    ...
+    sea_level = t -&gt; 10.0u&quot;m&quot; * sin(2pi / 100.0u&quot;kyr&quot;)
+    ...)</code></pre><h4 id="Stochastic-functions"><a class="docs-heading-anchor" href="#Stochastic-functions">Stochastic functions</a><a id="Stochastic-functions-1"></a><a class="docs-heading-anchor-permalink" href="#Stochastic-functions" title="Permalink"></a></h4><p>Functions can capture pre-generated data, so you can generate a stochastic sea-level curve for use in CarboKitten. There are multiple stochastic processes available in <code>DiffEqNoiseProcess.jl</code> and some of them may be relevant for modeling sea level. This example uses <code>OrnsteinUhlenbeckProcess</code>, which is a continuous time equivalent of an AR(1), but here calculated for specific positions determined based on the temporal resolution of the model, set in <code>TIME_PROPERTIES</code>.</p><p>The outcome looks like an AR(1) process:</p><p><img src="../fig/OU.png" alt="Sea-level modeled as Ornstein-Uhlenbeck process"/></p><div class="noweb-label">file:<i>examples/tabular-sea-level/ornstein-uhlenbeck.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/OU.png
+#| collect: figures
+
+module Script
+
+using CarboKitten
+
+using Unitful
+using CarboKitten.Components
+using GLMakie
+using Random
+
+const TIME_PROPERTIES = TimeProperties(
+	Δt = 500u&quot;yr&quot;,
+	steps = 2000
+)
+
+function generate_ar1(mean, n, drift, variance)
+&quot;&quot;&quot;
+Arguments
+- `mean`: Mean of the process
+- `length`: Length of the process (number of steps)
+- `drift`: Drift parameter
+- `variance`: Variance of the process 
+&quot;&quot;&quot;
+    ar1 = Vector{Float64}(undef, n)
+    ar1[1] = mean  # start with the mean for simplicity
+
+    for i in 2:n
+        ar1[i] = drift * ar1[i-1] + (1 - drift) * mean + randn() * sqrt(variance)
+    end
+
+    return ar1
+end
+
+const θ = 0.4 # drift
+const μ = 2.0 # mean
+const σ = 20 # variance
+
+function main()
+
+OU = generate_ar1(μ, length(time_axis(TIME_PROPERTIES)), θ, σ)
+
+fig, ax = lines(time_axis(TIME_PROPERTIES) |&gt; in_units_of(u&quot;Myr&quot;), collect(OU) .* u&quot;m&quot;)
+    ax.xlabel = &quot;time [Myr]&quot;
+	ax.ylabel = &quot;sea level [m]&quot;
+    save(&quot;docs/src/_fig/OU.png&quot;,fig)
+
+end
+
+end
+
+Script.main()</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../denudation/physical_erosion/">« Physical Erosion</a><a class="docs-footer-nextpage" href="../data-export/">CSV Export »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.9.0 on <span class="colophon-date" title="Thursday 3 April 2025 10:35">Thursday 3 April 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

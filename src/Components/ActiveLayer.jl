@@ -12,7 +12,7 @@ using GeometryBasics
 
 @kwdef struct Facies <: AbstractFacies
     diffusion_coefficient::typeof(1.0u"m/yr") = 0.0u"m/Myr"
-    wave_velocity = _ -> ((0.0u"m/Myr", 0.0u"m/Myr"), (0.0u"1/Myr", 0.0u"1/Myr"))
+    wave_velocity = _ -> (Vec2(0.0u"m/Myr", 0.0u"m/Myr"), Vec2(0.0u"1/Myr", 0.0u"1/Myr"))
 end
 
 @kwdef struct Input <: AbstractInput

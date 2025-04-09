@@ -4,7 +4,7 @@
 #| collect: figures
 module PhysicalSpec
 
-using GLMakie
+using CairoMakie
 using CarboKitten.Denudation.EmpiricalDenudationMod: slope_kernel
 using CarboKitten.Denudation.PhysicalErosionMod: physical_erosion, redistribution_kernel
 using CarboKitten.Stencil: Boundary, Periodic, offset_value, offset_index, stencil

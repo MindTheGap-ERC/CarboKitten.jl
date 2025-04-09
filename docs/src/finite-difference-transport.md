@@ -302,6 +302,8 @@ using GLMakie
 
 using CarboKitten.Transport.Solvers: forward_euler, runge_kutta_4
 
+GLMakie.activate!()
+
 const BOX = CarboKitten.Box{Periodic{2}}(
     grid_size=(256, 256), phys_scale=0.05u"km")
 
@@ -355,6 +357,8 @@ using FileIO
 using GLMakie
 
 using CarboKitten.Transport.Solvers: runge_kutta_4
+
+GLMakie.activate!()
 
 const N = 288
 

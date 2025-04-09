@@ -28,7 +28,6 @@ end
 
 @inline get_bounded(::Type{Coast}, a, i) =
     checkbounds(Bool, a, i) ? a[i] : a[modflip(i[1], size(a)[1]), mod1(i[2], size(a)[2])]
-
 # ~/~ end
 # ~/~ begin <<docs/src/components/boxes.md#offset-indexing>>[init]
 function offset_index(::Type{BT}, shape::NTuple{dim,Int}, i::CartesianIndex, Δi::CartesianIndex) where {dim, BT <: Boundary{dim}}

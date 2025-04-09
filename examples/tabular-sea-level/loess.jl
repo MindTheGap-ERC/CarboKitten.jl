@@ -13,6 +13,8 @@ using CarboKitten.DataSets: miller_2020
 using Smoothers
 using GLMakie
 
+GLMakie.activate!()
+
 function main()
 
     miller_df = miller_2020()

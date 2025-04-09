@@ -13,6 +13,8 @@ using GLMakie
 
 using CarboKitten.Transport.Solvers: runge_kutta_4
 
+GLMakie.activate!()
+
 const N = 288
 
 function load_cat()

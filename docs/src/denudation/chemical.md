@@ -69,7 +69,7 @@ The output of this function for the $K_H$ parameter is plotted below for a range
 #| collect: figures
 
 module DissolutionSpec
-using GLMakie
+using CairoMakie
 using Unitful
 using CarboKitten.Denudation.DissolutionMod: equilibrium, dissolution, karst_denudation_parameters
 using CarboKitten: Box

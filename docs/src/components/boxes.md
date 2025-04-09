@@ -40,7 +40,6 @@ end
 
 @inline get_bounded(::Type{Coast}, a, i) =
     checkbounds(Bool, a, i) ? a[i] : a[modflip(i[1], size(a)[1]), mod1(i[2], size(a)[2])]
-
 ```
 
 The `Boundary` type is part of the generic `Box` dimension specification.

@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.4
+# v0.20.5
 
 using Markdown
 using InteractiveUtils
@@ -272,7 +272,7 @@ h5open("../data/output/ot-island.h5") do fid
 
 	fig = Figure()
 	ax = Axis(fig[1, 1])
-	hm = heatmap!(ax, h.axes.x, h.axes.y, t / u"m", colorrange=(-20, 2), colormap=:curl)
+	hm = heatmap!(ax, h.axes.x, h.axes.y, t / u"m", colorrange=(-20, 5), colormap=:curl)
 	Colorbar(fig[1, 2], hm)
 
 	fig

@@ -156,7 +156,7 @@ Perhaps the most famous CA is Conway's Game of Life. This is a two-dimensional t
 module Life
     using CarboKitten.BoundaryTrait
     using CarboKitten.Stencil
-    using GLMakie
+    using CairoMakie
     using .Iterators: take
 
     "x is a 3x3 region around the cell at x[2,2]."

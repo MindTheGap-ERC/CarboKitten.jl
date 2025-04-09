@@ -2,7 +2,7 @@ module StratColSpec
 
 using Test
 using CarboKitten.Export: stratigraphic_column
-
+using Unitful
 @testset "Strat_Col_Test" begin
     deposition = 15 * rand(20,3) .* 1.0u"m"
     disintegration = vcat(2 * rand(10,3) .* 1.0u"m", 10 * rand(10,3) .* 1.0u"m")

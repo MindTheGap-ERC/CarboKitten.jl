@@ -126,17 +126,18 @@ rct = (s[1] * dw[1] + s[2] * dw[2] - d * laplacian(w, dx)) * C[2, 2]
 return rct - adv
 ```
 
-``` {.julia file=src/Transport/Advection.jl}
-module Advection
+## Adaptive integration
 
-using ....CarboKitten: Box
-using ...Stencil: stencil!, Size
-using ...BoundaryTrait: get_bounded
-using ..DifferentialOperators: central_difference, upwind, laplacian
-using Unitful
-using GeometryBasics
-using LinearAlgebra: dot
+To get efficient time integration we need to work with adaptive time-stepping. On each iteration we pre-compute the advection coefficients, and then the maximum time-step. Using the same pre-computed coefficients we then loop $n$ times such that $dt/n \le dt_{\textrm{max}}$.
 
+### Computing advection coefficients
+Although this is a stencil operation, it is easier to compute this step directly. This way, we can compute `dw` and `ddw` with a single look-up of neighbouring grid cells. We store `dw` in a `Vec2`, expecting the `wave_velocity` to do the same.
+
+Here `adv` stands for advection term and `rct` for reaction term, given the generic case
+
+$$dC = - \textrm{adv} \nabla C + \textrm{rct} C$$
+
+``` {.julia #advection-coef}
 function advection_coef!(box::Box{BT}, diffusivity, wave_velocity, w, adv, rct) where {BT}
     d = diffusivity
     dx = box.phys_scale
@@ -156,7 +157,22 @@ function advection_coef!(box::Box{BT}, diffusivity, wave_velocity, w, adv, rct) 
         rct[i] = dot(s, dw) - d * ddw
     end
 end
+```
 
+Given the advection coefficients we can figure out what the maximal timestep should be.
+
+``` {.julia #advection-coef}
+function max_dt(adv, dx, courant_max)
+    u(a) = abs(a[1]) + abs(a[2])
+    return courant_max / maximum(u.(adv) ./ dx)
+end
+```
+
+### Compute `dC`
+
+Once we know our time step, we can use the `adv` and `rct` coefficients to evaluate the sediment transport. We again can't use the stencil or finite difference functionalities, since that would do needless computations. 
+
+``` {.julia #advection-coef}
 function transport_dC!(box::Box{BT}, adv, rct, C, dC) where {BT}
     dx = box.phys_scale
     di = (CartesianIndex(1, 0), CartesianIndex(0, 1))
@@ -174,11 +190,20 @@ function transport_dC!(box::Box{BT}, adv, rct, C, dC) where {BT}
 
     return dC
 end
+```
 
-function max_dt(adv, dx, courant_max)
-    u(a) = abs(a[1]) + abs(a[2])
-    return courant_max / maximum(u.(adv) ./ dx)
-end
+``` {.julia file=src/Transport/Advection.jl}
+module Advection
+
+using ....CarboKitten: Box
+using ...Stencil: stencil!, Size
+using ...BoundaryTrait: get_bounded
+using ..DifferentialOperators: central_difference, upwind, laplacian
+using Unitful
+using GeometryBasics
+using LinearAlgebra: dot
+
+<<advection-coef>>
 
 """
     transport!(box, diffusivity, wave_velocity,

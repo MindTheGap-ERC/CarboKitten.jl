@@ -223,7 +223,7 @@ function step!(input::Input)
         Δη = sum(prod; dims=1)[1, :, :]
         state.sediment_height .+= Δη
         state.step += 1
-        return H5Writer.DataFrame(
+        return Frame(
             production = prod,
             deposition = prod)
     end

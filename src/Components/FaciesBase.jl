@@ -1,6 +1,8 @@
 # ~/~ begin <<docs/src/components/facies.md#src/Components/FaciesBase.jl>>[init]
 @compose module FaciesBase
 using ..Common
+import ..Common: n_facies
+
 using HDF5
 export n_facies
 

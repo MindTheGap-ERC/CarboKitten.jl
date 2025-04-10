@@ -69,6 +69,7 @@ export in_units_of
 export Model
 export @for_each
 export Size
+export Frame
 
 using ModuleMixins
 using Unitful
@@ -86,11 +87,25 @@ const Height = typeof(1.0u"m")
 const Location = typeof(1.0u"m")
 const Rate = typeof(1.0u"m/Myr")
 const Intensity = typeof(1.0u"W/m^2")
+const Sediment = typeof(1.0u"m")
 
 abstract type AbstractFacies end
 abstract type AbstractInput end
 abstract type AbstractState end
 abstract type AbstractFrame end
+
+@kwdef struct Frame
+    disintegration::Union{Array{Sediment,3},Nothing} = nothing   # facies, x, y
+    production::Union{Array{Sediment,3},Nothing} = nothing
+    deposition::Union{Array{Sediment,3},Nothing} = nothing
+end
+
+function n_facies end
+
+Base.zeros(::Type{Frame}, input::AbstractInput) = Frame(
+    disintegration=zeros(Sediment, n_facies(input), input.box.grid_size...),
+    production=zeros(Sediment, n_facies(input), input.box.grid_size...),
+    deposition=zeros(Sediment, n_facies(input), input.box.grid_size...))
 
 end
 ```
@@ -118,6 +133,7 @@ include("Components/SedimentBuffer.jl")
 include("Components/ActiveLayer.jl")
 include("Components/Denudation.jl")
 
+include("Components/Models.jl")
 include("Components/H5Writer.jl")
 
 list_components() = filter(

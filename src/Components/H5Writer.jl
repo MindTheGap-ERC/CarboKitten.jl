@@ -1,37 +1,15 @@
 # ~/~ begin <<docs/src/components/hdf5.md#src/Components/H5Writer.jl>>[init]
 @compose module H5Writer
     using ..Common
+    import ..Models: Frame
+
     using HDF5
-    using ProgressLogging
 
     import ...CarboKitten: run_model, Model
 
     @mixin Boxes, TimeIntegration, FaciesBase, WaterDepth
 
     export run
-
-    @kwdef struct DataFrame
-        disintegration::Union{Array{Amount,3},Nothing} = nothing   # facies, x, y
-        production::Union{Array{Amount,3},Nothing} = nothing
-        deposition::Union{Array{Amount,3},Nothing} = nothing
-    end
-
-    Base.zeros(::Type{DataFrame}, input::AbstractInput) = DataFrame(
-        disintegration=zeros(Amount, n_facies(input), input.box.grid_size...),
-        production=zeros(Amount, n_facies(input), input.box.grid_size...),
-        deposition=zeros(Amount, n_facies(input), input.box.grid_size...))
-
-    function increment!(a::DataFrame, b::DataFrame)
-        if !isnothing(b.disintegration)
-            a.disintegration .+= b.disintegration
-        end
-        if !isnothing(b.production)
-            a.production .+= b.production
-        end
-        if !isnothing(b.deposition)
-            a.deposition .+= b.deposition
-        end
-    end
 
     function create_dataset(fid, input::AbstractInput)
         nf = n_facies(input)
@@ -55,7 +33,7 @@
         fid["sediment_height"][:, :, idx] = state.sediment_height |> in_units_of(u"m")
     end
 
-    function write_frame(fid, idx::Int, frame::DataFrame)
+    function write_frame(fid, idx::Int, frame::Frame)
         try_write(tgt, ::Nothing) = ()
         try_write(tgt, src::AbstractArray) = tgt[:, :, :, idx] = (src |> in_units_of(u"m"))
 
@@ -74,9 +52,8 @@
     run_model(Model{ALCAP}, ALCAP.Example.INPUT, "example.h5")
     ```
     """
-    function run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
+    function run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M        
         state = M.initial_state(input)
-        step! = M.step!(input)
 
         h5open(filename, "w") do fid
             create_group(fid, "input")
@@ -84,11 +61,8 @@
 
             create_dataset(fid, input)
             write_state(fid, 1, state)
-            @progress for w = 1:n_writes(input)
-                df = zeros(DataFrame, input)
-                for n = 1:input.time.write_interval
-                    increment!(df, step!(state))
-                end
+            
+		    run_model(Model{M}, input, state) do w, df 
                 write_frame(fid, w, df)
                 write_state(fid, w+1, state)
             end

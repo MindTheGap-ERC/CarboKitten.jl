@@ -131,7 +131,7 @@ end
 
 ``` {.julia file=src/Models/ALCAP.jl}
 @compose module ALCAP
-@mixin Tag, H5Writer, CAProduction, ActiveLayer
+@mixin Tag, H5Writer, CAProduction, ActiveLayer, InitialSediment
 
 using ..Common
 using ..CAProduction: production
@@ -150,10 +150,13 @@ function initial_state(input::AbstractInput)
     sediment_height = zeros(Height, input.box.grid_size...)
     sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
 
-    return State(
+    state = State(
         step=0, sediment_height=sediment_height,
         sediment_buffer=sediment_buffer,
         ca=ca_state.ca, ca_priority=ca_state.ca_priority)
+
+    InitialSediment.push_initial_sediment!(input, state)
+    return state
 end
 
 function step!(input::Input)

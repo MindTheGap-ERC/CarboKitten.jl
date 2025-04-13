@@ -18,6 +18,7 @@ include("Components/CellularAutomaton.jl")
 include("Components/CAProduction.jl")
 
 include("Components/SedimentBuffer.jl")
+include("Components/InitialSediment.jl")
 include("Components/ActiveLayer.jl")
 include("Components/Denudation.jl")
 

@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/components/components.md#src/Components/Common.jl>>[init]
 module Common
-export @u_str, Quantity, Amount, Time, Location, Rate, Intensity, Height
+export @u_str, Quantity, Amount, Time, Location, Rate, Intensity, Height, Sediment
 export AbstractFacies, AbstractInput, AbstractState, AbstractFrame
 export Box, box_axes, Boundary, Coast, Periodic, Reflected, TimeProperties
 export in_units_of

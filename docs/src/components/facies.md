@@ -23,7 +23,6 @@ end
 ``` {.julia file=src/Components/FaciesBase.jl}
 @compose module FaciesBase
 using ..Common
-import ..Common: n_facies
 
 using HDF5
 export n_facies

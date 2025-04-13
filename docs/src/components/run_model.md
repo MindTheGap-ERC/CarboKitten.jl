@@ -1,15 +1,27 @@
 # Running a Model
+
+```component-dag
+CarboKitten.Components.Models
+```
+
 Running a model, we store the changes in each time step. The `Frame` type stores the production, disintegration and deposited material after transport.
 
 ``` {.julia file=src/Components/Models.jl}
 @compose module Models
+    @mixin FaciesBase, TimeIntegration
     using ..Common
     using ..FaciesBase: n_facies
     using ..TimeIntegration: n_writes
+
     import ...CarboKitten: run_model
 
     using Unitful
     using ProgressLogging
+
+    Base.zeros(::Type{Frame}, input::AbstractInput) = Frame(
+        disintegration=zeros(Sediment, n_facies(input), input.box.grid_size...),
+        production=zeros(Sediment, n_facies(input), input.box.grid_size...),
+        deposition=zeros(Sediment, n_facies(input), input.box.grid_size...))
 
     function increment!(a::Frame, b::Frame)
         if !isnothing(b.disintegration)
@@ -27,7 +39,12 @@ Running a model, we store the changes in each time step. The `Frame` type stores
         run_model(f, ::Type{Model{M}}, input::AbstractInput) where M
         run_model(f, ::Type{Model{M}}, input::AbstractInput, state::AbstractState) where M
 
-    Run a model and send `Frame`s to callback `f`.
+    Run a model and send `Frame`s to callback `f`. The type parameter `M` should be a model,
+    being a module with both `initial_state!` and `step!` defined.
+
+    The second version with explicit state is used by `H5Writer` so we can perform an additional
+    action between creating the initial state and starting the model run (saving metadata to the
+    HDF5 file).
     """
     run_model(f, ::Type{Model{M}}, input::AbstractInput) where M =
         run_model(f, Model{M}, input, M.initial_state(input))

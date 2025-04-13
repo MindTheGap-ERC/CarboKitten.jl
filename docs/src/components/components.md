@@ -100,13 +100,6 @@ abstract type AbstractFrame end
     deposition::Union{Array{Sediment,3},Nothing} = nothing
 end
 
-function n_facies end
-
-Base.zeros(::Type{Frame}, input::AbstractInput) = Frame(
-    disintegration=zeros(Sediment, n_facies(input), input.box.grid_size...),
-    production=zeros(Sediment, n_facies(input), input.box.grid_size...),
-    deposition=zeros(Sediment, n_facies(input), input.box.grid_size...))
-
 end
 ```
 

@@ -7,7 +7,6 @@ using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
-using .H5Writer: run_model
 
 export Input, Facies
 
@@ -47,7 +46,7 @@ function step!(input::Input)
         state.sediment_height .+= sum(active_layer; dims=1)[1,:,:]
         state.step += 1
 
-        return H5Writer.DataFrame(
+        return Frame(
             production = p,
             disintegration = d,
             deposition = active_layer)

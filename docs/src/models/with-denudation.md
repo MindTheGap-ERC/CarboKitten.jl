@@ -83,7 +83,7 @@ function step!(input::Input)
         state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
         state.step += 1
 
-        return H5Writer.DataFrame(
+        return Frame(
             production = p,
             disintegration = d,
             deposition = sediment)

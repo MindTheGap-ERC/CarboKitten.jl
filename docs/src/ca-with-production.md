@@ -119,7 +119,7 @@ function step!(input::Input)
         state.sediment_height .+= Δη
         state.step += 1
 
-        return H5Writer.DataFrame(
+        return Frame(
             production = prod,
             deposition = prod)
     end

@@ -7,16 +7,24 @@ export push_sediment!, pop_sediment!, peek_sediment
 function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
     # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[init]
     mass = sum(parcel)
+    if mass > size(col)[1]
+        @warn "pushing a very large parcel of sediment: $mass times depositional resolution"
+        frac = parcel ./ mass
+        col .= frac
+        return
+    end
+    # ~/~ end
+    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[1]
     bucket = sum(col[1, :])
     @assert bucket >= 0.0 && bucket <= 1.0
     # ~/~ end
-    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[1]
+    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[2]
     if bucket + mass < 1.0
         col[1,:] .+= parcel
         return
     end
     # ~/~ end
-    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[2]
+    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[3]
     frac = parcel ./ mass
     col[1,:] .+= frac .* (1.0 - bucket)
     mass -= (1.0 - bucket)
@@ -31,7 +39,7 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
     end
     col[n+2:end,:] .= col[1:end-n-1,:]
     # ~/~ end
-    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[3]
+    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[4]
     na = [CartesianIndex()]
     col[2:n+1,:] .= frac[na,:]
     mass -= n

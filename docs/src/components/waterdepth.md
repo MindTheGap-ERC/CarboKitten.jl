@@ -27,9 +27,9 @@ using HDF5
 export water_depth
 
 @kwdef struct Input <: AbstractInput
-    sea_level          # function (t::Time) -> Length
-    initial_topography  # function (x::Location, y::Location) -> Length
-    subsidence_rate::Rate
+    sea_level = t -> 0.0u"m"
+    initial_topography = (x, y) -> 0.0u"m"
+    subsidence_rate::Rate = 0.0u"m/Myr"
 end
 
 @kwdef mutable struct State <: AbstractState

@@ -61,10 +61,21 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
 end
 ```
 
-First we determine the total sediment amount $\Delta$, being the sum of the parcel, as well as the amount of sediment in our *bucket*, the head row.
+First we check if the amount of sediment is larger than the buffer. A warning is printed and the entire buffer filled in the specified fractions.
 
 ``` {.julia #push-sediment}
 mass = sum(parcel)
+if mass > size(col)[1]
+    @warn "pushing a very large parcel of sediment: $mass times depositional resolution"
+    frac = parcel ./ mass
+    col .= frac
+    return
+end
+```
+
+First we determine the total sediment amount $\Delta$, being the sum of the parcel, as well as the amount of sediment in our *bucket*, the head row.
+
+``` {.julia #push-sediment}
 bucket = sum(col[1, :])
 @assert bucket >= 0.0 && bucket <= 1.0
 ```

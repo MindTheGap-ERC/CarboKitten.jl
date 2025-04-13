@@ -7,7 +7,7 @@
 #| collect: figures
 
 module DissolutionSpec
-using GLMakie
+using CairoMakie
 using Unitful
 using CarboKitten.Denudation.DissolutionMod: equilibrium, dissolution, karst_denudation_parameters
 using CarboKitten: Box

@@ -7,6 +7,7 @@ export in_units_of
 export Model
 export @for_each
 export Size
+export Frame
 
 using ModuleMixins
 using Unitful
@@ -24,11 +25,18 @@ const Height = typeof(1.0u"m")
 const Location = typeof(1.0u"m")
 const Rate = typeof(1.0u"m/Myr")
 const Intensity = typeof(1.0u"W/m^2")
+const Sediment = typeof(1.0u"m")
 
 abstract type AbstractFacies end
 abstract type AbstractInput end
 abstract type AbstractState end
 abstract type AbstractFrame end
+
+@kwdef struct Frame
+    disintegration::Union{Array{Sediment,3},Nothing} = nothing   # facies, x, y
+    production::Union{Array{Sediment,3},Nothing} = nothing
+    deposition::Union{Array{Sediment,3},Nothing} = nothing
+end
 
 end
 # ~/~ end

@@ -35,7 +35,7 @@ function stencil_multi!(f::F, ::Type{BT}, ::Size{sz}, out, inp) where {F, dim, s
     center = CartesianIndex((div.(sz, 2) .+ 1)...)
     for i in eachindex(IndexCartesian(), out)
         nb = (SArray{Tuple{sz...}}(
-                offset_value(BT, a, i, j - center)
+                get_bounded(BT, a, i + j - center)
                 for j in CartesianIndices(sz))
               for a in inp)
         out[i] = f(nb...)
@@ -156,7 +156,7 @@ Perhaps the most famous CA is Conway's Game of Life. This is a two-dimensional t
 module Life
     using CarboKitten.BoundaryTrait
     using CarboKitten.Stencil
-    using GLMakie
+    using CairoMakie
     using .Iterators: take
 
     "x is a 3x3 region around the cell at x[2,2]."

@@ -5,5 +5,8 @@
 
 using GLMakie
 using CarboKitten.Visualization
+
+GLMakie.activate!()
+
 save("docs/src/_fig/bs92-summary.png", summary_plot("data/output/bs92.h5"))
 # ~/~ end

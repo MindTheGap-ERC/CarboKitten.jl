@@ -1,5 +1,3 @@
-using CarboKitten
-
 module VariableInsolation
 
 using CarboKitten

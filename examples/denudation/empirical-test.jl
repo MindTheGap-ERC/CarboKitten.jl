@@ -4,7 +4,7 @@
 #| collect: figures
 
 module EmpiricalSpec
-using GLMakie
+using CairoMakie
 
 using CarboKitten
 using Unitful

@@ -2,72 +2,131 @@
 @compose module ActiveLayer
 @mixin WaterDepth, FaciesBase, SedimentBuffer
 
-export disintegration, transportation
+export disintegrator, transporter
 
 using ..Common
-using CarboKitten.Transport.ActiveLayer: pde_stencil
+using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
+using CarboKitten.Transport.Solvers: runge_kutta_4, forward_euler
 using Unitful
+using GeometryBasics
 
 @kwdef struct Facies <: AbstractFacies
-    diffusion_coefficient::typeof(1.0u"m/yr")
+    diffusion_coefficient::typeof(1.0u"m/yr") = 0.0u"m/Myr"
+    wave_velocity = _ -> (Vec2(0.0u"m/Myr", 0.0u"m/Myr"), Vec2(0.0u"1/Myr", 0.0u"1/Myr"))
 end
 
 @kwdef struct Input <: AbstractInput
     disintegration_rate::Rate = 50.0u"m/Myr"
+    transport_solver = Val{:RK4}
+    transport_substeps = :adaptive 
 end
 
-function define_h(input::AbstractInput,state::AbstractState)
-    max_h = input.disintegration_rate * input.time.Δt
-    w = water_depth(input)(state)
-    h = zeros(typeof(max_h), input.box.grid_size...)
-    for i in eachindex(input.box.grid_size)
-        if w[i] > 0.0u"m"
-            h[i] = min.(max_h, state.sediment_height[i])
+courant_max(::Type{Val{:RK4}}) = 2.0
+courant_max(::Type{Val{:forward_euler}}) = 1.0
+
+transport_solver(f, _) = f
+transport_solver(::Type{Val{:RK4}}, box) = runge_kutta_4(typeof(1.0u"m"), box)
+transport_solver(::Type{Val{:forward_euler}}, _) = forward_euler
+
+function adaptive_transporter(input)
+    solver = transport_solver(input.transport_solver, input.box)
+
+    w = water_depth(input)
+    box = input.box
+    Δt = input.time.Δt  # / input.transport_substeps
+    fs = input.facies
+    adv = Matrix{Vec2{Rate}}(undef, box.grid_size...)
+    rct = Matrix{typeof(1.0u"1/Myr")}(undef, box.grid_size...)
+    dC = Matrix{Rate}(undef, box.grid_size...)
+    cm = courant_max(input.transport_solver)
+
+    return function (state, C::Array{Amount,3})
+        wd = w(state)
+
+        for (i, f) in pairs(fs)
+            advection_coef!(box, f.diffusion_coefficient, f.wave_velocity, wd, adv, rct)
+            m = max_dt(adv, box.phys_scale, cm)
+            steps = ceil(Int, Δt / m)
+
+            # @debug "step $(state.step) - transport substeps $(steps)"
+            subdt = Δt / steps
+            for j in 1:steps
+                solver(
+                    (C, _) -> transport_dC!(input.box, adv, rct, C, dC),
+                    view(C, i, :, :), TimeIntegration.time(input, state), subdt)
+            end
+        end
+
+        for i in eachindex(C)
+            if C[i] < zero(Amount)
+                C[i] = zero(Amount)
+            end
         end
     end
-    return h
 end
 
 """
-    disintegration(input) -> f!
+    disintegrator(input) -> f!
 
 Prepares the disintegration step. Returns a function `f!(state::State)`. The returned function
 modifies the state, popping sediment from the `sediment_buffer` and returns an array of `Amount`.
 """
-function disintegration(input)
-    output = Array{Float64, 3}(undef, n_facies(input), input.box.grid_size...)
-    return function(state)
-        h = define_h(input, state)
+function disintegrator(input)
+    max_h = input.disintegration_rate * input.time.Δt
+    w = water_depth(input)
+    output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
+    depositional_resolution = input.depositional_resolution
+    @info "maximum disintegration per time step: max_h = $max_h"
+
+    return function (state)
+        wn = w(state)
+        h = min.(max_h, state.sediment_height)
+        h[wn.<=0.0u"m"] .= 0.0u"m"
+
+        @assert all(h .<= max_h)
         state.sediment_height .-= h
-        pop_sediment!(state.sediment_buffer, h ./ input.depositional_resolution .|> NoUnits, output)
-        return output .* input.depositional_resolution 
+        pop_sediment!(state.sediment_buffer, h ./ depositional_resolution .|> NoUnits, output)
+        return output .* depositional_resolution
     end
 end
 
 """
-    transportation(input::Input) -> f
+    transporter(input::Input) -> f
 
 Prepares the transportation step. Returns a function `f(state::State, active_layer)`,
 transporting the active layer, returning a transported `Amount` of sediment.
 """
-function transportation(input)
-    x, y = box_axes(input.box)
-    μ0 = input.initial_topography.(x, y')
-    # We always return this array
-    transported_output = Array{Amount,3}(undef, n_facies(input), input.box.grid_size...)
+function transporter(input)
+    if input.transport_substeps == :adaptive
+        return adaptive_transporter(input)
+    end
+
+    solver = transport_solver(input.transport_solver, input.box)
+
+    w = water_depth(input)
     box = input.box
-    Δt = input.time.Δt
+    Δt = input.time.Δt / input.transport_substeps
+    steps = input.transport_substeps
     fs = input.facies
 
-    return function (state, active_layer::Array{Amount,3})
-        μ = state.sediment_height .+ μ0
+    return function (state, C::Array{Amount,3})
+        wd = w(state)
+
         for (i, f) in pairs(fs)
-            pde_stencil(box, Δt, f.diffusion_coefficient,
-                view(transported_output, i, :, :),
-                μ, view(active_layer, i, :, :))
+            for j in 1:steps
+                solver(
+                    (C, _) -> transport(
+                        input.box, f.diffusion_coefficient, f.wave_velocity,
+                        C, wd),
+                    view(C, i, :, :), TimeIntegration.time(input, state), Δt)
+            end
         end
 
-        return transported_output
+        for i in eachindex(C)
+            if C[i] < zero(Amount)
+                C[i] = zero(Amount)
+            end
+        end
     end
 end
 

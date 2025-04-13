@@ -7,7 +7,6 @@ using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
 using ModuleMixins: @for_each
-using .H5Writer: run_model
 
 export Input, Facies
 
@@ -26,11 +25,11 @@ function initial_state(input::AbstractInput)
         ca=ca_state.ca, ca_priority=ca_state.ca_priority)
 end
 
-function step!(input::AbstractInput)
+function step!(input::Input)
     step_ca! = CellularAutomaton.step!(input)
-    disintegrate! = disintegration(input)
+    disintegrate! = ActiveLayer.disintegrator(input)
     produce = production(input)
-    transport = transportation(input)
+    transport! = ActiveLayer.transporter(input)
 
     function (state::State)
         if mod(state.step, input.ca_interval) == 0
@@ -41,16 +40,16 @@ function step!(input::AbstractInput)
         d = disintegrate!(state)
 
         active_layer = p .+ d
-        sediment = transport(state, active_layer)
+        transport!(state, active_layer)
 
-        push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|> NoUnits)
-        state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
+        push_sediment!(state.sediment_buffer, active_layer ./ input.depositional_resolution .|> NoUnits)
+        state.sediment_height .+= sum(active_layer; dims=1)[1,:,:]
         state.step += 1
 
-        return H5Writer.DataFrame(
+        return Frame(
             production = p,
             disintegration = d,
-            deposition = sediment)
+            deposition = active_layer)
     end
 end
 

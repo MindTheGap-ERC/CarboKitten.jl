@@ -566,7 +566,7 @@ Not very useful but highly glamourous.
 
 module Script
 
-using GLMakie
+using CairoMakie
 using CarboKitten.Visualization: glamour_view!
 using HDF5
 

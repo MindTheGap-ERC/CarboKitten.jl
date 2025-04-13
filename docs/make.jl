@@ -89,6 +89,8 @@ makedocs(
         "Architecture" => "architecture.md",
         "Model Components" => [
             "Components" => "components/components.md",
+            "Model Runner" => "components/run_model.md",
+            "HDF5 Writer" => "components/hdf5.md",
             "Tags" => "components/tag.md",
             "Boxes" => "components/boxes.md",
             "Time" => "components/time.md",
@@ -96,7 +98,6 @@ makedocs(
             "Cellular Automata" => "components/cellular-automata.md",
             "Water Depth" => "components/waterdepth.md",
             "Production" => "components/production.md",
-            "HDF5 Writer" => "components/hdf5.md",
             "Sediment Buffers" => "components/sediment_buffer.md",
             "Active Layer Transport" => "active-layer-transport.md",
             "Onshore Transport" => "onshore-transport.md"
@@ -119,7 +120,8 @@ makedocs(
             "Unitful" => "unitful.md",
             "Boxes" => "boxes.md",
             "Stencils" => "stencils.md",
-            "Utility" => "utility.md"
+            "Utility" => "utility.md",
+            "Finite Difference" => "finite-difference-transport.md"
         ],
         "API Documentation" => "api.md",
         "References" => "references.md"

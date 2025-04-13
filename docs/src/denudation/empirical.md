@@ -41,7 +41,7 @@ This produces the following curve for denudation rate as a function of precipita
 #| collect: figures
 
 module EmpiricalSpec
-using GLMakie
+using CairoMakie
 
 using CarboKitten
 using Unitful

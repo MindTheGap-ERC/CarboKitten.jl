@@ -81,6 +81,8 @@ using CarboKitten.DataSets: miller_2020
 using Smoothers
 using GLMakie
 
+GLMakie.activate!()
+
 function main()
 
     miller_df = miller_2020()
@@ -134,6 +136,8 @@ using Unitful
 using CarboKitten.Components
 using GLMakie
 using Random
+
+GLMakie.activate!()
 
 const TIME_PROPERTIES = TimeProperties(
 	Δt = 500u"yr",

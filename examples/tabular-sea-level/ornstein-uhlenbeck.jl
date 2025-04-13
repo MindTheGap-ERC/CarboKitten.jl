@@ -11,6 +11,8 @@ using CarboKitten.Components
 using GLMakie
 using Random
 
+GLMakie.activate!()
+
 const TIME_PROPERTIES = TimeProperties(
 	Δt = 500u"yr",
 	steps = 2000

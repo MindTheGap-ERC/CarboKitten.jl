@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Finite Difference · CarboKitten</title><meta name="title" content="Finite Difference · CarboKitten"/><meta property="og:title" content="Finite Difference · CarboKitten"/><meta property="twitter:title" content="Finite Difference · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/run_model/">Model Runner</a></li><li><a class="tocitem" href="../components/hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../onshore-transport/">Onshore Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li><li class="is-active"><a class="tocitem" href>Finite Difference</a><ul class="internal"><li><a class="tocitem" href="#Spacial-Finite-Differences"><span>Spacial Finite Differences</span></a></li><li><a class="tocitem" href="#Solvers"><span>Solvers</span></a></li><li><a class="tocitem" href="#Advection"><span>Advection</span></a></li><li><a class="tocitem" href="#Adaptive-integration"><span>Adaptive integration</span></a></li><li><a class="tocitem" href="#Tests"><span>Tests</span></a></li><li><a class="tocitem" href="#Scale-invariance"><span>Scale invariance</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Algorithms</a></li><li class="is-active"><a href>Finite Difference</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Finite Difference</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/finite-difference-transport.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Finite-Difference-Methods-for-Transport"><a class="docs-heading-anchor" href="#Finite-Difference-Methods-for-Transport">Finite Difference Methods for Transport</a><a id="Finite-Difference-Methods-for-Transport-1"></a><a class="docs-heading-anchor-permalink" href="#Finite-Difference-Methods-for-Transport" title="Permalink"></a></h1><h2 id="Spacial-Finite-Differences"><a class="docs-heading-anchor" href="#Spacial-Finite-Differences">Spacial Finite Differences</a><a id="Spacial-Finite-Differences-1"></a><a class="docs-heading-anchor-permalink" href="#Spacial-Finite-Differences" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Transport/DifferentialOperators.jl</i></div><pre><code class="language- julia hljs">module DifferentialOperators
+
+&lt;&lt;differential-operators&gt;&gt;
+
+end</code></pre><p>To solve the above equations we use three differential operators: <code>central_difference</code>, <code>upwind</code> and <code>laplacian</code>, defined in the context of a 2-d stencil operation.</p><p><strong>Central differences</strong> approximates the derivative on a grid by,</p><p class="math-container">\[dy_i = \frac{y_{i+1} - y_{i-1}}{2\Delta x}.\]</p><p>We define two variants for directions on the grid.</p><div class="noweb-label">⪡differential-operators⪢≣</div><pre><code class="language- julia hljs">central_difference(::Type{Val{1}}, a::AbstractMatrix, dx) =
+    (a[3, 2] - a[1, 2]) / (2dx)
+
+central_difference(::Type{Val{2}}, a::AbstractMatrix, dx) =
+    (a[2, 3] - a[2, 1]) / (2dx)</code></pre><p><strong>Upwind</strong> can be used when we know the derivative is being used in an advective context. If we are modeling flow, we better use the value in the direction where the flow is coming from,</p><p class="math-container">\[dy_i = \begin{cases}
+\frac{y_{i+1} - y_{i}}{\Delta x} &amp; \textrm{if} v &lt; 0,\\
+\frac{y_{i} - y_{i-1}}{\Delta x} &amp; \textrm{if} v &gt; 0
+\end{cases}\]</p><p>In our implementation we also multiply with the velocity <span>$v$</span> to prevent code duplication when expressing advective terms.</p><div class="noweb-label">⪡differential-operators⪢≣</div><pre><code class="language- julia hljs">upwind(v::T, a1, a2, a3, dx) where {T} =
+    if v &lt; zero(T)
+        v * (a3 - a2) / dx
+    else
+        v * (a2 - a1) / dx
+    end
+
+upwind(::Type{Val{1}}, v, a::AbstractMatrix, dx) =
+    upwind(v, a[:, 2]..., dx)
+
+upwind(::Type{Val{2}}, v, a::AbstractMatrix, dx) =
+    upwind(v, a[2, :]..., dx)</code></pre><p><strong>Laplacian</strong> is an approximation for the second derivative. Since we differentiate twice we no longer have the annoying situation that the derivative lives &quot;between&quot; our spatial discretization,</p><p class="math-container">\[\nabla^2 y_{i, j} = \frac{y_{i-1,j} + y_{i,j-1} + y_{i+1,j} + y_{i,j+1} - 4y_{i,j}}{\Delta x^2}.\]</p><div class="noweb-label">⪡differential-operators⪢≣</div><pre><code class="language- julia hljs">laplacian(a::AbstractMatrix, dx) =
+    (a[1, 2] + a[2, 1] + a[3, 2] + a[2, 3] - 4 * a[2, 2]) / dx^2</code></pre><h2 id="Solvers"><a class="docs-heading-anchor" href="#Solvers">Solvers</a><a id="Solvers-1"></a><a class="docs-heading-anchor-permalink" href="#Solvers" title="Permalink"></a></h2><p>Since we&#39;re trying to prevent complications, we use only explicit solvers for our PDE. We have <strong>forward Euler</strong> and <strong>Runge-Kutta 4</strong> methods in place.</p><p>If you want better solvers, it should be possible (and relatively straight-forward) to implement this transport model using <code>MethodOfLines.jl</code>, but we haven&#39;t yet felt the need for that.</p><p>These methods modify the given input <span>$y$</span> in-place.</p><div class="noweb-label">file:<i>src/Transport/Solvers.jl</i></div><pre><code class="language- julia hljs">module Solvers
+
+using Unitful
+
+function runge_kutta_4(::Type{T}, box) where {T}
+    U = typeof(1.0 * unit(T) / u&quot;Myr&quot;)
+    k1 = Array{U}(undef, box.grid_size...)
+    k2 = Array{U}(undef, box.grid_size...)
+    k3 = Array{U}(undef, box.grid_size...)
+    k4 = Array{U}(undef, box.grid_size...)
+    function (df, y, t, dt)
+        k1 .= df(y, t)
+        k2 .= df(y .+ dt/2 .* k1, t + dt/2)
+        k3 .= df(y .+ dt/2 .* k2, t + dt/2)
+        k4 .= df(y .+ dt .* k3, t + dt)
+        y .+= (k1 .+ 2 .* k2 .+ 2 .* k3 .+ k4) .* (dt/6)
+    end
+end
+
+function forward_euler(df, y, t, dt)
+    y .+= dt .* df(y, t)
+end
+
+end</code></pre><h2 id="Advection"><a class="docs-heading-anchor" href="#Advection">Advection</a><a id="Advection-1"></a><a class="docs-heading-anchor-permalink" href="#Advection" title="Permalink"></a></h2><p>We are solving sediment transport using finite difference methods. Our active layer approach to transport can be written as an equation in terms of the sediment concentration,</p><p class="math-container">\[\partial_t C = - d \nabla (C \nabla w),\]</p><p>where <span>$C$</span> is the sediment concentration, <span>$d$</span> the diffusion coefficient and <span>$w$</span> the water depth. Similarly, we can set the transport equation when we enable wave transport,</p><p class="math-container">\[\partial_t C = - d \nabla (C \nabla w) - v \nabla C + s C \nabla w,\]</p><p>where <span>$v(w)$</span> is the wave transport velocity and <span>$s(w)$</span> the wave transport shear. This is now no longer a diffusion equation per se, rather an advective system. When we solve the equations, the first term is expanded, so we get,</p><p class="math-container">\[\partial_t C = -d \nabla^2 w C - d \nabla w \nabla C - v \nabla C + s \nabla w C,\]</p><p>collecting terms:</p><p class="math-container">\[\partial_t C = - (d \nabla w + v) \nabla C + (s \nabla w - d \nabla^2 w) C.\]</p><p>Note that <span>$\partial_t C$</span> is a component of <span>$\partial_t \eta$</span>, and <span>$\nabla \eta = - \nabla w$</span>. So in that context this advection equation enacts diffusion.</p><div class="noweb-label">⪡advection-transport⪢≣</div><pre><code class="language- julia hljs">d = diffusivity
+v, s = wave_velocity(w[2, 2])
+
+dw = (central_difference(Val{1}, w, dx), central_difference(Val{2}, w, dx))
+adv = upwind(Val{1}, d * dw[1] + v[1], C, dx) + 
+      upwind(Val{2}, d * dw[2] + v[2], C, dx)
+rct = (s[1] * dw[1] + s[2] * dw[2] - d * laplacian(w, dx)) * C[2, 2]
+return rct - adv</code></pre><h2 id="Adaptive-integration"><a class="docs-heading-anchor" href="#Adaptive-integration">Adaptive integration</a><a id="Adaptive-integration-1"></a><a class="docs-heading-anchor-permalink" href="#Adaptive-integration" title="Permalink"></a></h2><p>To get efficient time integration we need to work with adaptive time-stepping. On each iteration we pre-compute the advection coefficients, and then the maximum time-step. Using the same pre-computed coefficients we then loop <span>$n$</span> times such that <span>$dt/n \le dt_{\textrm{max}}$</span>.</p><h3 id="Computing-advection-coefficients"><a class="docs-heading-anchor" href="#Computing-advection-coefficients">Computing advection coefficients</a><a id="Computing-advection-coefficients-1"></a><a class="docs-heading-anchor-permalink" href="#Computing-advection-coefficients" title="Permalink"></a></h3><p>Although this is a stencil operation, it is easier to compute this step directly. This way, we can compute <code>dw</code> and <code>ddw</code> with a single look-up of neighbouring grid cells. We store <code>dw</code> in a <code>Vec2</code>, expecting the <code>wave_velocity</code> to do the same.</p><p>Here <code>adv</code> stands for advection term and <code>rct</code> for reaction term, given the generic case</p><p class="math-container">\[dC = - \textrm{adv} \nabla C + \textrm{rct} C\]</p><div class="noweb-label">⪡advection-coef⪢≣</div><pre><code class="language- julia hljs">function advection_coef!(box::Box{BT}, diffusivity, wave_velocity, w, adv, rct) where {BT}
+    d = diffusivity
+    dx = box.phys_scale
+    di = (CartesianIndex(1, 0), CartesianIndex(0, 1))
+    for i = eachindex(IndexCartesian(), w)
+        v, s = wave_velocity(w[i])
+
+        wx1 = get_bounded(BT, w, i - di[1])
+        wx2 = get_bounded(BT, w, i + di[1])
+        wy1 = get_bounded(BT, w, i - di[2])
+        wy2 = get_bounded(BT, w, i + di[2])
+
+        dw = Vec2((wx2 - wx1) / (2dx), (wy2 - wy1) / (2dx))
+        ddw = (wx1 + wx2 + wy1 + wy2 - 4*w[i]) / dx^2
+
+        adv[i] = d * dw + v
+        rct[i] = dot(s, dw) - d * ddw
+    end
+end</code></pre><p>Given the advection coefficients we can figure out what the maximal timestep should be.</p><div class="noweb-label">⪡advection-coef⪢≣</div><pre><code class="language- julia hljs">function max_dt(adv, dx, courant_max)
+    u(a) = abs(a[1]) + abs(a[2])
+    return courant_max / maximum(u.(adv) ./ dx)
+end</code></pre><h3 id="Compute-dC"><a class="docs-heading-anchor" href="#Compute-dC">Compute <code>dC</code></a><a id="Compute-dC-1"></a><a class="docs-heading-anchor-permalink" href="#Compute-dC" title="Permalink"></a></h3><p>Once we know our time step, we can use the <code>adv</code> and <code>rct</code> coefficients to evaluate the sediment transport. We again can&#39;t use the stencil or finite difference functionalities, since that would do needless computations. </p><div class="noweb-label">⪡advection-coef⪢≣</div><pre><code class="language- julia hljs">function transport_dC!(box::Box{BT}, adv, rct, C, dC) where {BT}
+    dx = box.phys_scale
+    di = (CartesianIndex(1, 0), CartesianIndex(0, 1))
+
+    @inline upwind(v::T, a, i, di) where {T} =
+        if v &lt; zero(T)
+            v * (get_bounded(BT, a, i+di) - a[i]) / dx
+        else
+            v * (a[i] - get_bounded(BT, a, i-di)) / dx
+        end
+
+    for i = eachindex(IndexCartesian(), dC)
+        dC[i] = rct[i] *  C[i] - upwind(adv[i][1], C, i, di[1]) - upwind(adv[i][2], C, i, di[2]) 
+    end
+
+    return dC
+end</code></pre><div class="noweb-label">file:<i>src/Transport/Advection.jl</i></div><pre><code class="language- julia hljs">module Advection
+
+using ....CarboKitten: Box
+using ...Stencil: stencil!, Size
+using ...BoundaryTrait: get_bounded
+using ..DifferentialOperators: central_difference, upwind, laplacian
+using Unitful
+using GeometryBasics
+using LinearAlgebra: dot
+
+&lt;&lt;advection-coef&gt;&gt;
+
+&quot;&quot;&quot;
+    transport!(box, diffusivity, wave_velocity,
+               C, w, dC)
+
+Computes `dC` given a `box`, `diffusivity` constant in units of m/Myr,
+`wave_velocity` is a function of water depth, returning both velocity in units
+of m/Myr, and shear in units of 1/Myr, which should be the derivative of the
+velocity w.r.t. water depth. `C` is the concentration of entrained sediment,
+`w` the water depth, and `dC` the output derivative of `C`.
+&quot;&quot;&quot;
+function transport!(box::Box{BT}, diffusivity, wave_velocity, C, w, dC) where {BT}
+    dx = box.phys_scale
+    stencil!(BT, Size(3, 3), dC, C, w) do C, w
+        &lt;&lt;advection-transport&gt;&gt;
+    end
+end
+
+&quot;&quot;&quot;
+    transport(box, diffusivity, wave_velocity, wave_shear,
+               C, w)
+
+Non-mutating version of [`transport!`](@ref). Allocates and returns `dC`.
+&quot;&quot;&quot;
+function transport(box::Box{BT}, diffusivity, wave_velocity, C::AbstractArray{T}, w) where {BT, T}
+	dC = Array{typeof(1.0 * Unitful.unit(T) / u&quot;Myr&quot;)}(undef, box.grid_size...)
+    transport!(box, diffusivity, wave_velocity, C, w, dC)
+    return dC
+end
+
+end</code></pre><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><p>The following set of tests all involve mutilating a picture of a kitten. The default settings for <code>TestModel</code> have zero wave velocity and diffusivity. We&#39;ll enable them one by one. Note again, that what we call diffusivity, in the context of these tests doesn&#39;t necessarily behave like diffusion.</p><div class="noweb-label">file:<i>examples/transport/runner.jl</i></div><pre><code class="language- julia hljs">module Runner
+using CarboKitten
+using ProgressLogging
+
+n_steps(input) = input.time.steps
+
+function run_model(f, ::Type{Model{M}}, input) where {M}
+    state = M.initial_state(input)
+    f(0, state)
+
+    @progress for i = 1:n_steps(input)
+        M.step!(input, state)
+        f(i, state)
+    end
+
+    return state
+end
+
+do_nothing(_i, _s) = ()
+
+run_model(::Type{Model{M}}, input) where {M} = run_model(do_nothing, Model{M}, input)
+end</code></pre><div class="noweb-label">file:<i>examples/transport/test_model.jl</i></div><pre><code class="language- julia hljs">module TestModel
+
+using CarboKitten
+using CarboKitten.Transport.Advection: transport
+using Unitful
+
+@kwdef struct Input
+    box::Box
+    time::TimeProperties
+    initial_state::Array{Float64}
+    topography::Array{typeof(1.0u&quot;m&quot;)}
+
+    diffusivity = 0.0u&quot;m/Myr&quot;
+    wave_velocity = _ -&gt; ((0.0u&quot;m/Myr&quot;, 0.0u&quot;m/Myr&quot;), (0.0u&quot;1/Myr&quot;, 0.0u&quot;1/Myr&quot;))
+
+    solver
+end
+
+@kwdef mutable struct State
+    time::typeof(1.0u&quot;Myr&quot;)
+    value::Array{Float64}
+end
+
+initial_state(input) = State(
+    time = input.time.t0,
+    value = copy(input.initial_state))
+
+function step!(input, state)
+    input.solver(
+        (a, t) -&gt; transport(
+            input.box, input.diffusivity, input.wave_velocity,
+            a, .-input.topography),
+        state.value, state.time, input.time.Δt)
+    state.time += input.time.Δt
+end
+
+end</code></pre><h3 id="Wave-induced-advection"><a class="docs-heading-anchor" href="#Wave-induced-advection">Wave induced advection</a><a id="Wave-induced-advection-1"></a><a class="docs-heading-anchor-permalink" href="#Wave-induced-advection" title="Permalink"></a></h3><p>With only wave induced advection enabled, we should see a clear translation of the picture of the kitten. The additional diffusion is so called <em>false diffusion</em>, a numerical artifact of the upwind differencing scheme.</p><p><img src="../fig/flying_cat.png" alt="Flying Cat"/></p><div class="noweb-label">file:<i>examples/transport/flying_cat.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/flying_cat.png
+#| collect: figures
+
+module FlyingCat
+
+include(&quot;runner.jl&quot;)
+include(&quot;test_model.jl&quot;)
+
+using CarboKitten
+using FileIO
+using GLMakie
+
+using CarboKitten.Transport.Solvers: forward_euler, runge_kutta_4
+
+GLMakie.activate!()
+
+const BOX = CarboKitten.Box{Periodic{2}}(
+    grid_size=(256, 256), phys_scale=0.05u&quot;km&quot;)
+
+const INPUT = TestModel.Input(
+    box = BOX,
+    time = TimeProperties(Δt=100u&quot;yr&quot;, steps=50),
+    topography = zeros(typeof(1.0u&quot;m&quot;), BOX.grid_size),
+    initial_state = load(&quot;data/cat256.pgm&quot;)&#39;[:, end:-1:1] .|&gt; Float64,
+    wave_velocity = _ -&gt; ((0.4u&quot;m/yr&quot;, -0.3u&quot;m/yr&quot;), (0.0u&quot;1/yr&quot;, 0.0u&quot;1/yr&quot;)),
+    solver = runge_kutta_4(Float64, BOX)
+)
+
+function run()
+    x, y = box_axes(INPUT.box)
+
+    fig = Figure(size=(800, 400))
+    ax1 = Axis(fig[1, 1], aspect=1)
+    hm1 = heatmap!(ax1, x, y, INPUT.initial_state, colorrange=(0.0,0.7))
+    Colorbar(fig[2, 1], hm1, vertical=false)
+
+    out = Runner.run_model(Model{TestModel}, INPUT)
+    ax2 = Axis(fig[1, 2], aspect=1)
+    hm2 = heatmap!(ax2, x, y, out.value, colorrange=(0.0,0.7))
+    Colorbar(fig[2, 2], hm2, vertical=false)
+
+    save(&quot;docs/src/_fig/flying_cat.png&quot;, fig)
+end
+
+end
+
+FlyingCat.run()</code></pre><h3 id="Diffusion"><a class="docs-heading-anchor" href="#Diffusion">Diffusion</a><a id="Diffusion-1"></a><a class="docs-heading-anchor-permalink" href="#Diffusion" title="Permalink"></a></h3><p>Next, we only enable the diffusivity term. We set a topography of a single Gaussian peak in the center of the box. Sediment is dispersed down slope.</p><p><img src="../fig/exploding_kitten.png" alt="Exploding Kitten"/></p><div class="noweb-label">file:<i>examples/transport/exploding_kitten.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/exploding_kitten.png
+#| collect: figures
+
+module ExplodingKitten
+
+include(&quot;runner.jl&quot;)
+include(&quot;test_model.jl&quot;)
+
+using CarboKitten
+using FileIO
+using GLMakie
+
+using CarboKitten.Transport.Solvers: runge_kutta_4
+
+GLMakie.activate!()
+
+const N = 288
+
+function load_cat()
+    b = div(N - 256, 2)
+    cat = zeros(Float64, N, N)
+    cat[b+1:256+b, b+1:256+b] .= (load(&quot;data/cat256.pgm&quot;)&#39;[:, end:-1:1] .|&gt; Float64)
+    return cat
+end
+
+const BOX = CarboKitten.Box{Reflected{2}}(grid_size=(N, N), phys_scale=0.05u&quot;km&quot;)
+const X, Y = box_axes(BOX)
+const INPUT = TestModel.Input(
+    box = BOX, 
+    time = TimeProperties(Δt=100u&quot;yr&quot;, steps=100),
+    initial_state = load_cat(),
+    topography = ((x, y) -&gt; 30.0u&quot;m&quot; * exp(-((x-7.2u&quot;km&quot;)^2 + (y-7.2u&quot;km&quot;)^2)/(2*(3.0u&quot;km&quot;)^2)) - 30.0u&quot;m&quot;).(X, Y&#39;),
+    diffusivity = 30.0u&quot;m/yr&quot;,
+    solver = runge_kutta_4(Float64, BOX)
+)
+
+function run()
+    x, y = box_axes(INPUT.box)
+
+    fig = Figure(size=(800, 400))
+    ax1 = Axis(fig[1, 1], aspect=1)
+    hm1 = heatmap!(ax1, x, y, INPUT.topography / u&quot;m&quot;)
+    Colorbar(fig[2,1], hm1, vertical=false)
+
+    out = Runner.run_model(Model{TestModel}, INPUT)
+    ax2 = Axis(fig[1, 2], aspect=1)
+    hm2 = heatmap!(ax2, x, y, out.value, colorrange=(0.0,0.8))
+    Colorbar(fig[2,2], hm2, vertical=false)
+
+    save(&quot;docs/src/_fig/exploding_kitten.png&quot;, fig)
+end
+
+end
+
+ExplodingKitten.run()</code></pre><h2 id="Scale-invariance"><a class="docs-heading-anchor" href="#Scale-invariance">Scale invariance</a><a id="Scale-invariance-1"></a><a class="docs-heading-anchor-permalink" href="#Scale-invariance" title="Permalink"></a></h2><p>From the conception  of the transport model, it should be evident that the solution to the transport equations should be scale invariant, in the sense that  we can multiply <span>$C$</span> by any constant, solve the equations, then divide by the same constant and arrive at the same result.</p><div class="noweb-label">file:<i>test/Transport/AdvectionSpec.jl</i></div><pre><code class="language- julia hljs">@testset &quot;CarboKitten.Transport.Advection.scale-invariance&quot; begin
+
+using CarboKitten
+using CarboKitten.Transport.Solvers: runge_kutta_4
+using CarboKitten.Transport.Advection: transport
+using Unitful
+
+let box = Box{Periodic{2}}(grid_size=(32, 32), phys_scale=1.0u&quot;m&quot;)
+    solver = runge_kutta_4(Float64, box)
+    wave_velocity = _ -&gt; ((0.5u&quot;m/s&quot;, 0.0u&quot;m/s&quot;), (0.0u&quot;1/s&quot;, 0.0u&quot;1/s&quot;))
+    diffusivity = 5.0u&quot;m/s&quot;
+    w = randn(box.grid_size...) * u&quot;m&quot;
+    C1 = randn(box.grid_size...)
+    C2 = C1 .* 10.0
+    dt = 1.0u&quot;s&quot;
+    df(C, _) = transport(box, diffusivity, wave_velocity, C, w)
+
+    for i = 1:10
+        solver(df, C1, 0.0u&quot;s&quot;, dt)
+        solver(df, C2, 0.0u&quot;s&quot;, dt)
+    end
+
+    @test isapprox(C1 .* 10.0, C2)
+end
+
+end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../utility/">« Utility</a><a class="docs-footer-nextpage" href="../api/">API Documentation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Sunday 13 April 2025 09:24">Sunday 13 April 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

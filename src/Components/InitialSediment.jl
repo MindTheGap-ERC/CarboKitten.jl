@@ -5,7 +5,7 @@
 
     # ~/~ begin <<docs/src/components/initial_sediment.md#initial-sediment>>[init]
     @kwdef struct Facies <: AbstractFacies
-        initial_sediment
+        initial_sediment = 0.0u"m"
     end
     # ~/~ end
     # ~/~ begin <<docs/src/components/initial_sediment.md#initial-sediment>>[1]

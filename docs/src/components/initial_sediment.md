@@ -17,7 +17,7 @@ Mostly for debugging and testing purposes it can be convenient to specify an ini
 
 ``` {.julia #initial-sediment}
 @kwdef struct Facies <: AbstractFacies
-    initial_sediment
+    initial_sediment = 0.0u"m"
 end
 ```
 

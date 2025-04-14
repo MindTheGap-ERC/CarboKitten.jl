@@ -210,7 +210,7 @@ function stratigraphic_column(deposition, disintegration)
         @assert acc <= deposition[ts, :]
         if sum(acc) > 0.0u"m"
             sc[ts, :] .= acc
-            @assert sum(sc[ts, :]) == sum(acc)
+            @assert sum(sc[ts, :]) ≈ sum(acc)
             @assert sum(sc[ts, :]) > 0.0u"m"
             continue
         end
@@ -227,7 +227,7 @@ function stratigraphic_column(deposition, disintegration)
                 previous_sc = sc[ts_down, :]
                 sc[ts_down, :] .-= acc
                 @assert sum(sc[ts_down, :]) >= 0.0u"m"
-                @assert sum(sc[ts_down, :]) + sum(acc) == sum(previous_sc)
+                @assert sum(sc[ts_down, :]) + sum(acc) ≈ sum(previous_sc)
                 if any(sc[ts_down, :] .< 0.0u"m")
                     @warn "negative value in stratigraphic column: $(sc[ts_down,:])"
                 end

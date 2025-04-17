@@ -13,6 +13,7 @@ export production_rate, uniform_production
     maximum_growth_rate::Rate
     extinction_coefficient::typeof(1.0u"m^-1")
     saturation_intensity::Intensity
+    production_offset::Height = 0.0u"m"
 end
 
 @kwdef struct Input <: AbstractInput
@@ -58,8 +59,9 @@ end
 # ~/~ begin <<docs/src/components/production.md#component-production-rate>>[init]
 function production_rate(insolation, facies, water_depth)
     gₘ = facies.maximum_growth_rate
+    offset = facies.production_offset
     I = insolation / facies.saturation_intensity
-    x = water_depth * facies.extinction_coefficient
+    x = (water_depth - offset) * facies.extinction_coefficient
     return water_depth > 0.0u"m" ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
 end
 # ~/~ end

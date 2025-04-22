@@ -310,94 +310,218 @@ ActiveLayerPlot.main()
 
 Note in the bottom figure, due to sedimentation not keeping up with subsidence, the lines go down in time. We see the sediment transport being favoured to downslope areas, which is what we want. This effect could be made more extreme by increasing the disintegration rate.
 
-## Test 2: erosion
+## One-dimensional tests
 
-Suppose now we have **no** production, but we start with a steep gradient in the existing sediment. We expect this gradient to erode.
+``` {.julia #plot-1d-evolution}
+using Printf: @sprintf
+using Unitful: ustrip
 
-In the input we set the `production` to zero, but we specify an initial sediment that contains both a step and a top-hat function. Erodability of these kind of features could be a measurable quantity to which we could potentially calibrate this transport model.
+function plot_1d_evolution!(ax::Axis, input, every=100)
+	y_idx = 1
+	(x, y) = box_axes(input.box)
+	state = ALCAP.initial_state(input)
 
-Note that, due to the way we populate the active layer, the gradient $\nabla P$ will vanish, leaving us with a pure diffusion system.
+	plot_state() = begin
+		t = state.step * input.time.Δt
+		η = input.initial_topography.(x, y') .+ state.sediment_height .- input.subsidence_rate * t
+		lines!(ax, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"), label=@sprintf("%.3f Myr", ustrip(t)))
+	end
 
-``` {.julia #example-active-layer-erosion}
-function initial_sediment(x, y)
-  if x < 5.0u"km"
-    return 30.0u"m"
-  end
-
-  if x > 10.0u"km" && x < 11.0u"km"
-    return 20.0u"m"
-  end
-
-  return 5.0u"m"
+	plot_state()
+	run_model(Model{ALCAP}, input, state) do i, _
+		if mod(i, every) == 0
+			plot_state()
+		end
+	end
 end
 
-const INPUT = ActiveLayer.Input(
-    box                   = Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),
-    Δt                    = 0.001u"Myr",
-    t_end                 = 1.0u"Myr",
+function plot_1d_evolution(input, every=100)
+	fig = Figure()
+	ax = Axis(fig[1, 1], xlabel="x (km)", ylabel="η (m)")
 
-    initial_topography     = (x, y) -> -30.0u"m",
-    initial_sediment      = initial_sediment,
-    production            = (x, y) -> 0.0u"m/Myr",
+    plot_1d_evolution!(ax, input, every)
 
-    disintegration_rate   = 50.0u"m/Myr",
-    subsidence_rate       = 50.0u"m/Myr",
-    diffusion_coefficient = 10.0u"m/yr")
+	Legend(fig[1, 2], ax)
+
+	fig
+end
 ```
 
-![Active layer erosion test](fig/active-layer-erosion.png)
+``` {.julia #transport-test-input}
+transport_test_input(;
+	initial_topography = (x, y) -> 0.0u"m",
+	initial_sediment = (x, y) -> 0.0u"m",
+	disintegration_rate = 50.0u"m/Myr",
+	subsidence_rate = 50.0u"m/Myr",
+	diffusion_coefficient = 0.0u"m/yr",
+	wave_velocity = _ -> (Vec2(0.0, 0.0)u"m/yr", Vec2(0.0, 0.0)u"1/yr")) =
 
-```@raw html
-<details><summary>Plotting code</summary>
+	ALCAP.Input(
+		box = CarboKitten.Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
+		time = TimeProperties(
+			Δt = 0.001u"Myr",
+			steps = 1000),
+		facies = [ALCAP.Facies(
+			initial_sediment = initial_sediment,
+			diffusion_coefficient = diffusion_coefficient,
+			wave_velocity = wave_velocity,
+			maximum_growth_rate = 0.0u"m/Myr",
+			extinction_coefficient = 0.8u"m^-1",
+			saturation_intensity = 60u"W/m^2"
+		)],
+		disintegration_rate = disintegration_rate,
+		initial_topography = initial_topography,
+		insolation = 400.0u"W/m^2",
+		sediment_buffer_size = 5,
+		depositional_resolution = 1000.0u"m",
+		transport_solver = Val{:forward_euler})
 ```
 
-``` {.julia file=examples/transport/active-layer-erosion.jl}
-#| requires: examples/transport/active-layer.jl
-#| creates: docs/src/_fig/active-layer-erosion.png
+### Erosion
+
+The erosion scenario tests that sharp sediment profiles erode under diffusive transport.
+
+![Erosion](fig/1d-erosion.svg)
+
+``` {.julia .task file=examples/transport/1d-erosion.jl}
+#| creates: docs/src/_fig/1d-erosion.svg
 #| collect: figures
 
-module ActiveLayerErosion
+module Script
+    using CarboKitten
+    using CairoMakie
 
-include("active-layer.jl")
+    <<transport-test-input>>
+    <<plot-1d-evolution>>
 
-using Unitful
-using CarboKitten.BoundaryTrait: Shelf
-using CarboKitten.Config: Box, axes
-using CarboKitten.Utility: in_units_of
-using CairoMakie
+	function initial_sediment(x, y)
+	  if x < 5.0u"km"
+	    return 30.0u"m"
+	  end
 
-<<example-active-layer-erosion>>
+	  if x > 10.0u"km" && x < 11.0u"km"
+	    return 20.0u"m"
+	  end
 
-function main(input)
-    y_idx = 1
-    result = Iterators.map(deepcopy,
-          Iterators.filter(x -> mod(x[1]-1, 400) == 0, enumerate(ActiveLayer.run_model(input)))) |> collect
+	  return 5.0u"m"
+	end
 
-    (x, y) = axes(input.box)
-    # p = input.production.(x, y')
+    function main()
+        CairoMakie.activate!()
+        input = transport_test_input(
+            initial_topography = (x, y) -> -30.0u"m",
+            initial_sediment = initial_sediment,
+            diffusion_coefficient = 10.0u"m/yr")
 
-    fig = Figure(size=(800, 600))
-    # ax = Axis3(fig[1:2,1], xlabel="x (km)", ylabel="y (km)", zlabel="η (m)", azimuth=5π/3)
-    # surface!(ax, x |> in_units_of(u"km"), y |> in_units_of(u"km"), η |> in_units_of(u"m"))
-
-    ax2 = Axis(fig[1,1], xlabel="x (km)", ylabel="η (m)")
-
-    for r in result
-        η = input.initial_topography.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
-
-        lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"))
+        fig = plot_1d_evolution(input, 250)
+        save("docs/src/_fig/1d-erosion.svg", fig)
     end
-
-    save("docs/src/_fig/active-layer-erosion.png", fig)
 end
 
-end
-
-ActiveLayerErosion.main(ActiveLayerErosion.INPUT)
+Script.main()
 ```
 
-```@raw html
-</details>
+### Advection
+
+To test advective properties, we set disintegration rate to infinity, This way, surface gradients are zero and we get pure advection.
+
+![advection](fig/1d-advection.svg)
+
+``` {.julia .task file=examples/transport/1d-advection.jl}
+#| creates: docs/src/_fig/1d-advection.svg
+#| collect: figures
+
+module Script
+    using CarboKitten
+    using CairoMakie
+
+    <<transport-test-input>>
+    <<plot-1d-evolution>>
+
+    function gaussian_initial_sediment(x, y)
+        exp(-(x-10u"km")^2 / (2 * (0.5u"km")^2)) * 30.0u"m"
+    end
+
+    v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
+
+    function main()
+        CairoMakie.activate!()
+        input = transport_test_input(
+            initial_topography = (x, y)  -> -30.0u"m",
+            initial_sediment = gaussian_initial_sediment,
+            disintegration_rate = 50000.0u"m/Myr",
+            wave_velocity = v_const(-5u"km/Myr")
+        )
+
+        fig = plot_1d_evolution(input, 250)
+        save("docs/src/_fig/1d-advection.svg", fig)
+    end
+end
+
+Script.main()
+```
+
+### Onshore transport
+
+This test shows the difference between having a velocity profile without and with shear.
+
+![onshore](fig/1d-onshore.svg)
+
+``` {.julia .task file=examples/transport/1d-onshore.jl}
+#| creates: docs/src/_fig/1d-onshore.svg
+#| collect: figures
+
+module Script
+    using CarboKitten
+    using CairoMakie
+
+    <<transport-test-input>>
+    <<plot-1d-evolution>>
+
+    v_prof(v_max, max_depth, w) = 
+        let k = sqrt(0.5) / max_depth,
+            A = 3.331 * v_max,
+            α = tanh(k * w),
+            β = exp(-k * w)
+            (A * α * β, -A * k * β * (1 - α - α^2))
+        end
+
+    v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
+
+    v_prof_par(v_max, max_depth) = w -> let (v, s) = v_prof(v_max, max_depth, w)
+        (Vec2(v, 0.0u"m/yr"), Vec2(s, 0.0u"1/yr"))
+    end
+
+    function main()
+        CairoMakie.activate!()
+
+        fig = Figure(size=(1000, 500))
+        ax1 = Axis(fig[1, 1], xlabel="x (km)", ylabel="η (m)")
+        input1 = transport_test_input(
+            initial_topography = (x, y) -> -x / 375.0 - 10u"m",
+            initial_sediment = 10.0u"m",
+            disintegration_rate = 50.0u"m/Myr",
+            diffusion_coefficient = 5.0u"m/yr",
+            wave_velocity = v_const(-0.5u"m/yr")
+        )
+        plot_1d_evolution!(ax1, input1, 250)
+
+        ax2 = Axis(fig[1, 2], xlabel="x (km)", ylabel="η (m)")
+        input2 = transport_test_input(
+            initial_topography = (x, y) -> -x / 375.0 - 10u"m",
+            initial_sediment = 10.0u"m",
+            disintegration_rate = 50.0u"m/Myr",
+            diffusion_coefficient = 5.0u"m/yr",
+            wave_velocity = v_prof_par(-0.5u"m/yr", 20u"m")
+        )
+        plot_1d_evolution!(ax2, input2, 250)
+
+        Legend(fig[1, 3], ax2)
+        save("docs/src/_fig/1d-onshore.svg", fig)
+    end
+end
+
+Script.main()
 ```
 
 ## Active Layer Component

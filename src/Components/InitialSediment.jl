@@ -23,7 +23,7 @@
 
         # s should be callable
         x, y = box_axes(box)
-        return s(x, y')
+        return s.(x, y')
     end
 
     function push_initial_sediment!(input::AbstractInput, state::AbstractState)

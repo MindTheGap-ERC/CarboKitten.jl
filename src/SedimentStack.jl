@@ -7,6 +7,10 @@ export push_sediment!, pop_sediment!, peek_sediment
 function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
     # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[init]
     mass = sum(parcel)
+    if mass == 0.0
+        return
+    end
+
     if mass > size(col)[1]
         @warn "pushing a very large parcel of sediment: $mass times depositional resolution"
         frac = parcel ./ mass
@@ -30,13 +34,6 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
     mass -= (1.0 - bucket)
     n = floor(Int64, mass)
 
-    if n > size(col)[1] ÷ 2
-        @warn "pushing a too large parcel of sediment: Δ = $mass, reduce your timestep"
-    end
-    if n > size(col)[1] - 2
-        @error "pushing a way too large parcel of sediment: Δ = $mass, parcel = $parcel"
-        error("fatal error, too much sediment for buffer")
-    end
     col[n+2:end,:] .= col[1:end-n-1,:]
     # ~/~ end
     # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[4]

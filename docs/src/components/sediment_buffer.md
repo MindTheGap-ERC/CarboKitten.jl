@@ -65,6 +65,10 @@ First we check if the amount of sediment is larger than the buffer. A warning is
 
 ``` {.julia #push-sediment}
 mass = sum(parcel)
+if mass == 0.0
+    return
+end
+
 if mass > size(col)[1]
     @warn "pushing a very large parcel of sediment: $mass times depositional resolution"
     frac = parcel ./ mass
@@ -97,13 +101,6 @@ col[1,:] .+= frac .* (1.0 - bucket)
 mass -= (1.0 - bucket)
 n = floor(Int64, mass)
 
-if n > size(col)[1] ÷ 2
-    @warn "pushing a too large parcel of sediment: Δ = $mass, reduce your timestep"
-end
-if n > size(col)[1] - 2
-    @error "pushing a way too large parcel of sediment: Δ = $mass, parcel = $parcel"
-    error("fatal error, too much sediment for buffer")
-end
 col[n+2:end,:] .= col[1:end-n-1,:]
 ```
 

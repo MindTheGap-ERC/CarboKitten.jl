@@ -61,7 +61,7 @@
 
             create_dataset(fid, input)
             write_state(fid, 1, state)
-            
+
 		    run_model(Model{M}, input, state) do w, df 
                 write_frame(fid, w, df)
                 write_state(fid, w+1, state)

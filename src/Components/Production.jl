@@ -62,7 +62,7 @@ function production_rate(insolation, facies, water_depth)
     offset = facies.production_offset
     I = insolation / facies.saturation_intensity
     x = (water_depth - offset) * facies.extinction_coefficient
-    return water_depth > 0.0u"m" ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
+    return x > 0.0 ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
 end
 # ~/~ end
 

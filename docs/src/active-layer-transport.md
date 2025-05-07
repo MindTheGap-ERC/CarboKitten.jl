@@ -312,6 +312,10 @@ Note in the bottom figure, due to sedimentation not keeping up with subsidence, 
 
 ## One-dimensional tests
 
+``` {.julia file=examples/transport/plot-1d-evolution.jl}
+<<plot-1d-evolution>>
+```
+
 ``` {.julia #plot-1d-evolution}
 using Printf: @sprintf
 using Unitful: ustrip
@@ -404,7 +408,7 @@ module Script
     using CarboKitten.Testing: transport_test_input
     using CairoMakie
 
-    <<plot-1d-evolution>>
+    include("plot-1d-evolution.jl")
 
 	function initial_sediment(x, y)
 	  if x < 5.0u"km"
@@ -448,7 +452,7 @@ module Script
     using CarboKitten.Testing: transport_test_input
     using CairoMakie
 
-    <<plot-1d-evolution>>
+    include("plot-1d-evolution.jl")
 
     function gaussian_initial_sediment(x, y)
         exp(-(x-10u"km")^2 / (2 * (0.5u"km")^2)) * 30.0u"m"
@@ -488,7 +492,7 @@ module Script
     using CarboKitten.Testing: transport_test_input
     using CairoMakie
 
-    <<plot-1d-evolution>>
+    include("plot-1d-evolution.jl")
 
     v_prof(v_max, max_depth, w) = 
         let k = sqrt(0.5) / max_depth,

@@ -98,6 +98,7 @@ end
 
 include("./Export.jl")
 include("./Visualization.jl")
+include("./Testing.jl")
 
 using .Components.Common: in_units_of, @u_str
 using .Models: BS92, CAP, ALCAP

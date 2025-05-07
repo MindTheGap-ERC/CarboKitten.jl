@@ -323,8 +323,11 @@ function plot_1d_evolution!(ax::Axis, input, every=100)
 
 	plot_state() = begin
 		t = state.step * input.time.Δt
-		η = input.initial_topography.(x, y') .+ state.sediment_height .- input.subsidence_rate * t
-		lines!(ax, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"), label=@sprintf("%.3f Myr", ustrip(t)))
+		η = input.initial_topography.(x, y') .+ 
+            state.sediment_height .-
+            input.subsidence_rate * t
+		lines!(ax, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"),
+               label=@sprintf("%.3f Myr", ustrip(t)))
 	end
 
 	plot_state()
@@ -347,7 +350,14 @@ function plot_1d_evolution(input, every=100)
 end
 ```
 
-``` {.julia #transport-test-input}
+``` {.julia file=src/Testing.jl}
+module Testing
+
+using ..CarboKitten
+using ..Models.ALCAP
+using Unitful
+using GeometryBasics
+
 transport_test_input(;
 	initial_topography = (x, y) -> 0.0u"m",
 	initial_sediment = (x, y) -> 0.0u"m",
@@ -375,6 +385,8 @@ transport_test_input(;
 		sediment_buffer_size = 5,
 		depositional_resolution = 1000.0u"m",
 		transport_solver = Val{:forward_euler})
+
+end
 ```
 
 ### Erosion
@@ -389,9 +401,9 @@ The erosion scenario tests that sharp sediment profiles erode under diffusive tr
 
 module Script
     using CarboKitten
+    using CarboKitten.Testing: transport_test_input
     using CairoMakie
 
-    <<transport-test-input>>
     <<plot-1d-evolution>>
 
 	function initial_sediment(x, y)
@@ -433,9 +445,9 @@ To test advective properties, we set disintegration rate to infinity, This way, 
 
 module Script
     using CarboKitten
+    using CarboKitten.Testing: transport_test_input
     using CairoMakie
 
-    <<transport-test-input>>
     <<plot-1d-evolution>>
 
     function gaussian_initial_sediment(x, y)
@@ -473,9 +485,9 @@ This test shows the difference between having a velocity profile without and wit
 
 module Script
     using CarboKitten
+    using CarboKitten.Testing: transport_test_input
     using CairoMakie
 
-    <<transport-test-input>>
     <<plot-1d-evolution>>
 
     v_prof(v_max, max_depth, w) = 

@@ -87,8 +87,17 @@ end
   @test all(sum(a; dims=1) .≈ 1.0)
 end</code></pre><h3 id="Pushing-sediment"><a class="docs-heading-anchor" href="#Pushing-sediment">Pushing sediment</a><a id="Pushing-sediment-1"></a><a class="docs-heading-anchor-permalink" href="#Pushing-sediment" title="Permalink"></a></h3><p>The single-cell version of <code>push_sediment!</code> takes as argument <code>col</code> a column (physically speaking a column of sediment) represented by a <span>$s \times n$</span>-matrix and a parcel a <span>$n$</span>-vector.</p><div class="noweb-label">⪡sediment-stack-impl⪢≣</div><pre><code class="language- julia hljs">function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F &lt;: Real
     &lt;&lt;push-sediment&gt;&gt;
-end</code></pre><p>First we determine the total sediment amount <span>$\Delta$</span>, being the sum of the parcel, as well as the amount of sediment in our <em>bucket</em>, the head row.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">mass = sum(parcel)
-bucket = sum(col[1, :])
+end</code></pre><p>First we check if the amount of sediment is larger than the buffer. A warning is printed and the entire buffer filled in the specified fractions.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">mass = sum(parcel)
+if mass == 0.0
+    return
+end
+
+if mass &gt; size(col)[1]
+    @warn &quot;pushing a very large parcel of sediment: $mass times depositional resolution&quot;
+    frac = parcel ./ mass
+    col .= frac
+    return
+end</code></pre><p>First we determine the total sediment amount <span>$\Delta$</span>, being the sum of the parcel, as well as the amount of sediment in our <em>bucket</em>, the head row.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">bucket = sum(col[1, :])
 @assert bucket &gt;= 0.0 &amp;&amp; bucket &lt;= 1.0</code></pre><p>If the bucket has enough space left for the parcel, we can just add the parcel to the bucket and return.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">if bucket + mass &lt; 1.0
     col[1,:] .+= parcel
     return
@@ -97,13 +106,6 @@ col[1,:] .+= frac .* (1.0 - bucket)
 mass -= (1.0 - bucket)
 n = floor(Int64, mass)
 
-if n &gt; size(col)[1] ÷ 2
-    @warn &quot;pushing a too large parcel of sediment: Δ = $mass, reduce your timestep&quot;
-end
-if n &gt; size(col)[1] - 2
-    @error &quot;pushing a way too large parcel of sediment: Δ = $mass, parcel = $parcel&quot;
-    error(&quot;fatal error, too much sediment for buffer&quot;)
-end
 col[n+2:end,:] .= col[1:end-n-1,:]</code></pre><p>If the parcel has enough material left to fill more rows, those are all filled with the fractions in <code>frac</code>. The head row is assigned whatever is left.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">na = [CartesianIndex()]
 col[2:n+1,:] .= frac[na,:]
 mass -= n
@@ -217,4 +219,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../production/">« Production</a><a class="docs-footer-nextpage" href="../../active-layer-transport/">Active Layer Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 7 May 2025 08:22">Wednesday 7 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../production/">« Production</a><a class="docs-footer-nextpage" href="../../active-layer-transport/">Active Layer Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 7 May 2025 14:11">Wednesday 7 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

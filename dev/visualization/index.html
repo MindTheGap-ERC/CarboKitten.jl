@@ -49,37 +49,37 @@ using Makie
 summary_plot(filename::AbstractString; kwargs...) = h5open(fid-&gt;summary_plot(fid; kwargs...), filename, &quot;r&quot;)
 
 function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
-	header = read_header(fid)
+    header = read_header(fid)
     y_slice = div(length(header.axes.y), 2) + 1
     max_depth = minimum(header.initial_topography)
-	data = read_slice(fid, :, y_slice)
+    data = read_slice(fid, :, y_slice)
 
-	n_facies = size(data.production)[1]
-	fig = Figure(size=(1200, 1000), backgroundcolor=:gray80)
+    n_facies = size(data.production)[1]
+    fig = Figure(size=(1200, 1000), backgroundcolor=:gray80)
 
-	ax1 = Axis(fig[1:2,1:2])
-	sediment_profile!(ax1, header, data)
+    ax1 = Axis(fig[1:2,1:2])
+    sediment_profile!(ax1, header, data)
 
-	ax2 = Axis(fig[4,1])
-	ax3 = Axis(fig[4,2])
-	sm, df = wheeler_diagram!(ax2, ax3, header, data; smooth_size=wheeler_smooth)
-	Colorbar(fig[3,1], sm; vertical=false, label=&quot;sediment accumulation [m/Myr]&quot;)
-	Colorbar(fig[3,2], df; vertical=false, label=&quot;dominant facies&quot;, ticks=1:n_facies)
+    ax2 = Axis(fig[4,1])
+    ax3 = Axis(fig[4,2])
+    sm, df = wheeler_diagram!(ax2, ax3, header, data; smooth_size=wheeler_smooth)
+    Colorbar(fig[3,1], sm; vertical=false, label=&quot;sedimentation rate [m/Myr]&quot;)
+    Colorbar(fig[3,2], df; vertical=false, label=&quot;dominant facies&quot;, ticks=1:n_facies)
 
-	ax4 = Axis(fig[4,3], title=&quot;sealevel curve&quot;, xlabel=&quot;sealevel [m]&quot;,
+    ax4 = Axis(fig[4,3], title=&quot;sealevel curve&quot;, xlabel=&quot;sealevel [m]&quot;,
         limits=(nothing, (header.axes.t[1] |&gt; in_units_of(u&quot;Myr&quot;),
-						  header.axes.t[end] |&gt; in_units_of(u&quot;Myr&quot;))))
-	lines!(ax4, header.sea_level |&gt; in_units_of(u&quot;m&quot;), header.axes.t |&gt; in_units_of(u&quot;Myr&quot;))
+                          header.axes.t[end] |&gt; in_units_of(u&quot;Myr&quot;))))
+    lines!(ax4, header.sea_level |&gt; in_units_of(u&quot;m&quot;), header.axes.t |&gt; in_units_of(u&quot;Myr&quot;))
 
-	ax5 = Axis(fig[2,3])
-	production_curve!(ax5, fid[&quot;input&quot;], max_depth=max_depth)
+    ax5 = Axis(fig[2,3])
+    production_curve!(ax5, fid[&quot;input&quot;], max_depth=max_depth)
 
-	linkyaxes!(ax2, ax3, ax4)
+    linkyaxes!(ax2, ax3, ax4)
 
-	ax = Axis3(fig[1, 3]; zlabel=&quot;depth [m]&quot;, xlabel=&quot;x [km]&quot;, ylabel=&quot;y [km]&quot;)
-	glamour_view!(ax, fid)
+    ax = Axis3(fig[1, 3]; zlabel=&quot;depth [m]&quot;, xlabel=&quot;x [km]&quot;, ylabel=&quot;y [km]&quot;)
+    glamour_view!(ax, fid)
 
-	fig
+    fig
 end
 
 end</code></pre><h2 id="Wheeler-diagram"><a class="docs-heading-anchor" href="#Wheeler-diagram">Wheeler diagram</a><a id="Wheeler-diagram-1"></a><a class="docs-heading-anchor-permalink" href="#Wheeler-diagram" title="Permalink"></a></h2><p><img src="../fig/wheeler_diagram.png" alt="Wheeler diagram"/></p><div class="noweb-label">file:<i>examples/visualization/wheeler_diagram.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/wheeler_diagram.png
@@ -532,4 +532,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../onshore-transport/">« Onshore Transport</a><a class="docs-footer-nextpage" href="../carbocat/">Summary »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 7 May 2025 08:22">Wednesday 7 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../onshore-transport/">« Onshore Transport</a><a class="docs-footer-nextpage" href="../carbocat/">Summary »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 7 May 2025 14:11">Wednesday 7 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

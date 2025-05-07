@@ -39,7 +39,7 @@
     facies --&gt; h5writer
     time --&gt; h5writer
     water_depth --&gt; h5writer</div><p>Not all of these are equally important. The <code>H5Writer</code> implements the core simulation loop and writing a simulation to HDF5 files. For a <code>Model</code> to work with <code>H5Writer</code> it needs to have <code>initial_state</code>, <code>step!</code>, and <code>write_header</code> functions implemented. Each component can have its own <code>write_header</code> implementation. Those are joined together with a special <code>@for_each(P-&gt;P.write_header(fid, input), PARENTS)</code> call.</p><h2 id="Contents"><a class="docs-heading-anchor" href="#Contents">Contents</a><a id="Contents-1"></a><a class="docs-heading-anchor-permalink" href="#Contents" title="Permalink"></a></h2><ul><li><a href="../tag/#Tags">Tags</a></li><li><a href="../boxes/#Box">Box</a></li><li><a href="../time/#Time">Time</a></li><li><a href="../facies/#Facies-Base">Facies Base</a></li><li><a href="../production/#Production">Production</a></li><li><a href="../cellular-automata/#Cellular-Automata">Cellular Automata</a></li><li><a href="../waterdepth/#Water-Depth">Water Depth</a></li><li><a href="../hdf5/#HDF5-Output">HDF5 Output</a></li><li><a href="../sediment_buffer/#Sediment-Buffers">Sediment Buffers</a></li></ul><h2 id="Common-Definitions"><a class="docs-heading-anchor" href="#Common-Definitions">Common Definitions</a><a id="Common-Definitions-1"></a><a class="docs-heading-anchor-permalink" href="#Common-Definitions" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Components/Common.jl</i></div><pre><code class="language- julia hljs">module Common
-export @u_str, Quantity, Amount, Time, Location, Rate, Intensity, Height
+export @u_str, Quantity, Amount, Time, Location, Rate, Intensity, Height, Sediment
 export AbstractFacies, AbstractInput, AbstractState, AbstractFrame
 export Box, box_axes, Boundary, Coast, Periodic, Reflected, TimeProperties
 export in_units_of
@@ -81,7 +81,7 @@ end</code></pre><div class="noweb-label">file:<i>src/Components.jl</i></div><pre
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
        CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
-       ActiveLayerOnshore, Denudation
+       ActiveLayerOnshore, Denudation, InitialSediment
 
 using ModuleMixins: @compose
 
@@ -96,6 +96,7 @@ include(&quot;Components/CellularAutomaton.jl&quot;)
 include(&quot;Components/CAProduction.jl&quot;)
 
 include(&quot;Components/SedimentBuffer.jl&quot;)
+include(&quot;Components/InitialSediment.jl&quot;)
 include(&quot;Components/ActiveLayer.jl&quot;)
 include(&quot;Components/Denudation.jl&quot;)
 
@@ -111,4 +112,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../architecture/">« Architecture</a><a class="docs-footer-nextpage" href="../run_model/">Model Runner »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 7 May 2025 08:22">Wednesday 7 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../architecture/">« Architecture</a><a class="docs-footer-nextpage" href="../run_model/">Model Runner »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 7 May 2025 14:11">Wednesday 7 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

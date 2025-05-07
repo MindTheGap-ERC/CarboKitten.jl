@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.4
+# v0.20.6
 
 using Markdown
 using InteractiveUtils
@@ -25,275 +25,8 @@ using GLMakie
 # ╔═╡ 7afe9f13-c15e-4571-964c-5ffce8a12f00
 using Unitful
 
-# ╔═╡ ed0e7604-c18f-413d-8386-26d2ec637168
-module TransportTest
-
-using Unitful
-using CarboKitten: Box, box_axes, Boundary
-using CarboKitten.Components.Common
-using CarboKitten.BoundaryTrait: Shelf
-using CarboKitten.Utility: in_units_of
-using CarboKitten.Stencil: stencil!
-using CarboKitten.Transport.Advection: transport
-using CarboKitten.Transport.Solvers: runge_kutta_4
-
-const Amount = typeof(1.0u"m")
-const Length = typeof(1.0u"m")
-const Rate = typeof(1.0u"m/Myr")
-
-@kwdef struct Input
-    box
-    Δt::typeof(1.0u"Myr")
-    t_end::typeof(1.0u"Myr")
-    initial_topography   # function (x::u"m", y::u"m") -> u"m"
-    initial_sediment    # function (x::u"m", y::u"m") -> u"m"
-    production          # function (x::u"m", y::u"m") -> u"m/s"
-    disintegration_rate::typeof(1.0u"m/Myr")
-    subsidence_rate::typeof(1.0u"m/Myr")
-    diffusivity::typeof(1.0u"m/yr")
-	wave_transport
-	transport_substeps::Int = 1
-	transport_solver = nothing
-end
-
-mutable struct State
-    time::typeof(1.0u"Myr")
-    sediment::Matrix{typeof(1.0u"m")}
-end
-
-function initial_state(input)
-    x, y = box_axes(input.box)
-    State(0.0u"Myr", input.initial_sediment.(x, y'))
-end
-
-struct Frame
-    t::typeof(1.0u"Myr")
-    δ::Matrix{Amount}
-end
-
-function propagator(input)
-    x, y = box_axes(input.box)
-    μ0 = input.initial_topography.(x, y')
-    box = input.box
-    Δt = input.Δt
-    disintegration_rate = input.disintegration_rate
-    production = input.production
-    d = input.diffusivity
-	v = input.wave_transport
-	σ = input.subsidence_rate
-	max_amount = disintegration_rate * Δt
-
-	@info "disintegration per time step: $max_amount"
-	
-	solver = if input.transport_solver === nothing
-		runge_kutta_4(Amount, box)
-	else
-		input.transport_solver
-	end
-	
-    function active_layer(state)    
-        amount = min.(max_amount, state.sediment)
-        state.sediment .-= amount
-
-        production.(x, y') * Δt .+ amount
-    end
-
-    function (state)
-        p = active_layer(state)
-		# @info "production between $(minimum(p)) - $(maximum(p))"
-		water_depth = (σ * state.time) .- (μ0 .+ state.sediment)
-
-		for j in 1:input.transport_substeps
-			solver(
-				(C, _) -> transport(box, d, v, p, water_depth),
-				p, state.time, Δt / input.transport_substeps)
-        end
-
-        return Frame(state.time, ifelse.(p .< 0.0u"m", 0.0u"m", p))
-    end
-end
-
-function run_model(input)
-    state = initial_state(input)
-    prop = propagator(input)
-
-    Channel{State}() do ch
-        while state.time < input.t_end
-            Δ = prop(state)
-            state.sediment .+= Δ.δ
-            state.time += input.Δt
-            put!(ch, state)
-        end
-    end
-end
-
-end
-
-# ╔═╡ ccb90573-368d-496d-9e3e-ddc135514ca1
-module Erosion
-
-using CarboKitten
-using ..TransportTest
-
-function initial_sediment(x, y)
-  if x < 5.0u"km"
-    return 30.0u"m"
-  end
-
-  if x > 10.0u"km" && x < 11.0u"km"
-    return 20.0u"m"
-  end
-
-  return 5.0u"m"
-end
-
-v_const(v_max) = _ -> ((v_max, 0.0u"m/yr"), (0.0u"1/yr", 0.0u"1/yr"))
-
-const INPUT = TransportTest.Input(
-    box                   = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
-    Δt                    = 0.001u"Myr",
-    t_end                 = 1.0u"Myr",
-
-    initial_topography     = (x, y) -> -30.0u"m",
-    initial_sediment      = initial_sediment,
-    production            = (x, y) -> 0.0u"m/Myr",
-
-    disintegration_rate   = 50.0u"m/Myr",
-    subsidence_rate       = 50.0u"m/Myr",
-    diffusivity           = 10.0u"m/yr",
-
-	wave_transport        = v_const(0.0u"m/Myr"))
-
-end
-
-# ╔═╡ 38060f13-bf99-4f4a-9b73-1e28d77e8656
-module Translation
-
-using Unitful
-using ..TransportTest: Input
-using CarboKitten: Box, Coast
-
-function initial_sediment(x, y)
-  if x < 5.0u"km"
-    return 30.0u"m"
-  end
-
-  if x > 10.0u"km" && x < 11.0u"km"
-    return 20.0u"m"
-  end
-
-  return 5.0u"m"
-end
-
-function gaussian_initial_sediment(x, y)
-	exp(-(x-10u"km")^2 / (2 * (0.5u"km")^2)) * 30.0u"m"
-end
-
-v_prof(v_max, max_depth, w) = 
-	let k = sqrt(0.5) / max_depth,
-		A = 3.331 * v_max,
-		α = tanh(k * w),
-		β = exp(-k * w)
-		(A * α * β, -A * k * β * (1 - α - α^2))
-	end
-
-v_const(v_max) = _ -> ((v_max, 0.0u"m/yr"), (0.0u"1/yr", 0.0u"1/yr"))
-
-const INPUT = Input(
-	box                   = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
-    Δt                    = 0.01u"Myr",
-    t_end                 = 1.0u"Myr",
-
-    initial_topography     = (x, y) -> -30.0u"m",
-    initial_sediment      = gaussian_initial_sediment,
-    production            = (x, y) -> 0.0u"m/Myr",
-
-    disintegration_rate   = 50000.0u"m/Myr",
-    subsidence_rate       = 50.0u"m/Myr",
-    diffusivity           = 0.0u"km/Myr",
-	wave_transport        = v_const(-0.005u"m/yr"),
-	transport_substeps    = 10
-		# w -> let (v, s) = v_prof(-5u"m/yr", 20.0u"m", w)
-		# 	((v, 0.0u"m/yr"), (s, 0.0u"1/yr"))
-		# end
-)
-
-end
-
 # ╔═╡ 8b71a88e-5e92-47f2-988a-3ee74ef53631
 using Printf
-
-# ╔═╡ cac22975-0fa6-4bba-9d2e-7274f18c9799
-using ProfileCanvas
-
-# ╔═╡ 4906149e-26b4-41f8-b61e-deede84a678f
-module WithShear
-
-using Unitful
-using ..TransportTest: Input
-using CarboKitten: Box, Coast
-
-function initial_sediment(x, y)
-  if x < 5.0u"km"
-    return 30.0u"m"
-  end
-
-  if x > 10.0u"km" && x < 11.0u"km"
-    return 20.0u"m"
-  end
-
-  return 5.0u"m"
-end
-
-function gaussian_initial_sediment(x, y)
-	exp(-(x-10u"km")^2 / (2 * (0.5u"km")^2)) * 30.0u"m"
-end
-
-v_prof(v_max, max_depth, w) = 
-	let k = sqrt(0.5) / max_depth,
-		A = 3.331 * v_max,
-		α = tanh(k * w),
-		β = exp(-k * w)
-		(A * α * β, -A * k * β * (1 - α - α^2))
-	end
-
-v_const(v_max) = _ -> ((v_max, 0.0u"m/yr"), (0.0u"1/yr", 0.0u"1/yr"))
-
-const INPUT_flat = Input(
-	box                   = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
-    Δt                    = 0.001u"Myr",
-    t_end                 = 1.0u"Myr",
-
-    initial_topography    = (x, y) -> -x / 375.0 - 10u"m",
-    initial_sediment      = (x, y) -> 10u"m",
-    production            = (x, y) -> 0.0u"m/Myr",
-
-    disintegration_rate   = 50.0u"m/Myr",
-    subsidence_rate       = 0.0u"m/Myr",
-    diffusivity           = 5.0u"m/yr",
-	wave_transport 		  = v_const(-0.1u"m/yr"),
-	transport_substeps    = 10
-)
-
-const INPUT_shear = Input(
-	box                   = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
-    Δt                    = 0.001u"Myr",
-    t_end                 = 1.0u"Myr",
-
-    initial_topography    = (x, y) -> -x / 375.0 - 10u"m",
-    initial_sediment      = (x, y) -> 10u"m",
-    production            = (x, y) -> 0.0u"m/Myr",
-
-    disintegration_rate   = 50.0u"m/Myr",
-    subsidence_rate       = 0.0u"m/Myr",
-    diffusivity           = 5.0u"m/yr",
-	wave_transport        = w -> let (v, s) = v_prof(-0.5u"m/yr", 20.0u"m", w)
-			((v, 0.0u"m/yr"),  (s, 0.0u"1/yr"))
-		end,
-	transport_substeps    = 10
-)
-
-end
 
 # ╔═╡ e1df1edc-f84f-477e-8631-4856b028d48f
 box_axes
@@ -347,32 +80,28 @@ velocity = w -> let (v, s) = v_prof(2.0u"m/yr", 10.0u"m", w)
 	(Vec2(-v, 0.0u"m/yr"), Vec2(-s, 0.0u"1/yr"))
 end
 
-# ╔═╡ 2b77be87-4c38-4b1b-82d1-be610298de2a
-minimum(randn(10))
-
-# ╔═╡ c8ef0c9b-7600-4363-99a2-2fa8ab3353d4
-md"""
-## Translation
-"""
-
-# ╔═╡ 91c5858e-e975-4bcd-b157-010f884a1eac
-150.0u"m"/0.0001u"Myr" |> u"m/yr"
-
-# ╔═╡ bc4c03ef-5d53-4a99-8aca-b5cfef07ecea
-function plot_erosion(input, every=40)
+# ╔═╡ 27281bf9-e806-46d4-967d-6b29ae6f38a6
+function plot_erosion2(input, every=40)
 	y_idx = 1
-	result = Iterators.map(deepcopy,
-		Iterators.filter(x -> mod(x[1]-1, every) == 0, 
-		enumerate(TransportTest.run_model(input)))) |> collect
 
 	(x, y) = box_axes(input.box)
 
 	fig = Figure()
 	ax2 = Axis(fig[1, 1], xlabel="x (km)", ylabel="η (m)")
 
-	for r in result
-		η = input.initial_topography.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
-		lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"), label=@sprintf("%.3f Myr", ustrip(r[2].time)))
+	state = ALCAP.initial_state(input)
+
+	plot_state() = begin
+		t = state.step * input.time.Δt
+		η = input.initial_topography.(x, y') .+ state.sediment_height .- input.subsidence_rate * t
+		lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"), label=@sprintf("%.3f Myr", ustrip(t)))
+	end
+
+	plot_state()
+	run_model(Model{ALCAP}, input, state) do i, _
+		if mod(i, every) == 0
+			plot_state()
+		end
 	end
 
 	Legend(fig[1, 2], ax2)
@@ -380,31 +109,144 @@ function plot_erosion(input, every=40)
 	fig
 end
 
-# ╔═╡ f5aba037-80e1-4c93-b5d0-67f7f4592e6e
-plot_erosion(Erosion.INPUT, 100)
+# ╔═╡ a12a9c01-eaa7-4870-a221-6164a5717f94
+transport_test_input(;
+	initial_topography = (x, y) -> 0.0u"m",
+	initial_sediment = (x, y) -> 0.0u"m",
+	disintegration_rate = 50.0u"m/Myr",
+	subsidence_rate = 50.0u"m/Myr",
+	diffusion_coefficient = 0.0u"m/yr",
+	wave_velocity = _ -> (Vec2(0.0, 0.0)u"m/yr", Vec2(0.0, 0.0)u"1/yr")) =
+	
+	ALCAP.Input(
+		box = CarboKitten.Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
+		time = TimeProperties(
+			Δt = 0.001u"Myr",
+			steps = 1000),
+		facies = [ALCAP.Facies(
+			initial_sediment = initial_sediment,
+			diffusion_coefficient = diffusion_coefficient,
+			wave_velocity = wave_velocity,
+			maximum_growth_rate = 0.0u"m/Myr",
+			extinction_coefficient = 0.8u"m^-1",
+			saturation_intensity = 60u"W/m^2"
+		)],
+		disintegration_rate = disintegration_rate,
+		initial_topography = initial_topography,
+		insolation = 400.0u"W/m^2",
+		sediment_buffer_size = 5,
+		depositional_resolution = 1000.0u"m")
 
-# ╔═╡ 8cce1b9f-1081-4a01-948a-4af2a30703f5
-unit(3.0u"m")
+# ╔═╡ 84155611-61dd-4da0-8848-fbc44abf314b
+let
+	function initial_sediment(x, y)
+	  if x < 5.0u"km"
+	    return 30.0u"m"
+	  end
+	
+	  if x > 10.0u"km" && x < 11.0u"km"
+	    return 20.0u"m"
+	  end
+	
+	  return 5.0u"m"
+	end
 
-# ╔═╡ bb6c2022-b668-4733-8799-cbe7c8f98231
-plot_erosion(Translation.INPUT)
+	input = transport_test_input(
+		initial_topography = (x, y) -> -30.0u"m",
+		initial_sediment = initial_sediment,
+		diffusion_coefficient = 10.0u"m/yr")
+
+	plot_erosion2(input, 250)
+end
+
+# ╔═╡ c8ef0c9b-7600-4363-99a2-2fa8ab3353d4
+md"""
+## Translation
+"""
+
+# ╔═╡ 38060f13-bf99-4f4a-9b73-1e28d77e8656
+let
+
+function gaussian_initial_sediment(x, y)
+	exp(-(x-10u"km")^2 / (2 * (0.5u"km")^2)) * 30.0u"m"
+end
+
+v_prof(v_max, max_depth, w) = 
+	let k = sqrt(0.5) / max_depth,
+		A = 3.331 * v_max,
+		α = tanh(k * w),
+		β = exp(-k * w)
+		(A * α * β, -A * k * β * (1 - α - α^2))
+	end
+
+v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
+
+input = transport_test_input(
+	initial_topography = (x, y)  -> -30.0u"m",
+	initial_sediment = gaussian_initial_sediment,
+	disintegration_rate = 50000.0u"m/Myr",
+	wave_velocity = v_const(-5u"km/Myr")
+)
+	
+plot_erosion2(input, 250)
+end
 
 # ╔═╡ b121fa61-c014-4ee0-9db0-b8a0a238b9dd
 md"""
 ## With shear
 """
 
-# ╔═╡ df8ad06a-cc8d-45d1-acac-9a491902d908
-fig_flat = plot_erosion(WithShear.INPUT_flat, 100)
+# ╔═╡ 14504d1a-2803-436b-8fba-6a9a509dfa46
+let
 
-# ╔═╡ d04dafb8-20d8-48e3-807c-51cf8fcc3033
-save("flat-profile.png", fig_flat)
+v_prof(v_max, max_depth, w) = 
+	let k = sqrt(0.5) / max_depth,
+		A = 3.331 * v_max,
+		α = tanh(k * w),
+		β = exp(-k * w)
+		(A * α * β, -A * k * β * (1 - α - α^2))
+	end
 
-# ╔═╡ 28974b43-f8f6-4184-b9b1-362353645b38
-plot_erosion(WithShear.INPUT_shear, 100)
+v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
 
-# ╔═╡ 417465da-a4c2-46f6-aef7-c5a880e809fa
-15000 / 40
+input = transport_test_input(
+	initial_topography = (x, y) -> -x / 375.0 - 10u"m",
+	initial_sediment = 10.0u"m",
+	disintegration_rate = 50.0u"m/Myr",
+	diffusion_coefficient = 5.0u"m/yr",
+	wave_velocity = v_const(-0.1u"m/yr")
+)
+	
+plot_erosion2(input, 250)
+end
+
+# ╔═╡ c9ba2fb2-e29a-4148-b267-33ccb41b66ed
+let
+
+v_prof(v_max, max_depth, w) = 
+	let k = sqrt(0.5) / max_depth,
+		A = 3.331 * v_max,
+		α = tanh(k * w),
+		β = exp(-k * w)
+		(A * α * β, -A * k * β * (1 - α - α^2))
+	end
+
+v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
+
+v_prof_par(v_max, max_depth) = w -> let (v, s) = v_prof(v_max, max_depth, w)
+	(Vec2(v, 0.0u"m/yr"), Vec2(s, 0.0u"1/yr"))
+end
+	
+input = transport_test_input(
+	initial_topography = (x, y) -> -x / 375.0 - 10u"m",
+	initial_sediment = 10.0u"m",
+	disintegration_rate = 50.0u"m/Myr",
+	diffusion_coefficient = 5.0u"m/yr",
+	wave_velocity = v_prof_par(-0.5u"m/yr", 20u"m")
+)
+	
+plot_erosion2(input, 250)
+end
 
 # ╔═╡ Cell order:
 # ╠═1bd14d3c-f480-11ef-1a4e-e170792388dd
@@ -422,21 +264,12 @@ plot_erosion(WithShear.INPUT_shear, 100)
 # ╠═5b99875c-97f6-4fed-bb46-18bc88e10a73
 # ╠═4ffdeb5b-b0bc-4932-bcb6-a6d50179d812
 # ╠═9ea62335-b2d6-4389-ad26-0f88811f50d2
-# ╠═ed0e7604-c18f-413d-8386-26d2ec637168
-# ╠═2b77be87-4c38-4b1b-82d1-be610298de2a
-# ╠═ccb90573-368d-496d-9e3e-ddc135514ca1
-# ╠═f5aba037-80e1-4c93-b5d0-67f7f4592e6e
+# ╠═27281bf9-e806-46d4-967d-6b29ae6f38a6
+# ╠═a12a9c01-eaa7-4870-a221-6164a5717f94
+# ╠═84155611-61dd-4da0-8848-fbc44abf314b
 # ╟─c8ef0c9b-7600-4363-99a2-2fa8ab3353d4
 # ╠═38060f13-bf99-4f4a-9b73-1e28d77e8656
-# ╠═91c5858e-e975-4bcd-b157-010f884a1eac
 # ╠═8b71a88e-5e92-47f2-988a-3ee74ef53631
-# ╠═bc4c03ef-5d53-4a99-8aca-b5cfef07ecea
-# ╠═8cce1b9f-1081-4a01-948a-4af2a30703f5
-# ╠═bb6c2022-b668-4733-8799-cbe7c8f98231
-# ╠═cac22975-0fa6-4bba-9d2e-7274f18c9799
 # ╠═b121fa61-c014-4ee0-9db0-b8a0a238b9dd
-# ╠═4906149e-26b4-41f8-b61e-deede84a678f
-# ╠═df8ad06a-cc8d-45d1-acac-9a491902d908
-# ╠═d04dafb8-20d8-48e3-807c-51cf8fcc3033
-# ╠═28974b43-f8f6-4184-b9b1-362353645b38
-# ╠═417465da-a4c2-46f6-aef7-c5a880e809fa
+# ╠═14504d1a-2803-436b-8fba-6a9a509dfa46
+# ╠═c9ba2fb2-e29a-4148-b267-33ccb41b66ed

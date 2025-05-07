@@ -62,7 +62,7 @@ Depth = 1
 
 ``` {.julia file=src/Components/Common.jl}
 module Common
-export @u_str, Quantity, Amount, Time, Location, Rate, Intensity, Height
+export @u_str, Quantity, Amount, Time, Location, Rate, Intensity, Height, Sediment
 export AbstractFacies, AbstractInput, AbstractState, AbstractFrame
 export Box, box_axes, Boundary, Coast, Periodic, Reflected, TimeProperties
 export in_units_of
@@ -108,7 +108,7 @@ module Components
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
        CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
-       ActiveLayerOnshore, Denudation
+       ActiveLayerOnshore, Denudation, InitialSediment
 
 using ModuleMixins: @compose
 
@@ -123,6 +123,7 @@ include("Components/CellularAutomaton.jl")
 include("Components/CAProduction.jl")
 
 include("Components/SedimentBuffer.jl")
+include("Components/InitialSediment.jl")
 include("Components/ActiveLayer.jl")
 include("Components/Denudation.jl")
 

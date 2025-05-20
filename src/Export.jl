@@ -207,12 +207,16 @@ function stratigraphic_column(deposition, disintegration)
 
     for ts = 1:n_times
         acc = deposition[ts, :] .- disintegration[ts, :]
+        @assert acc <= deposition[ts, :]
         if sum(acc) > 0.0u"m"
             sc[ts, :] .= acc
+            @assert sum(sc[ts, :]) ≈ sum(acc)
+            @assert sum(sc[ts, :]) > 0.0u"m"
             continue
         end
 
         ts_down = ts - 1
+        @assert ts_down >= 1
         while sum(acc) < 0.0u"m"
             if ts_down < 0
                 @warn "stratigraph column overshoot: $(acc)"
@@ -220,14 +224,18 @@ function stratigraphic_column(deposition, disintegration)
             end
             ts_down < 1 && break
             if -sum(acc) < sum(sc[ts_down, :])
+                previous_sc = sc[ts_down, :]
                 sc[ts_down, :] .-= acc
+                @assert sum(sc[ts_down, :]) >= 0.0u"m"
+                @assert sum(sc[ts_down, :]) + sum(acc) ≈ sum(previous_sc)
                 if any(sc[ts_down, :] .< 0.0u"m")
                     @warn "negative value in stratigraphic column: $(sc[ts_down,:])"
                 end
                 break
             end
-
+            
             acc .+= sc[ts_down, :]
+            @assert acc .<= 0.0u"m"
             if any(acc .> 0.0u"m")
                 @warn "round-off error in stratigraphic column: $(acc)"
             end

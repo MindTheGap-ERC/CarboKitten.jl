@@ -1,7 +1,3 @@
-# ~/~ begin <<docs/src/model-alcap.md#examples/model/alcap/run.jl>>[init]
-#| requires: src/Models/ALCAP.jl
-#| creates: data/output/alcap-example.h5
-
 module Script
 
 using Unitful
@@ -10,7 +6,6 @@ using CarboKitten.Export: data_export, CSV
 
 const PATH = "data/output"
 
-# ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]
 const TAG = "alcap-example-single-colmn-run"
 
 const FACIES = [
@@ -56,7 +51,6 @@ const INPUT = ALCAP.Input(
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",
     facies=FACIES)
-# ~/~ end
 
 function main()
     run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
@@ -74,4 +68,3 @@ end
 end
 
 Script.main()
-# ~/~ end

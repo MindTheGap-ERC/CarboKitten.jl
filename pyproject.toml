@@ -1,19 +1,22 @@
-[tool.poetry]
+[project]
 name = "carbokitten"
 version = "0.1.0"
 description = "Development environment for CarboKitten. This is not an actual Python package."
-authors = ["Johan Hidding <j.hidding@esciencecenter.nl>"]
-license = "Apache-2"
+authors = [{ name = "Johan Hidding", email = "j.hidding@esciencecenter.nl" }]
+requires-python = "~=3.11"
 readme = "README.md"
-package-mode = false
+license = "Apache-2"
+dependencies = ["entangled-cli"]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-entangled-cli = {git = "https://github.com/entangled/entangled.py", rev = "main"}
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+entangled-cli = { git = "https://github.com/entangled/entangled.py", rev = "main" }
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.brei]
 include = [".entangled/tasks.json"]
@@ -21,7 +24,6 @@ include = [".entangled/tasks.json"]
 [tool.brei.runner.julia]
 command = "julia"
 args = ["--project=workenv", "--startup-file=no", "-e", "using DaemonMode; runexpr(\"include(\\\"${script}\\\")\")"]
-# args = ["+1.11", "--project=workenv", "${script}"]
 
 [[tool.brei.task]]
 name = "copy_figures"

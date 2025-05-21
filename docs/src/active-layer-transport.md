@@ -696,6 +696,9 @@ You may pass the `intertidal_zone` argument to define a height above sea-level w
 
 The following test has three sediment peaks, one below sea-level, one in the intertidal zone and one above the intertidal zone. In the latter two cases, sediment is transported.
 
+The `transport_test_input` has a box of $120 \times 1$ with a resolution of 125m (15km total).
+We divide the domain into three sections: dry ($h > 10m$), intertidal ($10m > h > 0m$) and wet zones ($0m > h$). The dry zone never has transport, the wet zone always has transport, but the intertidal zone only has transport enabled when we set `intertidal_zone` to `10u"m"`.
+
 ![intertidal zone test](fig/1d-intertidal.svg)
 
 ``` {.julia .task file=examples/transport/1d-intertidal-zone.jl}
@@ -740,6 +743,8 @@ end
 
 Script.main()
 ```
+
+The following tests that we see the expected behaviours both without an intertidal zone (`input1`) and with (`input1`). The regions split at grid locations 40 and 80, so we test slices `10:30`, `50:70` and `90:110`. This ommits the boundaries where numeric artifacts could be encountered.
 
 ``` {.julia file=test/Transport/IntertidalZoneSpec.jl}
 @testset "CarboKitten.Transport.IntertidalZone" begin

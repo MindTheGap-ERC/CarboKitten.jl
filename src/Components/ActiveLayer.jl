@@ -16,6 +16,7 @@ using GeometryBasics
 end
 
 @kwdef struct Input <: AbstractInput
+    intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
     transport_solver = Val{:RK4}
     transport_substeps = :adaptive 
@@ -39,9 +40,11 @@ function adaptive_transporter(input)
     rct = Matrix{typeof(1.0u"1/Myr")}(undef, box.grid_size...)
     dC = Matrix{Rate}(undef, box.grid_size...)
     cm = courant_max(input.transport_solver)
+    iz = input.intertidal_zone
 
     return function (state, C::Array{Amount,3})
         wd = w(state)
+        wd .+= iz
 
         for (i, f) in pairs(fs)
             advection_coef!(box, f.diffusion_coefficient, f.wave_velocity, wd, adv, rct)
@@ -76,10 +79,11 @@ function disintegrator(input)
     w = water_depth(input)
     output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
     depositional_resolution = input.depositional_resolution
-    @info "maximum disintegration per time step: max_h = $max_h"
+    iz = input.intertidal_zone
 
     return function (state)
         wn = w(state)
+        wn .+= iz
         h = min.(max_h, state.sediment_height)
         h[wn.<=0.0u"m"] .= 0.0u"m"
 
@@ -108,9 +112,11 @@ function transporter(input)
     Δt = input.time.Δt / input.transport_substeps
     steps = input.transport_substeps
     fs = input.facies
+    iz = input.intertidal_zone
 
     return function (state, C::Array{Amount,3})
         wd = w(state)
+        wd .+= iz
 
         for (i, f) in pairs(fs)
             for j in 1:steps

@@ -3,6 +3,7 @@ module CarboKitten
 using TerminalLoggers: TerminalLogger
 using Logging
 using Unitful
+using GeometryBasics: Vec2
 
 function init()
     global_logger(TerminalLogger(right_justify=80))
@@ -107,6 +108,7 @@ using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 
 export run_model, Box, box_axes, TimeProperties, time_axis,
        Model, BS92, CAP, ALCAP, in_units_of, @u_str,
-       AbstractBox, Boundary, Coast, Periodic, Reflected
+       AbstractBox, Boundary, Coast, Periodic, Reflected,
+       Vec2
 
 end # module CarboKitten

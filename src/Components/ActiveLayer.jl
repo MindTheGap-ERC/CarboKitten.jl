@@ -123,7 +123,7 @@ function transporter(input)
                 solver(
                     (C, _) -> transport(
                         input.box, f.diffusion_coefficient, f.wave_velocity,
-                        C, wd),
+C, wd),
                     view(C, i, :, :), TimeIntegration.time(input, state), Δt)
             end
         end

@@ -22,6 +22,7 @@ include("Unitful.jl")
     include("Components/InitialSedimentSpec.jl")
 
     include("Transport/AdvectionSpec.jl")
+    include("Transport/IntertidalZoneSpec.jl")
 
     include("ExportSpec.jl")
 end

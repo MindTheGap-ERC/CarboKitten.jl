@@ -123,6 +123,7 @@ using Unitful
 using ..ALCAP: ALCAP
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
+using CarboKitten.Components.H5Writer: OutputSpec
 
 <<alcap-example-input>>
 

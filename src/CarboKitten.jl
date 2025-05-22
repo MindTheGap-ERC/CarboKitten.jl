@@ -51,10 +51,9 @@ number of steps between writing output.
     t0::typeof(1.0u"Myr") = 0.0u"Myr"
     Δt::typeof(1.0u"Myr")
     steps::Int
-    write_interval::Int = 1
 end
 
-n_writes(time::TimeProperties) = div(time.steps, time.write_interval)
+n_writes(time::TimeProperties) = time.steps
 
 """
     time_axis(time::TimeProperties)

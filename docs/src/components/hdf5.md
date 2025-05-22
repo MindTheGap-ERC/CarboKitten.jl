@@ -19,35 +19,67 @@ We write output to HDF5.
 
     export run
 
-    function create_dataset(fid, input::AbstractInput)
+    const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
+
+    @kwdef struct OutputSpec
+        slice::Slice2 = (:, :)
+        write_interval::Int = 1
+    end
+
+    @kwdef struct Input <: AbstractInput
+        output = Dict(:full => OutputSpec((:,:), 1)) 
+    end
+
+    function create_ck_group(fid, input::AbstractInput, name::Symbol, spec::OutputSpec)
         nf = n_facies(input)
-        nw = n_writes(input)
+        nw = div(input.time.steps, spec.write_interval)
 
-        HDF5.create_dataset(fid, "production", datatype(Float64),
-            dataspace(nf, input.box.grid_size..., nw),
-            chunk=(nf, input.box.grid_size..., 1), deflate=3)
-        HDF5.create_dataset(fid, "disintegration", datatype(Float64),
-            dataspace(nf, input.box.grid_size..., nw),
-            chunk=(nf, input.box.grid_size..., 1), deflate=3)
-        HDF5.create_dataset(fid, "deposition", datatype(Float64),
-            dataspace(nf, input.box.grid_size..., nw),
-            chunk=(nf, input.box.grid_size..., 1), deflate=3)
-        HDF5.create_dataset(fid, "sediment_height", datatype(Float64),
-            dataspace(input.box.grid_size..., nw + 1),
-            chunk=(input.box.grid_size..., 1), deflate=3)
+        axis_size(::Colon, a::Int) = a
+        axis_size(::Int, _) = 1
+        axis_size(r::AbstractRange{Int}, _) = length(r)
+
+        size = axis_size.(spec.slice, input.box.grid_size)
+
+        grp = HDF5.create_group(fid, string(name))
+        attrs = attributes(grp)
+        attrs["slice"] = string(spec.slice)
+        attrs["write_interval"] = spec.write_interval
+
+        HDF5.create_dataset(grp, "production", datatype(Float64),
+            dataspace(nf, size..., nw),
+            chunk=(nf, size..., 1), deflate=3)
+        HDF5.create_dataset(grp, "disintegration", datatype(Float64),
+            dataspace(nf, size..., nw),
+            chunk=(nf, size..., 1), deflate=3)
+        HDF5.create_dataset(grp, "deposition", datatype(Float64),
+            dataspace(nf, size..., nw),
+            chunk=(nf, size..., 1), deflate=3)
+        HDF5.create_dataset(grp, "sediment_height", datatype(Float64),
+            dataspace(size..., nw + 1),
+            chunk=(size..., 1), deflate=3)
     end
 
-    function write_state(fid, idx::Int, state::AbstractState)
-        fid["sediment_height"][:, :, idx] = state.sediment_height |> in_units_of(u"m")
+    function write_state(fid, input::AbstractInput, idx::Int, state::AbstractState)
+        for (k, v) in input.output
+            if mod(idx, v.write_interval) == 0
+                fid[string(k)]["sediment_height"][:, :, div(idx, v.write_interval)] = 
+                    state.sediment_height[v.slice...] |> in_units_of(u"m")
+            end
+        end
     end
 
-    function write_frame(fid, idx::Int, frame::Frame)
-        try_write(tgt, ::Nothing) = ()
-        try_write(tgt, src::AbstractArray) = tgt[:, :, :, idx] = (src |> in_units_of(u"m"))
+    function write_frame(fid, input::AbstractInput, idx::Int, frame::Frame)
+        try_write(tgt, ::Nothing, v) = ()
+        try_write(tgt, src::AbstractArray, v) = if mod(idx, v.write_interval) == 0
+            tgt[:, :, :, div(idx, v.write_interval)] = (src[:, v.slice...] |> in_units_of(u"m"))
+        end
 
-        try_write(fid["production"],  frame.production)
-        try_write(fid["disintegration"], frame.disintegration)
-        try_write(fid["deposition"], frame.deposition)
+        for (k, v) in input.output
+            grp = fid[string(k)]
+            try_write(grp["production"], frame.production, v)
+            try_write(grp["disintegration"], frame.disintegration, v)
+            try_write(grp["deposition"], frame.deposition, v)
+        end
     end
 
     """
@@ -67,12 +99,14 @@ We write output to HDF5.
             create_group(fid, "input")
             M.write_header(fid, input)
 
-            create_dataset(fid, input)
-            write_state(fid, 1, state)
+            for (k, v) in input.output
+                create_ck_group(fid, input, k, v)
+            end
+            write_state(fid, input, 1, state)
 
             run_model(Model{M}, input, state) do w, df 
-                write_frame(fid, w, df)
-                write_state(fid, w+1, state)
+                write_frame(fid, input, w, df)
+                write_state(fid, input, w+1, state)
             end
         end
 

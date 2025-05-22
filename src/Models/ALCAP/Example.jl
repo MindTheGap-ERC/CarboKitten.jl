@@ -5,6 +5,7 @@ using Unitful
 using ..ALCAP: ALCAP
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
+using CarboKitten.Components.H5Writer: OutputSpec
 
 # ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]
 const TAG = "alcap-example"
@@ -41,8 +42,10 @@ const INPUT = ALCAP.Input(
     box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TimeProperties(
         Δt=0.0002u"Myr",
-        steps=5000,
-        write_interval=1),
+        steps=5000),
+    output=Dict(
+        :full => OutputSpec(slice=(:,:), write_interval=10),
+        :section => OutputSpec(slice=(:, 25), write_interval=1)),
     ca_interval=1,
     initial_topography=(x, y) -> -x / 300.0,
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),

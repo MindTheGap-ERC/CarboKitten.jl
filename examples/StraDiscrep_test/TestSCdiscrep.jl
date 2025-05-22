@@ -42,7 +42,7 @@ const INPUT = WDn.Input(
     box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0m),
     time=TimeProperties(
         Δt=0.0002Myr,
-        steps=5000,
+        steps=1000,
         write_interval=1),
     ca_interval=1,
     initial_topography=(x, y) -> -x / 300.0,

@@ -4,8 +4,23 @@
 using CarboKitten: Box, box_axes
 using CarboKitten.Transport.Solvers: runge_kutta_4
 using CarboKitten.Transport.Advection: transport
+using CarboKitten.Testing: transport_test_input
 using Unitful
 using Printf
+
+function gaussian_initial_sediment(x, y)
+	exp(-(x-10u"km")^2 / (2 * (0.5u"km")^2)) * 30.0u"m"
+end
+
+function main()
+    input = transport_test_input(
+        initial_topography = (x, y)  -> -30.0u"m",
+        initial_sediment = gaussian_initial_sediment,
+        disintegration_rate = 50000.0u"m/Myr",
+        wave_velocity = v_const(-5u"km/Myr")
+    )
+
+end
 
 Amount = typeof(1.0u"m")
 
@@ -96,10 +111,6 @@ function run_model(input)
             put!(ch, state)
         end
     end
-end
-
-function gaussian_initial_sediment(x, y)
-	exp(-(x-10u"km")^2 / (2 * (0.5u"km")^2)) * 30.0u"m"
 end
 
 v_const(v_max) = _ -> ((v_max, 0.0u"m/yr"), (0.0u"1/yr", 0.0u"1/yr"))

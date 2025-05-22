@@ -5,35 +5,58 @@ using Test
 using Unitful
 
 function stratigraphic_column(deposition, disintegration)
-    n_times = length(deposition) - 1
-    sc = zeros(typeof(1.0u"m"), n_times)
+    @assert size(deposition) == size(disintegration)
+
+    n_facies = size(deposition)[2]
+    n_times = size(deposition)[1]
+
+    sc = zeros(typeof(1.0u"m"), n_times, n_facies)
 
     for ts = 1:n_times
-        acc = deposition[ts] - disintegration[ts]
-        if acc > 0.0u"m"
-            sc[ts] = acc
+        acc = deposition[ts, :] .- disintegration[ts, :]
+        @assert acc <= deposition[ts, :]
+        if sum(acc) > 0.0u"m"
+            sc[ts, :] .= acc
+            @assert sum(sc[ts, :]) ≈ sum(acc)
+            @assert sum(sc[ts, :]) > 0.0u"m"
             continue
         end
+
         ts_down = ts - 1
-        while acc < 0.0u"m"
-            ts_down < 1 && break
-            if -acc < sc[ts_down]
-                sc[ts_down] -= acc
+        @assert ts_down >= 1
+        while sum(acc) < 0.0u"m"
+            if ts_down < 0
+                @warn "stratigraph column overshoot: $(acc)"
                 break
-            else
-                acc += sc[ts_down]
-                sc[ts_down] = 0.0u"m"
             end
+            ts_down < 1 && break
+            if -sum(acc) < sum(sc[ts_down, :])
+                previous_sc = sc[ts_down, :]
+                sc[ts_down, :] .-= acc
+                @assert sum(sc[ts_down, :]) >= 0.0u"m"
+                @assert sum(sc[ts_down, :]) + sum(acc) ≈ sum(previous_sc)
+                if any(sc[ts_down, :] .< 0.0u"m")
+                    @warn "negative value in stratigraphic column: $(sc[ts_down,:])"
+                end
+                break
+            end
+            
+            acc .+= sc[ts_down, :]
+            @assert acc .<= 0.0u"m"
+            if any(acc .> 0.0u"m")
+                @warn "round-off error in stratigraphic column: $(acc)"
+            end
+            sc[ts_down] .= 0.0u"m"
             ts_down -= 1
         end
     end
 
-    sc
+    return sc
 end
 
 @testset "Artificial_Curve" begin
     deposition = 10 .* sin.(0.1 * (1:100)) .*1.0u"m" .+ 10 .* 1.0u"m"
-    disintegration = 1 .* cos.(0.1 * (1:100)).*1.0u"m" .+ 5 .* 1.0u"m"
+    disintegration = 1 .* sin.(0.1 * (1:100)).*1.0u"m" .+ 5 .* 1.0u"m"
     result = stratigraphic_column(deposition, disintegration)
     @test sum(result) ≈ sum(deposition) - sum(disintegration)
 end

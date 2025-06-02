@@ -53,8 +53,8 @@
 
     function write_state(fid, input::AbstractInput, idx::Int, state::AbstractState)
         for (k, v) in input.output
-            if mod(idx, v.write_interval) == 0
-                fid[string(k)]["sediment_height"][:, :, div(idx, v.write_interval)] = 
+            if mod(idx-1, v.write_interval) == 0
+                fid[string(k)]["sediment_height"][:, :, div(idx-1, v.write_interval)+1] = 
                     state.sediment_height[v.slice...] |> in_units_of(u"m")
             end
         end
@@ -62,8 +62,12 @@
 
     function write_frame(fid, input::AbstractInput, idx::Int, frame::Frame)
         try_write(tgt, ::Nothing, v) = ()
-        try_write(tgt, src::AbstractArray, v) = if mod(idx, v.write_interval) == 0
-            tgt[:, :, :, div(idx, v.write_interval)] = (src[:, v.slice...] |> in_units_of(u"m"))
+        function try_write(tgt, src::AbstractArray, v)
+            if mod(idx-1, v.write_interval) == 0
+                tgt[:, :, :, div(idx-1, v.write_interval) + 1] .= 0
+            end
+            tgt[:, :, :, div(idx-1, v.write_interval) + 1] .+= 
+                (src[:, v.slice...] |> in_units_of(u"m"))
         end
 
         for (k, v) in input.output

@@ -134,7 +134,6 @@ const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
             sac = extract_sac(header, data, [(1, 1)])
             submerged = wd.wd1 .> -1.0u"m"
             growing = (sac.sac1[2:end] .- sac.sac1[1:end-1]) .> 0.5u"m"
-            print(DataFrame(:wd => wd.wd1, :sac => sac.sac1))
             @test all(growing .&& (submerged[1:end-1] .|| submerged[2:end]) .|| .!growing)
         end
     end

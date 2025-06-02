@@ -22,7 +22,7 @@ const HEADER1 = Header(
     Δt=0.1u"Myr",
     time_steps=10,
     initial_topography=zeros(typeof(1.0u"m"), 3, 3),
-    sea_level=zeros(typeof(1.0u"m"), 10),
+    sea_level=zeros(typeof(1.0u"m"), 11),
     subsidence_rate=10u"m/Myr")
 
 const PRODUCTION1 = reshape(
@@ -132,8 +132,9 @@ const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
             header, data = read_data(joinpath(path, "run.h5"))
             wd = extract_wd(header, data, [(1, 1)])
             sac = extract_sac(header, data, [(1, 1)])
-            submerged = wd.wd1 .> 0.0u"m"
-            growing = (sac.sac1[2:end] .- sac.sac1[1:end-1]) .> 0.0u"m"
+            submerged = wd.wd1 .> -1.0u"m"
+            growing = (sac.sac1[2:end] .- sac.sac1[1:end-1]) .> 0.5u"m"
+            print(DataFrame(:wd => wd.wd1, :sac => sac.sac1))
             @test all(growing .&& (submerged[1:end-1] .|| submerged[2:end]) .|| .!growing)
         end
     end

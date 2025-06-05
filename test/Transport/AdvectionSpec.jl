@@ -65,7 +65,7 @@ times = []
 
 run_model(Model{ALCAP}, input, state) do i, delta
     if mod(i-1, 250) == 0
-        push!(result, state.sediment_height)
+        push!(result, deepcopy(state.sediment_height))
         push!(times, time(input, state))
     end
 end

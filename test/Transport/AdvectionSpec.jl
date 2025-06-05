@@ -6,7 +6,6 @@ using CarboKitten.Transport.Solvers: runge_kutta_4
 using CarboKitten.Transport.Advection: transport
 using CarboKitten.Testing: transport_test_input
 using Unitful
-using Printf
 
 @testset "CarboKitten.Transport.Advection.scale-invariance" begin
 

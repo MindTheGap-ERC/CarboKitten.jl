@@ -31,7 +31,7 @@ let box = Box{Periodic{2}}(grid_size=(32, 32), phys_scale=1.0u"m")
 end
 end
 
-@testset "CarboKitten.Transport.Advection.advection" begin
+@testset "CarboKitten.Transport.Advection.wave-transport" begin
 
 function gaussian_initial_sediment(x, y)
 	exp(-(x-10u"km")^2 / (2 * (0.5u"km")^2)) * 30.0u"m"

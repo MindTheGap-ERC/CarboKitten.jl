@@ -1,6 +1,4 @@
 # ~/~ begin <<docs/src/finite-difference-transport.md#test/Transport/AdvectionSpec.jl>>[init]
-@testset "CarboKitten.Transport.Advection.scale-invariance" begin
-
 using CarboKitten
 using CarboKitten: Box, box_axes
 using CarboKitten.Components.TimeIntegration: time
@@ -10,9 +8,9 @@ using CarboKitten.Testing: transport_test_input
 using Unitful
 using Printf
 
+@testset "CarboKitten.Transport.Advection.scale-invariance" begin
 
-Amount = typeof(1.0u"m")
-
+# test transport code for scale invariance
 let box = Box{Periodic{2}}(grid_size=(32, 32), phys_scale=1.0u"m")
     solver = runge_kutta_4(Float64, box)
     wave_velocity = _ -> ((0.5u"m/s", 0.0u"m/s"), (0.0u"1/s", 0.0u"1/s"))
@@ -58,6 +56,7 @@ function center_of_mass(m, x)
     x_com = sum(x .* sum(m, dims=2)) / total_mass  # Weighted average along x
     return x_com
 end
+
 state = ALCAP.initial_state(input)
 
 result = []
@@ -69,61 +68,22 @@ run_model(Model{ALCAP}, input, state) do i, delta
         push!(times, time(input, state))
     end
 end
-println
-println("This is the result: ", result)
-
 
 (x, y) = box_axes(input.box)
 
-# Print results
-# for (i, r) in enumerate(result)
-#     @info "Time: $(r[2].time), Center of Mass: $(centers_of_mass[i])"
-# end
-
-fig = Figure()
-ax2 = Axis(fig[1, 1], xlabel="x (km)", ylabel="η (m)")
-
-for (i, r) in enumerate(result)
-    η = input.initial_topography.(x, y') .+ r .- input.subsidence_rate * times[i]
-
-    lines!(ax2, x |> in_units_of(u"km"), η[:, 1] |> in_units_of(u"m"),
-    label=@sprintf("%.3f Myr", ustrip(times[i])))
-end
-
 com_positions = [center_of_mass(r, x) for r in result]
-# @info "Time: $(r[2].time), Center of Mass: $(com)"
-com_positions_km = com_positions |> in_units_of(u"km")  # Convert to km
-com_positions_km_num = ustrip.(com_positions_km)  # Strip units for plotting
 
-# Plot centers of mass as dots
-y_values_m = fill(ustrip(u"m", -10u"m"), length(com_positions_km_num))  # Convert -10m to numeric
-# Plot centers of mass as dots
-scatter!(ax2, com_positions_km_num, y_values_m,
-             markersize=10, color=:red, label="Center of Mass")
-
-lines!(ax2, com_positions_km_num, y_values_m, color=:red, linestyle=:dash)
-
-Legend(fig[1, 2], ax2)
-
-display(fig)
-
-println()
-println("These are the com_positions: ", com_positions)
-println("and these are the times: ", times)
 @assert length(com_positions) == length(times)
 observed_speeds = (com_positions[2:end] .- com_positions[1:end-1]) ./ 
     (times[2:end] .- times[1:end-1])
-println()
-println("These are the observed speeds: ", observed_speeds)
-# @show input.wave_transport             
-expected_speed = input.facies[1].wave_velocity(0.0u"m")[1][1]  # Extract the expected speed from the wave transport
-@show expected_speed
+    
+# Extract the expected speed from the wave transport
+expected_speed = input.facies[1].wave_velocity(0.0u"m")[1][1]  
 tolerance = 1e-6 * expected_speed  # Set a tolerance for the comparison
 # Check if all speeds are within tolerance
 for speed in observed_speeds
     @test speed ≈ expected_speed atol=tolerance
 end
-fig
 
 end
 # ~/~ end

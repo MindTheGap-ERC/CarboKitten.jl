@@ -11,6 +11,7 @@
 
     export run
 
+    # ~/~ begin <<docs/src/components/hdf5.md#hdf5-output-spec>>[init]
     const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
 
     @kwdef struct OutputSpec
@@ -21,6 +22,7 @@
     @kwdef struct Input <: AbstractInput
         output = Dict(:full => OutputSpec((:,:), 1)) 
     end
+    # ~/~ end
 
     function create_ck_group(fid, input::AbstractInput, name::Symbol, spec::OutputSpec)
         nf = n_facies(input)
@@ -78,15 +80,14 @@
         end
     end
 
+    # ~/~ begin <<docs/src/components/hdf5.md#hdf5-run-model>>[init]
     """
         run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
 
     Run a model and write output to HDF5. Here `M` should be a model, i.e. a
     module with `initial_state`, `step!` and `write_header` defined. Example:
 
-    ```julia
-    run_model(Model{ALCAP}, ALCAP.Example.INPUT, "example.h5")
-    ```
+        run_model(Model{ALCAP}, ALCAP.Example.INPUT, "example.h5")
     """
     function run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M        
         state = M.initial_state(input)
@@ -95,18 +96,24 @@
             create_group(fid, "input")
             M.write_header(fid, input)
 
+            # create a group for every output item
             for (k, v) in input.output
                 create_ck_group(fid, input, k, v)
             end
             write_state(fid, input, 1, state)
 
-            run_model(Model{M}, input, state) do w, df 
+            run_model(Model{M}, input, state) do w, df
+                # write_frame chooses to advance in a dataset
+                # or just to increment on the current frame
                 write_frame(fid, input, w, df)
+                # write_state only writes one in every write_interval
+                # and does no accumulation
                 write_state(fid, input, w+1, state)
             end
         end
 
         return filename
     end
+    # ~/~ end
 end
 # ~/~ end

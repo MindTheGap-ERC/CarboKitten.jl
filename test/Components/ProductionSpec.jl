@@ -65,7 +65,7 @@ module ProductionSpec
                 subsidence_rate = 0.0u"m/Myr",
                 facies = [facies],
                 insolation = 400.0u"W/m^2")
-        
+
             state = initial_state(input)
             prod = uniform_production(input)(state)
             @test all(prod[1,1:5,1] .== 0.0u"m/Myr")

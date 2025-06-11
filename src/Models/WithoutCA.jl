@@ -25,7 +25,7 @@ function step!(input::Input)
     function (state::State)
         p = τ(state) .* dt
         d = disintegrate!(state)
-  
+
         active_layer = p .+ d
         transport!(state, active_layer)
 

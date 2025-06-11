@@ -4,7 +4,78 @@
 CarboKitten.Components.H5Writer
 ```
 
-We write output to HDF5.
+We write output to HDF5. In the `Input` struct the user can specify a dictionary of `OutputSpec`, specifying how much and at which interval to write output. Typically, you'd want a full topographic output with lower time resolution, and choose a transect with full time resolution. For example, on the ALCAP model:
+
+```julia
+const INPUT = ALCAP.Input(
+    box = Box{Coast}(grid_size = (300, 150), phys_scale = 50.0u"m"),
+    time = TimeProperties(Δt = 50.0u"yr", steps = 20_000),
+    output = Dict(
+        :topography => OutputSpec(write_interval = 200),
+        :profile => OutputSpec(slice = (:, 75))),
+
+    ...)  # add more options
+```
+
+Saving the full output of this simulation would take several hundreds of gigabytes, not gargantuan, but a bit unwieldy if you want to save many simulation runs. With this output specification, we cut down on this significantly.
+
+``` {.julia #hdf5-output-spec}
+const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
+
+@kwdef struct OutputSpec
+    slice::Slice2 = (:, :)
+    write_interval::Int = 1
+end
+
+@kwdef struct Input <: AbstractInput
+    output = Dict(:full => OutputSpec((:,:), 1)) 
+end
+```
+
+The default is to write all output, which is fine for smaller runs.
+The `H5Writer` component runs through an overloaded version of `run_model`. For example:
+
+```julia
+run_model(Model{ALCAP}, ALCAP.Example.INPUT, "example.h5")
+```
+
+``` {.julia #hdf5-run-model}
+"""
+    run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
+
+Run a model and write output to HDF5. Here `M` should be a model, i.e. a
+module with `initial_state`, `step!` and `write_header` defined. Example:
+
+    run_model(Model{ALCAP}, ALCAP.Example.INPUT, "example.h5")
+"""
+function run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M        
+    state = M.initial_state(input)
+
+    h5open(filename, "w") do fid
+        create_group(fid, "input")
+        M.write_header(fid, input)
+
+        # create a group for every output item
+        for (k, v) in input.output
+            create_ck_group(fid, input, k, v)
+        end
+        write_state(fid, input, 1, state)
+
+        run_model(Model{M}, input, state) do w, df
+            # write_frame chooses to advance in a dataset
+            # or just to increment on the current frame
+            write_frame(fid, input, w, df)
+            # write_state only writes one in every write_interval
+            # and does no accumulation
+            write_state(fid, input, w+1, state)
+        end
+    end
+
+    return filename
+end
+```
+
+## Implementation
 
 ``` {.julia file=src/Components/H5Writer.jl}
 @compose module H5Writer
@@ -19,16 +90,7 @@ We write output to HDF5.
 
     export run
 
-    const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
-
-    @kwdef struct OutputSpec
-        slice::Slice2 = (:, :)
-        write_interval::Int = 1
-    end
-
-    @kwdef struct Input <: AbstractInput
-        output = Dict(:full => OutputSpec((:,:), 1)) 
-    end
+    <<hdf5-output-spec>>
 
     function create_ck_group(fid, input::AbstractInput, name::Symbol, spec::OutputSpec)
         nf = n_facies(input)
@@ -86,35 +148,6 @@ We write output to HDF5.
         end
     end
 
-    """
-        run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
-
-    Run a model and write output to HDF5. Here `M` should be a model, i.e. a
-    module with `initial_state`, `step!` and `write_header` defined. Example:
-
-    ```julia
-    run_model(Model{ALCAP}, ALCAP.Example.INPUT, "example.h5")
-    ```
-    """
-    function run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M        
-        state = M.initial_state(input)
-
-        h5open(filename, "w") do fid
-            create_group(fid, "input")
-            M.write_header(fid, input)
-
-            for (k, v) in input.output
-                create_ck_group(fid, input, k, v)
-            end
-            write_state(fid, input, 1, state)
-
-            run_model(Model{M}, input, state) do w, df 
-                write_frame(fid, input, w, df)
-                write_state(fid, input, w+1, state)
-            end
-        end
-
-        return filename
-    end
+    <<hdf5-run-model>>
 end
 ```

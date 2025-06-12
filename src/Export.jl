@@ -22,11 +22,10 @@ const na = [CartesianIndex()]
 abstract type ExportSpecification end
 
 @kwdef struct CSV <: ExportSpecification
-    grid_locations::Vector{NTuple{2,Int}}
     output_files::IdDict{Symbol,String}
 end
 
-CSV(grid_locations, kwargs...) = CSV(grid_locations, IdDict(kwargs...))
+CSV(kwargs...) = CSV(IdDict(kwargs...))
 # ~/~ end
 
 @kwdef struct Axes
@@ -170,6 +169,8 @@ read_volume(args...) = read_data(Val{3}, args...)
 read_slice(args...) = read_data(Val{2}, args...)
 read_column(args...) = read_data(Val{1}, args...)
 
+time(header::Header, data::Data) = header.axes.t[1:data.write_interval:end]
+
 # ~/~ begin <<docs/src/data-export.md#export-function>>[init]
 """
     unitful_headers(df::DataFrame)
@@ -230,10 +231,11 @@ Returns an `Array{Quantity, 2}` where the `Quantity` is in units of meters.
 function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
     dc = DataColumn(
         loc,
+		data.write_interval,
         data.disintegration[:, loc..., :],
         data.production[:, loc..., :],
         data.deposition[:, loc..., :],
-        data.sediment_elevation[loc..., :])
+        data.sediment_thickness[loc..., :])
     return stratigraphic_column(header, dc, facies)
 end
 
@@ -267,11 +269,14 @@ end
 # ~/~ begin <<docs/src/data-export.md#export-function>>[3]
 struct CSVExportTrait{S} end
 
-function data_export(spec::T, filepath::String) where {T<:ExportSpecification}
-    data_export(spec, read_data(filepath)...)
-end
+"""
+	data_export(spec::CSV, header::Header, data)
 
-function data_export(spec::CSV, header::Header, data::Data)
+Exports `data` to CSV. Here, `data` should be a collection or iterable
+of `DataColumn`.
+"""
+function data_export(spec::CSV, header::Header, data)
+	@assert all_equal(d.write_interval for d in values(data)) "all data should have same write_interval"
     for (key, filename) in spec.output_files
         if key == :metadata
             md = Dict(
@@ -299,33 +304,33 @@ function data_export(spec::CSV, header::Header, data::Data)
             continue
         end
         open(filename, "w") do io
-            data_export(CSVExportTrait{key}, io, header, data, spec.grid_locations)
+            data_export(CSVExportTrait{key}, io, header, data)
         end
     end
 end
 
-function data_export(::Type{CSVExportTrait{S}}, args...) where {S}
+function data_export(::Type{CSVExportTrait{S}}, header::Header, data::DataColumn) where {S}
     error("Unknown CSV data export: `$(S)`")
 end
 
 function data_export(::Type{CSVExportTrait{:sediment_accumulation_curve}},
-    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    io::IO, header::Header, data)
 
-    sac = extract_sac(header, data, grid_locations)
+    sac = extract_sac(header, data)
     write_unitful_csv(io, sac)
 end
 
 function data_export(::Type{CSVExportTrait{:age_depth_model}},
-    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    io::IO, header::Header, data)
 
-    adm = extract_sac(header, data, grid_locations) |> age_depth_model
+    adm = extract_sac(header, data) |> age_depth_model
     write_unitful_csv(io, adm)
 end
 
 function data_export(::Type{CSVExportTrait{:stratigraphic_column}},
-    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    io::IO, header::Header, data)
 
-    sc = extract_sc(header, data, grid_locations)
+    sc = extract_sc(header, data)
     write_unitful_csv(io, sc)
 end
 
@@ -339,12 +344,12 @@ end
     extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
 
 Extract Sediment Accumumlation Curve (SAC) from the data. The SAC is directly copied from
-`data.sediment_elevation`. Returns a `DataFrame` with `time` and `sac<n>` columns where `<n>`
+`data.sediment_thickness`. Returns a `DataFrame` with `time` and `sac<n>` columns where `<n>`
 is in the range `1:length(grid_locations)`.
 """
 function extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
     DataFrame(:time => header.axes.t[1:end],
-        (Symbol("sac$(i)") => data.sediment_elevation[loc..., :]
+        (Symbol("sac$(i)") => data.sediment_thickness[loc..., :]
          for (i, loc) in enumerate(grid_locations))...)
 end
 
@@ -367,11 +372,10 @@ end
 Extract the water depth from the data. Returns a `DataFrame` with `time` and `wd<n>` columns where `<n>`
 is in the range `1:length(grid_locations)`.
 """
-function extract_wd(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+function extract_wd(header::Header, data::DataColumn)
     na = [CartesianIndex()]
-    wd = header.subsidence_rate .* header.axes.t[na, na, :] .- header.initial_topography[:, :, na] .- data.sediment_elevation
-    DataFrame("time" => header.axes.t,
-        ("wd$(i)" => wd[loc..., :] for (i, loc) in enumerate(grid_locations))...)
+	t = time(header, data)
+	return header.subsidence_rate .* t .- header.initial_topography[data.slice...] .- data.sediment_thickness[data.slice...]
 end
 # ~/~ end
 

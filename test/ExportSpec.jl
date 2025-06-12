@@ -1,5 +1,5 @@
 # ~/~ begin <<docs/src/data-export.md#test/ExportSpec.jl>>[init]
-using CarboKitten.Export: Axes, Header, Data, data_export, CSVExportTrait,
+using CarboKitten.Export: Axes, Header, DataVolume, data_export, CSVExportTrait,
     age_depth_model, extract_sac, extract_sc, CSV
 using CSV: read as read_csv
 using TOML
@@ -17,7 +17,6 @@ const AXES1 = Axes(
 const HEADER1 = Header(
     tag="test",
     axes=AXES1,
-    write_interval=1,
     Δt=0.1u"Myr",
     time_steps=10,
     initial_topography=zeros(typeof(1.0u"m"), 3, 3),
@@ -41,11 +40,13 @@ const ELEVATION1 = cat(
     cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :];
     dims=3)
 
-const DATA1 = Data(
+const DATA1 = DataVolume(
+    slice=(:,:),
+    write_interval=1,
     disintegration=DISINTEGRATION1,
     production=PRODUCTION1,
     deposition=PRODUCTION1 .- DISINTEGRATION1,
-    sediment_elevation=ELEVATION1)
+    sediment_thickness=ELEVATION1)
 
 const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
 # ~/~ end

@@ -366,12 +366,13 @@ transport_test_input(;
 	initial_topography = (x, y) -> 0.0u"m",
 	initial_sediment = (x, y) -> 0.0u"m",
 	disintegration_rate = 50.0u"m/Myr",
-	subsidence_rate = 50.0u"m/Myr",
+	subsidence_rate = 0.0u"m/Myr",
 	diffusion_coefficient = 0.0u"m/yr",
-	wave_velocity = _ -> (Vec2(0.0, 0.0)u"m/yr", Vec2(0.0, 0.0)u"1/yr")) =
+	wave_velocity = _ -> (Vec2(0.0, 0.0)u"m/yr", Vec2(0.0, 0.0)u"1/yr"),
+    intertidal_zone = 0.0u"m") =
 
 	ALCAP.Input(
-		box = CarboKitten.Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
+		box = CarboKitten.Box{Coast}(grid_size=(120, 1), phys_scale=125.0u"m"),
 		time = TimeProperties(
 			Δt = 0.001u"Myr",
 			steps = 1000),
@@ -388,7 +389,9 @@ transport_test_input(;
 		insolation = 400.0u"W/m^2",
 		sediment_buffer_size = 5,
 		depositional_resolution = 1000.0u"m",
-		transport_solver = Val{:forward_euler})
+		transport_solver = Val{:forward_euler},
+        subsidence_rate = subsidence_rate,
+        intertidal_zone = intertidal_zone)
 
 end
 ```
@@ -564,6 +567,7 @@ using GeometryBasics
 end
 
 @kwdef struct Input <: AbstractInput
+    intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
     transport_solver = Val{:RK4}
     transport_substeps = :adaptive 
@@ -587,9 +591,11 @@ function adaptive_transporter(input)
     rct = Matrix{typeof(1.0u"1/Myr")}(undef, box.grid_size...)
     dC = Matrix{Rate}(undef, box.grid_size...)
     cm = courant_max(input.transport_solver)
+    iz = input.intertidal_zone
 
     return function (state, C::Array{Amount,3})
         wd = w(state)
+        wd .+= iz
 
         for (i, f) in pairs(fs)
             advection_coef!(box, f.diffusion_coefficient, f.wave_velocity, wd, adv, rct)
@@ -624,10 +630,11 @@ function disintegrator(input)
     w = water_depth(input)
     output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
     depositional_resolution = input.depositional_resolution
-    @info "maximum disintegration per time step: max_h = $max_h"
+    iz = input.intertidal_zone
 
     return function (state)
         wn = w(state)
+        wn .+= iz
         h = min.(max_h, state.sediment_height)
         h[wn.<=0.0u"m"] .= 0.0u"m"
 
@@ -656,16 +663,18 @@ function transporter(input)
     Δt = input.time.Δt / input.transport_substeps
     steps = input.transport_substeps
     fs = input.facies
+    iz = input.intertidal_zone
 
     return function (state, C::Array{Amount,3})
         wd = w(state)
+        wd .+= iz
 
         for (i, f) in pairs(fs)
             for j in 1:steps
                 solver(
                     (C, _) -> transport(
                         input.box, f.diffusion_coefficient, f.wave_velocity,
-                        C, wd),
+C, wd),
                     view(C, i, :, :), TimeIntegration.time(input, state), Δt)
             end
         end
@@ -678,5 +687,113 @@ function transporter(input)
     end
 end
 
+end
+```
+
+## Intertidal zone
+
+You may pass the `intertidal_zone` argument to define a height above sea-level where sediment is still transported.
+
+The following test has three sediment peaks, one below sea-level, one in the intertidal zone and one above the intertidal zone. In the latter two cases, sediment is transported.
+
+The `transport_test_input` has a box of $120 \times 1$ with a resolution of 125m (15km total).
+We divide the domain into three sections: dry ($h > 10m$), intertidal ($10m > h > 0m$) and wet zones ($0m > h$). The dry zone never has transport, the wet zone always has transport, but the intertidal zone only has transport enabled when we set `intertidal_zone` to `10u"m"`.
+
+![intertidal zone test](fig/1d-intertidal.svg)
+
+``` {.julia .task file=examples/transport/1d-intertidal-zone.jl}
+#| creates: docs/src/_fig/1d-intertidal.svg
+#| collect: figures
+
+module Script
+    using CarboKitten
+    using CarboKitten.Testing: transport_test_input
+    using CairoMakie
+
+    include("plot-1d-evolution.jl")
+
+    function three_peaks(x, y)
+        sum(exp(-(x-μ)^2 / (2 * (0.5u"km")^2)) * 9.0u"m"
+            for μ in [2.5u"km", 7.5u"km", 12.5u"km"])
+    end
+
+    function staircase(dx, dy, y0)
+        return function (x, _)
+            floor(x / dx) * dy + y0
+        end
+    end
+
+    v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
+
+    function main()
+        CairoMakie.activate!()
+
+        input = transport_test_input(
+            initial_topography = staircase(5.0u"km", -10.0u"m", 10.0u"m"),
+            initial_sediment = three_peaks,
+            disintegration_rate = 50000.0u"m/Myr",
+            wave_velocity = v_const(-1u"km/Myr"),
+            intertidal_zone = 10u"m"
+        )
+
+        fig = plot_1d_evolution(input, 1000)
+        save("docs/src/_fig/1d-intertidal.svg", fig)
+    end
+end
+
+Script.main()
+```
+
+The following tests that we see the expected behaviours both without an intertidal zone (`input1`) and with (`input1`). The regions split at grid locations 40 and 80, so we test slices `10:30`, `50:70` and `90:110`. This ommits the boundaries where numeric artifacts could be encountered.
+
+``` {.julia file=test/Transport/IntertidalZoneSpec.jl}
+@testset "CarboKitten.Transport.IntertidalZone" begin
+    using CarboKitten
+    using CarboKitten.Testing: transport_test_input
+
+    function end_sediment_height(input)
+        state = ALCAP.initial_state(input)
+        run_model((_, _) -> (), Model{ALCAP}, input, state)
+        return state.sediment_height
+    end
+
+    function three_peaks(x, y)
+        sum(exp(-(x-μ)^2 / (2 * (0.5u"km")^2)) * 9.0u"m"
+            for μ in [2.5u"km", 7.5u"km", 12.5u"km"])
+    end
+
+    function staircase(dx, dy, y0)
+        return function (x, _)
+            floor(x / dx) * dy + y0
+        end
+    end
+
+    v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
+
+    input1 = transport_test_input(
+        initial_topography = staircase(5.0u"km", -10.0u"m", 10.0u"m"),
+        initial_sediment = three_peaks,
+        disintegration_rate = 50000.0u"m/Myr",
+        wave_velocity = v_const(-1u"km/Myr"),
+        intertidal_zone = 0u"m"
+    )
+
+    output1 = end_sediment_height(input1)[:, 1]
+
+    input2 = transport_test_input(
+        initial_topography = staircase(5.0u"km", -10.0u"m", 10.0u"m"),
+        initial_sediment = three_peaks,
+        disintegration_rate = 50000.0u"m/Myr",
+        wave_velocity = v_const(-1u"km/Myr"),
+        intertidal_zone = 10u"m"
+    )
+
+    output2 = end_sediment_height(input2)[:, 1]
+
+    @test output1[10:30] ≈ output1[50:70] atol=0.01u"m"
+    @test !isapprox(output1[50:70], output1[90:110], atol=1.0u"m")
+
+    @test !isapprox(output2[10:30], output2[50:70], atol=1.0u"m")
+    @test output2[50:70] ≈ output2[90:110] atol=0.01u"m"
 end
 ```

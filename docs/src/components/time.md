@@ -24,9 +24,8 @@ using CarboKitten.Components.Common
     end
 
     let input = Input(time=TimeProperties(
-        Δt = 0.02u"Myr", steps = 50, write_interval = 10, t0 = -1.0u"Myr"))
-      @test write_times(input) |> collect == [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0] .* u"Myr"
-      @test n_writes(input) == 5
+        Δt = 0.02u"Myr", steps = 50, t0 = -1.0u"Myr"))
+      @test n_writes(input) == 50
       @test time(input, State(25)) == -0.5u"Myr"
     end
 end

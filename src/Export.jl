@@ -217,8 +217,9 @@ age_depth_model(sac_df::DataFrame) =
     let sac_cols = filter(contains("sac"), names(sac_df)),
         adm_cols = replace.(sac_cols, "sac" => "adm")
 
-        select(sac_df, "time", (sac => age_depth_model => adm
-                                for (sac, adm) in zip(sac_cols, adm_cols))...)
+        select(sac_df, "timestep",
+               (sac => age_depth_model => adm
+                for (sac, adm) in zip(sac_cols, adm_cols))...)
     end
 # ~/~ end
 # ~/~ begin <<docs/src/data-export.md#export-function>>[2]
@@ -276,7 +277,6 @@ Exports `data` to CSV. Here, `data` should be a collection or iterable
 of `DataColumn`.
 """
 function data_export(spec::CSV, header::Header, data)
-	@assert all_equal(d.write_interval for d in values(data)) "all data should have same write_interval"
     for (key, filename) in spec.output_files
         if key == :metadata
             md = Dict(
@@ -304,7 +304,15 @@ function data_export(spec::CSV, header::Header, data)
             continue
         end
         open(filename, "w") do io
-            data_export(CSVExportTrait{key}, io, header, data)
+            time_df = DataFrame(
+                :timestep => 0:header.time_steps,
+                :time => header.axes.t)
+            df = innerjoin(
+                time_df,
+                (data_export(CSVExportTrait{key}, header, column, label)
+                 for (label, column) in pairs(data))...,
+                on=:timestep)
+            write_unitful_csv(io, df)
         end
     end
 end
@@ -313,69 +321,59 @@ function data_export(::Type{CSVExportTrait{S}}, header::Header, data::DataColumn
     error("Unknown CSV data export: `$(S)`")
 end
 
-function data_export(::Type{CSVExportTrait{:sediment_accumulation_curve}},
-    io::IO, header::Header, data)
+data_export(::Type{CSVExportTrait{:sac}, header::Header, data::DataColumn, label) =
+    extract_sac(header, data, label)
+data_export(::Type{CSVExportTrait{:sc}, header::Header, data::DataColumn, label) =
+    extract_sc(header, data, label)
+data_export(::Type{CSVExportTrait{:wd}, header::Header, data::DataColumn, label) =
+    extract_wd(header, data, label)
+data_export(::Type{CSVExportTrait{:adm}, header::Header, data::DataColumn, label) =
+    extract_sac(header, data, label) |> age_depth_model
 
-    sac = extract_sac(header, data)
-    write_unitful_csv(io, sac)
-end
+"""
+    extract_sac(header::Header, data::DataColumn)
 
-function data_export(::Type{CSVExportTrait{:age_depth_model}},
-    io::IO, header::Header, data)
-
-    adm = extract_sac(header, data) |> age_depth_model
-    write_unitful_csv(io, adm)
-end
-
-function data_export(::Type{CSVExportTrait{:stratigraphic_column}},
-    io::IO, header::Header, data)
-
-    sc = extract_sc(header, data)
-    write_unitful_csv(io, sc)
-end
-
-function data_export(::Type{CSVExportTrait{:water_depth}},
-    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-    wd = extract_wd(header, data, grid_locations)
-    write_unitful_csv(io, wd)
+Extract Sediment Accumumlation Curve (SAC) from the data. The SAC is directly
+copied from `data.sediment_thickness`. Returns a `DataFrame` with `time` and
+`sac_<n>` columns where `<n>` is in the range `1:length(grid_locations)`.
+"""
+function extract_sac(header::Header, data::DataColumn, label)
+    DataFrame(
+        "timestep" => 0:header.time_steps,
+        "sac_$(label)" => data.sediment_thickness)
 end
 
 """
-    extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    extract_sc(header::Header, data::DataColumn)
 
-Extract Sediment Accumumlation Curve (SAC) from the data. The SAC is directly copied from
-`data.sediment_thickness`. Returns a `DataFrame` with `time` and `sac<n>` columns where `<n>`
-is in the range `1:length(grid_locations)`.
+Extract Stratigraphic Column (SC) from the data. Returns a `DataFrame` with
+`time` and `sc<n>` columns where `<n>` is in the range `1:length(grid_locations)`.
 """
-function extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-    DataFrame(:time => header.axes.t[1:end],
-        (Symbol("sac$(i)") => data.sediment_thickness[loc..., :]
-         for (i, loc) in enumerate(grid_locations))...)
-end
-
-"""
-    extract_sc(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-
-Extract Stratigraphic Column (SC) from the data. Returns a `DataFrame` with `time` and `sc<n>` columns where `<n>`
-is in the range `1:length(grid_locations)`.
-"""
-function extract_sc(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+function extract_sc(header::Header, data::DataColumn, label)
     n_facies = size(data.production)[1]
-    DataFrame("time" => header.axes.t[1:end-1],
-        ("sc$(i)_f$(f)" => stratigraphic_column(header, data, loc, f)
-         for f in 1:n_facies, (i, loc) in enumerate(grid_locations))...)
+    DataFrame(
+        "timestep" => 1:header.time_steps, 
+        ("sc$(i)_f$(f)" => stratigraphic_column(header, data, f)
+         for f in 1:n_facies)...)
 end
 
 """
-    extract_wd(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    extract_wd(header::Header, data::DataColumn)
 
-Extract the water depth from the data. Returns a `DataFrame` with `time` and `wd<n>` columns where `<n>`
-is in the range `1:length(grid_locations)`.
+Extract the water depth from the data. Returns a `DataFrame` with `time` and
+`wd<n>` columns where `<n>` is in the range `1:length(grid_locations)`.
 """
-function extract_wd(header::Header, data::DataColumn)
+function extract_wd(header::Header, data::DataColumn, label)
     na = [CartesianIndex()]
-	t = time(header, data)
-	return header.subsidence_rate .* t .- header.initial_topography[data.slice...] .- data.sediment_thickness[data.slice...]
+    t = header.time[1:data.write_interval:end]
+    sea_level = header.sea_level[1:data.write_interval:end]
+    wd = header.subsidence_rate .* t .- 
+        header.initial_topography[data.slice...] .- 
+        data.sediment_thickness[data.slice...] .+
+        sea_level
+    return DataFrame(
+        "timestep" => 0:header.time_steps, 
+        "wd_$(label)" => wd)
 end
 # ~/~ end
 

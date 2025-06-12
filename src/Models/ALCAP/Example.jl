@@ -12,22 +12,16 @@ const TAG = "alcap-example"
 
 const FACIES = [
     ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
         maximum_growth_rate=500u"m/Myr",
         extinction_coefficient=0.8u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=50.0u"m/yr"),
     ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
         maximum_growth_rate=400u"m/Myr",
         extinction_coefficient=0.1u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=25.0u"m/yr"),
     ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
         maximum_growth_rate=100u"m/Myr",
         extinction_coefficient=0.005u"m^-1",
         saturation_intensity=60u"W/m^2",
@@ -44,8 +38,8 @@ const INPUT = ALCAP.Input(
         Δt=0.0002u"Myr",
         steps=5000),
     output=Dict(
-        :full => OutputSpec(slice=(:,:), write_interval=10),
-        :section => OutputSpec(slice=(:, 25), write_interval=1)),
+        :topography => OutputSpec(slice=(:,:), write_interval=10),
+        :profile => OutputSpec(slice=(:, 25), write_interval=1)),
     ca_interval=1,
     initial_topography=(x, y) -> -x / 300.0,
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),

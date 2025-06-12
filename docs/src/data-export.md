@@ -377,34 +377,89 @@ end
     tag::String
     axes::Axes
     Δt::Time
-    write_interval::Int
     time_steps::Int
     initial_topography::Matrix{Amount}
     sea_level::Vector{Length}
     subsidence_rate::Rate
 end
 
-@kwdef struct Data
-    disintegration::Array{Amount,4}
-    production::Array{Amount,4}
-    deposition::Array{Amount,4}
-    sediment_elevation::Array{Amount,3}
+const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
+
+@kwdef struct Data{F, D}
+	slice::Slice2
+	write_interval::Int
+	# Julia doesn't allow to say Array{Amount,D+1} here
+    disintegration::Array{Amount,F}
+	production::Array{Amount,F}
+    deposition::Array{Amount,F}
+    sediment_thickness::Array{Amount,D}
 end
 
-struct DataSlice
-    slice::NTuple{2,Union{Colon,Int}}
-    disintegration::Array{Amount,3}
-    production::Array{Amount,3}
-    deposition::Array{Amount,3}
-    sediment_elevation::Array{Amount,2}
+const DataVolume = Data{4, 3}
+const DataSlice = Data{3, 2}
+const DataColumn = Data{2, 1}
+
+count_ints(::Int, args...) = 1 + count_ints(args...)
+count_ints(_, args...) = count_ints(args...)
+count_ints() = 0
+
+reduce_slice(s::Tuple{Colon, Colon}, x, y) = (x, y)
+reduce_slice(s::Tuple{Int, Colon}, y::Int) = (s[1], y)
+reduce_slice(s::Tuple{Colon, Int}, x::Int) = (x, s[2])
+
+Base.getindex(v::Data{F,D}, args...) where {F, D} = let k = count_ints(args...)
+	Data{F-k, D-k}(
+		reduce_slice(v.slice, args...),
+		v.write_interval,
+		v.disintegration[:, args..., :],
+		v.production[:, args..., :],
+		v.deposition[:, args..., :],
+		v.sediment_thickness[args..., :])
 end
 
-struct DataColumn
-    slice::NTuple{2,Int}
-    disintegration::Array{Amount,2}
-    production::Array{Amount,2}
-    deposition::Array{Amount,2}
-    sediment_elevation::Array{Amount,1}
+function parse_slice(s::AbstractString)
+	if s == ":"
+		return (:)
+	end
+
+	elements =  split(s, ":")
+	if length(elements) == 1
+		return parse(Int, s)
+	end
+
+	a, b = elements
+	return parse(Int, a):parse(Int, b)
+end
+
+parse_multi_slice(s::AbstractString) = Slice2(parse_slice.(split(s, ",")))
+
+data_kind(::Int, ::Int) = :column
+data_kind(::Int, _) = :slice
+data_kind(_, ::Int) = :slice
+data_kind(_, _) = :volume
+
+function data_kind(fid::HDF5.File, group)
+	group_name = string(group)
+	if group_name == "input"
+		return :metadata
+	end
+	gid = fid[group_name]
+	slice = parse_multi_slice(attrs(gid)["slice"])
+	return data_kind(slice...)
+end
+
+function group_datasets(fid::HDF5.File)
+	result = Dict{Symbol, Vector{String}}(
+		:metadata => [],
+		:volume => [],
+		:slice => [],
+		:column => [])
+
+	for k in keys(fid)
+		kind = data_kind(fid, k)
+		push!(result[kind], k)
+	end
+	return result
 end
 
 function read_header(fid)
@@ -419,54 +474,39 @@ function read_header(fid)
         attrs["tag"][],
         axes,
         attrs["delta_t"][] * u"Myr",
-        attrs["write_interval"][],
         attrs["time_steps"][],
         fid["input/initial_topography"][] * u"m",
         fid["input/sea_level"][] * u"m",
         attrs["subsidence_rate"][] * u"m/Myr")
 end
 
-function read_data(filename)
+function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {dim}
+	slice = parse_multi_slice(string(attrs(gid)["slice"]))
+	write_interval = attrs(gid)["write_interval"]
+
+	reduce(_) = (:)
+	reduce(::Int) = 1
+
+	Data{dim+1,dim}(
+		slice, write_interval,
+		gid["disintegration"][:, reduce.(slice)..., :] * u"m",
+		gid["production"][:, reduce.(slice)..., :] * u"m",
+		gid["deposition"][:, reduce.(slice)..., :] * u"m",
+		gid["sediment_thickness"][reduce.(slice)..., :] * u"m")
+end
+
+function read_data(D::Type{Val{dim}}, filename::AbstractString, group) where {dim}
     h5open(filename) do fid
         header = read_header(fid)
-        data = Data(
-            fid["disintegration"][] * u"m",
-            fid["production"][] * u"m",
-            fid["deposition"][] * u"m",
-            fid["sediment_height"][] * u"m")
+		gid = fid[string(group)]
+		data = read_data(D, gid)
         header, data
     end
 end
 
-read_slice(fid::HDF5.File, slice...) = DataSlice(
-    slice,
-    fid["disintegration"][:, slice..., :] * u"m",
-    fid["production"][:, slice..., :] * u"m",
-    fid["deposition"][:, slice..., :] * u"m",
-    fid["sediment_height"][slice..., :] * u"m")
-
-function read_slice(filename::AbstractString, slice...)
-    h5open(filename) do fid
-        header = read_header(fid)
-        data = read_slice(fid, slice...)
-        header, data
-    end
-end
-
-read_column(fid::HDF5.File, slice...) = DataColumn(
-    slice,
-    fid["disintegration"][:, slice..., :] * u"m",
-    fid["production"][:, slice..., :] * u"m",
-    fid["deposition"][:, slice..., :] * u"m",
-    fid["sediment_height"][slice..., :] * u"m")
-
-function read_column(filename::AbstractString, slice...)
-    h5open(filename) do fid
-        header = read_header(fid)
-        data = read_column(fid, slice...)
-        header, data
-    end
-end
+read_volume(args...) = read_data(Val{3}, args...)
+read_slice(args...) = read_data(Val{2}, args...)
+read_column(args...) = read_data(Val{1}, args...)
 
 <<export-function>>
 

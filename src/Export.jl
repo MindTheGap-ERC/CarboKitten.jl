@@ -376,7 +376,7 @@ function extract_wd(header::Header, data::DataColumn, label)
     sea_level = header.sea_level[1:data.write_interval:end]
     wd = header.subsidence_rate .* t .- 
         header.initial_topography[data.slice...] .- 
-        data.sediment_thickness[data.slice...] .+
+        data.sediment_thickness .+
         sea_level
     return DataFrame(
         "timestep" => 0:data.write_interval:header.time_steps, 

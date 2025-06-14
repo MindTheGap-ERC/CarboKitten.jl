@@ -102,12 +102,13 @@ include("./Visualization.jl")
 include("./Testing.jl")
 
 using .Components.Common: in_units_of, @u_str
+using .Components.H5Writer: OutputSpec
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 
 export run_model, Box, box_axes, TimeProperties, time_axis,
        Model, BS92, CAP, ALCAP, in_units_of, @u_str,
        AbstractBox, Boundary, Coast, Periodic, Reflected,
-       Vec2
+       Vec2, OutputSpec
 
 end # module CarboKitten

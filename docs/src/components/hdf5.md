@@ -88,8 +88,6 @@ end
 
     @mixin Boxes, TimeIntegration, FaciesBase, WaterDepth
 
-    export run
-
     <<hdf5-output-spec>>
 
 	axis_size(::Colon, a::Int) = a
@@ -99,6 +97,9 @@ end
 	slice_str(::Colon) = ":"
 	slice_str(r::AbstractRange{Int}) = "$(r.start):$(r.stop)"
 	slice_str(i::Int) = "$(i)"
+
+    is_column(::Int, ::Int) = true
+    is_column(_, _) = false
 
     function create_ck_group(fid, input::AbstractInput, name::Symbol, spec::OutputSpec)
         nf = n_facies(input)
@@ -130,7 +131,9 @@ end
 			size = axis_size.(v.slice, input.box.grid_size)
             if mod(idx-1, v.write_interval) == 0
                 fid[string(k)]["sediment_thickness"][:, :, div(idx-1, v.write_interval)+1] = 
-					reshape(state.sediment_height[v.slice...], size) |> in_units_of(u"m")
+                    (is_column(v.slice...) ?
+                        Float64[state.sediment_height[v.slice...] |> in_units_of(u"m");] :
+                        reshape(state.sediment_height[v.slice...], size) |> in_units_of(u"m"))
             end
         end
     end

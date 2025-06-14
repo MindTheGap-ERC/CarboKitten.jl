@@ -286,11 +286,11 @@ function data_export(spec::CSV, header::Header, data)
                     "time_steps" => header.time_steps,
                     "delta_t" => header.Δt),
                 "locations" => [Dict(
-                    "number" => i,
-                    "x" => header.axes.x[loc[1]],
-                    "y" => header.axes.y[loc[2]],
-                    "initial_topography" => header.initial_topography[loc...])
-                                for (i, loc) in enumerate(spec.grid_locations)],
+                    "label" => string(label),
+                    "x" => header.axes.x[col.slice[1]],
+                    "y" => header.axes.y[col.slice[2]],
+                    "initial_topography" => header.initial_topography[col.slice...])
+                    for (label, col) in pairs(data)],
                 "files" => spec.output_files)
             open(filename, "w") do io
                 TOML.print(io, md) do obj
@@ -360,7 +360,7 @@ function extract_sc(header::Header, data::DataColumn, label)
     n_facies = size(data.production)[1]
     DataFrame(
         "timestep" => data.write_interval:data.write_interval:header.time_steps, 
-        ("sc$(i)_f$(f)" => stratigraphic_column(header, data, f)
+        ("sc_$(label)_f$(f)" => stratigraphic_column(header, data, f)
          for f in 1:n_facies)...)
 end
 
@@ -372,7 +372,7 @@ Extract the water depth from the data. Returns a `DataFrame` with `time` and
 """
 function extract_wd(header::Header, data::DataColumn, label)
     na = [CartesianIndex()]
-    t = header.time[1:data.write_interval:end]
+    t = header.axes.t[1:data.write_interval:end]
     sea_level = header.sea_level[1:data.write_interval:end]
     wd = header.subsidence_rate .* t .- 
         header.initial_topography[data.slice...] .- 

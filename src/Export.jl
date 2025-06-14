@@ -317,17 +317,24 @@ function data_export(spec::CSV, header::Header, data)
     end
 end
 
-function data_export(::Type{CSVExportTrait{S}}, header::Header, data::DataColumn) where {S}
+function data_export(::Type{CSVExportTrait{S}}, header::Header, data::DataColumn, label) where {S}
     error("Unknown CSV data export: `$(S)`")
 end
 
-data_export(::Type{CSVExportTrait{:sac}, header::Header, data::DataColumn, label) =
+function data_export(E::Type{CSVExportTrait{S}}, header::Header, columns) where {S}
+    return innerjoin(
+        (data_export(E, header, column, label)
+         for (label, column) in pairs(columns))...,
+        on=:timestep)
+end
+
+data_export(::Type{CSVExportTrait{:sediment_accumulation_curve}}, header::Header, data::DataColumn, label) =
     extract_sac(header, data, label)
-data_export(::Type{CSVExportTrait{:sc}, header::Header, data::DataColumn, label) =
+data_export(::Type{CSVExportTrait{:stratigraphic_column}}, header::Header, data::DataColumn, label) =
     extract_sc(header, data, label)
-data_export(::Type{CSVExportTrait{:wd}, header::Header, data::DataColumn, label) =
+data_export(::Type{CSVExportTrait{:water_depth}}, header::Header, data::DataColumn, label) =
     extract_wd(header, data, label)
-data_export(::Type{CSVExportTrait{:adm}, header::Header, data::DataColumn, label) =
+data_export(::Type{CSVExportTrait{:age_depth_model}}, header::Header, data::DataColumn, label) =
     extract_sac(header, data, label) |> age_depth_model
 
 """
@@ -339,7 +346,7 @@ copied from `data.sediment_thickness`. Returns a `DataFrame` with `time` and
 """
 function extract_sac(header::Header, data::DataColumn, label)
     DataFrame(
-        "timestep" => 0:header.time_steps,
+        "timestep" => 0:data.write_interval:header.time_steps, 
         "sac_$(label)" => data.sediment_thickness)
 end
 
@@ -352,7 +359,7 @@ Extract Stratigraphic Column (SC) from the data. Returns a `DataFrame` with
 function extract_sc(header::Header, data::DataColumn, label)
     n_facies = size(data.production)[1]
     DataFrame(
-        "timestep" => 1:header.time_steps, 
+        "timestep" => data.write_interval:data.write_interval:header.time_steps, 
         ("sc$(i)_f$(f)" => stratigraphic_column(header, data, f)
          for f in 1:n_facies)...)
 end
@@ -372,7 +379,7 @@ function extract_wd(header::Header, data::DataColumn, label)
         data.sediment_thickness[data.slice...] .+
         sea_level
     return DataFrame(
-        "timestep" => 0:header.time_steps, 
+        "timestep" => 0:data.write_interval:header.time_steps, 
         "wd_$(label)" => wd)
 end
 # ~/~ end

@@ -84,6 +84,8 @@ const COLUMNS1 = [DATA1[loc...] for loc in GRID_LOCATIONS1]
     end
     # ~/~ end
     @testset "Write to folder" begin
+        using DataFrames: select
+
         mktempdir() do path
             spec = CSV(
                 :sediment_accumulation_curve => joinpath(path, "sac.csv"),

@@ -535,6 +535,8 @@ const Amount = typeof(1.0u"m")
 
     <<export-test>>
     @testset "Write to folder" begin
+        using DataFrames: select
+
         mktempdir() do path
             spec = CSV(
                 :sediment_accumulation_curve => joinpath(path, "sac.csv"),

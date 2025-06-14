@@ -15,12 +15,11 @@ CSV(kwargs...) = CSV(IdDict(kwargs...))
 ```@example
 using CarboKitten.Export: CSV
 
-CSV(tuple.(10:20:70, 25),
-  :sediment_accumulation_curve => "run_06_sac.csv",
-  :age_depth_model             => "run_06_adm.csv",
-  :stratigraphic_column        => "run_06_sc.csv",
-  :water_depth                 => "run_06_wd.csv",
-  :metadata                    => "run_06.toml")
+CSV(:sediment_accumulation_curve => "run_06_sac.csv",
+    :age_depth_model             => "run_06_adm.csv",
+    :stratigraphic_column        => "run_06_sc.csv",
+    :water_depth                 => "run_06_wd.csv",
+    :metadata                    => "run_06.toml")
 ```
 
 There is a `data_export` function that can be overloaded with any `ExportSpcification`. When given a `CSV` specification, files are written as given.

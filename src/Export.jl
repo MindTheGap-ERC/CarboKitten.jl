@@ -224,47 +224,28 @@ age_depth_model(sac_df::DataFrame) =
 # ~/~ end
 # ~/~ begin <<docs/src/data-export.md#export-function>>[2]
 """
-    stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
+    stratigraphic_column(header::Header, column::DataColumn, facies::Int)
 
 Compute the Stratigraphic Column for a given grid position `loc` and `facies` index.
 Returns an `Array{Quantity, 2}` where the `Quantity` is in units of meters.
 """
-function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
-    dc = DataColumn(
-        loc,
-		data.write_interval,
-        data.disintegration[:, loc..., :],
-        data.production[:, loc..., :],
-        data.deposition[:, loc..., :],
-        data.sediment_thickness[loc..., :])
-    return stratigraphic_column(header, dc, facies)
-end
+function stratigraphic_column(header::Header, column::DataColumn, facies::Int)
+	n_steps = size(column.production, 2)	
+    delta = column.deposition[facies,:] .- column.disintegration[facies,:]
 
-function stratigraphic_column(header::Header, data::DataColumn, facies::Int)
-    n_times = length(header.axes.t) - 1
-    sc = zeros(typeof(1.0u"m"), n_times)
-
-    for ts = 1:n_times
-        acc = data.deposition[facies, ts] - data.disintegration[facies, ts]
-        if acc > 0.0u"m"
-            sc[ts] = acc
-            continue
-        end
-        ts_down = ts - 1
-        while acc < 0.0u"m"
-            ts_down < 1 && break
-            if -acc < sc[ts_down]
-                sc[ts_down] -= acc
+	for step in 1:n_steps
+        debt = 0.0u"m"
+        for pos in (step:-1:2)
+            if delta[pos] > 0.0u"m"
                 break
-            else
-                acc += sc[ts_down]
-                sc[ts_down] = 0.0u"m"
             end
-            ts_down -= 1
-        end
-    end
 
-    sc
+            delta[pos-1] += delta[pos]
+            delta[pos] = 0.0u"m"
+        end
+	end
+
+	return delta
 end
 # ~/~ end
 # ~/~ begin <<docs/src/data-export.md#export-function>>[3]

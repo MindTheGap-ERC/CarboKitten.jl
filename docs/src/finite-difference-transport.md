@@ -471,7 +471,7 @@ end
 v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
 
 input = transport_test_input(
-    initial_topography = (x, y)  -> -30.0u"m",
+    initial_topography = (x, y)  -> -35.0u"m",
     initial_sediment = gaussian_initial_sediment,
     disintegration_rate = 50000.0u"m/Myr",
     wave_velocity = v_const(-5u"km/Myr")

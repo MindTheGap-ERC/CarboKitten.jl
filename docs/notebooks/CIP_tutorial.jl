@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.10
+# v0.20.3
 
 #> [frontmatter]
 #> title = "CarboKitten Tutorial"
@@ -18,7 +18,7 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     #! format: off
-    return quote
+    quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
@@ -68,6 +68,9 @@ using CarboKitten.Export: read_column
 
 # ╔═╡ e892bc37-81d3-4b8f-9486-de0d717cd67f
 using CarboKitten.Visualization: stratigraphic_column!
+
+# ╔═╡ 03d95080-35ce-4708-8306-dd5f8dc8c3c0
+using Interpolations
 
 # ╔═╡ 9a044d3d-fb41-4ffe-a3ad-5acd94aa6ac6
 using DelimitedFiles
@@ -446,6 +449,28 @@ md"""
 The subsidence rate is set to a constant 50 m/Myr and insolation to 400 $W/m^2$. The other parameters are related to the transport model.
 """
 
+# ╔═╡ ae3a74ea-f6b5-442c-973b-1cec48627968
+input = ALCAP.Input(
+    tag="tutorial",
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    time=TimeProperties(
+        Δt=0.0002u"Myr",
+        steps=5000,
+        write_interval=1),
+    ca_interval=1,
+    initial_topography=(x, y) -> -x / 300.0,
+    sea_level=t -> sealevel(t),
+    subsidence_rate=50.0u"m/Myr",
+    disintegration_rate=50.0u"m/Myr",
+    insolation=400.0u"W/m^2",
+    sediment_buffer_size=50,
+    depositional_resolution=0.5u"m",
+    facies=FACIES)
+
+
+# ╔═╡ 549c852c-44d8-483d-b54c-cdf68ff6020b
+production_curve(input)
+
 # ╔═╡ 8946d268-4407-4fe4-86ae-67b3a37b34be
 # ╠═╡ disabled = true
 #=╠═╡
@@ -568,7 +593,7 @@ end
 
 # ╔═╡ d7a4eb34-6b9e-4779-900d-493a853a6199
 md"""
-# Try a sea-level curve that are modulated by orbital cycles
+# Try a sea-level curve that is modulated by orbital cycles
 
 You may need to import an external source, for example, a txt, a excel, or a csv file. Herein, we use a txt file, and therefore we need to add dependencies of 'DelimitedFiles'.
 
@@ -580,21 +605,38 @@ If you did not prepare your sea-level curve, we provide one and you could downlo
 PTH = "your/sea-level/curve/pathway"
 
 # ╔═╡ c2bfee95-f360-4afd-8ada-4a6ecf9b8247
-input_sl = readdlm(PTH, '\t', header=false) * u"m"
-sea_level = input_sl[:,2]
-time = input_sl[:,1]
-Interpolated_SL = linear_interpolation(time,sea_level)
+begin
+	input_sl = readdlm(PTH, '\t', header=false) * u"m"
+	sea_level_ob = input_sl[:,2]
+	time_ob = input_sl[:,1]
+	Interpolated_SL = linear_interpolation(time_ob,sea_level_ob)
+end
 
-# ╔═╡ 549c852c-44d8-483d-b54c-cdf68ff6020b
-production_curve(input)
+# ╔═╡ 5043ab85-a7ff-4283-9d71-071c470f4d6e
+input_ob = ALCAP.Input(
+    tag="tutorial",
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    time=TimeProperties(
+        Δt=0.0002u"Myr",
+        steps=5000,
+        write_interval=1),
+    ca_interval=1,
+    initial_topography=(x, y) -> -x / 300.0,
+    sea_level= Interpolated_SL,
+    subsidence_rate=50.0u"m/Myr",
+    disintegration_rate=50.0u"m/Myr",
+    insolation=400.0u"W/m^2",
+    sediment_buffer_size=50,
+    depositional_resolution=0.5u"m",
+    facies=FACIES)
 
 # ╔═╡ bd208d68-f565-4d05-89f7-f2e572a87f04
-own_sealevel_output = run_model(Model{ALCAP}, input, "$(OUTPUTDIR)/tutorial_ownsealevel.h5")
+own_sealevel_output = run_model(Model{ALCAP}, input_ob, "$(OUTPUTDIR)/tutorial_ownsealevel.h5")
 
 # ╔═╡ b2286eff-a49e-4596-b68c-1a5363c9477f
 data_export(CSV(export_locations,
 	:sediment_accumulation_curve => "$(OUTPUTDIR)/tutorial_ownsealevel_sac.csv",
-	:age_depth_model => "$(OUTPUTDIR)/tutorial_adm.csv"),
+	:age_depth_model => "$(OUTPUTDIR)/tutorial_ownsealevel_adm.csv"),
 	own_sealevel_output)
 
 # ╔═╡ 7f7dd756-d2e4-4eeb-8364-ea750a0aecc3
@@ -686,6 +728,12 @@ md"""
 md"""
 As the observed data is not regularly sampled, we need to interpolate the dataset. The `Interpolations` package has a convenient linear interpolation function. It does require input values to be sorted.
 """
+
+# ╔═╡ e2562586-d03a-4b6e-9ef6-aad012f2be9f
+# ╠═╡ disabled = true
+#=╠═╡
+using Interpolations
+  ╠═╡ =#
 
 # ╔═╡ 54d26634-765f-4291-8a82-34e2e6e2fa09
 sort!(miller_df, [:time]);
@@ -806,52 +854,6 @@ Different carbonate producers (i.e., T, M, C) produce carbonate with different p
 md"""
 # Bibliography
 """
-
-# ╔═╡ 03d95080-35ce-4708-8306-dd5f8dc8c3c0
-using Interpolations
-
-# ╔═╡ 5043ab85-a7ff-4283-9d71-071c470f4d6e
-input = ALCAP.Input(
-    tag="tutorial",
-    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
-    time=TimeProperties(
-        Δt=0.0002u"Myr",
-        steps=5000,
-        write_interval=1),
-    ca_interval=1,
-    initial_topography=(x, y) -> -x / 300.0,
-    sea_level= Interpolated_SL,
-    subsidence_rate=50.0u"m/Myr",
-    disintegration_rate=50.0u"m/Myr",
-    insolation=400.0u"W/m^2",
-    sediment_buffer_size=50,
-    depositional_resolution=0.5u"m",
-    facies=FACIES)
-
-# ╔═╡ ae3a74ea-f6b5-442c-973b-1cec48627968
-input = ALCAP.Input(
-    tag="tutorial",
-    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
-    time=TimeProperties(
-        Δt=0.0002u"Myr",
-        steps=5000,
-        write_interval=1),
-    ca_interval=1,
-    initial_topography=(x, y) -> -x / 300.0,
-    sea_level=t -> sealevel(t),
-    subsidence_rate=50.0u"m/Myr",
-    disintegration_rate=50.0u"m/Myr",
-    insolation=400.0u"W/m^2",
-    sediment_buffer_size=50,
-    depositional_resolution=0.5u"m",
-    facies=FACIES)
-
-
-# ╔═╡ e2562586-d03a-4b6e-9ef6-aad012f2be9f
-# ╠═╡ disabled = true
-#=╠═╡
-using Interpolations
-  ╠═╡ =#
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

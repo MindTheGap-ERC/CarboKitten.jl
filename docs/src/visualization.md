@@ -335,9 +335,9 @@ function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")
     for i in 1:a["n_facies"][]
         fa = HDF5.attributes(g["facies$(i)"])
         f = Facies(
-            fa["maximum_growth_rate"][] * u"m/Myr",
-            fa["extinction_coefficient"][] * u"m^-1",
-            fa["saturation_intensity"][] * u"W/m^2")
+            maximum_growth_rate = fa["maximum_growth_rate"][] * u"m/Myr",
+            extinction_coefficient = fa["extinction_coefficient"][] * u"m^-1",
+            saturation_intensity = fa["saturation_intensity"][] * u"W/m^2")
         depth = (0.1u"m":0.1u"m":-max_depth)
         prod = [production_rate(insolation, f, d) for d in depth]
         lines!(ax, prod / u"m/Myr", - depth / u"m")

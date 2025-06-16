@@ -53,7 +53,7 @@ const HEADER1 = Header(
     Δt=0.1u"Myr",
     time_steps=10,
     initial_topography=zeros(typeof(1.0u"m"), 3, 3),
-    sea_level=zeros(typeof(1.0u"m"), 10),
+    sea_level=zeros(typeof(1.0u"m"), 11),
     subsidence_rate=10u"m/Myr")
 
 const PRODUCTION1 = reshape(
@@ -339,7 +339,9 @@ is in the range `1:length(grid_locations)`.
 """
 function extract_wd(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
     na = [CartesianIndex()]
-    wd = header.subsidence_rate .* header.axes.t[na, na, :] .- header.initial_topography[:, :, na] .- data.sediment_elevation
+    wd = header.subsidence_rate .* header.axes.t[na, na, :] .- 
+        header.initial_topography[:, :, na] .- data.sediment_elevation .+ 
+        header.sea_level[na, na, :]
     DataFrame("time" => header.axes.t,
         ("wd$(i)" => wd[loc..., :] for (i, loc) in enumerate(grid_locations))...)
 end
@@ -474,8 +476,9 @@ end
 ```
 
 ``` {.julia file=test/ExportSpec.jl}
+using CarboKitten
 using CarboKitten.Export: Axes, Header, Data, data_export, CSVExportTrait,
-    age_depth_model, extract_sac, extract_sc, CSV
+    age_depth_model, extract_sac, extract_sc, CSV, read_data, extract_sac, extract_wd
 using CSV: read as read_csv
 using TOML
 using DataFrames
@@ -507,6 +510,35 @@ const Amount = typeof(1.0u"m")
             adm = read_csv(spec.output_files[:age_depth_model], DataFrame)
             rename!(adm, (n => split(n)[1] for n in names(adm))...)
             @test adm == ustrip(extract_sac(HEADER1, DATA1, GRID_LOCATIONS1) |> age_depth_model)
+        end
+    end
+
+    @testset "Waterdepth signs" begin
+        BS92_TEST_INPUT = BS92.Input(
+            tag = "single pixel model",
+            box = Box{Periodic{2}}(grid_size=(1, 1), phys_scale=600.0u"m"),
+            time = TimeProperties(
+              Δt = 10.0u"yr",
+              steps = 8000,
+              write_interval = 100),
+            sea_level = t -> 10.0u"m" * sin(2π * t / 20u"kyr"),
+            initial_topography = (_, _) -> - 50.0u"m",
+            subsidence_rate = 0.001u"m/yr",
+            insolation = 400.0u"W/m^2",
+            facies = [BS92.Facies(
+              maximum_growth_rate = 0.005u"m/yr",
+              saturation_intensity = 50.0u"W/m^2",
+              extinction_coefficient = 0.05u"m^-1"
+            )])
+
+        mktempdir() do path
+            run_model(Model{BS92}, BS92_TEST_INPUT, joinpath(path, "run.h5"))
+            header, data = read_data(joinpath(path, "run.h5"))
+            wd = extract_wd(header, data, [(1, 1)])
+            sac = extract_sac(header, data, [(1, 1)])
+            submerged = wd.wd1 .> -1.0u"m"
+            growing = (sac.sac1[2:end] .- sac.sac1[1:end-1]) .> 0.5u"m"
+            @test all(growing .&& (submerged[1:end-1] .|| submerged[2:end]) .|| .!growing)
         end
     end
 end

@@ -329,7 +329,9 @@ is in the range `1:length(grid_locations)`.
 """
 function extract_wd(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
     na = [CartesianIndex()]
-    wd = header.subsidence_rate .* header.axes.t[na, na, :] .- header.initial_topography[:, :, na] .- data.sediment_elevation
+    wd = header.subsidence_rate .* header.axes.t[na, na, :] .- 
+        header.initial_topography[:, :, na] .- data.sediment_elevation .+ 
+        header.sea_level[na, na, :]
     DataFrame("time" => header.axes.t,
         ("wd$(i)" => wd[loc..., :] for (i, loc) in enumerate(grid_locations))...)
 end

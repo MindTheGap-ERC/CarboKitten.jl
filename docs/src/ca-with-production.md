@@ -70,6 +70,8 @@ This writes output to an HDF5 file that you may use for further analysis and vis
 using GLMakie
 using CarboKitten.Visualization
 
+GLMakie.activate!()
+
 save("docs/src/_fig/cap1-summary.png", summary_plot("data/output/cap1.h5"))
 ```
 
@@ -117,7 +119,7 @@ function step!(input::Input)
         state.sediment_height .+= Δη
         state.step += 1
 
-        return H5Writer.DataFrame(
+        return Frame(
             production = prod,
             deposition = prod)
     end

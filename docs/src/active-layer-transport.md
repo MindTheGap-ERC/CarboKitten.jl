@@ -54,7 +54,6 @@ Suppose we have an incline in one direction, as per usual on a coastal slice. Pr
 module ActiveLayer
 
 using Unitful
-using CarboKitten.Stencil: convolution, stencil
 using CarboKitten.Config: Box, axes
 using CarboKitten.BoundaryTrait: Shelf
 using CarboKitten.Utility: in_units_of
@@ -81,7 +80,7 @@ Our input structure facilitates a single facies, specifying an initial bedrock e
     production          # function (x::u"m", y::u"m") -> u"m/s"
     disintegration_rate::typeof(1.0u"m/Myr")
     subsidence_rate::typeof(1.0u"m/Myr")
-    diffusion_coefficient::typeof(1.0u"m")
+    diffusion_coefficient::typeof(1.0u"m/yr")
 end
 ```
 
@@ -112,7 +111,7 @@ const input = Input(
     disintegration_rate = 50.0u"m/Myr",
     subsidence_rate = 50.0u"m/Myr",
 
-    diffusion_coefficient = 10000.0u"m"
+    diffusion_coefficient = 10.0u"m/yr"
 )
 ```
 
@@ -164,30 +163,30 @@ Below is the kernel encoding a central differencing scheme i.e. `[-1, 0, 1]/(2Δ
 module ActiveLayer
 
 using Unitful
+using StaticArrays
 using ...BoundaryTrait
 using ...Boxes: Box
-using ...Stencil: stencil
+using ...Stencil: stencil!
 
 const Rate = typeof(1.0u"m/Myr")
 const Amount = typeof(1.0u"m")
 
-function pde_stencil(box::Box{BT}, ν) where {BT <: Boundary{2}}
+function pde_stencil(box::Box{BT}, Δt, ν, out, η, C) where {BT<:Boundary{2}}
     Δx = box.phys_scale
+    d = ν * Δt
 
-    function kernel(x)
-        adv = ν * ((x[3, 2][1] - x[1, 2][1]) * (x[3, 2][2] - x[1, 2][2]) +
-                    (x[2, 3][1] - x[2, 1][1]) * (x[2, 3][2] - x[2, 1][2])) /
-                  (2Δx)^2
+    stencil!(BT, Size(3, 3), out, η, C) do η, C
+        adv = d * ((η[3, 2] - η[1, 2]) * (C[3, 2] - C[1, 2]) +
+                   (η[2, 3] - η[2, 1]) * (C[2, 3] - C[2, 1])) /
+              (2Δx)^2
 
-        dif = ν * x[2, 2][2] * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
-                  x[2, 1][1] - 4*x[2, 2][1]) / (Δx)^2
+        dif = d * C[2, 2] * (η[3, 2] + η[2, 3] + η[1, 2] +
+                             η[2, 1] - 4 * η[2, 2]) / (Δx)^2
 
-        prd = x[2, 2][2]
+        prd = C[2, 2]
 
-        return max(0.0u"m", adv + dif + prd)
+        max(0.0u"m", adv + dif + prd)
     end
-
-    stencil(Tuple{Amount, Amount}, Amount, BT, (3, 3), kernel)
 end
 
 end
@@ -217,21 +216,23 @@ function propagator(input)
     δ = Matrix{Amount}(undef, input.box.grid_size...)
     x, y = axes(input.box)
     μ0 = input.initial_topography.(x, y')
+    box = input.box
+    Δt = input.Δt
+    disintegration_rate = input.disintegration_rate
+    production = input.production
+    d = input.diffusion_coefficient
 
     function active_layer(state)
-        max_amount = input.disintegration_rate * input.Δt
+        max_amount = disintegration_rate * Δt
         amount = min.(max_amount, state.sediment)
         state.sediment .-= amount
 
-        input.production.(x, y') * input.Δt .+ amount
+        production.(x, y') * Δt .+ amount
     end
-
-    stc = pde_stencil(input.box, input.diffusion_coefficient)
-    apply_pde(μ::Matrix{Amount}, p::Matrix{Amount}) = stc(tuple.(μ, p), δ)
 
     function (state)
         p = active_layer(state)
-        apply_pde(state.sediment .+ μ0, p)
+        pde_stencil(box, Δt, d, δ, state.sediment .+ μ0, p)
         return Frame(state.time, δ)
     end
 end
@@ -309,94 +310,237 @@ ActiveLayerPlot.main()
 
 Note in the bottom figure, due to sedimentation not keeping up with subsidence, the lines go down in time. We see the sediment transport being favoured to downslope areas, which is what we want. This effect could be made more extreme by increasing the disintegration rate.
 
-## Test 2: erosion
+## One-dimensional tests
 
-Suppose now we have **no** production, but we start with a steep gradient in the existing sediment. We expect this gradient to erode.
+``` {.julia file=examples/transport/plot-1d-evolution.jl}
+<<plot-1d-evolution>>
+```
 
-In the input we set the `production` to zero, but we specify an initial sediment that contains both a step and a top-hat function. Erodability of these kind of features could be a measurable quantity to which we could potentially calibrate this transport model.
+``` {.julia #plot-1d-evolution}
+using Printf: @sprintf
+using Unitful: ustrip
 
-Note that, due to the way we populate the active layer, the gradient $\nabla P$ will vanish, leaving us with a pure diffusion system.
+function plot_1d_evolution!(ax::Axis, input, every=100)
+	y_idx = 1
+	(x, y) = box_axes(input.box)
+	state = ALCAP.initial_state(input)
 
-``` {.julia #example-active-layer-erosion}
-function initial_sediment(x, y)
-  if x < 5.0u"km"
-    return 30.0u"m"
-  end
+	plot_state() = begin
+		t = state.step * input.time.Δt
+		η = input.initial_topography.(x, y') .+ 
+            state.sediment_height .-
+            input.subsidence_rate * t
+		lines!(ax, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"),
+               label=@sprintf("%.3f Myr", ustrip(t)))
+	end
 
-  if x > 10.0u"km" && x < 11.0u"km"
-    return 20.0u"m"
-  end
-
-  return 5.0u"m"
+	plot_state()
+	run_model(Model{ALCAP}, input, state) do i, _
+		if mod(i, every) == 0
+			plot_state()
+		end
+	end
 end
 
-const INPUT = ActiveLayer.Input(
-    box                   = Box{Shelf}(grid_size=(100, 1), phys_scale=150.0u"m"),
-    Δt                    = 0.001u"Myr",
-    t_end                 = 1.0u"Myr",
+function plot_1d_evolution(input, every=100)
+	fig = Figure()
+	ax = Axis(fig[1, 1], xlabel="x (km)", ylabel="η (m)")
 
-    initial_topography     = (x, y) -> -30.0u"m",
-    initial_sediment      = initial_sediment,
-    production            = (x, y) -> 0.0u"m/Myr",
+    plot_1d_evolution!(ax, input, every)
 
-    disintegration_rate   = 50.0u"m/Myr",
-    subsidence_rate       = 50.0u"m/Myr",
-    diffusion_coefficient = 10000.0u"m")
+	Legend(fig[1, 2], ax)
+
+	fig
+end
 ```
 
-![Active layer erosion test](fig/active-layer-erosion.png)
+``` {.julia file=src/Testing.jl}
+module Testing
 
-```@raw html
-<details><summary>Plotting code</summary>
+using ..CarboKitten
+using ..Models.ALCAP
+using Unitful
+using GeometryBasics
+
+transport_test_input(;
+	initial_topography = (x, y) -> 0.0u"m",
+	initial_sediment = (x, y) -> 0.0u"m",
+	disintegration_rate = 50.0u"m/Myr",
+	subsidence_rate = 0.0u"m/Myr",
+	diffusion_coefficient = 0.0u"m/yr",
+	wave_velocity = _ -> (Vec2(0.0, 0.0)u"m/yr", Vec2(0.0, 0.0)u"1/yr"),
+    intertidal_zone = 0.0u"m") =
+
+	ALCAP.Input(
+		box = CarboKitten.Box{Coast}(grid_size=(120, 1), phys_scale=125.0u"m"),
+		time = TimeProperties(
+			Δt = 0.001u"Myr",
+			steps = 1000),
+		facies = [ALCAP.Facies(
+			initial_sediment = initial_sediment,
+			diffusion_coefficient = diffusion_coefficient,
+			wave_velocity = wave_velocity,
+			maximum_growth_rate = 0.0u"m/Myr",
+			extinction_coefficient = 0.8u"m^-1",
+			saturation_intensity = 60u"W/m^2"
+		)],
+		disintegration_rate = disintegration_rate,
+		initial_topography = initial_topography,
+		insolation = 400.0u"W/m^2",
+		sediment_buffer_size = 5,
+		depositional_resolution = 1000.0u"m",
+		transport_solver = Val{:forward_euler},
+        subsidence_rate = subsidence_rate,
+        intertidal_zone = intertidal_zone)
+
+end
 ```
 
-``` {.julia file=examples/transport/active-layer-erosion.jl}
-#| requires: examples/transport/active-layer.jl
-#| creates: docs/src/_fig/active-layer-erosion.png
+### Erosion
+
+The erosion scenario tests that sharp sediment profiles erode under diffusive transport.
+
+![Erosion](fig/1d-erosion.svg)
+
+``` {.julia .task file=examples/transport/1d-erosion.jl}
+#| creates: docs/src/_fig/1d-erosion.svg
 #| collect: figures
 
-module ActiveLayerErosion
+module Script
+    using CarboKitten
+    using CarboKitten.Testing: transport_test_input
+    using CairoMakie
 
-include("active-layer.jl")
+    include("plot-1d-evolution.jl")
 
-using Unitful
-using CarboKitten.BoundaryTrait: Shelf
-using CarboKitten.Config: Box, axes
-using CarboKitten.Utility: in_units_of
-using CairoMakie
+	function initial_sediment(x, y)
+	  if x < 5.0u"km"
+	    return 30.0u"m"
+	  end
 
-<<example-active-layer-erosion>>
+	  if x > 10.0u"km" && x < 11.0u"km"
+	    return 20.0u"m"
+	  end
 
-function main(input)
-    y_idx = 1
-    result = Iterators.map(deepcopy,
-          Iterators.filter(x -> mod(x[1]-1, 400) == 0, enumerate(ActiveLayer.run_model(input)))) |> collect
+	  return 5.0u"m"
+	end
 
-    (x, y) = axes(input.box)
-    # p = input.production.(x, y')
+    function main()
+        CairoMakie.activate!()
+        input = transport_test_input(
+            initial_topography = (x, y) -> -30.0u"m",
+            initial_sediment = initial_sediment,
+            diffusion_coefficient = 10.0u"m/yr")
 
-    fig = Figure(size=(800, 600))
-    # ax = Axis3(fig[1:2,1], xlabel="x (km)", ylabel="y (km)", zlabel="η (m)", azimuth=5π/3)
-    # surface!(ax, x |> in_units_of(u"km"), y |> in_units_of(u"km"), η |> in_units_of(u"m"))
-
-    ax2 = Axis(fig[1,1], xlabel="x (km)", ylabel="η (m)")
-
-    for r in result
-        η = input.initial_topography.(x, y') .+ r[2].sediment .- input.subsidence_rate * r[2].time
-
-        lines!(ax2, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"))
+        fig = plot_1d_evolution(input, 250)
+        save("docs/src/_fig/1d-erosion.svg", fig)
     end
-
-    save("docs/src/_fig/active-layer-erosion.png", fig)
 end
 
-end
-
-ActiveLayerErosion.main(ActiveLayerErosion.INPUT)
+Script.main()
 ```
 
-```@raw html
-</details>
+### Advection
+
+To test advective properties, we set disintegration rate to infinity, This way, surface gradients are zero and we get pure advection.
+
+![advection](fig/1d-advection.svg)
+
+``` {.julia .task file=examples/transport/1d-advection.jl}
+#| creates: docs/src/_fig/1d-advection.svg
+#| collect: figures
+
+module Script
+    using CarboKitten
+    using CarboKitten.Testing: transport_test_input
+    using CairoMakie
+
+    include("plot-1d-evolution.jl")
+
+    function gaussian_initial_sediment(x, y)
+        exp(-(x-10u"km")^2 / (2 * (0.5u"km")^2)) * 30.0u"m"
+    end
+
+    v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
+
+    function main()
+        CairoMakie.activate!()
+        input = transport_test_input(
+            initial_topography = (x, y)  -> -30.0u"m",
+            initial_sediment = gaussian_initial_sediment,
+            disintegration_rate = 50000.0u"m/Myr",
+            wave_velocity = v_const(-5u"km/Myr")
+        )
+
+        fig = plot_1d_evolution(input, 250)
+        save("docs/src/_fig/1d-advection.svg", fig)
+    end
+end
+
+Script.main()
+```
+
+### Onshore transport
+
+This test shows the difference between having a velocity profile without and with shear.
+
+![onshore](fig/1d-onshore.svg)
+
+``` {.julia .task file=examples/transport/1d-onshore.jl}
+#| creates: docs/src/_fig/1d-onshore.svg
+#| collect: figures
+
+module Script
+    using CarboKitten
+    using CarboKitten.Testing: transport_test_input
+    using CairoMakie
+
+    include("plot-1d-evolution.jl")
+
+    v_prof(v_max, max_depth, w) = 
+        let k = sqrt(0.5) / max_depth,
+            A = 3.331 * v_max,
+            α = tanh(k * w),
+            β = exp(-k * w)
+            (A * α * β, -A * k * β * (1 - α - α^2))
+        end
+
+    v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
+
+    v_prof_par(v_max, max_depth) = w -> let (v, s) = v_prof(v_max, max_depth, w)
+        (Vec2(v, 0.0u"m/yr"), Vec2(s, 0.0u"1/yr"))
+    end
+
+    function main()
+        CairoMakie.activate!()
+
+        fig = Figure(size=(1000, 500))
+        ax1 = Axis(fig[1, 1], xlabel="x (km)", ylabel="η (m)")
+        input1 = transport_test_input(
+            initial_topography = (x, y) -> -x / 375.0 - 10u"m",
+            initial_sediment = 10.0u"m",
+            disintegration_rate = 50.0u"m/Myr",
+            diffusion_coefficient = 5.0u"m/yr",
+            wave_velocity = v_const(-0.5u"m/yr")
+        )
+        plot_1d_evolution!(ax1, input1, 250)
+
+        ax2 = Axis(fig[1, 2], xlabel="x (km)", ylabel="η (m)")
+        input2 = transport_test_input(
+            initial_topography = (x, y) -> -x / 375.0 - 10u"m",
+            initial_sediment = 10.0u"m",
+            disintegration_rate = 50.0u"m/Myr",
+            diffusion_coefficient = 5.0u"m/yr",
+            wave_velocity = v_prof_par(-0.5u"m/yr", 20u"m")
+        )
+        plot_1d_evolution!(ax2, input2, 250)
+
+        Legend(fig[1, 3], ax2)
+        save("docs/src/_fig/1d-onshore.svg", fig)
+    end
+end
+
+Script.main()
 ```
 
 ## Active Layer Component
@@ -409,63 +553,247 @@ CarboKitten.Components.ActiveLayer
 @compose module ActiveLayer
 @mixin WaterDepth, FaciesBase, SedimentBuffer
 
-export disintegration, transportation
+export disintegrator, transporter
 
 using ..Common
-using CarboKitten.Transport.ActiveLayer: pde_stencil
+using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
+using CarboKitten.Transport.Solvers: runge_kutta_4, forward_euler
 using Unitful
+using GeometryBasics
 
 @kwdef struct Facies <: AbstractFacies
-    diffusion_coefficient::typeof(1.0u"m")
+    diffusion_coefficient::typeof(1.0u"m/yr") = 0.0u"m/Myr"
+    wave_velocity = _ -> (Vec2(0.0u"m/Myr", 0.0u"m/Myr"), Vec2(0.0u"1/Myr", 0.0u"1/Myr"))
 end
 
 @kwdef struct Input <: AbstractInput
+    intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
+    transport_solver = Val{:RK4}
+    transport_substeps = :adaptive 
+end
+
+courant_max(::Type{Val{:RK4}}) = 2.0
+courant_max(::Type{Val{:forward_euler}}) = 1.0
+
+transport_solver(f, _) = f
+transport_solver(::Type{Val{:RK4}}, box) = runge_kutta_4(typeof(1.0u"m"), box)
+transport_solver(::Type{Val{:forward_euler}}, _) = forward_euler
+
+function adaptive_transporter(input)
+    solver = transport_solver(input.transport_solver, input.box)
+
+    w = water_depth(input)
+    box = input.box
+    Δt = input.time.Δt  # / input.transport_substeps
+    fs = input.facies
+    adv = Matrix{Vec2{Rate}}(undef, box.grid_size...)
+    rct = Matrix{typeof(1.0u"1/Myr")}(undef, box.grid_size...)
+    dC = Matrix{Rate}(undef, box.grid_size...)
+    cm = courant_max(input.transport_solver)
+    iz = input.intertidal_zone
+
+    return function (state, C::Array{Amount,3})
+        wd = w(state)
+        wd .+= iz
+
+        for (i, f) in pairs(fs)
+            advection_coef!(box, f.diffusion_coefficient, f.wave_velocity, wd, adv, rct)
+            m = max_dt(adv, box.phys_scale, cm)
+            steps = ceil(Int, Δt / m)
+
+            # @debug "step $(state.step) - transport substeps $(steps)"
+            subdt = Δt / steps
+            for j in 1:steps
+                solver(
+                    (C, _) -> transport_dC!(input.box, adv, rct, C, dC),
+                    view(C, i, :, :), TimeIntegration.time(input, state), subdt)
+            end
+        end
+
+        for i in eachindex(C)
+            if C[i] < zero(Amount)
+                C[i] = zero(Amount)
+            end
+        end
+    end
 end
 
 """
-    disintegration(input) -> f!
+    disintegrator(input) -> f!
 
 Prepares the disintegration step. Returns a function `f!(state::State)`. The returned function
 modifies the state, popping sediment from the `sediment_buffer` and returns an array of `Amount`.
 """
-function disintegration(input)
+function disintegrator(input)
     max_h = input.disintegration_rate * input.time.Δt
-    output = Array{Float64, 3}(undef, n_facies(input), input.box.grid_size...)
+    w = water_depth(input)
+    output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
+    depositional_resolution = input.depositional_resolution
+    iz = input.intertidal_zone
 
-    return function(state)
+    return function (state)
+        wn = w(state)
+        wn .+= iz
         h = min.(max_h, state.sediment_height)
+        h[wn.<=0.0u"m"] .= 0.0u"m"
+
+        @assert all(h .<= max_h)
         state.sediment_height .-= h
-        pop_sediment!(state.sediment_buffer, h ./ input.depositional_resolution .|> NoUnits, output)
-        return output .* input.depositional_resolution
+        pop_sediment!(state.sediment_buffer, h ./ depositional_resolution .|> NoUnits, output)
+        return output .* depositional_resolution
     end
 end
 
 """
-    transportation(input::Input) -> f
+    transporter(input::Input) -> f
 
 Prepares the transportation step. Returns a function `f(state::State, active_layer)`,
 transporting the active layer, returning a transported `Amount` of sediment.
 """
-function transportation(input)
-    x, y = box_axes(input.box)
-    μ0 = input.initial_topography.(x, y')
-    # We always return this array
-    transported_output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
-    stencils = [
-        let stc = pde_stencil(input.box, f.diffusion_coefficient)
-            (μ, p) -> @views stc(tuple.(μ, p[i,:,:]), transported_output[i,:,:])
-        end for (i, f) in enumerate(input.facies) ]
+function transporter(input)
+    if input.transport_substeps == :adaptive
+        return adaptive_transporter(input)
+    end
 
-    return function(state, active_layer::Array{Amount, 3})
-        μ = state.sediment_height .+ μ0
-        for stc in stencils
-            stc(μ, active_layer)
+    solver = transport_solver(input.transport_solver, input.box)
+
+    w = water_depth(input)
+    box = input.box
+    Δt = input.time.Δt / input.transport_substeps
+    steps = input.transport_substeps
+    fs = input.facies
+    iz = input.intertidal_zone
+
+    return function (state, C::Array{Amount,3})
+        wd = w(state)
+        wd .+= iz
+
+        for (i, f) in pairs(fs)
+            for j in 1:steps
+                solver(
+                    (C, _) -> transport(
+                        input.box, f.diffusion_coefficient, f.wave_velocity,
+C, wd),
+                    view(C, i, :, :), TimeIntegration.time(input, state), Δt)
+            end
         end
 
-        return transported_output
+        for i in eachindex(C)
+            if C[i] < zero(Amount)
+                C[i] = zero(Amount)
+            end
+        end
     end
 end
 
+end
+```
+
+## Intertidal zone
+
+You may pass the `intertidal_zone` argument to define a height above sea-level where sediment is still transported.
+
+The following test has three sediment peaks, one below sea-level, one in the intertidal zone and one above the intertidal zone. In the latter two cases, sediment is transported.
+
+The `transport_test_input` has a box of $120 \times 1$ with a resolution of 125m (15km total).
+We divide the domain into three sections: dry ($h > 10m$), intertidal ($10m > h > 0m$) and wet zones ($0m > h$). The dry zone never has transport, the wet zone always has transport, but the intertidal zone only has transport enabled when we set `intertidal_zone` to `10u"m"`.
+
+![intertidal zone test](fig/1d-intertidal.svg)
+
+``` {.julia .task file=examples/transport/1d-intertidal-zone.jl}
+#| creates: docs/src/_fig/1d-intertidal.svg
+#| collect: figures
+
+module Script
+    using CarboKitten
+    using CarboKitten.Testing: transport_test_input
+    using CairoMakie
+
+    include("plot-1d-evolution.jl")
+
+    function three_peaks(x, y)
+        sum(exp(-(x-μ)^2 / (2 * (0.5u"km")^2)) * 9.0u"m"
+            for μ in [2.5u"km", 7.5u"km", 12.5u"km"])
+    end
+
+    function staircase(dx, dy, y0)
+        return function (x, _)
+            floor(x / dx) * dy + y0
+        end
+    end
+
+    v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
+
+    function main()
+        CairoMakie.activate!()
+
+        input = transport_test_input(
+            initial_topography = staircase(5.0u"km", -10.0u"m", 10.0u"m"),
+            initial_sediment = three_peaks,
+            disintegration_rate = 50000.0u"m/Myr",
+            wave_velocity = v_const(-1u"km/Myr"),
+            intertidal_zone = 10u"m"
+        )
+
+        fig = plot_1d_evolution(input, 1000)
+        save("docs/src/_fig/1d-intertidal.svg", fig)
+    end
+end
+
+Script.main()
+```
+
+The following tests that we see the expected behaviours both without an intertidal zone (`input1`) and with (`input1`). The regions split at grid locations 40 and 80, so we test slices `10:30`, `50:70` and `90:110`. This ommits the boundaries where numeric artifacts could be encountered.
+
+``` {.julia file=test/Transport/IntertidalZoneSpec.jl}
+@testset "CarboKitten.Transport.IntertidalZone" begin
+    using CarboKitten
+    using CarboKitten.Testing: transport_test_input
+
+    function end_sediment_height(input)
+        state = ALCAP.initial_state(input)
+        run_model((_, _) -> (), Model{ALCAP}, input, state)
+        return state.sediment_height
+    end
+
+    function three_peaks(x, y)
+        sum(exp(-(x-μ)^2 / (2 * (0.5u"km")^2)) * 9.0u"m"
+            for μ in [2.5u"km", 7.5u"km", 12.5u"km"])
+    end
+
+    function staircase(dx, dy, y0)
+        return function (x, _)
+            floor(x / dx) * dy + y0
+        end
+    end
+
+    v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
+
+    input1 = transport_test_input(
+        initial_topography = staircase(5.0u"km", -10.0u"m", 10.0u"m"),
+        initial_sediment = three_peaks,
+        disintegration_rate = 50000.0u"m/Myr",
+        wave_velocity = v_const(-1u"km/Myr"),
+        intertidal_zone = 0u"m"
+    )
+
+    output1 = end_sediment_height(input1)[:, 1]
+
+    input2 = transport_test_input(
+        initial_topography = staircase(5.0u"km", -10.0u"m", 10.0u"m"),
+        initial_sediment = three_peaks,
+        disintegration_rate = 50000.0u"m/Myr",
+        wave_velocity = v_const(-1u"km/Myr"),
+        intertidal_zone = 10u"m"
+    )
+
+    output2 = end_sediment_height(input2)[:, 1]
+
+    @test output1[10:30] ≈ output1[50:70] atol=0.01u"m"
+    @test !isapprox(output1[50:70], output1[90:110], atol=1.0u"m")
+
+    @test !isapprox(output2[10:30], output2[50:70], atol=1.0u"m")
+    @test output2[50:70] ≈ output2[90:110] atol=0.01u"m"
 end
 ```

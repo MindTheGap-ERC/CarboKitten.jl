@@ -80,7 +80,8 @@ makedocs(
             "Bosscher and Schlager 1992" => "bosscher-1992.md",
             "Model with CA and Production" => "ca-with-production.md",
             # "With Denudation" => "ca-prod-with-denudation.md",
-            "ALCAPS" => "model-alcap.md"
+            "ALCAPS" => "model-alcap.md",
+            "Model without CA" => "models/without-ca.md"
         ],
         "Examples" => [
             "Tutorial (Pluto notebook)" => "first_tutorial.md",
@@ -89,6 +90,8 @@ makedocs(
         "Architecture" => "architecture.md",
         "Model Components" => [
             "Components" => "components/components.md",
+            "Model Runner" => "components/run_model.md",
+            "HDF5 Writer" => "components/hdf5.md",
             "Tags" => "components/tag.md",
             "Boxes" => "components/boxes.md",
             "Time" => "components/time.md",
@@ -96,14 +99,13 @@ makedocs(
             "Cellular Automata" => "components/cellular-automata.md",
             "Water Depth" => "components/waterdepth.md",
             "Production" => "components/production.md",
-            "HDF5 Writer" => "components/hdf5.md",
             "Sediment Buffers" => "components/sediment_buffer.md",
             "Active Layer Transport" => "active-layer-transport.md",
+            "Onshore Transport" => "onshore-transport.md"
         ],
         "Visualizations" => "visualization.md",
         "CarboCAT" => [
             "Summary" => "carbocat.md",
-            "Cellular Automaton" => "carbocat-ca.md",
         ],
         "Denudation" => [
             "Denudation" => "denudation/denudation.md",
@@ -111,14 +113,16 @@ makedocs(
             "Chemical Dissolution" => "denudation/chemical.md",
             "Physical Erosion" => "denudation/physical_erosion.md"
         ],
-        "Output" => [
+        "Input & Output" => [
+            "Input Methods" => "input-methods.md",
             "CSV Export" => "data-export.md"
         ],
         "Algorithms" => [
             "Unitful" => "unitful.md",
             "Boxes" => "boxes.md",
             "Stencils" => "stencils.md",
-            "Utility" => "utility.md"
+            "Utility" => "utility.md",
+            "Finite Difference" => "finite-difference-transport.md"
         ],
         "API Documentation" => "api.md",
         "References" => "references.md"

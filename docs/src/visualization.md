@@ -88,7 +88,7 @@ module SummaryPlot
 
 using CarboKitten.Visualization
 import CarboKitten.Visualization: summary_plot
-using CarboKitten.Export: read_header, read_slice
+using CarboKitten.Export: read_header, read_volume, read_slice, group_datasets
 using CarboKitten.Utility: in_units_of
 using HDF5
 using Unitful
@@ -97,37 +97,62 @@ using Makie
 summary_plot(filename::AbstractString; kwargs...) = h5open(fid->summary_plot(fid; kwargs...), filename, "r")
 
 function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
-	header = read_header(fid)
-    y_slice = div(length(header.axes.y), 2) + 1
+    header = read_header(fid)
+    data_groups = group_datasets(fid)
+
+    if length(data_groups[:slice]) == 0 && length(data_groups[:volume]) == 0
+        @warn "No volume data or slice data stored. Cannot produce summary view."
+        return nothing
+    end
+
+    fig = Figure(size=(1200, 1000), backgroundcolor=:gray80)
+
+    volume_data = if length(data_groups[:volume]) == 0
+        @warn "No volume data stored, skipping topographic plots."
+        nothing
+    else
+        if length(data_groups[:volume]) > 1
+            @warn "Multiple volume data sets, picking first one."
+        end
+
+        volume_data = read_volume(fid[data_groups[:volume][1]])
+        ax = Axis3(fig[1, 3]; zlabel="depth [m]", xlabel="x [km]", ylabel="y [km]")
+        glamour_view!(ax, header, volume_data)
+        volume_data
+    end
+
+    section_data = if length(data_groups[:slice]) == 0
+        @warn "No profile data slice stored, taking section of volume data along x-axis."
+
+        y_slice = div(size(volume_data.sediment_thickness)[2], 2) + 1
+        volume_data[:, y_slice]
+    else
+        read_slice(fid[data_groups[:slice][1]])
+    end
+
+    n_facies = size(section_data.production)[1]
+
+    ax1 = Axis(fig[1:2,1:2])
+    sediment_profile!(ax1, header, section_data)
+
+    ax2 = Axis(fig[4,1])
+    ax3 = Axis(fig[4,2])
+    sm, df = wheeler_diagram!(ax2, ax3, header, section_data; smooth_size=wheeler_smooth)
+    Colorbar(fig[3,1], sm; vertical=false, label="sedimentation rate [m/Myr]")
+    Colorbar(fig[3,2], df; vertical=false, label="dominant facies", ticks=1:n_facies)
+
+    ax4 = Axis(fig[4,3], title="sealevel curve", xlabel="sealevel [m]",
+               limits=(nothing, (header.axes.t[1] |> in_units_of(u"Myr"),
+                                 header.axes.t[end] |> in_units_of(u"Myr"))))
+    lines!(ax4, header.sea_level |> in_units_of(u"m"), header.axes.t |> in_units_of(u"Myr"))
+
+    ax5 = Axis(fig[2,3])
     max_depth = minimum(header.initial_topography)
-	data = read_slice(fid, :, y_slice)
+    production_curve!(ax5, fid["input"], max_depth=max_depth)
 
-	n_facies = size(data.production)[1]
-	fig = Figure(size=(1200, 1000), backgroundcolor=:gray80)
+    linkyaxes!(ax2, ax3, ax4)
 
-	ax1 = Axis(fig[1:2,1:2])
-	sediment_profile!(ax1, header, data)
-
-	ax2 = Axis(fig[4,1])
-	ax3 = Axis(fig[4,2])
-	sm, df = wheeler_diagram!(ax2, ax3, header, data; smooth_size=wheeler_smooth)
-	Colorbar(fig[3,1], sm; vertical=false, label="sediment accumulation [m/Myr]")
-	Colorbar(fig[3,2], df; vertical=false, label="dominant facies", ticks=1:n_facies)
-
-	ax4 = Axis(fig[4,3], title="sealevel curve", xlabel="sealevel [m]",
-        limits=(nothing, (header.axes.t[1] |> in_units_of(u"Myr"),
-						  header.axes.t[end] |> in_units_of(u"Myr"))))
-	lines!(ax4, header.sea_level |> in_units_of(u"m"), header.axes.t |> in_units_of(u"Myr"))
-
-	ax5 = Axis(fig[2,3])
-	production_curve!(ax5, fid["input"], max_depth=max_depth)
-
-	linkyaxes!(ax2, ax3, ax4)
-
-	ax = Axis3(fig[1, 3]; zlabel="depth [m]", xlabel="x [km]", ylabel="y [km]")
-	glamour_view!(ax, fid)
-
-	fig
+    fig
 end
 
 end
@@ -177,7 +202,7 @@ elevation(h::Header, d::DataSlice) =
     let bl = h.initial_topography[d.slice..., na],
         sr = h.axes.t[end] * h.subsidence_rate
 
-        bl .+ d.sediment_elevation .- sr
+        bl .+ d.sediment_thickness .- sr
     end
 
 water_depth(header::Header, data::DataSlice) =
@@ -194,7 +219,7 @@ function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
     smooth_size::NTuple{2,Int}=(3, 11),
     colormap=Reverse(:curl),
     range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
-    magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ (header.Δt * header.write_interval)
+    magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ (header.Δt * data.write_interval)
     blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
     wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
     blur(water_depth(header, data) / u"m", wd)
@@ -203,10 +228,12 @@ function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
 
     ax.ylabel = "time [Myr]"
     ax.xlabel = "position [km]"
+    xkm = header.axes.x |> in_units_of(u"km")
+    tmyr = header.axes.t |> in_units_of(u"Myr")
 
-    sa = heatmap!(ax, header.axes.x / u"km", header.axes.t / u"Myr", mag;
+    sa = heatmap!(ax, xkm, tmyr, mag;
         colormap=colormap, colorrange=range ./ u"m/Myr")
-    contour!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
+    contour!(ax, xkm, tmyr, wd;
         levels=[0], color=:red, linewidth=2, linestyle=:dash)
     return sa
 end
@@ -225,12 +252,14 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
     ax.ylabel = "time [Myr]"
     ax.xlabel = "position [km]"
 
-    ft = heatmap!(ax, header.axes.x / u"km", header.axes.t / u"Myr", dominant_facies;
+    xkm = header.axes.x |> in_units_of(u"km")
+    tmyr = header.axes.t |> in_units_of(u"Myr")
+    ft = heatmap!(ax, xkm, tmyr, dominant_facies;
         colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
         colorrange=(0.5, n_facies + 0.5))
-    contourf!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
+    contourf!(ax, xkm, tmyr, wd;
         levels=[0.0, 10000.0], colormap=Reverse(:grays))
-    contour!(ax, header.axes.x / u"km", header.axes.t / u"Myr", wd;
+    contour!(ax, xkm, tmyr, wd;
         levels=[0], color=:black, linewidth=2)
     return ft
 end
@@ -322,7 +351,7 @@ end
 
 function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")
     a = HDF5.attributes(g)
-    insolation = a["insolation"][] * u"W/m^2"
+    insolation = 400.0u"W/m^2"  # a["insolation"][] * u"W/m^2"
 
     ax.title = "production at $(sprint(show, insolation; context=:fancy_exponent=>true))"
     ax.xlabel = "production [m/Myr]"
@@ -331,9 +360,9 @@ function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")
     for i in 1:a["n_facies"][]
         fa = HDF5.attributes(g["facies$(i)"])
         f = Facies(
-            fa["maximum_growth_rate"][] * u"m/Myr",
-            fa["extinction_coefficient"][] * u"m^-1",
-            fa["saturation_intensity"][] * u"W/m^2")
+            maximum_growth_rate = fa["maximum_growth_rate"][] * u"m/Myr",
+            extinction_coefficient = fa["extinction_coefficient"][] * u"m^-1",
+            saturation_intensity = fa["saturation_intensity"][] * u"W/m^2")
         depth = (0.1u"m":0.1u"m":-max_depth)
         prod = [production_rate(insolation, f, d) for d in depth]
         lines!(ax, prod / u"m/Myr", - depth / u"m")
@@ -387,14 +416,14 @@ elevation(h::Header, d::Data) =
     let bl = h.initial_topography[:, :, na],
         sr = h.axes.t[end] * h.subsidence_rate
 
-        bl .+ d.sediment_elevation .- sr
+        bl .+ d.sediment_thickness .- sr
     end
 
 elevation(h::Header, d::DataSlice) =
     let bl = h.initial_topography[d.slice..., na],
         sr = h.axes.t[end] * h.subsidence_rate
 
-        bl .+ d.sediment_elevation .- sr
+        bl .+ d.sediment_thickness .- sr
     end
 
 colormax(d::Data) = getindex.(argmax(d.deposition; dims=1)[1, :, :, :], 1)
@@ -453,8 +482,10 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     c = reshape(colormax(data)[:, :], length(x) * (length(t) - 1))
     mesh!(ax, v, f, color=vcat(c, c), alpha=1.0, colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
-    verts = [(x[pt[1]], ξ[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
-    linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
+    if !isempty(hiatus[1])
+        verts = [(x[pt[1]], ξ[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
+        linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
+    end
 end
 
 function sediment_profile(header::Header, data_slice::DataSlice)
@@ -539,9 +570,9 @@ Returns a tuple of `vertices` and `edges`, where `vertices` is a vector of 2-tup
 """
 function skeleton(bitmap::AbstractMatrix{Bool}; minwidth=10)
     vertex_rows = (filter(r->length(r)>=minwidth, find_ranges(row)) for row in eachrow(bitmap))
-    edges = flatten(map(splat(edges_between), pairs(enumerate_seq(vertex_rows))))
-    vertices = flatten(((i, middle(v)) for v in vs) for (i, vs) in enumerate(vertex_rows))
-    return collect(vertices), reshape(reinterpret(Int, collect(edges)), (2,:))'
+    edges::Vector{Tuple{Int,Int}} = collect(flatten(map(splat(edges_between), pairs(enumerate_seq(vertex_rows)))))
+    vertices::Vector{Tuple{Int,Int}} = collect(flatten(((i, middle(v)) for v in vs) for (i, vs) in enumerate(vertex_rows)))
+    return vertices, reshape(reinterpret(Int, edges), (2,:))'
 end
 
 end
@@ -560,7 +591,7 @@ Not very useful but highly glamourous.
 
 module Script
 
-using GLMakie
+using CairoMakie
 using CarboKitten.Visualization: glamour_view!
 using HDF5
 
@@ -583,21 +614,20 @@ module GlamourView
 
 import CarboKitten.Visualization: glamour_view!
 using CarboKitten.Utility: in_units_of
-using CarboKitten.Export: read_header
+using CarboKitten.Export: Header, DataVolume
 using Makie
 using HDF5
 using Unitful
 
-function glamour_view!(ax::Makie.Axis3, fid::HDF5.File; colormap=Reverse(:speed))
-	header = read_header(fid)
-	x = header.axes.x |> in_units_of(u"km")
-	y = header.axes.y |> in_units_of(u"km")
+function glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; colormap=Reverse(:speed))
+    x = header.axes.x[data.slice[1]] |> in_units_of(u"km")
+    y = header.axes.y[data.slice[2]] |> in_units_of(u"km")
 	xy_aspect = x[end] / y[end]
 
 	ax.aspect = (xy_aspect, 1, 1)
 	ax.azimuth = -π/3
 
-	n_steps = length(header.axes.t)
+    n_steps = size(data.sediment_thickness)[3]
 	grid_size = (length(x), length(y))
 	steps_between = 2
 	selected_steps = [1, ((1:steps_between) .* n_steps .÷ (steps_between + 1))..., n_steps]
@@ -605,7 +635,7 @@ function glamour_view!(ax::Makie.Axis3, fid::HDF5.File; colormap=Reverse(:speed)
 
 	result = Array{Float64, 3}(undef, grid_size..., length(selected_steps))
 	for (i, j) in enumerate(selected_steps)
-		result[:, :, i] = fid["sediment_height"][:,:,j] .+ bedrock / u"m"
+        result[:, :, i] = (data.sediment_thickness[:,:,j] .+ bedrock) |> in_units_of(u"m")
 	end
 
 	surface!(ax, x, y, result[:,:,1];
@@ -621,6 +651,13 @@ function glamour_view!(ax::Makie.Axis3, fid::HDF5.File; colormap=Reverse(:speed)
 		colormap=colormap)
 	lines!(ax, x, zeros(grid_size[1]), result[:, 1, end]; color=(:white, 0.5), linewidth=1)
 	lines!(ax, fill(x[end], grid_size[2]), y, result[end, :, end]; color=(:white, 0.5), linewidth=1)
+end
+
+function glamour_view(header::Header, data::DataVolume; colormap=Reverse(:speed))
+    fig = Figure()
+    ax = Axis3(fig[1, 1])
+    glamour_view!(ax, header, data, colormap=colormap)
+    return fig, ax
 end
 
 end

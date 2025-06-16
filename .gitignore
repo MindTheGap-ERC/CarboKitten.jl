@@ -1,5 +1,8 @@
+Manifest.toml
+uv.lock
+
 docs/build
-data/*.h5
+*.h5
 data/*.csv
 data/*.toml
 .vscode
@@ -15,4 +18,11 @@ docs/src/_fig/*.gif
 
 .entangled/filedb.json
 .brei_history
+.entangled/tasks.json
+
+scratch
+
+notebooks/*.h5
+notebooks/*.png
+notebooks/*.svg
 

@@ -48,11 +48,7 @@ julia>
 
 From here you may use CarboKitten `using CarboKitten` and run any of the code inside. To work with CarboKitten efficiently, you may want to load `Revise`. Revise auto-detects changes to loaded code and makes it easy to rerun.
 
-Additionally you should learn how to work with Julia packages. If you want to experiment with things, try to create a new environment in an empty folder and add CarboKitten as a `dev` dependency:
-
-```
-pkg> dev <path to CarboKitten>
-```
+Running CarboKitten will require to load other dependencies, so please consult the [documentation on Julia packages](https://pkgdocs.julialang.org/v1/) to learn how.
 
 ### VS Code
 
@@ -92,9 +88,7 @@ julia> Pluto.run()
 
 ### Plotting
 
-The most used library to do plotting in Julia is called `Plots.jl`. However, this library comes with a fair share of problems: there are a number of back-ends for which the generated plots may look slightly different. Here "back-end" means some plotting library written in a different language than Julia.
-
-A nicer plotting library that also happens to be a bit more versatile is `Makie.jl`. This has three back-ends that are `CairoMakie`, `GLMakie` and `WGLMakie`. These are all written in Julia, but they focus on different kinds of results. `CairoMakie` is relatively slow but results in publication quality vector graphics: `SVG` or `PDF`. `GLMakie` is very fast, renders on your graphics card, but only produces raster images, say `PNG`. Then `WGLMakie` does a similar thing, but through the web-browser.
+CarboKitten ships with several routines for visualizing model output. These routines use the [`Makie.jl` package](https://docs.makie.org/stable/). Makie has three back-ends: `CairoMakie`, `GLMakie` and `WGLMakie`. These are all written in Julia, but they focus on different kinds of results. `CairoMakie` is relatively slow but results in publication quality vector graphics: `SVG` or `PDF`. `GLMakie` is very fast, renders on your graphics card, but only produces raster images, say `PNG`. Then `WGLMakie` does a similar thing, but through the web-browser.
 
 ### Design style
 
@@ -243,4 +237,3 @@ Copyright 2023 Netherlands eScience Center and Utrecht University
 ## Funding information
 
 Funded by the European Union (ERC, MindTheGap, StG project no 101041077). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Council. Neither the European Union nor the granting authority can be held responsible for them.
-

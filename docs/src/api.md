@@ -11,19 +11,25 @@ time_axis
 ## Components
 
 ```@autodocs
-Modules = [CarboKitten.Components.ActiveLayer]
+Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer]
 ```
 
 ## Utility
 
 ```@autodocs
-Modules = [CarboKitten.Utility, CarboKitten.Skeleton]
+Modules = [CarboKitten.Utility, CarboKitten.Skeleton, CarboKitten.Stencil]
 ```
 
 ## Export
 
 ```@autodocs
 Modules = [CarboKitten.Export]
+```
+
+## Transport
+
+```@autodocs
+Modules = [CarboKitten.Transport.Advection]
 ```
 
 ## Submodules

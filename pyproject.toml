@@ -20,7 +20,8 @@ include = [".entangled/tasks.json"]
 
 [tool.brei.runner.julia]
 command = "julia"
-args = ["+1.10", "--project=workenv", "${script}"]
+args = ["--project=workenv", "--startup-file=no", "-e", "using DaemonMode; runexpr(\"include(\\\"${script}\\\")\")"]
+# args = ["+1.11", "--project=workenv", "${script}"]
 
 [[tool.brei.task]]
 name = "copy_figures"

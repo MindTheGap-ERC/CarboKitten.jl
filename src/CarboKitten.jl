@@ -3,6 +3,7 @@ module CarboKitten
 using TerminalLoggers: TerminalLogger
 using Logging
 using Unitful
+using GeometryBasics: Vec2
 
 function init()
     global_logger(TerminalLogger(right_justify=80))
@@ -51,15 +52,14 @@ number of steps between writing output.
     t0::typeof(1.0u"Myr") = 0.0u"Myr"
     Δt::typeof(1.0u"Myr")
     steps::Int
-    write_interval::Int = 1
 end
 
-n_writes(time::TimeProperties) = div(time.steps, time.write_interval)
+n_writes(time::TimeProperties) = time.steps
 
 """
     time_axis(time::TimeProperties)
 
-Retrieve the time values for which output was/will be written.
+Retrieve the time values for which output was/will be written. Returns a range.
 """
 time_axis(time::TimeProperties) = (0:n_writes(time)) .* (time.Δt * time.write_interval) .+ time.t0
 
@@ -73,12 +73,13 @@ include("./Utility.jl")
 include("./DataSets.jl")
 include("./Skeleton.jl")
 
-include("./Burgess2013.jl")
-
 include("./Denudation.jl")
 
 module Transport
 include("./Transport/ActiveLayer.jl")
+include("./Transport/DifferentialOperators.jl")
+include("./Transport/Solvers.jl")
+include("./Transport/Advection.jl")
 end
 
 include("./Components.jl")
@@ -92,17 +93,22 @@ include("./Models/BS92.jl")
 include("./Models/CAP.jl")
 include("./Models/ALCAP.jl")
 include("./Models/WithDenudation.jl")
+include("./Models/WithoutCA.jl")
+
 end
 
 include("./Export.jl")
 include("./Visualization.jl")
+include("./Testing.jl")
 
 using .Components.Common: in_units_of, @u_str
+using .Components.H5Writer: OutputSpec
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 
 export run_model, Box, box_axes, TimeProperties, time_axis,
        Model, BS92, CAP, ALCAP, in_units_of, @u_str,
-       AbstractBox, Boundary, Coast, Periodic, Reflected
+       AbstractBox, Boundary, Coast, Periodic, Reflected,
+       Vec2, OutputSpec
 
 end # module CarboKitten

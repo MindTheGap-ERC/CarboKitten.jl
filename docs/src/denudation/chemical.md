@@ -21,7 +21,7 @@ $$[Ca^{2+}]_{eq} = {{(PCO_2\ (K_1\ K_C\ K_H)} \over {(4\ K_2\times \gamma Ca\ (\
 
 Mass balance coefficients $K_1$, $K_2$, $K_C$, $K_H$ depend on temperature. $_PCO_2$ is assumed to be between $10^{-1.5} ATM$ to $10^{-3.5} ATM$.
 
-Other parameters could be found in the following table by [Kaufmann2001](@cite).
+Other parameters can be found in the following table by [Kaufmann2001](@cite).
 
 | Parameter                 | Description              | Unit                  | Value                                                                      |
 |-----------------|-----------------|-----------------|----------------------|
@@ -36,7 +36,7 @@ Other parameters could be found in the following table by [Kaufmann2001](@cite).
 | $log K_c\ddagger$         | Mass balance coefficient | \[ $mol^2 L^{-2}$ \]      | $-171.9065 - 0.077993T + 2839.319/T + 71.595logT$                      |
 | $log K_H\ddagger$         | Mass balance coefficient | \[ $mol L^{-1} atm^{-1}$ \] | $108.3865 + 0.01985076T - 6919.53/T - 40.45154logT + 669365/T^2$    |
 
-This leads to the following implementation of the `karst_denudation_parameters` function to calculate the parameters for the dissolution equation:
+These parameters are calculated from temperature using the `karst_denudation_parameters` function:
 
 ``` {.julia #karst-parameter-function}
 function karst_denudation_parameters(temp::Float64)
@@ -52,18 +52,138 @@ function karst_denudation_parameters(temp::Float64)
         activity_Alk=10^(-A * sqrt(IA) / (1 + 5.4 * 10^(-8) * B * sqrt(IA))))
 end
 ```
+The output of this function for the $K_H$ parameter is plotted below for a range of input temperatures
 
-and ```equilibrium``` function to calculate the $[Ca^{2+}]_{eq}$:
+![KH as function of temperature](../fig/KHTemp.png)
+
+```@raw html
+<details><summary>Plotting code</summary>
+```
+
+``` {.julia .task file=examples/denudation/dissolution-test.jl}
+#| requires: examples/denudation/dissolution-test.jl
+#| creates:
+#|   - docs/src/_fig/KHTemp.png
+#|   - docs/src/_fig/Equilibrium_Concs.png
+#|   - docs/src/_fig/DissolutionExample.png
+#| collect: figures
+
+module DissolutionSpec
+using CairoMakie
+using Unitful
+using CarboKitten.Denudation.DissolutionMod: equilibrium, dissolution, karst_denudation_parameters
+using CarboKitten: Box
+using CarboKitten.Stencil: Periodic, Reflected, stencil
+
+
+@kwdef struct facies
+    infiltration_coefficient :: Float64
+    mass_density :: typeof(1.0u"kg/m^3")
+    reactive_surface :: typeof(1.0u"m^2/m^3")
+end
+
+
+@kwdef struct Dissolution
+    temp :: Any
+    precip :: Float64
+    pco2 :: Float64
+    reactionrate :: Float64
+end
+
+@kwdef struct state
+    ca::Matrix{Int}
+end
+
+const BOX = Box{Periodic{2}}(grid_size=(5, 5), phys_scale=1.0u"km")
+
+
+const Facies = facies(infiltration_coefficient = 0.5,
+mass_density = 2.73u"kg/m^3",
+reactive_surface = 1000u"m^2/m^3")
+
+const DIS = Dissolution(temp = 285,
+precip  = 1.0,
+pco2 = 10^(-1.5),
+reactionrate = 0.1)
+
+const STATE = state(ca = 
+[ 0  0  1  0  0
+0  1  0  1  1
+0  0  1  0  1
+1  0  1  1  0
+1  1  1  1  0])
+
+const WD = -10 .* [ 0.0663001  0.115606  0.646196
+0.601523   0.130196  0.390821
+0.864734   0.902935  0.670354]
+
+function main()
+    temp = collect(293:0.5:303)
+
+    Eq_result = Array{Any,1}(undef,length(temp))
+    Para_result = Array{Any,1}(undef,length(temp))
+    Dis_result = Array{Any,1}(undef,length(temp))
+    Dis_result_wd = Array{Any,1}(undef,length(WD))
+
+    for i in eachindex(temp)
+        Para_result[i] = karst_denudation_parameters(temp[i])
+    end
+    Para_result_KH = [x.KH for x in Para_result]
+
+    for i in eachindex(temp)
+       Eq_result[i] =  equilibrium(temp[i],DIS.pco2,DIS.precip,Facies)
+    end
+    Eq_result_concs = [x.concentration for x in Eq_result]
+    for i in eachindex(temp)
+        Dis_result[i] = dissolution(temp[i],DIS.precip,DIS.pco2,DIS.reactionrate,WD[1],Facies)
+    end
+    Dis_result
+    for i in eachindex(WD)
+        Dis_result_wd[i] = dissolution(temp[1],DIS.precip,DIS.pco2,DIS.reactionrate,WD[i],Facies)
+    end
+    Dis_result_wd
+
+    fig1 = Figure()
+    ax1 = Axis(fig1[1,1],xlabel="Temp (K)", ylabel=" concentration (mol/L)")
+    lines!(ax1,temp,Eq_result_concs)
+    save("docs/src/_fig/Equilibrium_Concs.png",fig1)
+
+    fig2 = Figure()
+    ax2 = Axis(fig2[1,1],xlabel="Temp (K)", ylabel="KH")
+    lines!(ax2,temp,Para_result_KH)
+    save("docs/src/_fig/KHTemp.png",fig2)
+
+    fig3 = Figure()
+    ax3 = Axis(fig3[1,1],xlabel="Temp (K)", ylabel="Denudation rates (m/Myr)")
+    lines!(ax3,temp,Dis_result)
+
+    ax4 = Axis(fig3[1,2],xlabel="Water Depth (m)", ylabel="Denudation rates (m/Myr)")
+    scatter!(ax4,vec(WD),Dis_result_wd)
+    fig3
+    save("docs/src/_fig/DissolutionExample.png",fig3)
+end
+end
+
+DissolutionSpec.main()
+```
+```@raw html
+</details>
+```
+
+The $[Ca^{2+}]_{eq}$ parameter is calculated from temperature using the ```equilibrium``` function:
 
 ``` {.julia #karst-equilibrium-function}
 function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies)
     p = karst_denudation_parameters(temp)
     mass_density = facies.mass_density ./ u"kg/m^3"
     eq_c = (pco2 .* (p.K1 * p.KC * p.KH) ./ (4 * p.K2 * p.activity_Ca .* (p.activity_Alk)^2)) .^ (1 / 3)
-    eq_d = 1000 * precip .* facies.infiltration_coefficient * 40 * 1000 .* eq_c ./ mass_density
+    eq_d = 1e6 * precip .* facies.infiltration_coefficient * 40 * 1000 .* eq_c ./ mass_density
     (concentration=eq_c, denudation=eq_d)
 end
 ```
+The value of $[Ca^{2+}]_{eq}$ calculated in ```equilibrium``` for a range of temperatures:
+![KH as function of temperature](../fig/Equilibrium_Concs.png)
+
 However, the above discussion is true only if the percolated fluid is saturated (in terms of Ca) when leaving the platform. In some cases, when the fluid is not saturated, the dissolved amount is lower than the scenario described above.
 
 The following articles describe this: [gabrovsek_concepts_2009](@cite) and [kaufmann_calcite_2007](@cite)
@@ -74,7 +194,7 @@ The dissolution rate of carbonate follows linear rate laws of:
 
 $$F = \alpha (c_{eq}-c(z))$$
 
-The rate law is a common expression way to describe the kinetics of certain chemical reactions [see Rate Laws](https://en.wikipedia.org/wiki/Rate_equation)
+The rate law is a common expression way to describe the kinetics of certain chemical reactions [see Rate Laws](https://en.wikipedia.org/wiki/Rate_equation).
 
 $F$ is the dissolution rate, $\alpha$ is constant (kinetic co-efficient), $c_{eq}$ is the concentration in fluid when equilibrium is reached (i.e., no more dissolution, which is $[Ca^{2+}]_{eq}$ in Chapter 1), $c(z)$ is the current concentrationion at depth $z$ in the fluid. This equation then expands to
 
@@ -88,7 +208,7 @@ If assuming the initial percolating water has $c(0) = 0$, then we could get the 
 
 $$c(z) = c_{eq}\ (1 - e^{(-z/\lambda)})$$
 
-Herein, $\lambda = {{I} \over {\alpha L}} $.
+Herein, $ \lambda = {{I} \over {\alpha L}} $.
 
 Therefore,
 
@@ -100,13 +220,15 @@ These equations are implemented as ```dissolution``` function:
 
 ``` {.julia #karst-dissolution-function}
 function dissolution(temp, precip, pco2, alpha, water_depth, facies)
-    # TODO not used: I = precip .* facies.infiltration_coefficient #assume vertical infiltration
     reactive_surface =  facies.reactive_surface ./u"m^2/m^3"
     λ = precip * 100 .* facies.infiltration_coefficient ./ (alpha .* reactive_surface)
     eq = equilibrium(temp, pco2, precip, facies) # pass ceq Deq from the last function
-    eq.denudation .* (1 - (λ ./ water_depth) .* (1 - exp.(-water_depth ./ λ))) * u"m/kyr"
+    eq.denudation .* (1 - (λ ./ -water_depth) .* (1 - exp.(water_depth ./ λ))) * u"m/Myr"
 end
 ```
+The dedudation rate calculated in this function for varying temperature and water depth is plotted here:
+
+![Dissolution as function of temperature and water depth](../fig/DissolutionExample.png)
 
 ## Implementation
 
@@ -139,18 +261,18 @@ function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state
     precip = p.precip ./u"m"
     pco2 = p.pco2 ./1.0u"atm"
     reactionrate = p.reactionrate ./u"m/yr"
-    denudation_mass = zeros(typeof(1.0u"m/kyr"), size(state.ca)...)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(state.ca)...)
 
     for idx in CartesianIndices(state.ca)
         f = state.ca[idx]
         if f == 0
             continue
         end
-        if water_depth[idx] >= 0
-            denudation_mass[idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[f])
+        if water_depth[idx] <= 0
+            denudation_rate[f, idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[f])
         end
     end
-    return denudation_mass
+    return denudation_rate
 end
 
 function redistribution(box::Box{BT}, p::Dissolution, denudation_mass, water_depth) where {BT<:Boundary}

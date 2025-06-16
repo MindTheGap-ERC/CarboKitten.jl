@@ -24,6 +24,22 @@ struct Constant{dim,value} <: Boundary{dim} end
 struct Coast <: Boundary{2} end
 
 const Shelf = Coast  # FIXME: Old name, should be removed
+
+@inline modflip(a, l) = let b = mod1(a, 2l)
+    b > l ? 2l - b + 1 : b
+end
+
+@inline get_bounded(::Type{Constant{dim, value}}, a, i) where {dim, value} =
+    checkbounds(Bool, a, i) ? a[i] : val
+
+@inline get_bounded(::Type{Periodic{dim}}, a, i) where {dim} =
+    checkbounds(Bool, a, i) ? a[i] : a[mod1.(Tuple(i), size(a))...]
+
+@inline get_bounded(::Type{Reflected{dim}}, a, i) where {dim} =
+    checkbounds(Bool, a, i) ? a[i] : a[modflip.(Tuple(i), size(a))...]
+
+@inline get_bounded(::Type{Coast}, a, i) =
+    checkbounds(Bool, a, i) ? a[i] : a[modflip(i[1], size(a)[1]), mod1(i[2], size(a)[2])]
 ```
 
 The `Boundary` type is part of the generic `Box` dimension specification.
@@ -105,7 +121,7 @@ end
 # FIXME: Rename this module
 module BoundaryTrait
 
-export Boundary, Reflected, Periodic, Constant, Coast, Shelf, offset_index, offset_value, canonical
+export Boundary, Reflected, Periodic, Constant, Coast, Shelf, offset_index, offset_value, canonical, get_bounded
 
 <<boundary-types>>
 <<offset-indexing>>

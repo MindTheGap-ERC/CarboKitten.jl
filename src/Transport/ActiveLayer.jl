@@ -2,30 +2,30 @@
 module ActiveLayer
 
 using Unitful
+using StaticArrays
 using ...BoundaryTrait
 using ...Boxes: Box
-using ...Stencil: stencil
+using ...Stencil: stencil!
 
 const Rate = typeof(1.0u"m/Myr")
 const Amount = typeof(1.0u"m")
 
-function pde_stencil(box::Box{BT}, ν) where {BT <: Boundary{2}}
+function pde_stencil(box::Box{BT}, Δt, ν, out, η, C) where {BT<:Boundary{2}}
     Δx = box.phys_scale
+    d = ν * Δt
 
-    function kernel(x)
-        adv = ν * ((x[3, 2][1] - x[1, 2][1]) * (x[3, 2][2] - x[1, 2][2]) +
-                    (x[2, 3][1] - x[2, 1][1]) * (x[2, 3][2] - x[2, 1][2])) /
-                  (2Δx)^2
+    stencil!(BT, Size(3, 3), out, η, C) do η, C
+        adv = d * ((η[3, 2] - η[1, 2]) * (C[3, 2] - C[1, 2]) +
+                   (η[2, 3] - η[2, 1]) * (C[2, 3] - C[2, 1])) /
+              (2Δx)^2
 
-        dif = ν * x[2, 2][2] * (x[3, 2][1] + x[2, 3][1] + x[1, 2][1] +
-                  x[2, 1][1] - 4*x[2, 2][1]) / (Δx)^2
+        dif = d * C[2, 2] * (η[3, 2] + η[2, 3] + η[1, 2] +
+                             η[2, 1] - 4 * η[2, 2]) / (Δx)^2
 
-        prd = x[2, 2][2]
+        prd = C[2, 2]
 
-        return max(0.0u"m", adv + dif + prd)
+        max(0.0u"m", adv + dif + prd)
     end
-
-    stencil(Tuple{Amount, Amount}, Amount, BT, (3, 3), kernel)
 end
 
 end

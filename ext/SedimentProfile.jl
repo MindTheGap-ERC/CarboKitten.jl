@@ -25,14 +25,14 @@ elevation(h::Header, d::Data) =
     let bl = h.initial_topography[:, :, na],
         sr = h.axes.t[end] * h.subsidence_rate
 
-        bl .+ d.sediment_elevation .- sr
+        bl .+ d.sediment_thickness .- sr
     end
 
 elevation(h::Header, d::DataSlice) =
     let bl = h.initial_topography[d.slice..., na],
         sr = h.axes.t[end] * h.subsidence_rate
 
-        bl .+ d.sediment_elevation .- sr
+        bl .+ d.sediment_thickness .- sr
     end
 
 colormax(d::Data) = getindex.(argmax(d.deposition; dims=1)[1, :, :, :], 1)

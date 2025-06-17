@@ -191,6 +191,48 @@ function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, fa
     return stratigraphic_column(header, dc, facies)
 end
 
+function stratigraphic_column(deposition, disintegration)
+    @assert size(deposition) == size(disintegration)
+
+    n_facies = size(deposition)[2]
+    n_times = size(deposition)[1]
+
+    sc = zeros(typeof(1.0u"m"), n_times, n_facies)
+
+    for ts = 1:n_times
+        acc = deposition[ts, :] .- disintegration[ts, :]
+        if sum(acc) > 0.0u"m"
+            sc[ts, :] .= acc
+            continue
+        end
+
+        ts_down = ts - 1
+        while sum(acc) < 0.0u"m"
+            if ts_down < 0
+                @warn "stratigraph column overshoot: $(acc)"
+                break
+            end
+            ts_down < 1 && break
+            if -sum(acc) < sum(sc[ts_down, :])
+                sc[ts_down, :] .-= acc
+                if any(sc[ts_down, :] .< 0.0u"m")
+                    @warn "negative value in stratigraphic column: $(sc[ts_down,:])"
+                end
+                break
+            end
+
+            acc .+= sc[ts_down, :]
+            if any(acc .> 0.0u"m")
+                @warn "round-off error in stratigraphic column: $(acc)"
+            end
+            sc[ts_down] .= 0.0u"m"
+            ts_down -= 1
+        end
+    end
+
+    return sc
+end
+
 function stratigraphic_column(header::Header, data::DataColumn, facies::Int)
     n_times = length(header.axes.t) - 1
     sc = zeros(typeof(1.0u"m"), n_times)

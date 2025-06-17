@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Finite Difference · CarboKitten</title><meta name="title" content="Finite Difference · CarboKitten"/><meta property="og:title" content="Finite Difference · CarboKitten"/><meta property="twitter:title" content="Finite Difference · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li><li><a class="tocitem" href="../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/run_model/">Model Runner</a></li><li><a class="tocitem" href="../components/hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../onshore-transport/">Onshore Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li><li class="is-active"><a class="tocitem" href>Finite Difference</a><ul class="internal"><li><a class="tocitem" href="#Spacial-Finite-Differences"><span>Spacial Finite Differences</span></a></li><li><a class="tocitem" href="#Solvers"><span>Solvers</span></a></li><li><a class="tocitem" href="#Advection"><span>Advection</span></a></li><li><a class="tocitem" href="#Adaptive-integration"><span>Adaptive integration</span></a></li><li><a class="tocitem" href="#Tests"><span>Tests</span></a></li><li><a class="tocitem" href="#Scale-invariance"><span>Scale invariance</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Algorithms</a></li><li class="is-active"><a href>Finite Difference</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Finite Difference</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/finite-difference-transport.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Finite-Difference-Methods-for-Transport"><a class="docs-heading-anchor" href="#Finite-Difference-Methods-for-Transport">Finite Difference Methods for Transport</a><a id="Finite-Difference-Methods-for-Transport-1"></a><a class="docs-heading-anchor-permalink" href="#Finite-Difference-Methods-for-Transport" title="Permalink"></a></h1><h2 id="Spacial-Finite-Differences"><a class="docs-heading-anchor" href="#Spacial-Finite-Differences">Spacial Finite Differences</a><a id="Spacial-Finite-Differences-1"></a><a class="docs-heading-anchor-permalink" href="#Spacial-Finite-Differences" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Transport/DifferentialOperators.jl</i></div><pre><code class="language- julia hljs">module DifferentialOperators
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Finite Difference · CarboKitten</title><meta name="title" content="Finite Difference · CarboKitten"/><meta property="og:title" content="Finite Difference · CarboKitten"/><meta property="twitter:title" content="Finite Difference · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li><li><a class="tocitem" href="../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/run_model/">Model Runner</a></li><li><a class="tocitem" href="../components/hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../onshore-transport/">Onshore Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li><li class="is-active"><a class="tocitem" href>Finite Difference</a><ul class="internal"><li><a class="tocitem" href="#Spacial-Finite-Differences"><span>Spacial Finite Differences</span></a></li><li><a class="tocitem" href="#Solvers"><span>Solvers</span></a></li><li><a class="tocitem" href="#Advection"><span>Advection</span></a></li><li><a class="tocitem" href="#Adaptive-integration"><span>Adaptive integration</span></a></li><li><a class="tocitem" href="#Tests"><span>Tests</span></a></li><li><a class="tocitem" href="#Scale-invariance"><span>Scale invariance</span></a></li><li><a class="tocitem" href="#Test-onshore-transport"><span>Test onshore transport</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Algorithms</a></li><li class="is-active"><a href>Finite Difference</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Finite Difference</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/finite-difference-transport.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Finite-Difference-Methods-for-Transport"><a class="docs-heading-anchor" href="#Finite-Difference-Methods-for-Transport">Finite Difference Methods for Transport</a><a id="Finite-Difference-Methods-for-Transport-1"></a><a class="docs-heading-anchor-permalink" href="#Finite-Difference-Methods-for-Transport" title="Permalink"></a></h1><h2 id="Spacial-Finite-Differences"><a class="docs-heading-anchor" href="#Spacial-Finite-Differences">Spacial Finite Differences</a><a id="Spacial-Finite-Differences-1"></a><a class="docs-heading-anchor-permalink" href="#Spacial-Finite-Differences" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Transport/DifferentialOperators.jl</i></div><pre><code class="language- julia hljs">module DifferentialOperators
 
 &lt;&lt;differential-operators&gt;&gt;
 
@@ -287,13 +287,17 @@ end
 
 end
 
-ExplodingKitten.run()</code></pre><h2 id="Scale-invariance"><a class="docs-heading-anchor" href="#Scale-invariance">Scale invariance</a><a id="Scale-invariance-1"></a><a class="docs-heading-anchor-permalink" href="#Scale-invariance" title="Permalink"></a></h2><p>From the conception  of the transport model, it should be evident that the solution to the transport equations should be scale invariant, in the sense that  we can multiply <span>$C$</span> by any constant, solve the equations, then divide by the same constant and arrive at the same result.</p><div class="noweb-label">file:<i>test/Transport/AdvectionSpec.jl</i></div><pre><code class="language- julia hljs">@testset &quot;CarboKitten.Transport.Advection.scale-invariance&quot; begin
-
-using CarboKitten
+ExplodingKitten.run()</code></pre><h2 id="Scale-invariance"><a class="docs-heading-anchor" href="#Scale-invariance">Scale invariance</a><a id="Scale-invariance-1"></a><a class="docs-heading-anchor-permalink" href="#Scale-invariance" title="Permalink"></a></h2><p>From the conception  of the transport model, it should be evident that the solution to the transport equations should be scale invariant, in the sense that  we can multiply <span>$C$</span> by any constant, solve the equations, then divide by the same constant and arrive at the same result.</p><div class="noweb-label">file:<i>test/Transport/AdvectionSpec.jl</i></div><pre><code class="language- julia hljs">using CarboKitten
+using CarboKitten: Box, box_axes
+using CarboKitten.Components.TimeIntegration: time
 using CarboKitten.Transport.Solvers: runge_kutta_4
 using CarboKitten.Transport.Advection: transport
+using CarboKitten.Testing: transport_test_input
 using Unitful
 
+@testset &quot;CarboKitten.Transport.Advection.scale-invariance&quot; begin
+
+# test transport code for scale invariance
 let box = Box{Periodic{2}}(grid_size=(32, 32), phys_scale=1.0u&quot;m&quot;)
     solver = runge_kutta_4(Float64, box)
     wave_velocity = _ -&gt; ((0.5u&quot;m/s&quot;, 0.0u&quot;m/s&quot;), (0.0u&quot;1/s&quot;, 0.0u&quot;1/s&quot;))
@@ -310,6 +314,116 @@ let box = Box{Periodic{2}}(grid_size=(32, 32), phys_scale=1.0u&quot;m&quot;)
     end
 
     @test isapprox(C1 .* 10.0, C2)
+
+end
+end
+
+@testset &quot;CarboKitten.Transport.Advection.wave-transport&quot; begin
+
+function gaussian_initial_sediment(x, y)
+	exp(-(x-10u&quot;km&quot;)^2 / (2 * (0.5u&quot;km&quot;)^2)) * 30.0u&quot;m&quot;
+end
+
+v_const(v_max) = _ -&gt; (Vec2(v_max, 0.0u&quot;m/yr&quot;), Vec2(0.0u&quot;1/yr&quot;, 0.0u&quot;1/yr&quot;))
+
+input = transport_test_input(
+    initial_topography = (x, y)  -&gt; -35.0u&quot;m&quot;,
+    initial_sediment = gaussian_initial_sediment,
+    disintegration_rate = 50000.0u&quot;m/Myr&quot;,
+    wave_velocity = v_const(-5u&quot;km/Myr&quot;)
+)
+
+function center_of_mass(m, x)
+    total_mass = sum(m)        # Total mass
+
+    if total_mass ≈ 0.0u&quot;m&quot;
+        return NaN * u&quot;m&quot;  # Avoid division by zero
+    end
+
+    x_com = sum(x .* sum(m, dims=2)) / total_mass  # Weighted average along x
+    return x_com
+end
+
+state = ALCAP.initial_state(input)
+
+result = []
+times = []
+
+run_model(Model{ALCAP}, input, state) do i, delta
+    if mod(i-1, 250) == 0
+        push!(result, deepcopy(state.sediment_height))
+        push!(times, time(input, state))
+    end
+end
+
+(x, y) = box_axes(input.box)
+
+com_positions = [center_of_mass(r, x) for r in result]
+
+@assert length(com_positions) == length(times)
+observed_speeds = (com_positions[2:end] .- com_positions[1:end-1]) ./ 
+    (times[2:end] .- times[1:end-1])
+
+# Extract the expected speed from the wave transport
+expected_speed = input.facies[1].wave_velocity(0.0u&quot;m&quot;)[1][1]  
+tolerance = 1e-6 * expected_speed  # Set a tolerance for the comparison
+# Check if all speeds are within tolerance
+for speed in observed_speeds
+    @test speed ≈ expected_speed atol=tolerance
+end
+
+end</code></pre><h2 id="Test-onshore-transport"><a class="docs-heading-anchor" href="#Test-onshore-transport">Test onshore transport</a><a id="Test-onshore-transport-1"></a><a class="docs-heading-anchor-permalink" href="#Test-onshore-transport" title="Permalink"></a></h2><p>The center of mass of an initial sediment distribution - taken to be a Gaussian bell curve - should move with the same speed as the onshore (wave) velocity while applying some tolerance for inaccuracies from the finite difference scheme for solving the PDEs.</p><div class="noweb-label">file:<i>test/Transport/AdvectionSpec.jl</i></div><pre><code class="language- julia hljs">@testset &quot;CarboKitten.Transport.Advection.wave-transport&quot; begin
+
+function gaussian_initial_sediment(x, y)
+	exp(-(x-10u&quot;km&quot;)^2 / (2 * (0.5u&quot;km&quot;)^2)) * 30.0u&quot;m&quot;
+end
+
+v_const(v_max) = _ -&gt; (Vec2(v_max, 0.0u&quot;m/yr&quot;), Vec2(0.0u&quot;1/yr&quot;, 0.0u&quot;1/yr&quot;))
+
+input = transport_test_input(
+    initial_topography = (x, y)  -&gt; -30.0u&quot;m&quot;,
+    initial_sediment = gaussian_initial_sediment,
+    disintegration_rate = 50000.0u&quot;m/Myr&quot;,
+    wave_velocity = v_const(-5u&quot;km/Myr&quot;)
+)
+
+function center_of_mass(m, x)
+    total_mass = sum(m)        # Total mass
+
+    if total_mass ≈ 0.0u&quot;m&quot;
+        return NaN * u&quot;m&quot;  # Avoid division by zero
+    end
+
+    x_com = sum(x .* sum(m, dims=2)) / total_mass  # Weighted average along x
+    return x_com
+end
+
+state = ALCAP.initial_state(input)
+
+result = []
+times = []
+
+run_model(Model{ALCAP}, input, state) do i, delta
+    if mod(i-1, 250) == 0
+        push!(result, deepcopy(state.sediment_height))
+        push!(times, time(input, state))
+    end
+end
+
+(x, y) = box_axes(input.box)
+
+com_positions = [center_of_mass(r, x) for r in result]
+
+@assert length(com_positions) == length(times)
+observed_speeds = (com_positions[2:end] .- com_positions[1:end-1]) ./ 
+    (times[2:end] .- times[1:end-1])
+    
+# Extract the expected speed from the wave transport
+expected_speed = input.facies[1].wave_velocity(0.0u&quot;m&quot;)[1][1]  
+tolerance = 1e-6 * expected_speed  # Set a tolerance for the comparison
+# Check if all speeds are within tolerance
+for speed in observed_speeds
+    @test speed ≈ expected_speed atol=tolerance
 end
 
 end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
@@ -317,4 +431,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../utility/">« Utility</a><a class="docs-footer-nextpage" href="../api/">API Documentation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Tuesday 10 June 2025 13:58">Tuesday 10 June 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../utility/">« Utility</a><a class="docs-footer-nextpage" href="../api/">API Documentation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Tuesday 17 June 2025 08:05">Tuesday 17 June 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

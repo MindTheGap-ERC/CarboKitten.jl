@@ -725,9 +725,9 @@ lat_degree = 25
 
 for (t in 1:length(times)) {
   orbit[[t]] <- list(
-    eps = param_ber78[1] * pi / 180, 
-    ecc = param_ber78[2], 
-    varpi = (param_ber78[t + 2] - 180) * pi / 180
+    eps = param_la04[1] * pi / 180, 
+    ecc = param_la04[2], 
+    varpi = (param_la04[t + 2] - 180) * pi / 180
   )
   
   insolation[[t]] <- Insol(

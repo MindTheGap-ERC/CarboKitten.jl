@@ -30,9 +30,6 @@ end
 # ╔═╡ abfcbd95-3323-4469-a568-05565675613e
 using Pkg; Pkg.activate("../../workenv")
 
-# ╔═╡ 950f8d1e-59d8-4485-91fe-2baa21478833
-Pkg.add("RCall")
-
 # ╔═╡ bcea7127-3c21-4c35-af42-3d2c71464409
 using CarboKitten
 
@@ -80,6 +77,9 @@ using Interpolations
 
 # ╔═╡ 9a044d3d-fb41-4ffe-a3ad-5acd94aa6ac6
 using DelimitedFiles
+
+# ╔═╡ 950f8d1e-59d8-4485-91fe-2baa21478833
+using RCall
 
 # ╔═╡ 17501c93-f432-4f1a-b815-5ac9c5a29f8f
 using CarboKitten.DataSets: miller_2020
@@ -746,7 +746,7 @@ insolation = inso_values <- unlist(insolation)
 
 # ╔═╡ 9ad42bc3-0f74-48fa-8668-1d7a9555d992
 begin
-	annual_insol_julia = rcopy(R"indolation")
+	annual_insol_julia = rcopy(R"insolation")
 	function get_inso()
 		interpolated_inso = linear_interpolation(times,insolation)
 	end

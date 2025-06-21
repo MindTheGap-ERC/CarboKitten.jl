@@ -30,6 +30,9 @@ end
 # ╔═╡ abfcbd95-3323-4469-a568-05565675613e
 using Pkg; Pkg.activate("../../workenv")
 
+# ╔═╡ 950f8d1e-59d8-4485-91fe-2baa21478833
+Pkg.add("RCall")
+
 # ╔═╡ bcea7127-3c21-4c35-af42-3d2c71464409
 using CarboKitten
 
@@ -690,6 +693,101 @@ md"""
 Similarly, shall we also try to change the insolation from a const (400 W/m2) to a real insolation curve, and see how it works?
 """
 
+# ╔═╡ b798b991-5af9-4c4c-b795-88e8087c6c4d
+md"""
+We first import a curve from R package palisol
+"""
+
+# ╔═╡ e56a4012-d80a-4535-a575-ad80c9d28610
+
+
+# ╔═╡ eb3908ca-2d33-437d-9a19-a65efa20da3e
+R"""
+if (!require("palisol")) {
+    install.packages("palisol", repos = "https://cran.r-project.org")
+}
+"""
+
+
+# ╔═╡ b1fee3c8-bd01-4f07-b2ed-18730999967f
+R"""
+library(palisol)
+time_start <- 8e5  
+time_end <- 0      
+time_step <- 2e2  
+times <- seq(time_end, time_start, time_step)
+
+param_la04 = astro(times, solution = la04,  degree = TRUE)
+
+orbit <- list()
+insolation <- list()
+lat_degree = 25
+
+for (t in 1:length(times)) {
+  orbit[[t]] <- list(
+    eps = param_ber78[1] * pi / 180, 
+    ecc = param_ber78[2], 
+    varpi = (param_ber78[t + 2] - 180) * pi / 180
+  )
+  
+  insolation[[t]] <- Insol(
+    orbit[[t]], 
+    long = pi / 2, 
+    lat = lat_degree * pi / 180, 
+    S0 = 1365, 
+    H = NULL
+  )
+}
+
+insolation = inso_values <- unlist(insolation)
+
+"""
+
+
+# ╔═╡ 9ad42bc3-0f74-48fa-8668-1d7a9555d992
+begin
+	annual_insol_julia = rcopy(R"indolation")
+	function get_inso()
+		interpolated_inso = linear_interpolation(times,insolation)
+	end
+end
+
+# ╔═╡ af878041-b78b-4e62-8aed-826506935f89
+# ╠═╡ disabled = true
+#=╠═╡
+input_inso = ALCAP.Input(
+    tag="tutorial",
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    time=TimeProperties(
+        Δt=0.0002u"Myr",
+        steps=3900,
+        write_interval=1),
+    ca_interval=1,
+    initial_topography=(x, y) -> -x / 300.0,
+    sea_level= Interpolated_SL,
+    subsidence_rate=50.0u"m/Myr",
+    disintegration_rate=50.0u"m/Myr",
+    insolation= get_inso() * 1.0u"W/m^2",
+    sediment_buffer_size=50,
+    depositional_resolution=0.5u"m",
+    facies=FACIES)
+  ╠═╡ =#
+
+# ╔═╡ 459feada-ad61-4939-b733-30aa007bb026
+# ╠═╡ disabled = true
+#=╠═╡
+own_inso_output = run_model(Model{ALCAP}, input_inso, "$(OUTPUTDIR)/tutorial_ownsinso.h5")
+  ╠═╡ =#
+
+# ╔═╡ 7c100b7f-7661-4250-b999-fdd3f32bf80b
+# ╠═╡ disabled = true
+#=╠═╡
+data_export(CSV(export_locations,
+	:sediment_accumulation_curve => "$(OUTPUTDIR)/tutorial_owninso_sac.csv",
+	:age_depth_model => "$(OUTPUTDIR)/tutorial_owninso_adm.csv"),
+	own_inso_output)
+  ╠═╡ =#
+
 # ╔═╡ c2166805-da62-4adf-8514-fd28924d115e
 Markdown.parse("""
 # Using an empirical sea-level curve
@@ -936,6 +1034,15 @@ md"""
 # ╟─7f7dd756-d2e4-4eeb-8364-ea750a0aecc3
 # ╠═4b83e9e9-6404-4e52-8662-7ec56ccc7fa6
 # ╟─bcd404d1-d2a8-4b8c-8fe8-16abb9215442
+# ╟─b798b991-5af9-4c4c-b795-88e8087c6c4d
+# ╠═950f8d1e-59d8-4485-91fe-2baa21478833
+# ╠═e56a4012-d80a-4535-a575-ad80c9d28610
+# ╠═eb3908ca-2d33-437d-9a19-a65efa20da3e
+# ╠═b1fee3c8-bd01-4f07-b2ed-18730999967f
+# ╠═9ad42bc3-0f74-48fa-8668-1d7a9555d992
+# ╠═af878041-b78b-4e62-8aed-826506935f89
+# ╠═459feada-ad61-4939-b733-30aa007bb026
+# ╠═7c100b7f-7661-4250-b999-fdd3f32bf80b
 # ╠═c2166805-da62-4adf-8514-fd28924d115e
 # ╠═17501c93-f432-4f1a-b815-5ac9c5a29f8f
 # ╠═71f2c3ad-80ea-4678-87cf-bb95ef5b57ff

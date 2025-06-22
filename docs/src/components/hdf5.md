@@ -22,7 +22,7 @@ Saving the full output of this simulation would take several hundreds of gigabyt
 ``` {.julia #hdf5-output-spec}
 const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
 
-@kwdef struct OutputSpec
+@kwdef struct OutputSpec <: AbstractOutputSpec
     slice::Slice2 = (:, :)
     write_interval::Int = 1
 end
@@ -101,7 +101,7 @@ end
     is_column(::Int, ::Int) = true
     is_column(_, _) = false
 
-    function create_ck_group(fid, input::AbstractInput, name::Symbol, spec::OutputSpec)
+    function create_ck_group(fid, input::AbstractInput, name::Symbol, spec::AbstractOutputSpec)
         nf = n_facies(input)
         nw = div(input.time.steps, spec.write_interval)
 

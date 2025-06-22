@@ -5,7 +5,7 @@
 using ..Common
 using ..CAProduction: production
 using ..TimeIntegration
-using ..WaterDepth
+using ..WaterDepth: water_depth
 using ModuleMixins: @for_each
 
 export Input, Facies
@@ -33,13 +33,16 @@ function step!(input::Input)
     disintegrate! = ActiveLayer.disintegrator(input)
     produce = production(input)
     transport! = ActiveLayer.transporter(input)
+    local_water_depth = water_depth(input)
+    na = [CartesianIndex()]
 
     function (state::State)
         if mod(state.step, input.ca_interval) == 0
             step_ca!(state)
         end
 
-        p = produce(state)
+        wd = local_water_depth(state)
+        p = min.(produce(state, wd), -wd[:, :, na])
         d = disintegrate!(state)
 
         active_layer = p .+ d

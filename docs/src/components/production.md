@@ -88,13 +88,18 @@ function uniform_production(input::AbstractInput)
     na = [CartesianIndex()]
     insolation_func = insolation(input)
     facies = input.facies
+    dt = input.time.Δt
 
-    return function (state::AbstractState)
+    function p(state::AbstractState, wd::AbstractMatrix)
         return production_rate.(
             insolation_func(state),
             facies[:, na, na],
-            w(state)[na, :, :])
+            wd[na, :, :]) .* dt
     end
+
+    p(state::AbstractState) = p(state, w(state))
+
+    return p
 end
 end
 ```
@@ -126,16 +131,20 @@ The `CAProduction` component gives production that depends on the provided CA.
         facies = input.facies
         Δt = input.time.Δt
 
-        return function(state::AbstractState)
+        function p(state::AbstractState, wd::AbstractMatrix)
             insolation = s(state)
             for f = 1:n_f
                 output[f, :, :] = ifelse.(
                     state.ca .== f,
-                    production_rate.(insolation, (facies[f],), w(state)) .* Δt,
+                    production_rate.(insolation, (facies[f],), wd) .* Δt,
                     0.0u"m")
             end
             return output
         end
+
+        p(state::AbstractState) = p(state, w(state))
+
+        return p
     end
 end
 ```

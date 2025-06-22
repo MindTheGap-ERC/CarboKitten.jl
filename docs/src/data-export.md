@@ -488,7 +488,7 @@ const Amount = typeof(1.0u"m")
 
 <<export-test-case>>
 
-@testset "Data Export" begin
+@testset let test_path = test_path
     <<export-test>>
 
     @testset "Write to folder" begin
@@ -513,33 +513,13 @@ const Amount = typeof(1.0u"m")
         end
     end
 
-    @testset "Waterdepth signs" begin
-        BS92_TEST_INPUT = BS92.Input(
-            tag = "single pixel model",
-            box = Box{Periodic{2}}(grid_size=(1, 1), phys_scale=600.0u"m"),
-            time = TimeProperties(
-              Δt = 10.0u"yr",
-              steps = 8000,
-              write_interval = 100),
-            sea_level = t -> 10.0u"m" * sin(2π * t / 20u"kyr"),
-            initial_topography = (_, _) -> - 50.0u"m",
-            subsidence_rate = 0.001u"m/yr",
-            insolation = 400.0u"W/m^2",
-            facies = [BS92.Facies(
-              maximum_growth_rate = 0.005u"m/yr",
-              saturation_intensity = 50.0u"W/m^2",
-              extinction_coefficient = 0.05u"m^-1"
-            )])
-
-        mktempdir() do path
-            run_model(Model{BS92}, BS92_TEST_INPUT, joinpath(path, "run.h5"))
-            header, data = read_data(joinpath(path, "run.h5"))
-            wd = extract_wd(header, data, [(1, 1)])
-            sac = extract_sac(header, data, [(1, 1)])
-            submerged = wd.wd1 .> -1.0u"m"
-            growing = (sac.sac1[2:end] .- sac.sac1[1:end-1]) .> 0.5u"m"
-            @test all(growing .&& (submerged[1:end-1] .|| submerged[2:end]) .|| .!growing)
-        end
+    @testset let test_path = test_path
+        header, data = read_data(joinpath(test_path, "bs92_spm.h5"))
+        wd = extract_wd(header, data, [(1, 1)])
+        sac = extract_sac(header, data, [(1, 1)])
+        submerged = wd.wd1 .> -1.0u"m"
+        growing = (sac.sac1[2:end] .- sac.sac1[1:end-1]) .> 0.5u"m"
+        @test all(growing .&& (submerged[1:end-1] .|| submerged[2:end]) .|| .!growing)
     end
 end
 ```

@@ -69,13 +69,18 @@ function uniform_production(input::AbstractInput)
     na = [CartesianIndex()]
     insolation_func = insolation(input)
     facies = input.facies
+    dt = input.time.Δt
 
-    return function (state::AbstractState)
+    function p(state::AbstractState, wd::AbstractMatrix)
         return production_rate.(
             insolation_func(state),
             facies[:, na, na],
-            w(state)[na, :, :])
+            wd[na, :, :]) .* dt
     end
+
+    p(state::AbstractState) = p(state, w(state))
+
+    return p
 end
 end
 # ~/~ end

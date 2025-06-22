@@ -9,20 +9,44 @@ end
 include("Unitful.jl")
 
 @testset "CarboKitten" begin
-    include("UtilitySpec.jl")
-    include("StencilSpec.jl")
-    include("DenudationSpec.jl")
-    include("SedimentStackSpec.jl")
+    mktempdir() do test_path
+        CarboKitten.init()
+        @info "Running models for property testing"
 
-    include("Components/CellularAutomatonSpec.jl")
-    include("Components/FaciesBaseSpec.jl")
-    include("Components/TimeIntegrationSpec.jl")
-    include("Components/BoxesSpec.jl")
-    include("Components/ProductionSpec.jl")
-    include("Components/InitialSedimentSpec.jl")
+        BS92_TEST_INPUT = BS92.Input(
+            tag = "single pixel model",
+            box = Box{Periodic{2}}(grid_size=(1, 1), phys_scale=600.0u"m"),
+            time = TimeProperties(
+              Δt = 10.0u"yr",
+              steps = 8000,
+              write_interval = 100),
+            sea_level = t -> 10.0u"m" * sin(2π * t / 20u"kyr"),
+            initial_topography = (_, _) -> - 50.0u"m",
+            subsidence_rate = 0.001u"m/yr",
+            insolation = 400.0u"W/m^2",
+            facies = [BS92.Facies(
+              maximum_growth_rate = 0.005u"m/yr",
+              saturation_intensity = 50.0u"W/m^2",
+              extinction_coefficient = 0.05u"m^-1"
+            )])
 
-    include("Transport/AdvectionSpec.jl")
-    include("Transport/IntertidalZoneSpec.jl")
+        run_model(Model{BS92}, BS92_TEST_INPUT, joinpath(test_path, "bs92_spm.h5"))
 
-    include("ExportSpec.jl")
+        include("UtilitySpec.jl")
+        include("StencilSpec.jl")
+        include("DenudationSpec.jl")
+        include("SedimentStackSpec.jl")
+
+        include("Components/CellularAutomatonSpec.jl")
+        include("Components/FaciesBaseSpec.jl")
+        include("Components/TimeIntegrationSpec.jl")
+        include("Components/BoxesSpec.jl")
+        include("Components/ProductionSpec.jl")
+        include("Components/InitialSedimentSpec.jl")
+
+        include("Transport/AdvectionSpec.jl")
+        include("Transport/IntertidalZoneSpec.jl")
+
+        include("ExportSpec.jl")
+    end
 end

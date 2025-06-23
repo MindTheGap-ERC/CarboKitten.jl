@@ -78,9 +78,6 @@ using Interpolations
 # ╔═╡ 9a044d3d-fb41-4ffe-a3ad-5acd94aa6ac6
 using DelimitedFiles
 
-# ╔═╡ c0fea2f2-234a-4fe1-9619-d506f4c40ded
-using RCall
-
 # ╔═╡ 17501c93-f432-4f1a-b815-5ac9c5a29f8f
 using CarboKitten.DataSets: miller_2020
 
@@ -635,7 +632,6 @@ own_sealevel_output = run_model(Model{ALCAP}, input_ob, "$(OUTPUTDIR)/tutorial_o
   ╠═╡ =#
 
 # ╔═╡ b2286eff-a49e-4596-b68c-1a5363c9477f
-# ╠═╡ disabled = true
 #=╠═╡
 data_export(CSV(export_locations,
 	:sediment_accumulation_curve => "$(OUTPUTDIR)/tutorial_ownsealevel_sac.csv",
@@ -694,11 +690,58 @@ end
 # ╔═╡ bcd404d1-d2a8-4b8c-8fe8-16abb9215442
 md"""
 Similarly, shall we also try to change the insolation from a const (400 W/m2) to a real insolation curve, and see how it works?
+We have provided you with an insolation curve. Please store this curve at the same folder with the notebook.
 """
 
-# ╔═╡ b798b991-5af9-4c4c-b795-88e8087c6c4d
+# ╔═╡ 85c4af97-3cbc-4a86-8a15-80997898cc09
+begin
+	INSO_PTH = "inso.txt"
+	input_inso_curve = DataFrame(readdlm(INSO_PTH, '\t', header=false),:auto)
+	input_inso_curve_clean = DataFrame(filter(row -> all(x -> string(x) != "", row), eachrow(input_inso_curve)))
+	inso_intensity = reverse(input_inso_curve_clean[:,2]) .* 1.0u"W/m^2"
+	time_inso = reverse(input_inso_curve_clean[:,1]) .* 1.0u"kyr"
+	
+	interpolated_inso = linear_interpolation(time_inso,inso_intensity)
+	
+end
+
+# ╔═╡ 79a5fb35-fb71-4ae9-8559-9c049f32ee75
+# ╠═╡ disabled = true
+#=╠═╡
+input_inso = ALCAP.Input(
+    tag="tutorial",
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    time=TimeProperties(
+        Δt=0.0002u"Myr",
+        steps=3900,
+        write_interval=1),
+    ca_interval=1,
+    initial_topography=(x, y) -> -x / 300.0,
+    sea_level= Interpolated_SL,
+    subsidence_rate=50.0u"m/Myr",
+    disintegration_rate=50.0u"m/Myr",
+    insolation= t -> interpolated_inso(t),
+    sediment_buffer_size=50,
+    depositional_resolution=0.5u"m",
+    facies=FACIES)
+  ╠═╡ =#
+
+# ╔═╡ b727b5c9-538d-4e14-9edb-e2e4cbf749a0
+#=╠═╡
+own_inso_output = run_model(Model{ALCAP}, input_inso, "$(OUTPUTDIR)/tutorial_ownsinso.h5")
+  ╠═╡ =#
+
+# ╔═╡ bdfc8cbc-f89a-4812-8c19-133559d4d2d1
+#=╠═╡
+data_export(CSV(export_locations,
+	:sediment_accumulation_curve => "$(OUTPUTDIR)/tutorial_owninso_sac.csv",
+	:age_depth_model => "$(OUTPUTDIR)/tutorial_owninso_adm.csv"),
+	own_inso_output)
+  ╠═╡ =#
+
+# ╔═╡ 03fb241a-a332-49c5-9549-cd9742ad66bf
 md"""
-We first import a curve from R package palisol
+If you want to use an insolation curve directly derived from astronomical solutions, we provide another way to do it, by incoporating R package palinsol. If you would like to try this, please install R at the first place, and make sure you know the path of your R. We gave an example of how to use R in julia as follows, and if you are interested, please have a look.
 """
 
 # ╔═╡ e56a4012-d80a-4535-a575-ad80c9d28610
@@ -710,14 +753,25 @@ Pkg.build("RCall")
 end
   ╠═╡ =#
 
+# ╔═╡ c0fea2f2-234a-4fe1-9619-d506f4c40ded
+# ╠═╡ disabled = true
+#=╠═╡
+using RCall
+  ╠═╡ =#
+
 # ╔═╡ eb3908ca-2d33-437d-9a19-a65efa20da3e
+# ╠═╡ disabled = true
+#=╠═╡
 R"""
 if (!require("palinsol")) {
     install.packages("palinsol", repos = "https://cran.r-project.org")
 }
 """
+  ╠═╡ =#
 
 # ╔═╡ b1fee3c8-bd01-4f07-b2ed-18730999967f
+# ╠═╡ disabled = true
+#=╠═╡
 R"""
 library(palinsol)
 time_start <- 8e5  
@@ -751,17 +805,23 @@ insolation = inso_values <- unlist(insolation)
 
 """
 
+  ╠═╡ =#
 
 # ╔═╡ 9ad42bc3-0f74-48fa-8668-1d7a9555d992
+# ╠═╡ disabled = true
+#=╠═╡
 begin
 	@rget times    
 	@rget insolation
-	function get_inso()
+	function get_inso_r()
 		interpolated_inso = linear_interpolation(times,insolation)
 	end
 end
+  ╠═╡ =#
 
 # ╔═╡ af878041-b78b-4e62-8aed-826506935f89
+# ╠═╡ disabled = true
+#=╠═╡
 input_inso = ALCAP.Input(
     tag="tutorial",
     box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
@@ -774,13 +834,17 @@ input_inso = ALCAP.Input(
     sea_level= Interpolated_SL,
     subsidence_rate=50.0u"m/Myr",
     disintegration_rate=50.0u"m/Myr",
-    insolation= get_inso() * 1.0u"W/m^2",
+    insolation= get_inso_r() * 1.0u"W/m^2",
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",
     facies=FACIES)
+  ╠═╡ =#
 
 # ╔═╡ 459feada-ad61-4939-b733-30aa007bb026
+# ╠═╡ disabled = true
+#=╠═╡
 own_inso_output = run_model(Model{ALCAP}, input_inso, "$(OUTPUTDIR)/tutorial_ownsinso.h5")
+  ╠═╡ =#
 
 # ╔═╡ 7c100b7f-7661-4250-b999-fdd3f32bf80b
 # ╠═╡ disabled = true
@@ -1026,7 +1090,7 @@ md"""
 # ╠═dec0cd85-bbd7-4a74-83a8-b9425e053f86
 # ╠═e892bc37-81d3-4b8f-9486-de0d717cd67f
 # ╠═0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
-# ╠═d7a4eb34-6b9e-4779-900d-493a853a6199
+# ╟─d7a4eb34-6b9e-4779-900d-493a853a6199
 # ╠═03d95080-35ce-4708-8306-dd5f8dc8c3c0
 # ╠═9a044d3d-fb41-4ffe-a3ad-5acd94aa6ac6
 # ╠═7f6c8d9e-db15-48fc-a631-662d56f87197
@@ -1037,7 +1101,11 @@ md"""
 # ╟─7f7dd756-d2e4-4eeb-8364-ea750a0aecc3
 # ╠═4b83e9e9-6404-4e52-8662-7ec56ccc7fa6
 # ╟─bcd404d1-d2a8-4b8c-8fe8-16abb9215442
-# ╠═b798b991-5af9-4c4c-b795-88e8087c6c4d
+# ╠═85c4af97-3cbc-4a86-8a15-80997898cc09
+# ╠═79a5fb35-fb71-4ae9-8559-9c049f32ee75
+# ╠═b727b5c9-538d-4e14-9edb-e2e4cbf749a0
+# ╠═bdfc8cbc-f89a-4812-8c19-133559d4d2d1
+# ╟─03fb241a-a332-49c5-9549-cd9742ad66bf
 # ╠═e56a4012-d80a-4535-a575-ad80c9d28610
 # ╠═c0fea2f2-234a-4fe1-9619-d506f4c40ded
 # ╠═eb3908ca-2d33-437d-9a19-a65efa20da3e

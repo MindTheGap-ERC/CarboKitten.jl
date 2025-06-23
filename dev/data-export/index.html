@@ -47,7 +47,7 @@ const DATA1 = DataVolume(
     write_interval=1,
     disintegration=DISINTEGRATION1,
     production=PRODUCTION1,
-    deposition=PRODUCTION1 .- DISINTEGRATION1,
+    deposition=PRODUCTION1,
     sediment_thickness=ELEVATION1)
 
 const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
@@ -108,47 +108,28 @@ age_depth_model(sac_df::DataFrame) =
 
     @test all(adm.adm_2[2:end] .- adm.adm_2[1:end-1] .&gt;= 0.0u&quot;m&quot;)
 end</code></pre><h2 id="Stratigraphic-Column"><a class="docs-heading-anchor" href="#Stratigraphic-Column">Stratigraphic Column</a><a id="Stratigraphic-Column-1"></a><a class="docs-heading-anchor-permalink" href="#Stratigraphic-Column" title="Permalink"></a></h2><div class="noweb-label">⪡export-function⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
-    stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
+    stratigraphic_column(header::Header, column::DataColumn, facies::Int)
 
 Compute the Stratigraphic Column for a given grid position `loc` and `facies` index.
 Returns an `Array{Quantity, 2}` where the `Quantity` is in units of meters.
 &quot;&quot;&quot;
-function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
-    dc = DataColumn(
-        loc,
-		data.write_interval,
-        data.disintegration[:, loc..., :],
-        data.production[:, loc..., :],
-        data.deposition[:, loc..., :],
-        data.sediment_thickness[loc..., :])
-    return stratigraphic_column(header, dc, facies)
-end
+function stratigraphic_column(header::Header, column::DataColumn, facies::Int)
+	n_steps = size(column.production, 2)	
+    delta = column.deposition[facies,:] .- column.disintegration[facies,:]
 
-function stratigraphic_column(header::Header, data::DataColumn, facies::Int)
-    n_times = length(header.axes.t) - 1
-    sc = zeros(typeof(1.0u&quot;m&quot;), n_times)
-
-    for ts = 1:n_times
-        acc = data.deposition[facies, ts] - data.disintegration[facies, ts]
-        if acc &gt; 0.0u&quot;m&quot;
-            sc[ts] = acc
-            continue
-        end
-        ts_down = ts - 1
-        while acc &lt; 0.0u&quot;m&quot;
-            ts_down &lt; 1 &amp;&amp; break
-            if -acc &lt; sc[ts_down]
-                sc[ts_down] -= acc
+	for step in 1:n_steps
+        debt = 0.0u&quot;m&quot;
+        for pos in (step:-1:2)
+            if delta[pos] &gt; 0.0u&quot;m&quot;
                 break
-            else
-                acc += sc[ts_down]
-                sc[ts_down] = 0.0u&quot;m&quot;
             end
-            ts_down -= 1
-        end
-    end
 
-    sc
+            delta[pos-1] += delta[pos]
+            delta[pos] = 0.0u&quot;m&quot;
+        end
+	end
+
+	return delta
 end</code></pre><p>The stratigraphic column should sum to the age-depth model.</p><div class="noweb-label">⪡export-test⪢≣</div><pre><code class="language- julia hljs">@testset &quot;SC sum equals ADM&quot; begin
     @test [0.0u&quot;m&quot;; cumsum(sc.sc_1_f1)] ≈ adm.adm_1
     @test [0.0u&quot;m&quot;; cumsum(sc.sc_2_f1)] ≈ adm.adm_2

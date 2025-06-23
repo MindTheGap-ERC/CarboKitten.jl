@@ -7,7 +7,7 @@ using ..TimeIntegration: time, write_times
 using HDF5
 using Logging
 
-export production_rate, uniform_production
+export production_rate, capped_production, uniform_production
 
 @kwdef struct Facies <: AbstractFacies
     maximum_growth_rate::Rate
@@ -62,6 +62,11 @@ function production_rate(insolation, facies, water_depth)
     x = water_depth * facies.extinction_coefficient
     return x > 0.0 ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
 end
+
+function capped_production(insolation, facies, water_depth, dt)
+    p = production_rate(insolation, facies, water_depth) * dt
+    return min(p, water_depth)
+end
 # ~/~ end
 
 function uniform_production(input::AbstractInput)
@@ -71,12 +76,8 @@ function uniform_production(input::AbstractInput)
     facies = input.facies
     dt = input.time.Δt
 
-    function p(state::AbstractState, wd::AbstractMatrix)
-        return production_rate.(
-            insolation_func(state),
-            facies[:, na, na],
-            wd[na, :, :]) .* dt
-    end
+    p(state::AbstractState, wd::AbstractMatrix) =
+        capped_production.(insolation_func(state), facies[:, na, na], wd[na, :, :], dt)
 
     p(state::AbstractState) = p(state, w(state))
 

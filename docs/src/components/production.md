@@ -18,6 +18,11 @@ function production_rate(insolation, facies, water_depth)
     x = water_depth * facies.extinction_coefficient
     return x > 0.0 ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
 end
+
+function capped_production(insolation, facies, water_depth, dt)
+    p = production_rate(insolation, facies, water_depth) * dt
+    return min(p, water_depth)
+end
 ```
 
 From just this equation we can define a uniform production process. This requires that we have a `Facies` that defines the `maximum_growth_rate`, `extinction_coefficient` and `saturation_intensity`.
@@ -33,7 +38,7 @@ using ..TimeIntegration: time, write_times
 using HDF5
 using Logging
 
-export production_rate, uniform_production
+export production_rate, capped_production, uniform_production
 
 @kwdef struct Facies <: AbstractFacies
     maximum_growth_rate::Rate
@@ -90,12 +95,8 @@ function uniform_production(input::AbstractInput)
     facies = input.facies
     dt = input.time.Δt
 
-    function p(state::AbstractState, wd::AbstractMatrix)
-        return production_rate.(
-            insolation_func(state),
-            facies[:, na, na],
-            wd[na, :, :]) .* dt
-    end
+    p(state::AbstractState, wd::AbstractMatrix) =
+        capped_production.(insolation_func(state), facies[:, na, na], wd[na, :, :], dt)
 
     p(state::AbstractState) = p(state, w(state))
 
@@ -129,16 +130,16 @@ The `CAProduction` component gives production that depends on the provided CA.
         s = insolation(input)
         n_f = n_facies(input)
         facies = input.facies
-        Δt = input.time.Δt
+        dt = input.time.Δt
 
         function p(state::AbstractState, wd::AbstractMatrix)
             insolation = s(state)
-            for f = 1:n_f
-                output[f, :, :] = ifelse.(
-                    state.ca .== f,
-                    production_rate.(insolation, (facies[f],), wd) .* Δt,
-                    0.0u"m")
-            end
+		    for i in eachindex(IndexCartesian(), wd)
+				for f in 1:n_f
+				    output[f, i[1], i[2]] = f != state.ca[i] ? 0u"m" :
+				    capped_production(insolation, facies[f], wd[i], dt)
+				end
+		    end
             return output
         end
 

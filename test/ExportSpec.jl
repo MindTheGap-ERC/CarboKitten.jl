@@ -111,12 +111,11 @@ const COLUMNS1 = [DATA1[loc...] for loc in GRID_LOCATIONS1]
 
     @testset "Water depth signs" begin
         test_path::String = TEST_PATH
-        @info "Reading from $(joinpath(test_path, "bs92_spm.h5"))"
-        header, data = read_data(joinpath(test_path, "bs92_spm.h5"))
-        wd = extract_wd(header, data, [(1, 1)])
-        sac = extract_sac(header, data, [(1, 1)])
-        submerged = wd.wd1 .> -1.0u"m"
-        growing = (sac.sac1[2:end] .- sac.sac1[1:end-1]) .> 0.5u"m"
+        header, data = read_column(joinpath(test_path, "bs92_spm.h5"), :full)
+        wd = extract_wd(header, data, 1)
+        sac = extract_sac(header, data, 1)
+        submerged = wd.wd_1 .> -1.0u"m"
+        growing = (sac.sac_1[2:end] .- sac.sac_1[1:end-1]) .> 0.5u"m"
         @test all(growing .&& (submerged[1:end-1] .|| submerged[2:end]) .|| .!growing)
     end
 end

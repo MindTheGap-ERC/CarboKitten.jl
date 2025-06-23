@@ -15,16 +15,16 @@
         s = insolation(input)
         n_f = n_facies(input)
         facies = input.facies
-        Δt = input.time.Δt
+        dt = input.time.Δt
 
         function p(state::AbstractState, wd::AbstractMatrix)
             insolation = s(state)
-            for f = 1:n_f
-                output[f, :, :] = ifelse.(
-                    state.ca .== f,
-                    production_rate.(insolation, (facies[f],), wd) .* Δt,
-                    0.0u"m")
-            end
+		    for i in eachindex(IndexCartesian(), wd)
+				for f in 1:n_f
+				    output[f, i[1], i[2]] = f != state.ca[i] ? 0u"m" :
+				    capped_production(insolation, facies[f], wd[i], dt)
+				end
+		    end
             return output
         end
 

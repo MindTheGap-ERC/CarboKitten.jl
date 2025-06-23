@@ -19,8 +19,8 @@ TEST_PATH = mktempdir()
         box = Box{Periodic{2}}(grid_size=(1, 1), phys_scale=600.0u"m"),
         time = TimeProperties(
           Δt = 10.0u"yr",
-          steps = 8000,
-          write_interval = 100),
+          steps = 8000),
+        output = Dict(:full => OutputSpec((1, 1), 80)),
         sea_level = t -> 10.0u"m" * sin(2π * t / 20u"kyr"),
         initial_topography = (_, _) -> - 50.0u"m",
         subsidence_rate = 0.001u"m/yr",

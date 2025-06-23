@@ -32,7 +32,7 @@
 </g>
 </g>
 </svg>
-</div><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CarboKitten.Components.TimeIntegration.time" href="#CarboKitten.Components.TimeIntegration.time"><code>CarboKitten.Components.TimeIntegration.time</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">time(input, state)</code></pre><p>Return the time given input and state.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/f4c19094de0190aaf637b03baa80f9e57efe2dee/src/Components/TimeIntegration.jl#L19-L23">source</a></section></article><div class="noweb-label">file:<i>test/Components/TimeIntegrationSpec.jl</i></div><pre><code class="language- julia hljs">module TimeIntegrationSpec
+</div><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CarboKitten.Components.TimeIntegration.time" href="#CarboKitten.Components.TimeIntegration.time"><code>CarboKitten.Components.TimeIntegration.time</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">time(input, state)</code></pre><p>Return the time given input and state.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/e91ce66f91bde81e191262fda2604a49757e329d/src/Components/TimeIntegration.jl#L19-L23">source</a></section></article><div class="noweb-label">file:<i>test/Components/TimeIntegrationSpec.jl</i></div><pre><code class="language- julia hljs">module TimeIntegrationSpec
 using Test
 using CarboKitten.Components.Common
 
@@ -47,9 +47,8 @@ using CarboKitten.Components.Common
     end
 
     let input = Input(time=TimeProperties(
-        Δt = 0.02u&quot;Myr&quot;, steps = 50, write_interval = 10, t0 = -1.0u&quot;Myr&quot;))
-      @test write_times(input) |&gt; collect == [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0] .* u&quot;Myr&quot;
-      @test n_writes(input) == 5
+        Δt = 0.02u&quot;Myr&quot;, steps = 50, t0 = -1.0u&quot;Myr&quot;))
+      @test n_writes(input) == 50
       @test time(input, State(25)) == -0.5u&quot;Myr&quot;
     end
 end
@@ -79,7 +78,7 @@ time(input::AbstractInput, state::AbstractState) = input.time.t0 + state.step * 
 time(tprop::TimeProperties, state::AbstractState) = tprop.t0 + state.step * tprop.Δt
 
 write_times(input::AbstractInput) = write_times(input.time)
-write_times(time::TimeProperties) = (0:n_writes(time)) .* (time.Δt * time.write_interval) .+ time.t0
+write_times(time::TimeProperties) = (0:n_writes(time)) .* time.Δt .+ time.t0
 
 time_axis(input::AbstractInput) = time_axis(input.time)
 n_writes(input::AbstractInput) = n_writes(input.time)
@@ -91,7 +90,6 @@ function write_header(fid, input::AbstractInput)
     gid[&quot;t&quot;] = write_times(input) .|&gt; in_units_of(u&quot;Myr&quot;)
     attr[&quot;t0&quot;] = input.time.t0 |&gt; in_units_of(u&quot;Myr&quot;)
     attr[&quot;delta_t&quot;] = input.time.Δt |&gt; in_units_of(u&quot;Myr&quot;)
-    attr[&quot;write_interval&quot;] = input.time.write_interval
     attr[&quot;time_steps&quot;] = input.time.steps
 end
 
@@ -100,4 +98,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../boxes/">« Boxes</a><a class="docs-footer-nextpage" href="../facies/">Facies »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Tuesday 17 June 2025 08:05">Tuesday 17 June 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../boxes/">« Boxes</a><a class="docs-footer-nextpage" href="../facies/">Facies »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 23 June 2025 14:56">Monday 23 June 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

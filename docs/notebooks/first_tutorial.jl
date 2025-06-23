@@ -78,7 +78,7 @@ using Interpolations
 # ╔═╡ 9a044d3d-fb41-4ffe-a3ad-5acd94aa6ac6
 using DelimitedFiles
 
-# ╔═╡ 950f8d1e-59d8-4485-91fe-2baa21478833
+# ╔═╡ c0fea2f2-234a-4fe1-9619-d506f4c40ded
 using RCall
 
 # ╔═╡ 17501c93-f432-4f1a-b815-5ac9c5a29f8f
@@ -269,7 +269,10 @@ md"""
 """
 
 # ╔═╡ e118a117-9a00-4589-906d-c31d2057bcef
+# ╠═╡ disabled = true
+#=╠═╡
 summary_plot(example_output)
+  ╠═╡ =#
 
 # ╔═╡ 56765b03-9d25-49c6-9aec-75e1e32e6a43
 md"""
@@ -699,25 +702,30 @@ We first import a curve from R package palisol
 """
 
 # ╔═╡ e56a4012-d80a-4535-a575-ad80c9d28610
-
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+ENV["R_HOME"] = raw"C:/Users/Liu00141/AppData/Local/Programs/R/R-4.4.1"
+Pkg.build("RCall")
+end
+  ╠═╡ =#
 
 # ╔═╡ eb3908ca-2d33-437d-9a19-a65efa20da3e
 R"""
-if (!require("palisol")) {
-    install.packages("palisol", repos = "https://cran.r-project.org")
+if (!require("palinsol")) {
+    install.packages("palinsol", repos = "https://cran.r-project.org")
 }
 """
 
-
 # ╔═╡ b1fee3c8-bd01-4f07-b2ed-18730999967f
 R"""
-library(palisol)
+library(palinsol)
 time_start <- 8e5  
 time_end <- 0      
 time_step <- 2e2  
 times <- seq(time_end, time_start, time_step)
 
-param_la04 = astro(times, solution = la04,  degree = TRUE)
+param_la04 = t(sapply(times, function(t) astro(t, solution = la04, degree = TRUE)))
 
 orbit <- list()
 insolation <- list()
@@ -725,9 +733,9 @@ lat_degree = 25
 
 for (t in 1:length(times)) {
   orbit[[t]] <- list(
-    eps = param_la04[1] * pi / 180, 
-    ecc = param_la04[2], 
-    varpi = (param_la04[t + 2] - 180) * pi / 180
+    eps = param_la04[t,1] * pi / 180, 
+    ecc = param_la04[t,2], 
+    varpi = (param_la04[t,3] - 180) * pi / 180
   )
   
   insolation[[t]] <- Insol(
@@ -746,15 +754,14 @@ insolation = inso_values <- unlist(insolation)
 
 # ╔═╡ 9ad42bc3-0f74-48fa-8668-1d7a9555d992
 begin
-	annual_insol_julia = rcopy(R"insolation")
+	@rget times    
+	@rget insolation
 	function get_inso()
 		interpolated_inso = linear_interpolation(times,insolation)
 	end
 end
 
 # ╔═╡ af878041-b78b-4e62-8aed-826506935f89
-# ╠═╡ disabled = true
-#=╠═╡
 input_inso = ALCAP.Input(
     tag="tutorial",
     box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
@@ -771,13 +778,9 @@ input_inso = ALCAP.Input(
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",
     facies=FACIES)
-  ╠═╡ =#
 
 # ╔═╡ 459feada-ad61-4939-b733-30aa007bb026
-# ╠═╡ disabled = true
-#=╠═╡
 own_inso_output = run_model(Model{ALCAP}, input_inso, "$(OUTPUTDIR)/tutorial_ownsinso.h5")
-  ╠═╡ =#
 
 # ╔═╡ 7c100b7f-7661-4250-b999-fdd3f32bf80b
 # ╠═╡ disabled = true
@@ -1034,9 +1037,9 @@ md"""
 # ╟─7f7dd756-d2e4-4eeb-8364-ea750a0aecc3
 # ╠═4b83e9e9-6404-4e52-8662-7ec56ccc7fa6
 # ╟─bcd404d1-d2a8-4b8c-8fe8-16abb9215442
-# ╟─b798b991-5af9-4c4c-b795-88e8087c6c4d
-# ╠═950f8d1e-59d8-4485-91fe-2baa21478833
+# ╠═b798b991-5af9-4c4c-b795-88e8087c6c4d
 # ╠═e56a4012-d80a-4535-a575-ad80c9d28610
+# ╠═c0fea2f2-234a-4fe1-9619-d506f4c40ded
 # ╠═eb3908ca-2d33-437d-9a19-a65efa20da3e
 # ╠═b1fee3c8-bd01-4f07-b2ed-18730999967f
 # ╠═9ad42bc3-0f74-48fa-8668-1d7a9555d992

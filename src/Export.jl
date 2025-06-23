@@ -115,7 +115,7 @@ function group_datasets(fid::HDF5.File)
 		:volume => [],
 		:slice => [],
 		:column => [])
-	
+
 	for k in keys(fid)
 		kind = data_kind(fid, k)
 		push!(result[kind], k)

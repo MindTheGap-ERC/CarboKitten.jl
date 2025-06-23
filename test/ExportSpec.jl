@@ -47,7 +47,7 @@ const DATA1 = DataVolume(
     write_interval=1,
     disintegration=DISINTEGRATION1,
     production=PRODUCTION1,
-    deposition=PRODUCTION1 .- DISINTEGRATION1,
+    deposition=PRODUCTION1,
     sediment_thickness=ELEVATION1)
 
 const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]

@@ -42,7 +42,8 @@ function step!(input::Input)
         end
 
         wd = local_water_depth(state)
-        p = min.(produce(state, wd), -wd[:, :, na])
+        # p = min.(produce(state, wd), -wd[na, :, :])
+        p = produce(state, wd)
         d = disintegrate!(state)
 
         active_layer = p .+ d

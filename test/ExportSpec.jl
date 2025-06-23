@@ -51,7 +51,7 @@ const DATA1 = Data(
 const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
 # ~/~ end
 
-@testset let test_path = test_path
+@testset "CarboKitten.Export" begin
     # ~/~ begin <<docs/src/data-export.md#export-test>>[init]
     @testset "Hither and Dither" begin
         io = IOBuffer(UInt8[], read=true, write=true)
@@ -109,7 +109,9 @@ const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
         end
     end
 
-    @testset let test_path = test_path
+    @testset "Water depth signs" begin
+        test_path::String = TEST_PATH
+        @info "Reading from $(joinpath(test_path, "bs92_spm.h5"))"
         header, data = read_data(joinpath(test_path, "bs92_spm.h5"))
         wd = extract_wd(header, data, [(1, 1)])
         sac = extract_sac(header, data, [(1, 1)])

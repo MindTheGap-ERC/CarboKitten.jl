@@ -51,10 +51,9 @@ number of steps between writing output.
     t0::typeof(1.0u"Myr") = 0.0u"Myr"
     Δt::typeof(1.0u"Myr")
     steps::Int
-    write_interval::Int = 1
 end
 
-n_writes(time::TimeProperties) = div(time.steps, time.write_interval)
+n_writes(time::TimeProperties) = time.steps
 
 """
     time_axis(time::TimeProperties)
@@ -102,6 +101,7 @@ include("./Visualization.jl")
 include("./Testing.jl")
 
 using .Components.Common: in_units_of, @u_str
+using .Components.H5Writer: OutputSpec
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 using GeometryBasics: Vec2
@@ -109,6 +109,6 @@ using GeometryBasics: Vec2
 export run_model, Box, box_axes, TimeProperties, time_axis,
        Model, BS92, CAP, ALCAP, in_units_of, @u_str,
        AbstractBox, Boundary, Coast, Periodic, Reflected,
-       Vec2
+       Vec2, OutputSpec
 
 end # module CarboKitten

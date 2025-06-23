@@ -54,9 +54,7 @@ Running a model, we store the changes in each time step. The `Frame` type stores
 
         @progress for w = 1:n_writes(input)
             df = zeros(Frame, input)
-            for n = 1:input.time.write_interval
-                increment!(df, step!(state))
-            end
+            increment!(df, step!(state))
             f(w, df)
         end
     end

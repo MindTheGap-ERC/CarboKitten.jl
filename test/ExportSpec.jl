@@ -1,7 +1,8 @@
 # ~/~ begin <<docs/src/data-export.md#test/ExportSpec.jl>>[init]
 using CarboKitten
-using CarboKitten.Export: Axes, Header, Data, data_export, CSVExportTrait,
-    age_depth_model, extract_sac, extract_sc, CSV, read_data, extract_sac, extract_wd
+using CarboKitten.Export: Axes, Header, DataVolume, data_export, CSVExportTrait,
+    age_depth_model, extract_sac, extract_sc, CSV, read_data, extract_sac, extract_wd,
+    read_column
 using CSV: read as read_csv
 using TOML
 using DataFrames
@@ -18,7 +19,6 @@ const AXES1 = Axes(
 const HEADER1 = Header(
     tag="test",
     axes=AXES1,
-    write_interval=1,
     Δt=0.1u"Myr",
     time_steps=10,
     initial_topography=zeros(typeof(1.0u"m"), 3, 3),
@@ -42,60 +42,58 @@ const ELEVATION1 = cat(
     cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :];
     dims=3)
 
-const DATA1 = Data(
+const DATA1 = DataVolume(
+    slice=(:,:),
+    write_interval=1,
     disintegration=DISINTEGRATION1,
     production=PRODUCTION1,
-    deposition=PRODUCTION1 .- DISINTEGRATION1,
-    sediment_elevation=ELEVATION1)
+    deposition=PRODUCTION1,
+    sediment_thickness=ELEVATION1)
 
 const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
+
+const COLUMNS1 = [DATA1[loc...] for loc in GRID_LOCATIONS1]
 # ~/~ end
 
 @testset "CarboKitten.Export" begin
+    sac = data_export(CSVExportTrait{:sediment_accumulation_curve}, HEADER1, COLUMNS1)
+    adm = data_export(CSVExportTrait{:age_depth_model}, HEADER1, COLUMNS1)
+    sc = data_export(CSVExportTrait{:stratigraphic_column}, HEADER1, COLUMNS1)
+
     # ~/~ begin <<docs/src/data-export.md#export-test>>[init]
     @testset "Hither and Dither" begin
-        io = IOBuffer(UInt8[], read=true, write=true)
-        data_export(CSVExportTrait{:sediment_accumulation_curve}, io, HEADER1, DATA1, GRID_LOCATIONS1)
-        seek(io, 0)
-        df = read_csv(io, DataFrame)
-        rename!(df, (n => split(n)[1] for n in names(df))...)
-        @test df.sac1 ≈ ELEVATION1[1, 1, :] / u"m"
-        @test df.sac2 ≈ ELEVATION1[2, 1, :] / u"m"
-        @test df.sac3 ≈ ELEVATION1[3, 1, :] / u"m"
+        @test sac.sac_1 ≈ ELEVATION1[1, 1, :]
+        @test sac.sac_2 ≈ ELEVATION1[2, 1, :]
+        @test sac.sac_3 ≈ ELEVATION1[3, 1, :]
     end
     # ~/~ end
     # ~/~ begin <<docs/src/data-export.md#export-test>>[1]
     @testset "ADM Monotonicity" begin
-        sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
-        adm = sac |> age_depth_model
+        @test sac.sac_1 == adm.adm_1
+        @test sac.sac_3 == adm.adm_3
+        @test sac.sac_2 != adm.adm_2
 
-        @test sac.sac1 == adm.adm1
-        @test sac.sac3 == adm.adm3
-        @test sac.sac2 != adm.adm2
-
-        @test all(adm.adm2[2:end] .- adm.adm2[1:end-1] .>= 0.0u"m")
+        @test all(adm.adm_2[2:end] .- adm.adm_2[1:end-1] .>= 0.0u"m")
     end
     # ~/~ end
     # ~/~ begin <<docs/src/data-export.md#export-test>>[2]
     @testset "SC sum equals ADM" begin
-        sac = extract_sac(HEADER1, DATA1, GRID_LOCATIONS1)
-        adm = sac |> age_depth_model
-        sc = extract_sc(HEADER1, DATA1, GRID_LOCATIONS1)
-        @test [0.0u"m"; cumsum(sc.sc1_f1)] ≈ adm.adm1
-        @test [0.0u"m"; cumsum(sc.sc2_f1)] ≈ adm.adm2
-        @test [0.0u"m"; cumsum(sc.sc3_f1)] ≈ adm.adm3
+        @test [0.0u"m"; cumsum(sc.sc_1_f1)] ≈ adm.adm_1
+        @test [0.0u"m"; cumsum(sc.sc_2_f1)] ≈ adm.adm_2
+        @test [0.0u"m"; cumsum(sc.sc_3_f1)] ≈ adm.adm_3
     end
     # ~/~ end
-
     @testset "Write to folder" begin
+        using DataFrames: select
+
         mktempdir() do path
-            spec = CSV(GRID_LOCATIONS1,
+            spec = CSV(
                 :sediment_accumulation_curve => joinpath(path, "sac.csv"),
                 :age_depth_model => joinpath(path, "adm.csv"),
                 :stratigraphic_column => joinpath(path, "sc.csv"),
                 :water_depth => joinpath(path, "wd.csv"),
                 :metadata => joinpath(path, "metadata.toml"))
-            data_export(spec, HEADER1, DATA1)
+            data_export(spec, HEADER1, COLUMNS1)
             for f in values(spec.output_files)
                 @test isfile(f)
             end
@@ -103,9 +101,11 @@ const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
             metadata = TOML.parsefile(spec.output_files[:metadata])
             @test IdDict(Symbol(k) => v for (k, v) in metadata["files"]) == spec.output_files
             @test length(metadata["locations"]) == 3
-            adm = read_csv(spec.output_files[:age_depth_model], DataFrame)
-            rename!(adm, (n => split(n)[1] for n in names(adm))...)
-            @test adm == ustrip(extract_sac(HEADER1, DATA1, GRID_LOCATIONS1) |> age_depth_model)
+
+            adm_tab = read_csv(spec.output_files[:age_depth_model], DataFrame)
+            rename!(adm_tab, (n => split(n)[1] for n in names(adm_tab))...)
+            @test select(adm_tab, ["adm_$(i)" for i in 1:3]) == 
+                select(ustrip(adm), ["adm_$(i)" for i in 1:3])
         end
     end
 

@@ -1,9 +1,9 @@
 ### A Pluto.jl notebook ###
-# v0.20.10
+# v0.20.6
 
 #> [frontmatter]
 #> title = "CarboKitten Tutorial"
-#> date = "2024-11-18"
+#> date = "2025-06-24"
 #> tags = ["geoscience", "stratigraphy"]
 #> description = "a first tutorial on working with CarboKitten and Julia"
 #> 
@@ -100,7 +100,8 @@ begin
 		:burgess2013 => DOI("10.1016/j.cageo.2011.08.026"),
 		:bosscher1992 => DOI("10.1111/j.1365-3091.1992.tb02130.x"),
 		:paola1992 => DOI("10.1111/j.1365-2117.1992.tb00145.x"),
-		:miller2020 => DOI("10.1594/PANGAEA.923126"))
+		:miller2020 => DOI("10.1594/PANGAEA.923126"),
+		:crucifix2023 => URL("https://CRAN.R-project.org/package=palinsol"))
 
 	for d in values(refs)
 		ShortCodes.getdoi(d)
@@ -741,7 +742,7 @@ data_export(CSV(export_locations,
 
 # ╔═╡ 03fb241a-a332-49c5-9549-cd9742ad66bf
 md"""
-If you want to use an insolation curve directly derived from astronomical solutions, we provide another way to do it, by incoporating R package palinsol. If you would like to try this, please install R at the first place, and make sure you know the path of your R. We gave an example of how to use R in julia as follows, and if you are interested, please have a look.
+If you want to use an insolation curve directly derived from astronomical solutions, we provide another way to do it, by incoporating R package `palinsol` $(cite(:crucifix2023)). If you would like to try this, please install R at the first place, and make sure you know the path of your R. We gave an example of how to use R in julia as follows, and if you are interested, please have a look.
 """
 
 # ╔═╡ e56a4012-d80a-4535-a575-ad80c9d28610

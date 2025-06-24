@@ -592,7 +592,7 @@ md"""
 
 You may need to import an external source, for example, a txt, a excel, or a csv file. Herein, we use a txt file, and therefore we need to add dependencies of 'DelimitedFiles'.
 
-If you did not prepare your sea-level curve, we provide one and you could download it from emails. You could download it to your own computer, and replace the SL_PTH with the real pathway that you stored the txt file. It is recommended store the notebook and your sealevel curve at the same directory.
+If you did not prepare your sea-level curve, we provide one and you could download it from the email. You could download it to your own computer, and replace `SL_PTH` with the real path where you stored the txt file. It is recommended store the notebook and your sealevel curve at the same directory.
 
 """
 
@@ -642,9 +642,9 @@ data_export(CSV(export_locations,
 
 # ╔═╡ 7f7dd756-d2e4-4eeb-8364-ea750a0aecc3
 md"""
-We assume we can find sufficient forams (i.e., ignore sampling bias) from the pseudo strata. We then 'crush' these 'forams' to obtain their Oxygen isotope values, trying to understand how the temperature changes through time. In this case, what kind of oxygen isotope curve did you expect?
+We assume we can find sufficient foraminifera (i.e., ignore sampling bias) from the modeled strata. We then 'crush' these forams to obtain their oxygen isotope values, trying to understand how the temperature changes through time. In this case, what kind of oxygen isotope curve did you expect?
 
-First we constructed a pseudo Oxygen isotope curve based on the sea-level curve (e.g.,assuming low-sea-level is glaciation and high O isotope composition). We do not consider the offset of phases.
+First we constructed a pseudo-oxygen isotope curve based on the sea-level curve (e.g., assuming low-sea-level is glaciation and high O isotope composition). We do not consider the offset of phases.
 
 We then use the ADM extracted from the carbonate platform to test how much of the original signals would be preserved. Could the preserved signals still refect all of the orbital cycles? 
 
@@ -690,8 +690,8 @@ end
 
 # ╔═╡ bcd404d1-d2a8-4b8c-8fe8-16abb9215442
 md"""
-Similarly, shall we also try to change the insolation from a const (400 W/m2) to a real insolation curve, and see how it works?
-We have provided you with an insolation curve. Please store this curve at the same folder with the notebook.
+Similarly, shall we also try to change the insolation from a const (400 $W/m^2$) to a real insolation curve, and see how it works?
+We have provided you with an insolation curve. Please store this curve in the same folder as the notebook.
 """
 
 # ╔═╡ 85c4af97-3cbc-4a86-8a15-80997898cc09
@@ -742,7 +742,7 @@ data_export(CSV(export_locations,
 
 # ╔═╡ 03fb241a-a332-49c5-9549-cd9742ad66bf
 md"""
-If you want to use an insolation curve directly derived from astronomical solutions, we provide another way to do it, by incoporating R package `palinsol` $(cite(:crucifix2023)). If you would like to try this, please install R at the first place, and make sure you know the path of your R. We gave an example of how to use R in julia as follows, and if you are interested, please have a look.
+If you want to use an insolation curve directly derived from astronomical solutions, we provide another way to do it, by incoporating R package `palinsol` $(cite(:crucifix2023)). If you would like to try this, please install R first, and make sure you know the path of your R. We gave an example of how to use R in Julia as follows.
 """
 
 # ╔═╡ e56a4012-d80a-4535-a575-ad80c9d28610

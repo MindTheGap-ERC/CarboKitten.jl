@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.6
+# v0.20.10
 
 #> [frontmatter]
 #> title = "CarboKitten Tutorial"
@@ -251,8 +251,8 @@ md"""
 md"""The `run_model` command runs a model with given input and writes the output to an HDF5 file."""
 
 # ╔═╡ 74f4674f-dbea-44ad-8d54-9861b35139cd
-# example_output = run_model(Model{ALCAP}, ALCAP.Example.INPUT, "$(OUTPUTDIR)/example.h5")
-example_output = "$(OUTPUTDIR)/alcap_example.h5"
+example_output = run_model(Model{ALCAP}, ALCAP.Example.INPUT, "$(OUTPUTDIR)/example.h5")
+#example_output = "$(OUTPUTDIR)/alcap_example.h5"
 
 # ╔═╡ 19da029b-8752-4177-8ba4-cc2097adec95
 md"""
@@ -267,10 +267,7 @@ md"""
 """
 
 # ╔═╡ e118a117-9a00-4589-906d-c31d2057bcef
-# ╠═╡ disabled = true
-#=╠═╡
 summary_plot(example_output)
-  ╠═╡ =#
 
 # ╔═╡ 56765b03-9d25-49c6-9aec-75e1e32e6a43
 md"""
@@ -654,7 +651,7 @@ We then use the ADM extracted from the carbonate platform to test how much of th
 let
 	O_magnitude = 4 #arbitrary
 	sl_magnitude = (max(sea_level_ob...) - min(sea_level_ob...)) ./ u"m"
-	d18O_original = sea_level_ob ./ sl_magnitude .* O_magnitude
+	d18O_original = sea_level_ob ./ sl_magnitude .* O_magnitude ./ u"m"
 	
 	function determine_preservation(ADM::Vector)
 		ADM_diff = diff(ADM)
@@ -686,6 +683,12 @@ let
 	writedlm("$(OUTPUTDIR)/d180_shallow.txt", d180_shallow, '\t')
 	writedlm("$(OUTPUTDIR)/d180_deep.txt", d180_deep, '\t')
 
+	figure = Figure()
+	ax = Axis(figure[1, 1], ylabel = "Thickness (m)", xlabel = "δ¹⁸O (‰)")
+	scatter!(ax,d180_shallow,adm_shallow[2:end],color = :tomato)
+	ax2 = Axis(figure[1, 2], ylabel = "Thickness (m)", xlabel = "δ¹⁸O (‰)")
+	scatter!(ax2,d180_deep,adm_deep[2:end],color = :blue)
+	figure
 end
 
 # ╔═╡ bcd404d1-d2a8-4b8c-8fe8-16abb9215442

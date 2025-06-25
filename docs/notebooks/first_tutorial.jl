@@ -51,9 +51,6 @@ using CarboKitten.Components.TimeIntegration: write_times
 # ╔═╡ 94aea87e-89e0-4aa3-816e-397873fffc77
 using CarboKitten.Visualization: production_curve
 
-# ╔═╡ 3723832f-344c-4471-acb0-cef7d4e5ca94
-using CarboKitten.Export: data_export, CSV
-
 # ╔═╡ 31e7c759-f980-4618-be90-892865751e58
 using DataFrames
 
@@ -80,9 +77,6 @@ using CarboKitten.Boxes: axes as box_axes
 
 # ╔═╡ e1c9135e-4906-4bd1-ba9a-058f7de7d5ac
 using CarboKitten.Visualization: sediment_profile!
-
-# ╔═╡ 5eb8bf63-de51-4f4f-ba23-53e4a68e5762
-using CarboKitten.Export: age_depth_model, read_slice, DataColumn
 
 # ╔═╡ 44308ced-efd2-42fd-94ab-baa178352ed9
 begin
@@ -370,7 +364,8 @@ end
 
 # ╔═╡ 30245436-9731-4cae-a150-fcba4360527e
 let
-	t = time_axis(time)   # obtain a vector of times
+	# t = time_axis(time)   # obtain a vector of times
+	t = (0:time.steps) .* time.Δt
 	sl = sea_level.(t)	    # get sea_level for all those times
 	fig, ax = lines(t |> in_units_of(u"Myr"), sl |> in_units_of(u"m"))
 	ax.xlabel = "time [Myr]"
@@ -473,15 +468,10 @@ input = ALCAP.Input(
 production_curve(input)
 
 # ╔═╡ 8946d268-4407-4fe4-86ae-67b3a37b34be
-# ╠═╡ disabled = true
-#=╠═╡
 tutorial_output = run_model(Model{ALCAP}, input, "$(OUTPUTDIR)/tutorial.h5")
-  ╠═╡ =#
 
 # ╔═╡ 0fd7ea33-ff06-4355-9278-125c8ed66df4
-#=╠═╡
 summary_plot(tutorial_output)
-  ╠═╡ =#
 
 # ╔═╡ 39e681ae-3ce4-41eb-a48a-9a42a4667183
 md"""
@@ -497,21 +487,21 @@ HDF5 is a very versatile data format, and is readable from every major computati
 """
 
 # ╔═╡ ec4f0021-12af-4f8c-8acb-970e6820d2a4
-export_locations = [(11, 25), (26, 25), (41, 25)]
+export_columns = [11, 26, 41]
 
 # ╔═╡ e80aaf02-c5bf-4555-a82d-b09dcf785381
 md"""
 In this case, it exports the 11th, 26th and 41th grid in the direction towards to the deep sea. That is to say, the 11th is proximal to the land while the 41th is distal. Given that each grid is with fixed size of 300 m × 300 m, this indicates that we are extracting information from locations at 3 km, 7.5 km and 12 km away from the land. 
 """
 
+# ╔═╡ 3a2d1fae-53a8-431c-bf7a-b0ad2d594911
+header, profile = read_slice(tutorial_output, :profile)
+
 # ╔═╡ 7f05b817-f933-4280-b2ed-ae318a535123
-# ╠═╡ disabled = true
-#=╠═╡
-data_export(CSV(export_locations,
+data_export(CSV(
 	:sediment_accumulation_curve => "$(OUTPUTDIR)/tutorial_sac.csv",
 	:age_depth_model => "$(OUTPUTDIR)/tutorial_adm.csv"),
-	tutorial_output)
-  ╠═╡ =#
+	header, [profile[c] for c in export_columns])
 
 # ╔═╡ 2a24237e-5c1f-47e1-8f33-cca3ef563930
 md"""
@@ -537,10 +527,7 @@ Using the following command to read the csv file:
 """
 
 # ╔═╡ 329d30f1-797e-4522-9c20-e60d35079f5f
-# ╠═╡ disabled = true
-#=╠═╡
 adm = read_csv("$(OUTPUTDIR)/tutorial_adm.csv", DataFrame)
-  ╠═╡ =#
 
 # ╔═╡ add6a25b-d948-4cd0-9412-56752793ca4b
 md"""
@@ -548,7 +535,6 @@ And plot the Age-Depth Model:
 """
 
 # ╔═╡ f550da45-1202-4f9d-9f0b-b96d5c929f58
-#=╠═╡
 let
 	fig = Figure()
 	time = adm[!, 1]
@@ -558,14 +544,13 @@ let
 	
 
 	for i = 1:3
-		xpos = uconvert(u"km", xaxis[export_locations[i][1]])
+		xpos = uconvert(u"km", xaxis[export_columns[i]])
 		lines!(ax, time, adm[!, i+1], label="$(xpos) offshore")
 	end
 
 	fig[1,2] = Legend(fig, ax)
 	fig
 end
-  ╠═╡ =#
 
 # ╔═╡ 64c3ce44-de95-4f7b-954d-52f743fc5033
 md"""
@@ -573,24 +558,21 @@ md"""
 """
 
 # ╔═╡ 0a5da056-ca6a-4d90-b2a4-fb84ae5b7da2
-#=╠═╡
 let
 	fig = Figure()
 
-	y = export_locations[1][2]
 	(xaxis, _) = box_axes(input.box)
 	
 	for i = 1:3
-		header, column = read_column(tutorial_output, export_locations[i]...)
+		column = profile[export_columns[i]]
 
-		xpos = uconvert(u"km", xaxis[export_locations[i][1]])
+		xpos = uconvert(u"km", xaxis[export_columns[i]])
 		ax = Axis(fig[1,i], title="$(xpos) offshore", ylabel="height (m)", xticksvisible=false, xtickformat="", width=70)
 		stratigraphic_column!(ax, header, column)
 	end
 	
 	fig
 end
-  ╠═╡ =#
 
 # ╔═╡ d7a4eb34-6b9e-4779-900d-493a853a6199
 md"""
@@ -1038,6 +1020,12 @@ md"""
 # Bibliography
 """
 
+# ╔═╡ 3723832f-344c-4471-acb0-cef7d4e5ca94
+using CarboKitten.Export: data_export, CSV, read_slice
+
+# ╔═╡ 5eb8bf63-de51-4f4f-ba23-53e4a68e5762
+using CarboKitten.Export: age_depth_model, read_slice, DataColumn
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -1048,7 +1036,6 @@ DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-RCall = "6f49c342-dc21-5d91-9882-a32aef131414"
 ShortCodes = "f62ebe17-55c5-4640-972f-b59c0dd11ccf"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
@@ -1059,7 +1046,6 @@ DataFrames = "~1.7.0"
 GLMakie = "~0.13.1"
 Interpolations = "~0.15.1"
 PlutoUI = "~0.7.65"
-RCall = "~0.14.8"
 ShortCodes = "~0.3.6"
 Unitful = "~1.23.1"
 """
@@ -1070,7 +1056,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.5"
 manifest_format = "2.0"
-project_hash = "d7b695d18527d64546c73eb80aaea094e2283092"
+project_hash = "5451d92d316e49fd4dc89783d252087846956aee"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1298,12 +1284,6 @@ deps = ["Observables", "Preferences"]
 git-tree-sha1 = "09570704174dbe7d72ee5dcca604b985b6f384e6"
 uuid = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 version = "0.1.1"
-
-[[deps.Conda]]
-deps = ["Downloads", "JSON", "VersionParsing"]
-git-tree-sha1 = "b19db3927f0db4151cb86d073689f2428e524576"
-uuid = "8f4d0f93-b110-5947-807f-2305c1781a2d"
-version = "1.10.2"
 
 [[deps.ConstructionBase]]
 git-tree-sha1 = "b4b092499347b18a015186eae3042f72267106cb"
@@ -2342,16 +2322,6 @@ version = "2.11.2"
     [deps.QuadGK.weakdeps]
     Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
 
-[[deps.RCall]]
-deps = ["CategoricalArrays", "Conda", "DataFrames", "DataStructures", "Dates", "Libdl", "Preferences", "REPL", "Random", "StatsModels", "WinReg"]
-git-tree-sha1 = "815f2e4b52e377eb7ae21c8235bd3e2e3e0bfd9e"
-uuid = "6f49c342-dc21-5d91-9882-a32aef131414"
-version = "0.14.8"
-weakdeps = ["AxisArrays"]
-
-    [deps.RCall.extensions]
-    RCallAxisArraysExt = ["AxisArrays"]
-
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "StyledStrings", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
@@ -2447,11 +2417,6 @@ version = "0.5.0"
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
 uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
 version = "1.11.0"
-
-[[deps.ShiftedArrays]]
-git-tree-sha1 = "503688b59397b3307443af35cd953a13e8005c16"
-uuid = "1277b4bf-5013-50f5-be3d-901d8477a67a"
-version = "2.0.0"
 
 [[deps.ShortCodes]]
 deps = ["Base64", "CodecZlib", "Downloads", "JSON3", "Memoize", "URIs", "UUIDs"]
@@ -2568,12 +2533,6 @@ weakdeps = ["ChainRulesCore", "InverseFunctions"]
     [deps.StatsFuns.extensions]
     StatsFunsChainRulesCoreExt = "ChainRulesCore"
     StatsFunsInverseFunctionsExt = "InverseFunctions"
-
-[[deps.StatsModels]]
-deps = ["DataAPI", "DataStructures", "LinearAlgebra", "Printf", "REPL", "ShiftedArrays", "SparseArrays", "StatsAPI", "StatsBase", "StatsFuns", "Tables"]
-git-tree-sha1 = "9022bcaa2fc1d484f1326eaa4db8db543ca8c66d"
-uuid = "3eaba693-59b7-5ba5-a881-562e759f1c8d"
-version = "0.7.4"
 
 [[deps.StringManipulation]]
 deps = ["PrecompileTools"]
@@ -2719,11 +2678,6 @@ version = "1.23.1"
     InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
     Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
-[[deps.VersionParsing]]
-git-tree-sha1 = "58d6e80b4ee071f5efd07fda82cb9fbe17200868"
-uuid = "81def892-9a0e-5fdd-b105-ffc91e053289"
-version = "1.3.0"
-
 [[deps.Wayland_jll]]
 deps = ["Artifacts", "EpollShim_jll", "Expat_jll", "JLLWrappers", "Libdl", "Libffi_jll", "XML2_jll"]
 git-tree-sha1 = "49be0be57db8f863a902d59c0083d73281ecae8e"
@@ -2747,11 +2701,6 @@ deps = ["CEnum", "ColorTypes", "FileIO", "FixedPointNumbers", "ImageCore", "libw
 git-tree-sha1 = "aa1ca3c47f119fbdae8770c29820e5e6119b83f2"
 uuid = "e3aaa7dc-3e4b-44e0-be63-ffb868ccd7c1"
 version = "0.1.3"
-
-[[deps.WinReg]]
-git-tree-sha1 = "cd910906b099402bcc50b3eafa9634244e5ec83b"
-uuid = "1b915085-20d7-51cf-bf83-8f477d6f5128"
-version = "1.0.0"
 
 [[deps.WoodburyMatrices]]
 deps = ["LinearAlgebra", "SparseArrays"]
@@ -3032,6 +2981,7 @@ version = "1.8.1+0"
 # ╠═3723832f-344c-4471-acb0-cef7d4e5ca94
 # ╠═ec4f0021-12af-4f8c-8acb-970e6820d2a4
 # ╟─e80aaf02-c5bf-4555-a82d-b09dcf785381
+# ╠═3a2d1fae-53a8-431c-bf7a-b0ad2d594911
 # ╠═7f05b817-f933-4280-b2ed-ae318a535123
 # ╟─2a24237e-5c1f-47e1-8f33-cca3ef563930
 # ╟─adf67033-5941-4be6-bb17-c0958348b905

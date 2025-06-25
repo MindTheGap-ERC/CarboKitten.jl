@@ -37,8 +37,12 @@ const FACIES = [
 		box = Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
 		time = TimeProperties(
 			Δt = 200.0u"yr",
-			steps = 5000,
-			write_interval = 10),
+			steps = 5000),
+
+        output = Dict(
+            :topography => OutputSpec(write_interval = 500),
+            :profile => OutputSpec(slice = (:, 25))),
+
 		sea_level = t -> 4.0u"m" * sin(2π * t / 0.2u"Myr"),
 		initial_topography = (x, y) -> - x / 300.0,
 		subsidence_rate = 50.0u"m/Myr",

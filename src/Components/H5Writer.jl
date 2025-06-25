@@ -12,7 +12,7 @@
     # ~/~ begin <<docs/src/components/hdf5.md#hdf5-output-spec>>[init]
     const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
 
-    @kwdef struct OutputSpec
+    @kwdef struct OutputSpec <: AbstractOutputSpec
         slice::Slice2 = (:, :)
         write_interval::Int = 1
     end
@@ -33,7 +33,7 @@
     is_column(::Int, ::Int) = true
     is_column(_, _) = false
 
-    function create_ck_group(fid, input::AbstractInput, name::Symbol, spec::OutputSpec)
+    function create_ck_group(fid, input::AbstractInput, name::Symbol, spec::AbstractOutputSpec)
         nf = n_facies(input)
         nw = div(input.time.steps, spec.write_interval)
 

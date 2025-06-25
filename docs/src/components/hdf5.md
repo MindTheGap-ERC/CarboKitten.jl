@@ -22,7 +22,7 @@ Saving the full output of this simulation would take several hundreds of gigabyt
 ``` {.julia #hdf5-output-spec}
 const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
 
-@kwdef struct OutputSpec
+@kwdef struct OutputSpec <: AbstractOutputSpec
     slice::Slice2 = (:, :)
     write_interval::Int = 1
 end
@@ -32,7 +32,13 @@ end
 end
 ```
 
-The default is to write all output, which is fine for smaller runs.
+The default is to write all output, which is fine for smaller runs. The `slice` argument of `OutputSpec` will accept three different forms:
+
+- `(:, :)` (default) output the full area of the model.
+- `(<n>, :)` or `(:, <n>)` output a slice of the model, either with a fixed $x$ or a fixed $y$ coordinate. In our examples we always have the $x$ axis orthogonal to the shoreline, so slicing with a fixed $y$ (the second form) is what we use.
+- `(<m>, <n>)`, output a column of the model. If you have a very precise experiment workflow, this could be of use. You'll have to specify each column as a separate output. Most of the time though, we can extract columns from slice data in a post-processing stage, so if all your columns have the same $y$ coordinate, taking a slice is the preferred option.
+
+## Main loop
 The `H5Writer` component runs through an overloaded version of `run_model`. For example:
 
 ```julia
@@ -101,7 +107,7 @@ end
     is_column(::Int, ::Int) = true
     is_column(_, _) = false
 
-    function create_ck_group(fid, input::AbstractInput, name::Symbol, spec::OutputSpec)
+    function create_ck_group(fid, input::AbstractInput, name::Symbol, spec::AbstractOutputSpec)
         nf = n_facies(input)
         nw = div(input.time.steps, spec.write_interval)
 

@@ -1,7 +1,7 @@
 name = "CarboKitten"
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 authors = ["Johan Hidding <j.hidding@esciencecenter.nl>"]
-version = "0.5.0"
+version = "0.5.1"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"

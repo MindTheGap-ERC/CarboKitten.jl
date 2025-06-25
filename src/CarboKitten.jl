@@ -60,7 +60,7 @@ n_writes(time::TimeProperties) = time.steps
 
 Retrieve the time values for which output was/will be written. Returns a range.
 """
-time_axis(time::TimeProperties) = (0:n_writes(time)) .* (time.Δt * time.write_interval) .+ time.t0
+time_axis(time::TimeProperties) = (0:n_writes(time)) .* time.Δt .+ time.t0
 
 include("./BoundaryTrait.jl")
 include("./Vectors.jl")

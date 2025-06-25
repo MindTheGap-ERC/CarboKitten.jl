@@ -519,7 +519,7 @@ function scdata(header::Header, data::DataColumn)
     end
 
     colormax(d) = getindex.(argmax(d; dims=1)[1, :], 1)
-    adm = age_depth_model(data.sediment_elevation)
+    adm = age_depth_model(data.sediment_thickness)
 
     return (ys_low=adm[1:end-1] / u"m", ys_high=adm[2:end] / u"m", facies=colormax(sc)[1:end])
 end

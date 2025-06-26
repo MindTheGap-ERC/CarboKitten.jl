@@ -51,6 +51,9 @@ using CarboKitten.Components.TimeIntegration: write_times
 # ╔═╡ 94aea87e-89e0-4aa3-816e-397873fffc77
 using CarboKitten.Visualization: production_curve
 
+# ╔═╡ 3723832f-344c-4471-acb0-cef7d4e5ca94
+using CarboKitten.Export: data_export, CSV, read_slice
+
 # ╔═╡ 31e7c759-f980-4618-be90-892865751e58
 using DataFrames
 
@@ -69,6 +72,9 @@ using Interpolations
 # ╔═╡ 9a044d3d-fb41-4ffe-a3ad-5acd94aa6ac6
 using DelimitedFiles
 
+# ╔═╡ ac9e2e1d-2443-4141-97d6-457c0791b336
+using CarboKitten.Export: read_volume
+
 # ╔═╡ 17501c93-f432-4f1a-b815-5ac9c5a29f8f
 using CarboKitten.DataSets: miller_2020
 
@@ -77,6 +83,9 @@ using CarboKitten.Boxes: axes as box_axes
 
 # ╔═╡ e1c9135e-4906-4bd1-ba9a-058f7de7d5ac
 using CarboKitten.Visualization: sediment_profile!
+
+# ╔═╡ 5eb8bf63-de51-4f4f-ba23-53e4a68e5762
+using CarboKitten.Export: age_depth_model, DataColumn
 
 # ╔═╡ 44308ced-efd2-42fd-94ab-baa178352ed9
 begin
@@ -468,10 +477,18 @@ input = ALCAP.Input(
 production_curve(input)
 
 # ╔═╡ 8946d268-4407-4fe4-86ae-67b3a37b34be
+# ╠═╡ disabled = true
+#=╠═╡
 tutorial_output = run_model(Model{ALCAP}, input, "$(OUTPUTDIR)/tutorial.h5")
+  ╠═╡ =#
+
+# ╔═╡ 5fe61113-3468-4696-85a1-5e6fff1d4fb0
+tutorial_output = "../../data/output/tutorial.h5"
 
 # ╔═╡ 0fd7ea33-ff06-4355-9278-125c8ed66df4
+#=╠═╡
 summary_plot(tutorial_output)
+  ╠═╡ =#
 
 # ╔═╡ 39e681ae-3ce4-41eb-a48a-9a42a4667183
 md"""
@@ -576,24 +593,23 @@ end
 
 # ╔═╡ d7a4eb34-6b9e-4779-900d-493a853a6199
 md"""
-# Try a sea-level curve that is modulated by orbital cycles
+# Orbital cycle modulated sea level
 
-You may need to import an external source, for example, a txt, a excel, or a csv file. Herein, we use a txt file, and therefore we need to add dependencies of 'DelimitedFiles'.
+You may need to import an external source, for example, a `txt`, excel, or a `csv` file. Here we have prepared a `txt` file, meaning there are no clear rules about how the file is read or whether it contains meta-data. We'll have to inspect the file to find a column delimiter. We can then use the `DelimitedFiles` package to read the data.
 
-If you did not prepare your sea-level curve, we provide one and you could download it from the email. You could download it to your own computer, and replace `SL_PTH` with the real path where you stored the txt file. It is recommended store the notebook and your sealevel curve at the same directory.
-
+If you did not prepare your sea-level curve, we provide one and you could download it from the email. You could download it to your own computer, and replace `SL_PATH` with the real path where you stored the text file. It is recommended to store the notebook and your sealevel curve at the same directory.
 """
 
 # ╔═╡ 7f6c8d9e-db15-48fc-a631-662d56f87197
-SL_PTH = "sl.txt"
+SL_PATH = "sl.txt"
 
 # ╔═╡ 41e84b67-f5f6-4b24-943d-b0bfe50ca2bb
 begin
-		input_sl = DataFrame(readdlm(SL_PTH, '\t', header=false),:auto)
-		input_sl_clean = DataFrame(filter(row -> all(x -> string(x) != "", row), eachrow(input_sl)))
-		sea_level_ob = input_sl_clean[:,2] .* 1.0u"m"
-		time_ob = input_sl_clean[:,1].* 1.0u"Myr"
-		Interpolated_SL = linear_interpolation(time_ob,sea_level_ob)
+	input_sl = DataFrame(readdlm(SL_PATH, '\t', header=false),:auto)
+	input_sl_clean = DataFrame(filter(row -> all(x -> string(x) != "", row), eachrow(input_sl)))
+	sea_level_ob = input_sl_clean[:,2] .* 1.0u"m"
+	time_ob = input_sl_clean[:,1] .* 1.0u"Myr"
+	Interpolated_SL = linear_interpolation(time_ob,sea_level_ob)
 end
 
 # ╔═╡ 5043ab85-a7ff-4283-9d71-071c470f4d6e
@@ -602,8 +618,7 @@ input_ob = ALCAP.Input(
     box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TimeProperties(
         Δt=0.0002u"Myr",
-        steps=3900,
-        write_interval=1),
+        steps=3900),
     ca_interval=1,
     initial_topography=(x, y) -> -x / 300.0,
     sea_level= Interpolated_SL,
@@ -615,18 +630,20 @@ input_ob = ALCAP.Input(
     facies=FACIES)
 
 # ╔═╡ bd208d68-f565-4d05-89f7-f2e572a87f04
-# ╠═╡ disabled = true
-#=╠═╡
 own_sealevel_output = run_model(Model{ALCAP}, input_ob, "$(OUTPUTDIR)/tutorial_ownsealevel.h5")
-  ╠═╡ =#
+
+# ╔═╡ 1c9b261a-3486-43ed-9416-3c89a9fd76e5
+summary_plot(own_sealevel_output)
 
 # ╔═╡ b2286eff-a49e-4596-b68c-1a5363c9477f
-#=╠═╡
-data_export(CSV(export_locations,
-	:sediment_accumulation_curve => "$(OUTPUTDIR)/tutorial_ownsealevel_sac.csv",
-	:age_depth_model => "$(OUTPUTDIR)/tutorial_ownsealevel_adm.csv"),
-	own_sealevel_output)
-  ╠═╡ =#
+let
+	header, data = read_volume(own_sealevel_output, :full)
+	data_export(CSV(
+		:sediment_accumulation_curve => "$(OUTPUTDIR)/tutorial_ownsealevel_sac.csv",
+		:age_depth_model => "$(OUTPUTDIR)/tutorial_ownsealevel_adm.csv"),
+		header,
+		[data[c, 25] for c in export_columns])
+end
 
 # ╔═╡ 7f7dd756-d2e4-4eeb-8364-ea750a0aecc3
 md"""
@@ -943,68 +960,37 @@ In Pluto we can create interactive visualizations. Sliding `y` will cause a relo
 	If you'd like to learn more about interactivity in notebooks, check out the [`PlutoUI` demo notebook](https://featured.plutojl.org/basic/plutoui.jl).
 """
 
-# ╔═╡ 1fc8dffe-8e56-4da9-a7e0-07793d1d0455
-@bind y PlutoUI.Slider(1:50, default=25)
-
-# ╔═╡ 8dfe7d41-2915-48b7-9866-b36ae7fe6443
-y
-
 # ╔═╡ 8e0bdea3-77a7-452f-a3ca-b2a0b5bbf5f0
 md"""
 We load the data using the `read_slice` function from `CarboKitten.Export`. This extracts a slice along the $x$-axis (onshore-offshore profile).
 """
 
-# ╔═╡ a3485ec5-bdf1-4577-9d31-3ea21eba6a53
-#=╠═╡
-header, data_slice = read_slice(tutorial_output, :, y);
-  ╠═╡ =#
+# ╔═╡ 1fc8dffe-8e56-4da9-a7e0-07793d1d0455
+@bind x PlutoUI.Slider(1:100, default=25)
+
+# ╔═╡ 8dfe7d41-2915-48b7-9866-b36ae7fe6443
+x
 
 # ╔═╡ fbf6306d-de6c-4581-9f19-4ac066162709
 md"""
 Within this slice we can select a single stratigraphic column by setting the $x$ coordinate."""
 
-# ╔═╡ 1d952bc7-4375-4f6b-a47a-a2b0ea915360
-@bind x PlutoUI.Slider(1:50)
-
-# ╔═╡ eb4a1b28-4ba4-4cd1-9490-e27105b19921
-x
-
-# ╔═╡ c820f883-fa5b-4a43-a03f-e6961dbe4001
-#=╠═╡
-let
-	fig = Figure()
-	ax = Axis(fig[1, 1])
-	(_, yaxis) = box_axes(input.box)
-	ypos = yaxis[y]
-	sediment_profile!(ax, header, data_slice)
-	ax.title = "sediment profile @ y = $(uconvert(u"km", ypos))"
-	vlines!(ax, header.axes.x[x] |> in_units_of(u"km"), color=:black)
-	fig
-end
-  ╠═╡ =#
-
 # ╔═╡ 5ca6c8ed-cfd1-478d-a9fe-67fb4ff2ef0f
-#=╠═╡
 let
 	fig = Figure()
+	y = 25
 	(xaxis, yaxis) = box_axes(input.box)
 	xpos = uconvert(u"km", xaxis[x])
 	ypos = uconvert(u"km", yaxis[y])
 	ax = Axis(fig[1, 1], title="age depth model @ (x = $(xpos) offshore, y = $(ypos))", ylabel="height [m]", xlabel="time [Myr]")
-	column = DataColumn(
-		(x, y),
-		data_slice.disintegration[:, x, :],
-        data_slice.production[:, x, :],
-        data_slice.deposition[:, x, :],
-        data_slice.sediment_elevation[x, :])
-	adm = age_depth_model(column.sediment_elevation) |> in_units_of(u"m")
+	column = profile[x]
+	adm = age_depth_model(column.sediment_thickness) |> in_units_of(u"m")
 	lines!(ax, header.axes.t |> in_units_of(u"Myr"), adm)
 
 	ax2 = Axis(fig[1, 2], title="strat. col.", width=70, xtickformat="", xticksvisible=false)
 	stratigraphic_column!(ax2, header, column)
 	fig
 end
-  ╠═╡ =#
 
 # ╔═╡ c85294f2-3508-48c0-b67d-d82df646ae33
 Markdown.parse("""
@@ -1019,12 +1005,6 @@ Different carbonate producers (i.e., T, M, C) produce carbonate with different p
 md"""
 # Bibliography
 """
-
-# ╔═╡ 3723832f-344c-4471-acb0-cef7d4e5ca94
-using CarboKitten.Export: data_export, CSV, read_slice
-
-# ╔═╡ 5eb8bf63-de51-4f4f-ba23-53e4a68e5762
-using CarboKitten.Export: age_depth_model, read_slice, DataColumn
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1041,7 +1021,7 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
 CSV = "~0.10.15"
-CarboKitten = "~0.5.0"
+CarboKitten = "~0.5.2"
 DataFrames = "~1.7.0"
 GLMakie = "~0.13.1"
 Interpolations = "~0.15.1"
@@ -1056,7 +1036,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.5"
 manifest_format = "2.0"
-project_hash = "5451d92d316e49fd4dc89783d252087846956aee"
+project_hash = "07fa5d84eba932e6de022ccdff56a0d8b0420e36"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1184,9 +1164,9 @@ version = "1.18.5+0"
 
 [[deps.CarboKitten]]
 deps = ["CSV", "CategoricalArrays", "DataFrames", "DelimitedFiles", "GeometryBasics", "HDF5", "LinearAlgebra", "Logging", "ModuleMixins", "Pkg", "ProgressLogging", "Random", "StaticArrays", "TOML", "TerminalLoggers", "Unitful"]
-git-tree-sha1 = "f98a366b456162fa92651760b84df54a07e7f87b"
+git-tree-sha1 = "40b6300a58492a473e7c2b295979c615e1f3ffc9"
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
-version = "0.5.0"
+version = "0.5.2"
 weakdeps = ["Makie", "Statistics"]
 
     [deps.CarboKitten.extensions]
@@ -2975,6 +2955,7 @@ version = "1.8.1+0"
 # ╟─43405e49-2739-4e79-8204-e489db6c1fd5
 # ╠═ae3a74ea-f6b5-442c-973b-1cec48627968
 # ╠═8946d268-4407-4fe4-86ae-67b3a37b34be
+# ╠═5fe61113-3468-4696-85a1-5e6fff1d4fb0
 # ╠═0fd7ea33-ff06-4355-9278-125c8ed66df4
 # ╟─39e681ae-3ce4-41eb-a48a-9a42a4667183
 # ╟─a3e5f420-a59d-4725-8f8f-e5b8f06987db
@@ -3003,6 +2984,8 @@ version = "1.8.1+0"
 # ╠═41e84b67-f5f6-4b24-943d-b0bfe50ca2bb
 # ╠═5043ab85-a7ff-4283-9d71-071c470f4d6e
 # ╠═bd208d68-f565-4d05-89f7-f2e572a87f04
+# ╠═1c9b261a-3486-43ed-9416-3c89a9fd76e5
+# ╠═ac9e2e1d-2443-4141-97d6-457c0791b336
 # ╠═b2286eff-a49e-4596-b68c-1a5363c9477f
 # ╟─7f7dd756-d2e4-4eeb-8364-ea750a0aecc3
 # ╠═4b83e9e9-6404-4e52-8662-7ec56ccc7fa6
@@ -3020,7 +3003,7 @@ version = "1.8.1+0"
 # ╠═af878041-b78b-4e62-8aed-826506935f89
 # ╠═459feada-ad61-4939-b733-30aa007bb026
 # ╠═7c100b7f-7661-4250-b999-fdd3f32bf80b
-# ╠═c2166805-da62-4adf-8514-fd28924d115e
+# ╟─c2166805-da62-4adf-8514-fd28924d115e
 # ╠═17501c93-f432-4f1a-b815-5ac9c5a29f8f
 # ╠═71f2c3ad-80ea-4678-87cf-bb95ef5b57ff
 # ╟─04824ca5-3e40-40e7-8211-990c18af21e6
@@ -3038,14 +3021,10 @@ version = "1.8.1+0"
 # ╠═e1c9135e-4906-4bd1-ba9a-058f7de7d5ac
 # ╠═5eb8bf63-de51-4f4f-ba23-53e4a68e5762
 # ╟─cfb15723-694b-4dc1-bd37-21d17074ab98
+# ╟─8e0bdea3-77a7-452f-a3ca-b2a0b5bbf5f0
 # ╠═1fc8dffe-8e56-4da9-a7e0-07793d1d0455
 # ╠═8dfe7d41-2915-48b7-9866-b36ae7fe6443
-# ╟─8e0bdea3-77a7-452f-a3ca-b2a0b5bbf5f0
-# ╠═a3485ec5-bdf1-4577-9d31-3ea21eba6a53
 # ╟─fbf6306d-de6c-4581-9f19-4ac066162709
-# ╠═1d952bc7-4375-4f6b-a47a-a2b0ea915360
-# ╠═eb4a1b28-4ba4-4cd1-9490-e27105b19921
-# ╟─c820f883-fa5b-4a43-a03f-e6961dbe4001
 # ╟─5ca6c8ed-cfd1-478d-a9fe-67fb4ff2ef0f
 # ╟─c85294f2-3508-48c0-b67d-d82df646ae33
 # ╟─754f7cf0-f3a7-4cff-b20e-ed16874860c7

@@ -57,6 +57,7 @@ The single-cell version of `push_sediment!` takes as argument `col` a column (ph
 
 ``` {.julia #sediment-stack-impl}
 function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
+    @assert size(col, 2) == length(parcel) "column $(size(col)) doesn't match parcel $(size(parcel))"
     <<push-sediment>>
 end
 ```
@@ -186,6 +187,7 @@ export push_sediment!, pop_sediment!, peek_sediment
 
 function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) where F <: Real
   _, x, y = size(p)
+  @assert size(sediment, 2) == size(p, 1) "shapes for sediment $(size(sediment)) doesn't match p $(size(p))"
   @views for i in CartesianIndices((x, y))
     push_sediment!(sediment[:, :, i[1], i[2]], p[:, i[1], i[2]])
   end

@@ -5,6 +5,7 @@ export push_sediment!, pop_sediment!, peek_sediment
 
 # ~/~ begin <<docs/src/components/sediment_buffer.md#sediment-stack-impl>>[init]
 function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
+    @assert size(col, 2) == length(parcel) "column $(size(col)) doesn't match parcel $(size(parcel))"
     # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[init]
     mass = sum(parcel)
     if mass == 0.0
@@ -91,6 +92,7 @@ end
 
 function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) where F <: Real
   _, x, y = size(p)
+  @assert size(sediment, 2) == size(p, 1) "shapes for sediment $(size(sediment)) doesn't match p $(size(p))"
   @views for i in CartesianIndices((x, y))
     push_sediment!(sediment[:, :, i[1], i[2]], p[:, i[1], i[2]])
   end

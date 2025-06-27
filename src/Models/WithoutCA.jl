@@ -21,9 +21,12 @@ function step!(input::Input)
     transport! = ActiveLayer.transporter(input)
     τ = uniform_production(input)
     dt = input.time.Δt
+    local_water_depth = water_depth(input)
+    na = [CartesianIndex()]
 
     function (state::State)
-        p = τ(state) .* dt
+        wd = local_water_depth(state)
+        p = τ(state, wd)
         d = disintegrate!(state)
 
         active_layer = p .+ d

@@ -219,7 +219,7 @@ end
 function step!(input::Input)
     τ = uniform_production(input)
     function (state::State)
-        prod = τ(state) .* input.time.Δt
+        prod = τ(state)
         Δη = sum(prod; dims=1)[1, :, :]
         state.sediment_height .+= Δη
         state.step += 1

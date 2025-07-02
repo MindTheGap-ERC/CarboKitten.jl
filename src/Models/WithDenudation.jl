@@ -29,9 +29,9 @@ end
 
 function step!(input::Input)
     step_ca! = CellularAutomaton.step!(input)
-    disintegrate! = disintegration(input)
+    disintegrate! = ActiveLayer.disintegrator(input)
     produce = production(input)
-    transport = transportation(input)
+    transport! = ActiveLayer.transporter(input)
     denudate = denudation(input)
     redistribute = redistribution(input)
     water_depth_fn = water_depth(input)
@@ -54,7 +54,7 @@ function step!(input::Input)
         d = disintegrate!(state)
 
         active_layer = p .+ d
-        sediment = transport(state, active_layer)
+        transport!(state, active_layer)
 
 
         # subaerial: denudation and redistribution
@@ -70,19 +70,19 @@ function step!(input::Input)
 
             redistribution_mass = redistribute(state, w, denuded_sediment .* input.depositional_resolution)
             if redistribution_mass !== nothing
-                sediment .+= redistribution_mass
+                active_layer .+= redistribution_mass
             end
         end
 
-        push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|> NoUnits)
+        push_sediment!(state.sediment_buffer, active_layer ./ input.depositional_resolution .|> NoUnits)
 
-        state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
+        state.sediment_height .+= sum(active_layer; dims=1)[1,:,:]
         state.step += 1
 
         return Frame(
             production = p,
             disintegration = d,
-            deposition = sediment)
+            deposition = active_layer)
     end
 end
 

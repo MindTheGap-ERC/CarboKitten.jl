@@ -124,7 +124,7 @@ The `CAProduction` component gives production that depends on the provided CA.
     function production(input::AbstractInput)
         w = water_depth(input)
         na = [CartesianIndex()]
-        output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
+        output_ = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
 
         w = water_depth(input)
         s = insolation(input)
@@ -132,18 +132,19 @@ The `CAProduction` component gives production that depends on the provided CA.
         facies = input.facies
         dt = input.time.Δt
 
-        function p(state::AbstractState, wd::AbstractMatrix)
-            insolation = s(state)
-		    for i in eachindex(IndexCartesian(), wd)
-				for f in 1:n_f
-				    output[f, i[1], i[2]] = f != state.ca[i] ? 0u"m" :
-				    capped_production(insolation, facies[f], wd[i], dt)
-				end
-		    end
+        function p(state::AbstractState, wd::AbstractMatrix)::Array{Amount,3}
+            output::Array{Amount, 3} = output_
+            insolation::typeof(1.0u"W/m^2") = s(state)
+            for i in eachindex(IndexCartesian(), wd)
+                for f in 1:n_f
+                    output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u"m" :
+                    capped_production(insolation, facies[f], wd[i], dt)
+                end
+            end
             return output
         end
 
-        p(state::AbstractState) = p(state, w(state))
+        @inline p(state::AbstractState) = p(state, w(state))
 
         return p
     end

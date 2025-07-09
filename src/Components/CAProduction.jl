@@ -9,24 +9,29 @@
     function production(input::AbstractInput)
         w = water_depth(input)
         na = [CartesianIndex()]
-        output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
+        output_ = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
 
         w = water_depth(input)
         s = insolation(input)
         n_f = n_facies(input)
         facies = input.facies
-        Δt = input.time.Δt
+        dt = input.time.Δt
 
-        return function(state::AbstractState)
-            insolation = s(state)
-            for f = 1:n_f
-                output[f, :, :] = ifelse.(
-                    state.ca .== f,
-                    production_rate.(insolation, (facies[f],), w(state)) .* Δt,
-                    0.0u"m")
+        function p(state::AbstractState, wd::AbstractMatrix)::Array{Amount,3}
+            output::Array{Amount, 3} = output_
+            insolation::typeof(1.0u"W/m^2") = s(state)
+            for i in eachindex(IndexCartesian(), wd)
+                for f in 1:n_f
+                    output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u"m" :
+                    capped_production(insolation, facies[f], wd[i], dt)
+                end
             end
             return output
         end
+
+        @inline p(state::AbstractState) = p(state, w(state))
+        
+        return p
     end
 end
 # ~/~ end

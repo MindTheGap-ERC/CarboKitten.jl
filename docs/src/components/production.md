@@ -18,6 +18,11 @@ function production_rate(insolation, facies, water_depth)
     x = water_depth * facies.extinction_coefficient
     return x > 0.0 ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
 end
+
+function capped_production(insolation, facies, water_depth, dt)
+    p = production_rate(insolation, facies, water_depth) * dt
+    return min(p, max(0.0u"m", water_depth))
+end
 ```
 
 From just this equation we can define a uniform production process. This requires that we have a `Facies` that defines the `maximum_growth_rate`, `extinction_coefficient` and `saturation_intensity`.
@@ -33,7 +38,7 @@ using ..TimeIntegration: time, write_times
 using HDF5
 using Logging
 
-export production_rate, uniform_production
+export production_rate, capped_production, uniform_production
 
 @kwdef struct Facies <: AbstractFacies
     maximum_growth_rate::Rate
@@ -88,13 +93,14 @@ function uniform_production(input::AbstractInput)
     na = [CartesianIndex()]
     insolation_func = insolation(input)
     facies = input.facies
+    dt = input.time.Δt
 
-    return function (state::AbstractState)
-        return production_rate.(
-            insolation_func(state),
-            facies[:, na, na],
-            w(state)[na, :, :])
-    end
+    p(state::AbstractState, wd::AbstractMatrix) =
+        capped_production.(insolation_func(state), facies[:, na, na], wd[na, :, :], dt)
+
+    p(state::AbstractState) = p(state, w(state))
+
+    return p
 end
 end
 ```
@@ -118,24 +124,29 @@ The `CAProduction` component gives production that depends on the provided CA.
     function production(input::AbstractInput)
         w = water_depth(input)
         na = [CartesianIndex()]
-        output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
+        output_ = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
 
         w = water_depth(input)
         s = insolation(input)
         n_f = n_facies(input)
         facies = input.facies
-        Δt = input.time.Δt
+        dt = input.time.Δt
 
-        return function(state::AbstractState)
-            insolation = s(state)
-            for f = 1:n_f
-                output[f, :, :] = ifelse.(
-                    state.ca .== f,
-                    production_rate.(insolation, (facies[f],), w(state)) .* Δt,
-                    0.0u"m")
+        function p(state::AbstractState, wd::AbstractMatrix)::Array{Amount,3}
+            output::Array{Amount, 3} = output_
+            insolation::typeof(1.0u"W/m^2") = s(state)
+            for i in eachindex(IndexCartesian(), wd)
+                for f in 1:n_f
+                    output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u"m" :
+                    capped_production(insolation, facies[f], wd[i], dt)
+                end
             end
             return output
         end
+
+        @inline p(state::AbstractState) = p(state, w(state))
+
+        return p
     end
 end
 ```

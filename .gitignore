@@ -20,8 +20,6 @@ docs/src/_fig/*.gif
 .entangled/tasks.json
 
 scratch
-
-notebooks/*.h5
-notebooks/*.png
-notebooks/*.svg
+notebooks
+*.cov
 

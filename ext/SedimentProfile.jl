@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/visualization.md#ext/SedimentProfile.jl>>[init]
 module SedimentProfile
 
-import CarboKitten.Visualization: sediment_profile, sediment_profile!
+import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!
 
 using CarboKitten.Visualization
 using CarboKitten.Utility: in_units_of
@@ -85,7 +85,7 @@ function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth
     end
 end
 
-function sediment_profile!(ax::Axis, header::Header, data::DataSlice; show_unconformities::Union{Nothing,Bool,Int} = nothing)
+function profile_plot!(ax::Axis, header::Header, data::DataSlice; mesh_args...)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
     n_facies = size(data.production)[1]
@@ -105,12 +105,28 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice; show_uncon
     xlims!(ax, x[1], x[end])
     ax.xlabel = "position [km]"
     ax.ylabel = "depth [m]"
-    ax.title = "sediment profile"
+
+    mesh!(ax, v, f; mesh_args...)
+end
+
+function profile_rgb_plot!(f::F, ax::Axis, header::Header, data::DataSlice) where {F}
+    rgb = f.(eachslice(data.deposition, dims=[2, 3]))
+    c = reshape(rgb, length(x) * (length(t) - 1))
+    profile_plot!(ax, header, data; color=vcat(c, c))
+end
+
+function sediment_profile!(ax::Axis, header::Header, data::DataSlice; show_unconformities::Union{Nothing,Bool,Int} = nothing)
+    x = header.axes.x |> in_units_of(u"km")
+    t = header.axes.t |> in_units_of(u"Myr")
+    n_facies = size(data.production)[1]
 
     c = reshape(colormax(data)[:, :], length(x) * (length(t) - 1))
-    mesh!(ax, v, f, color=vcat(c, c), alpha=1.0, colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+    profile_plot!(ax, header, data; color=vcat(c, c), alpha=1.0,
+        colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
     plot_unconformities(ax, header, data, show_unconformities)
+
+    ax.title = "sediment profile"
 end
 
 function sediment_profile(header::Header, data_slice::DataSlice; show_unconformities::Union{Bool,Int,Nothing} = nothing)

@@ -96,7 +96,7 @@ using Makie
 
 summary_plot(filename::AbstractString; kwargs...) = h5open(fid->summary_plot(fid; kwargs...), filename, "r")
 
-function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
+function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1), show_unconformities=true)
     header = read_header(fid)
     data_groups = group_datasets(fid)
 
@@ -133,7 +133,7 @@ function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
     n_facies = size(section_data.production)[1]
 
     ax1 = Axis(fig[1:2,1:2])
-    sediment_profile!(ax1, header, section_data)
+    sediment_profile!(ax1, header, section_data; show_unconformities = show_unconformities)
 
     ax2 = Axis(fig[4,1])
     ax3 = Axis(fig[4,2])
@@ -454,7 +454,29 @@ function explode_quad_vertices(v::Array{Float64,3})
     vcat(hcat(vtx1, vtx2, vtx3), hcat(vtx1, vtx3, vtx4))
 end
 
-function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth)
+    @info "Not plotting unconformities"
+end
+
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Bool)
+    if minwidth
+        plot_unconformities(ax, header, data, 10)
+    end
+end
+
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Int)
+    x = header.axes.x |> in_units_of(u"km")
+    ξ = elevation(header, data)  # |> in_units_of(u"m")
+    water_depth = ξ .- (header.subsidence_rate .* (header.axes.t .- header.axes.t[end]) .+ header.sea_level)[na, :]
+    hiatus = skeleton(water_depth .> 0.0u"m", minwidth=minwidth)
+
+    if !isempty(hiatus[1])
+        verts = [(x[pt[1]], ξ[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
+        linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
+    end
+end
+
+function sediment_profile!(ax::Axis, header::Header, data::DataSlice; show_unconformities::Union{Nothing,Bool,Int} = nothing)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
     n_facies = size(data.production)[1]
@@ -464,9 +486,6 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     @views verts[:, :, 1] .= x
     @views verts[:, :, 2] .= ξ |> in_units_of(u"m")
     v, f = explode_quad_vertices(verts)
-
-    water_depth = ξ .- (header.subsidence_rate.*(header.axes.t.-header.axes.t[end]).+header.sea_level)[na, :]
-    hiatus = skeleton(water_depth .> 0.0u"m")
 
     total_subsidence = header.subsidence_rate * header.axes.t[end]
     bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |> in_units_of(u"m")
@@ -482,16 +501,13 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
     c = reshape(colormax(data)[:, :], length(x) * (length(t) - 1))
     mesh!(ax, v, f, color=vcat(c, c), alpha=1.0, colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
-    if !isempty(hiatus[1])
-        verts = [(x[pt[1]], ξ[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
-        linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
-    end
+    plot_unconformities(ax, header, data, show_unconformities)
 end
 
-function sediment_profile(header::Header, data_slice::DataSlice)
+function sediment_profile(header::Header, data_slice::DataSlice; show_unconformities::Union{Bool,Int,Nothing} = nothing)
     fig = Figure(size=(1000, 600))
     ax = Axis(fig[1, 1])
-    sediment_profile!(ax, header, data_slice)
+    sediment_profile!(ax, header, data_slice; show_unconformities = show_unconformities)
     return fig
 end
 

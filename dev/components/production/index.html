@@ -165,6 +165,11 @@
     I = insolation / facies.saturation_intensity
     x = water_depth * facies.extinction_coefficient
     return x &gt; 0.0 ? gₘ * tanh(I * exp(-x)) : 0.0u&quot;m/Myr&quot;
+end
+
+function capped_production(insolation, facies, water_depth, dt)
+    p = production_rate(insolation, facies, water_depth) * dt
+    return min(p, max(0.0u&quot;m&quot;, water_depth))
 end</code></pre><p>From just this equation we can define a uniform production process. This requires that we have a <code>Facies</code> that defines the <code>maximum_growth_rate</code>, <code>extinction_coefficient</code> and <code>saturation_intensity</code>.</p><p>The <code>insolation</code> input may be given as a scalar quantity, say <code>400u&quot;W/m^2&quot;</code>, or as a function of time.</p><div class="noweb-label">file:<i>src/Components/Production.jl</i></div><pre><code class="language- julia hljs">@compose module Production
 @mixin TimeIntegration, WaterDepth, FaciesBase
 using ..Common
@@ -173,7 +178,7 @@ using ..TimeIntegration: time, write_times
 using HDF5
 using Logging
 
-export production_rate, uniform_production
+export production_rate, capped_production, uniform_production
 
 @kwdef struct Facies &lt;: AbstractFacies
     maximum_growth_rate::Rate
@@ -228,13 +233,14 @@ function uniform_production(input::AbstractInput)
     na = [CartesianIndex()]
     insolation_func = insolation(input)
     facies = input.facies
+    dt = input.time.Δt
 
-    return function (state::AbstractState)
-        return production_rate.(
-            insolation_func(state),
-            facies[:, na, na],
-            w(state)[na, :, :])
-    end
+    p(state::AbstractState, wd::AbstractMatrix) =
+        capped_production.(insolation_func(state), facies[:, na, na], wd[na, :, :], dt)
+
+    p(state::AbstractState) = p(state, w(state))
+
+    return p
 end
 end</code></pre><h2 id="CA-Production"><a class="docs-heading-anchor" href="#CA-Production">CA Production</a><a id="CA-Production-1"></a><a class="docs-heading-anchor-permalink" href="#CA-Production" title="Permalink"></a></h2><div class="component-dag" style="overflow: scroll"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
@@ -463,24 +469,29 @@ end</code></pre><h2 id="CA-Production"><a class="docs-heading-anchor" href="#CA-
     function production(input::AbstractInput)
         w = water_depth(input)
         na = [CartesianIndex()]
-        output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
+        output_ = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
 
         w = water_depth(input)
         s = insolation(input)
         n_f = n_facies(input)
         facies = input.facies
-        Δt = input.time.Δt
+        dt = input.time.Δt
 
-        return function(state::AbstractState)
-            insolation = s(state)
-            for f = 1:n_f
-                output[f, :, :] = ifelse.(
-                    state.ca .== f,
-                    production_rate.(insolation, (facies[f],), w(state)) .* Δt,
-                    0.0u&quot;m&quot;)
+        function p(state::AbstractState, wd::AbstractMatrix)::Array{Amount,3}
+            output::Array{Amount, 3} = output_
+            insolation::typeof(1.0u&quot;W/m^2&quot;) = s(state)
+            for i in eachindex(IndexCartesian(), wd)
+                for f in 1:n_f
+                    output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u&quot;m&quot; :
+                    capped_production(insolation, facies[f], wd[i], dt)
+                end
             end
             return output
         end
+
+        @inline p(state::AbstractState) = p(state, w(state))
+
+        return p
     end
 end</code></pre><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><h3 id="If-production-is-higher-in-shallower-water"><a class="docs-heading-anchor" href="#If-production-is-higher-in-shallower-water">If production is higher in shallower water</a><a id="If-production-is-higher-in-shallower-water-1"></a><a class="docs-heading-anchor-permalink" href="#If-production-is-higher-in-shallower-water" title="Permalink"></a></h3><div class="noweb-label">⪡production-spec⪢≣</div><pre><code class="language- julia hljs">@testset &quot;Components/Production&quot; begin
     let facies = Facies(
@@ -533,4 +544,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../waterdepth/">« Water Depth</a><a class="docs-footer-nextpage" href="../sediment_buffer/">Sediment Buffers »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 25 June 2025 23:49">Wednesday 25 June 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../waterdepth/">« Water Depth</a><a class="docs-footer-nextpage" href="../sediment_buffer/">Sediment Buffers »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 9 July 2025 11:17">Wednesday 9 July 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

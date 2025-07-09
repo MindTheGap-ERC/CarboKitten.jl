@@ -426,7 +426,7 @@ const Amount = typeof(1.0u&quot;m&quot;)
 
 &lt;&lt;export-test-case&gt;&gt;
 
-@testset &quot;Data Export&quot; begin
+@testset &quot;CarboKitten.Export&quot; begin
     sac = data_export(CSVExportTrait{:sediment_accumulation_curve}, HEADER1, COLUMNS1)
     adm = data_export(CSVExportTrait{:age_depth_model}, HEADER1, COLUMNS1)
     sc = data_export(CSVExportTrait{:stratigraphic_column}, HEADER1, COLUMNS1)
@@ -458,37 +458,18 @@ const Amount = typeof(1.0u&quot;m&quot;)
         end
     end
 
-    @testset &quot;Waterdepth signs&quot; begin
-        BS92_TEST_INPUT = BS92.Input(
-            tag = &quot;single pixel model&quot;,
-            box = Box{Periodic{2}}(grid_size=(1, 1), phys_scale=600.0u&quot;m&quot;),
-            time = TimeProperties(
-              Δt = 10.0u&quot;yr&quot;,
-              steps = 8000),
-            output = Dict(:full =&gt; OutputSpec((1, 1), 80)),
-            sea_level = t -&gt; 10.0u&quot;m&quot; * sin(2π * t / 20u&quot;kyr&quot;),
-            initial_topography = (_, _) -&gt; - 50.0u&quot;m&quot;,
-            subsidence_rate = 0.001u&quot;m/yr&quot;,
-            insolation = 400.0u&quot;W/m^2&quot;,
-            facies = [BS92.Facies(
-              maximum_growth_rate = 0.005u&quot;m/yr&quot;,
-              saturation_intensity = 50.0u&quot;W/m^2&quot;,
-              extinction_coefficient = 0.05u&quot;m^-1&quot;
-            )])
-
-        mktempdir() do path
-            run_model(Model{BS92}, BS92_TEST_INPUT, joinpath(path, &quot;run.h5&quot;))
-            header, data = read_column(joinpath(path, &quot;run.h5&quot;), :full)
-            wd = extract_wd(header, data, 1)
-            sac = extract_sac(header, data, 1)
-            submerged = wd.wd_1 .&gt; -1.0u&quot;m&quot;
-            growing = (sac.sac_1[2:end] .- sac.sac_1[1:end-1]) .&gt; 0.5u&quot;m&quot;
-            @test all(growing .&amp;&amp; (submerged[1:end-1] .|| submerged[2:end]) .|| .!growing)
-        end
+    @testset &quot;Water depth signs&quot; begin
+        test_path::String = TEST_PATH
+        header, data = read_column(joinpath(test_path, &quot;bs92_spm.h5&quot;), :full)
+        wd = extract_wd(header, data, 1)
+        sac = extract_sac(header, data, 1)
+        submerged = wd.wd_1 .&gt; -1.0u&quot;m&quot;
+        growing = (sac.sac_1[2:end] .- sac.sac_1[1:end-1]) .&gt; 0.5u&quot;m&quot;
+        @test all(growing .&amp;&amp; (submerged[1:end-1] .|| submerged[2:end]) .|| .!growing)
     end
 end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../input-methods/">« Input Methods</a><a class="docs-footer-nextpage" href="../unitful/">Unitful »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 25 June 2025 23:49">Wednesday 25 June 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../input-methods/">« Input Methods</a><a class="docs-footer-nextpage" href="../unitful/">Unitful »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 9 July 2025 11:17">Wednesday 9 July 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

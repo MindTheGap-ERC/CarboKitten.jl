@@ -33,7 +33,7 @@ module Script
             intertidal_zone = 10u"m"
         )
 
-        fig = plot_1d_evolution(input, 1000)
+        fig = plot_1d_evolution(input, 500)
         save("docs/src/_fig/1d-intertidal.svg", fig)
     end
 end

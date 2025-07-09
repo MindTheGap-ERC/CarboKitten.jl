@@ -21,7 +21,7 @@ end
 
 function capped_production(insolation, facies, water_depth, dt)
     p = production_rate(insolation, facies, water_depth) * dt
-    return min(p, water_depth)
+    return min(p, max(0.0u"m", water_depth))
 end
 ```
 

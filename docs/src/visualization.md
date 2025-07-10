@@ -466,17 +466,17 @@ the default width of 10 time steps is taken.
 
 Additional keyword arguments are forwarded to the `linesegments!` call.
 """
-function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth; kwargs...)
-    @info "Not plotting unconformities"
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Nothing; kwargs...)
+    @info "Not plotting unconformities, got minwidth: $(minwidth)"
 end
 
-function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Bool, kwargs...)
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Bool; kwargs...)
     if minwidth
         plot_unconformities(ax, header, data, 10; kwargs...)
     end
 end
 
-function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Int)
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Int; kwargs...)
     x = header.axes.x |> in_units_of(u"km")
     ξ = elevation(header, data)  # |> in_units_of(u"m")
     water_depth = ξ .- (header.subsidence_rate .* (header.axes.t .- header.axes.t[end]) .+ header.sea_level)[na, :]

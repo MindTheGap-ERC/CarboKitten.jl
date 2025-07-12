@@ -380,18 +380,61 @@ end
 
 ![Sediment profile](fig/sediment_profile.png)
 
+The sediment profile is probably the most important visualization that we provide. By default it allows us to study the sediment composition of a section, by plotting the `argmax` of the deposition. In cases where significant amounts of sediment is eroded, all deposition is plotted, and it is assumed that newest depositions are shown on top of possible older ones.
+
 ``` {.julia .task file=examples/visualization/sediment_profile.jl}
 #| creates: docs/src/_fig/sediment_profile.png
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
+module Script
 using CairoMakie
 using CarboKitten.Export: read_slice
 using CarboKitten.Visualization: sediment_profile
 
-save("docs/src/_fig/sediment_profile.png",
-    sediment_profile(read_slice("data/output/alcap-example.h5", :, 25)...))
+function main()
+    save("docs/src/_fig/sediment_profile.png",
+        sediment_profile(read_slice("data/output/alcap-example.h5", :slice)...))
+end
+end
+
+Script.main()
 ```
+
+If you want to visualize something other than the `argmax` of the deposition, you may use the `profile_plot!` function. For example, we can plot the fraction of second facies over total.
+
+![](fig/profile_fraction.png)
+
+``` {.julia .task file=examples/visualization/profile_fraction.jl}
+#| creates: docs/src/_fig/profile_fraction.png
+#| requires: data/output/alcap-example.h5
+#| collect: figures
+
+module Script
+using GLMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: profile_plot!
+
+function main()
+    (header, slice) = read_slice("data/output/alcap-example.h5", :profile)
+	fig = Figure()
+	ax = Axis(fig[1, 1])
+
+	x = header.axes.x
+	t = header.axes.t
+
+    plot = profile_plot!(x -> x[2]/sum(x), ax, header, slice; colorrange=(0, 1))
+    Colorbar(fig[1, 2], plot; label=L"f_2 / f_{total}")
+
+	save("docs/src/_fig/profile_fraction.png", fig)
+	fig
+end
+end
+
+Script.main()
+```
+
+### Implementation
 
 ```{.julia file=ext/SedimentProfile.jl}
 module SedimentProfile

@@ -516,7 +516,7 @@ com_positions = [center_of_mass(r, x) for r in result]
 @assert length(com_positions) == length(times)
 observed_speeds = (com_positions[2:end] .- com_positions[1:end-1]) ./ 
     (times[2:end] .- times[1:end-1])
-    
+
 # Extract the expected speed from the wave transport
 expected_speed = input.facies[1].wave_velocity(0.0u"m")[1][1]  
 tolerance = 1e-6 * expected_speed  # Set a tolerance for the comparison

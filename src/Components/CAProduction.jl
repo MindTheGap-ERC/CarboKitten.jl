@@ -30,7 +30,7 @@
         end
 
         @inline p(state::AbstractState) = p(state, w(state))
-        
+
         return p
     end
 end

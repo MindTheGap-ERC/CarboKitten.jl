@@ -111,15 +111,14 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
 
     verts = zeros(Float64, n_x, n_t+1, 2)
     @views verts[:, :, 1] .= x
-    @info "verts: $(size(verts)) -- xi: $(size(ξ))"
     @views verts[:, :, 2] .= ξ |> in_units_of(u"m")
     v, f = explode_quad_vertices(verts)
 
     total_subsidence = header.subsidence_rate * header.axes.t[end]
     bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |> in_units_of(u"m")
     lower_limit = minimum(bedrock) - 20
-    band!(ax, x, lower_limit, bedrock; color=:gray)
-    lines!(ax, x, bedrock; color=:black)
+    band!(ax, x, lower_limit, bedrock; color=:gray, label="initial topography")
+    lines!(ax, x, bedrock; color=:black, label="initial topography")
     ylims!(ax, lower_limit + 10, nothing)
     xlims!(ax, x[1], x[end])
     ax.xlabel = "position [km]"
@@ -158,7 +157,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice; show_uncon
         colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
     minwidth = show_unconformities
-    plot_unconformities(ax, header, data, minwidth;
+    plot_unconformities(ax, header, data, minwidth; label = "unconformities",
                         color=:white, linestyle=:dash, linewidth=1)
 
     ax.title = "sediment profile"

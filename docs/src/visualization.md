@@ -119,7 +119,7 @@ function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1), show_unconformities
         end
 
         volume_data = read_volume(fid[data_groups[:volume][1]])
-        ax = Axis3(fig[1, 3]; zlabel="depth [m]", xlabel="x [km]", ylabel="y [km]")
+        ax = Axis3(fig[1, 3]; title="topography", zlabel="depth [m]", xlabel="x [km]", ylabel="y [km]")
         glamour_view!(ax, header, volume_data)
         volume_data
     end
@@ -137,6 +137,7 @@ function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1), show_unconformities
 
     ax1 = Axis(fig[1:2,1:2])
     sediment_profile!(ax1, header, section_data; show_unconformities = show_unconformities)
+    axislegend(ax1; merge=true, backgroundcolor=:gray80)
 
     ax2 = Axis(fig[4,1])
     ax3 = Axis(fig[4,2])
@@ -236,8 +237,8 @@ function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
 
     sa = heatmap!(ax, xkm, tmyr, mag;
         colormap=colormap, colorrange=range ./ u"m/Myr")
-    contour!(ax, xkm, tmyr, wd;
-        levels=[0], color=:red, linewidth=2, linestyle=:dash)
+    #contour!(ax, xkm, tmyr, wd;
+    #    levels=[0], color=:red, linewidth=2, linestyle=:dash)
     return sa
 end
 
@@ -262,8 +263,8 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
         colorrange=(0.5, n_facies + 0.5))
     contourf!(ax, xkm, tmyr, wd;
         levels=[0.0, 10000.0], colormap=Reverse(:grays))
-    contour!(ax, xkm, tmyr, wd;
-        levels=[0], color=:black, linewidth=2)
+    #contour!(ax, xkm, tmyr, wd;
+    #    levels=[0], color=:black, linewidth=2)
     return ft
 end
 
@@ -505,15 +506,14 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
 
     verts = zeros(Float64, n_x, n_t+1, 2)
     @views verts[:, :, 1] .= x
-    @info "verts: $(size(verts)) -- xi: $(size(ξ))"
     @views verts[:, :, 2] .= ξ |> in_units_of(u"m")
     v, f = explode_quad_vertices(verts)
 
     total_subsidence = header.subsidence_rate * header.axes.t[end]
     bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |> in_units_of(u"m")
     lower_limit = minimum(bedrock) - 20
-    band!(ax, x, lower_limit, bedrock; color=:gray)
-    lines!(ax, x, bedrock; color=:black)
+    band!(ax, x, lower_limit, bedrock; color=:gray, label="initial topography")
+    lines!(ax, x, bedrock; color=:black, label="initial topography")
     ylims!(ax, lower_limit + 10, nothing)
     xlims!(ax, x[1], x[end])
     ax.xlabel = "position [km]"
@@ -552,7 +552,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice; show_uncon
         colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
     minwidth = show_unconformities
-    plot_unconformities(ax, header, data, minwidth;
+    plot_unconformities(ax, header, data, minwidth; label = "unconformities",
                         color=:white, linestyle=:dash, linewidth=1)
 
     ax.title = "sediment profile"

@@ -8,6 +8,9 @@ function print_instructions(func_name, args)
     println("This is an extension and only becomes available when you import {Cairo,GL,WGL}Makie before using this.")
 end
 
+function profile_plot! end
+
+# profile_plot!(args...; kwargs...) = print_instructions("profile_plot!", args)
 sediment_profile!(args...) = print_instructions("sediment_profile!", args)
 sediment_profile(args...) = print_instructions("sediment_profile", args)
 wheeler_diagram!(args...) = print_instructions("wheeler_diagram!", args)

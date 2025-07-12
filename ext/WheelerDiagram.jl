@@ -47,8 +47,8 @@ function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
 
     sa = heatmap!(ax, xkm, tmyr, mag;
         colormap=colormap, colorrange=range ./ u"m/Myr")
-    contour!(ax, xkm, tmyr, wd;
-        levels=[0], color=:red, linewidth=2, linestyle=:dash)
+    #contour!(ax, xkm, tmyr, wd;
+    #    levels=[0], color=:red, linewidth=2, linestyle=:dash)
     return sa
 end
 
@@ -73,8 +73,8 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
         colorrange=(0.5, n_facies + 0.5))
     contourf!(ax, xkm, tmyr, wd;
         levels=[0.0, 10000.0], colormap=Reverse(:grays))
-    contour!(ax, xkm, tmyr, wd;
-        levels=[0], color=:black, linewidth=2)
+    #contour!(ax, xkm, tmyr, wd;
+    #    levels=[0], color=:black, linewidth=2)
     return ft
 end
 

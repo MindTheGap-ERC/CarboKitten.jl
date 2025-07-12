@@ -51,7 +51,8 @@ const HEADER1 = Header(
     time_steps=10,
     initial_topography=zeros(typeof(1.0u"m"), 3, 3),
     sea_level=zeros(typeof(1.0u"m"), 11),
-    subsidence_rate=10u"m/Myr")
+    subsidence_rate=10u"m/Myr",
+    data_sets=Dict())
 
 const PRODUCTION1 = reshape(
     hcat(ones(Amount, 10),

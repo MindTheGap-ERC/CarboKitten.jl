@@ -499,11 +499,13 @@ The `color` array should have the same size as a single facies for `data.product
 function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::AbstractArray, mesh_args...)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
-    n_facies = size(data.production)[1]
+
+    n_facies, n_x, n_t = size(data.production)
     ξ = elevation(header, data)  # |> in_units_of(u"m")
 
-    verts = zeros(Float64, length(x), length(t), 2)
+    verts = zeros(Float64, n_x, n_t+1, 2)
     @views verts[:, :, 1] .= x
+    @info "verts: $(size(verts)) -- xi: $(size(ξ))"
     @views verts[:, :, 2] .= ξ |> in_units_of(u"m")
     v, f = explode_quad_vertices(verts)
 
@@ -517,7 +519,7 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
     ax.xlabel = "position [km]"
     ax.ylabel = "depth [m]"
 
-    c = reshape(color, length(x) * (length(t) - 1))
+    c = reshape(color, n_x * n_t)
     mesh!(ax, v, f; color=vcat(c, c), mesh_args...)
 end
 

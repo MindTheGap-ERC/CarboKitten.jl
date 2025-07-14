@@ -23,7 +23,8 @@ const HEADER1 = Header(
     time_steps=10,
     initial_topography=zeros(typeof(1.0u&quot;m&quot;), 3, 3),
     sea_level=zeros(typeof(1.0u&quot;m&quot;), 11),
-    subsidence_rate=10u&quot;m/Myr&quot;)
+    subsidence_rate=10u&quot;m/Myr&quot;,
+    data_sets=Dict())
 
 const PRODUCTION1 = reshape(
     hcat(ones(Amount, 10),
@@ -274,6 +275,14 @@ const na = [CartesianIndex()]
     t::Vector{Time}
 end
 
+const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
+
+@kwdef struct DataHeader
+    kind::Symbol
+    slice::Slice2
+    write_interval::Int
+end
+
 @kwdef struct Header
     tag::String
     axes::Axes
@@ -282,9 +291,8 @@ end
     initial_topography::Matrix{Amount}
     sea_level::Vector{Length}
     subsidence_rate::Rate
+    data_sets::Dict{Symbol, DataHeader}
 end
-
-const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
 
 @kwdef struct Data{F, D}
 	slice::Slice2
@@ -339,14 +347,18 @@ data_kind(::Int, _) = :slice
 data_kind(_, ::Int) = :slice
 data_kind(_, _) = :volume
 
+
+function data_kind(gid::HDF5.Group)
+	slice = parse_multi_slice(attrs(gid)[&quot;slice&quot;])
+	return data_kind(slice...)
+end
+
 function data_kind(fid::HDF5.File, group)
 	group_name = string(group)
 	if group_name == &quot;input&quot;
 		return :metadata
 	end
-	gid = fid[group_name]
-	slice = parse_multi_slice(attrs(gid)[&quot;slice&quot;])
-	return data_kind(slice...)
+    return data_kind(fid[group_name])
 end
 
 function group_datasets(fid::HDF5.File)
@@ -363,6 +375,14 @@ function group_datasets(fid::HDF5.File)
 	return result
 end
 
+function data_header(gid::HDF5.Group)
+	slice = parse_multi_slice(attrs(gid)[&quot;slice&quot;])
+    kind = data_kind(slice...)
+    write_interval = attrs(gid)[&quot;write_interval&quot;]
+    return DataHeader(
+        slice=slice, kind=kind, write_interval=write_interval)
+end
+
 function read_header(fid)
     attrs = HDF5.attributes(fid[&quot;input&quot;])
 
@@ -371,6 +391,14 @@ function read_header(fid)
         fid[&quot;input/y&quot;][] * u&quot;m&quot;,
         fid[&quot;input/t&quot;][] * u&quot;Myr&quot;)
 
+    data_sets = Dict()
+    for k in keys(fid)
+        if k == &quot;input&quot;
+            continue
+        end
+        data_sets[Symbol(k)] = data_header(fid[k])
+    end
+
     return Header(
         attrs[&quot;tag&quot;][],
         axes,
@@ -378,7 +406,8 @@ function read_header(fid)
         attrs[&quot;time_steps&quot;][],
         fid[&quot;input/initial_topography&quot;][] * u&quot;m&quot;,
         fid[&quot;input/sea_level&quot;][] * u&quot;m&quot;,
-        attrs[&quot;subsidence_rate&quot;][] * u&quot;m/Myr&quot;)
+        attrs[&quot;subsidence_rate&quot;][] * u&quot;m/Myr&quot;,
+        data_sets)
 end
 
 function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {dim}
@@ -472,4 +501,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../input-methods/">« Input Methods</a><a class="docs-footer-nextpage" href="../unitful/">Unitful »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 9 July 2025 11:17">Wednesday 9 July 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../input-methods/">« Input Methods</a><a class="docs-footer-nextpage" href="../unitful/">Unitful »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 14 July 2025 10:24">Monday 14 July 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

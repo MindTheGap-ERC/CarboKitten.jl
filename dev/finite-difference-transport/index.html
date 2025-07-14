@@ -318,7 +318,7 @@ let box = Box{Periodic{2}}(grid_size=(32, 32), phys_scale=1.0u&quot;m&quot;)
 end
 end
 
-@testset &quot;CarboKitten.Transport.Advection.wave-transport&quot; begin
+&lt;&lt;test-wave-transport&gt;&gt;</code></pre><h2 id="Test-onshore-transport"><a class="docs-heading-anchor" href="#Test-onshore-transport">Test onshore transport</a><a id="Test-onshore-transport-1"></a><a class="docs-heading-anchor-permalink" href="#Test-onshore-transport" title="Permalink"></a></h2><p>The center of mass of an initial sediment distribution - taken to be a Gaussian bell curve - should move with the same speed as the onshore (wave) velocity while applying some tolerance for inaccuracies from the finite difference scheme for solving the PDEs.</p><div class="noweb-label">⪡test-wave-transport⪢≣</div><pre><code class="language- julia hljs">@testset &quot;CarboKitten.Transport.Advection.wave-transport&quot; begin
 
 function gaussian_initial_sediment(x, y)
 	exp(-(x-10u&quot;km&quot;)^2 / (2 * (0.5u&quot;km&quot;)^2)) * 30.0u&quot;m&quot;
@@ -372,63 +372,9 @@ for speed in observed_speeds
     @test speed ≈ expected_speed atol=tolerance
 end
 
-end</code></pre><h2 id="Test-onshore-transport"><a class="docs-heading-anchor" href="#Test-onshore-transport">Test onshore transport</a><a id="Test-onshore-transport-1"></a><a class="docs-heading-anchor-permalink" href="#Test-onshore-transport" title="Permalink"></a></h2><p>The center of mass of an initial sediment distribution - taken to be a Gaussian bell curve - should move with the same speed as the onshore (wave) velocity while applying some tolerance for inaccuracies from the finite difference scheme for solving the PDEs.</p><div class="noweb-label">file:<i>test/Transport/AdvectionSpec.jl</i></div><pre><code class="language- julia hljs">@testset &quot;CarboKitten.Transport.Advection.wave-transport&quot; begin
-
-function gaussian_initial_sediment(x, y)
-	exp(-(x-10u&quot;km&quot;)^2 / (2 * (0.5u&quot;km&quot;)^2)) * 30.0u&quot;m&quot;
-end
-
-v_const(v_max) = _ -&gt; (Vec2(v_max, 0.0u&quot;m/yr&quot;), Vec2(0.0u&quot;1/yr&quot;, 0.0u&quot;1/yr&quot;))
-
-input = transport_test_input(
-    initial_topography = (x, y)  -&gt; -30.0u&quot;m&quot;,
-    initial_sediment = gaussian_initial_sediment,
-    disintegration_rate = 50000.0u&quot;m/Myr&quot;,
-    wave_velocity = v_const(-5u&quot;km/Myr&quot;)
-)
-
-function center_of_mass(m, x)
-    total_mass = sum(m)        # Total mass
-
-    if total_mass ≈ 0.0u&quot;m&quot;
-        return NaN * u&quot;m&quot;  # Avoid division by zero
-    end
-
-    x_com = sum(x .* sum(m, dims=2)) / total_mass  # Weighted average along x
-    return x_com
-end
-
-state = ALCAP.initial_state(input)
-
-result = []
-times = []
-
-run_model(Model{ALCAP}, input, state) do i, delta
-    if mod(i-1, 250) == 0
-        push!(result, deepcopy(state.sediment_height))
-        push!(times, time(input, state))
-    end
-end
-
-(x, y) = box_axes(input.box)
-
-com_positions = [center_of_mass(r, x) for r in result]
-
-@assert length(com_positions) == length(times)
-observed_speeds = (com_positions[2:end] .- com_positions[1:end-1]) ./ 
-    (times[2:end] .- times[1:end-1])
-    
-# Extract the expected speed from the wave transport
-expected_speed = input.facies[1].wave_velocity(0.0u&quot;m&quot;)[1][1]  
-tolerance = 1e-6 * expected_speed  # Set a tolerance for the comparison
-# Check if all speeds are within tolerance
-for speed in observed_speeds
-    @test speed ≈ expected_speed atol=tolerance
-end
-
 end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../utility/">« Utility</a><a class="docs-footer-nextpage" href="../api/">API Documentation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 9 July 2025 11:17">Wednesday 9 July 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../utility/">« Utility</a><a class="docs-footer-nextpage" href="../api/">API Documentation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 14 July 2025 10:24">Monday 14 July 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

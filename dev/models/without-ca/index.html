@@ -13,7 +13,8 @@ export Input, Facies
 function initial_state(input::Input)
     sediment_height = zeros(Height, input.box.grid_size...)
     sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
-    return State(step=0, sediment_height=sediment_height, sediment_buffer=sediment_buffer)
+    active_layer = zeros(Amount, n_facies(input), input.box.grid_size...)
+    return State(step=0, sediment_height=sediment_height, sediment_buffer=sediment_buffer, active_layer=active_layer)
 end
 
 function step!(input::Input)
@@ -23,23 +24,27 @@ function step!(input::Input)
     dt = input.time.Δt
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
+    pf = precipitation_factor(input)
 
     function (state::State)
         wd = local_water_depth(state)
         p = produce(state, wd)
         d = disintegrate!(state)
 
-        active_layer = p .+ d
-        transport!(state, active_layer)
+        state.active_layer .+= p
+        state.active_layer .+= d
+        transport!(state)
 
-        push_sediment!(state.sediment_buffer, active_layer ./ input.depositional_resolution .|&gt; NoUnits)
-        state.sediment_height .+= sum(active_layer; dims=1)[1,:,:]
+        deposit = pf .* state.active_layer
+        push_sediment!(state.sediment_buffer, deposit ./ input.depositional_resolution .|&gt; NoUnits)
+        state.active_layer .-= deposit
+        state.sediment_height .+= sum(deposit; dims=1)[1,:,:]
         state.step += 1
 
         return Frame(
             production = p,
             disintegration = d,
-            deposition = active_layer)
+            deposition = deposit)
     end
 end
 
@@ -52,4 +57,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../model-alcap/">« ALCAPS</a><a class="docs-footer-nextpage" href="../../first_tutorial/">Tutorial (Pluto notebook) »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 14 July 2025 10:24">Monday 14 July 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../model-alcap/">« ALCAPS</a><a class="docs-footer-nextpage" href="../../first_tutorial/">Tutorial (Pluto notebook) »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 14 July 2025 14:45">Monday 14 July 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

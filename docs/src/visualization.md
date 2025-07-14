@@ -51,6 +51,9 @@ function print_instructions(func_name, args)
     println("This is an extension and only becomes available when you import {Cairo,GL,WGL}Makie before using this.")
 end
 
+function profile_plot! end
+
+# profile_plot!(args...; kwargs...) = print_instructions("profile_plot!", args)
 sediment_profile!(args...) = print_instructions("sediment_profile!", args)
 sediment_profile(args...) = print_instructions("sediment_profile", args)
 wheeler_diagram!(args...) = print_instructions("wheeler_diagram!", args)
@@ -96,7 +99,7 @@ using Makie
 
 summary_plot(filename::AbstractString; kwargs...) = h5open(fid->summary_plot(fid; kwargs...), filename, "r")
 
-function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
+function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1), show_unconformities=true)
     header = read_header(fid)
     data_groups = group_datasets(fid)
 
@@ -116,7 +119,7 @@ function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
         end
 
         volume_data = read_volume(fid[data_groups[:volume][1]])
-        ax = Axis3(fig[1, 3]; zlabel="depth [m]", xlabel="x [km]", ylabel="y [km]")
+        ax = Axis3(fig[1, 3]; title="topography", zlabel="depth [m]", xlabel="x [km]", ylabel="y [km]")
         glamour_view!(ax, header, volume_data)
         volume_data
     end
@@ -133,7 +136,8 @@ function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
     n_facies = size(section_data.production)[1]
 
     ax1 = Axis(fig[1:2,1:2])
-    sediment_profile!(ax1, header, section_data)
+    sediment_profile!(ax1, header, section_data; show_unconformities = show_unconformities)
+    axislegend(ax1; merge=true, backgroundcolor=:gray80)
 
     ax2 = Axis(fig[4,1])
     ax3 = Axis(fig[4,2])
@@ -233,8 +237,8 @@ function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
 
     sa = heatmap!(ax, xkm, tmyr, mag;
         colormap=colormap, colorrange=range ./ u"m/Myr")
-    contour!(ax, xkm, tmyr, wd;
-        levels=[0], color=:red, linewidth=2, linestyle=:dash)
+    #contour!(ax, xkm, tmyr, wd;
+    #    levels=[0], color=:red, linewidth=2, linestyle=:dash)
     return sa
 end
 
@@ -259,8 +263,8 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
         colorrange=(0.5, n_facies + 0.5))
     contourf!(ax, xkm, tmyr, wd;
         levels=[0.0, 10000.0], colormap=Reverse(:grays))
-    contour!(ax, xkm, tmyr, wd;
-        levels=[0], color=:black, linewidth=2)
+    #contour!(ax, xkm, tmyr, wd;
+    #    levels=[0], color=:black, linewidth=2)
     return ft
 end
 
@@ -376,23 +380,66 @@ end
 
 ![Sediment profile](fig/sediment_profile.png)
 
+The sediment profile is probably the most important visualization that we provide. By default it allows us to study the sediment composition of a section, by plotting the `argmax` of the deposition. In cases where significant amounts of sediment is eroded, all deposition is plotted, and it is assumed that newest depositions are shown on top of possible older ones.
+
 ``` {.julia .task file=examples/visualization/sediment_profile.jl}
 #| creates: docs/src/_fig/sediment_profile.png
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
+module Script
 using CairoMakie
 using CarboKitten.Export: read_slice
 using CarboKitten.Visualization: sediment_profile
 
-save("docs/src/_fig/sediment_profile.png",
-    sediment_profile(read_slice("data/output/alcap-example.h5", :, 25)...))
+function main()
+    save("docs/src/_fig/sediment_profile.png",
+        sediment_profile(read_slice("data/output/alcap-example.h5", :slice)...))
+end
+end
+
+Script.main()
 ```
+
+If you want to visualize something other than the `argmax` of the deposition, you may use the `profile_plot!` function. For example, we can plot the fraction of second facies over total.
+
+![](fig/profile_fraction.png)
+
+``` {.julia .task file=examples/visualization/profile_fraction.jl}
+#| creates: docs/src/_fig/profile_fraction.png
+#| requires: data/output/alcap-example.h5
+#| collect: figures
+
+module Script
+using GLMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: profile_plot!
+
+function main()
+    (header, slice) = read_slice("data/output/alcap-example.h5", :profile)
+	fig = Figure()
+	ax = Axis(fig[1, 1])
+
+	x = header.axes.x
+	t = header.axes.t
+
+    plot = profile_plot!(x -> x[2]/sum(x), ax, header, slice; colorrange=(0, 1))
+    Colorbar(fig[1, 2], plot; label=L"f_2 / f_{total}")
+
+	save("docs/src/_fig/profile_fraction.png", fig)
+	fig
+end
+end
+
+Script.main()
+```
+
+### Implementation
 
 ```{.julia file=ext/SedimentProfile.jl}
 module SedimentProfile
 
-import CarboKitten.Visualization: sediment_profile, sediment_profile!
+import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!
 
 using CarboKitten.Visualization
 using CarboKitten.Utility: in_units_of
@@ -426,9 +473,6 @@ elevation(h::Header, d::DataSlice) =
         bl .+ d.sediment_thickness .- sr
     end
 
-colormax(d::Data) = getindex.(argmax(d.deposition; dims=1)[1, :, :, :], 1)
-colormax(d::DataSlice) = getindex.(argmax(d.deposition; dims=1)[1, :, :], 1)
-
 """
     explode_quad_vertices(v)
 
@@ -454,44 +498,122 @@ function explode_quad_vertices(v::Array{Float64,3})
     vcat(hcat(vtx1, vtx2, vtx3), hcat(vtx1, vtx3, vtx4))
 end
 
-function sediment_profile!(ax::Axis, header::Header, data::DataSlice)
+"""
+    plot_unconformities(ax, header, data_slice, minwidth; kwargs...)
+    plot_unconformities(ax, header, data_slice, minwidth::Bool; kwargs...)
+    plot_unconformities(ax, header, data_slice, minwidth::Int; kwargs...)
+
+Scans the given `data_slice` for unconformities, and plots those using
+Makie `linesegments`. The `minwidth` argument controls for how many time
+steps the platform needs to be exposed before we plot it. For `minwidth = true`
+the default width of 10 time steps is taken.
+
+Additional keyword arguments are forwarded to the `linesegments!` call.
+"""
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Nothing; kwargs...)
+    @info "Not plotting unconformities, got minwidth: $(minwidth)"
+end
+
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Bool; kwargs...)
+    if minwidth
+        plot_unconformities(ax, header, data, 10; kwargs...)
+    end
+end
+
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Int; kwargs...)
+    x = header.axes.x |> in_units_of(u"km")
+    ξ = elevation(header, data)  # |> in_units_of(u"m")
+    water_depth = ξ .- (header.subsidence_rate .* (header.axes.t .- header.axes.t[end]) .+ header.sea_level)[na, :]
+    hiatus = skeleton(water_depth .> 0.0u"m", minwidth=minwidth)
+
+    if !isempty(hiatus[1])
+        verts = [(x[pt[1]], ξ[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
+        linesegments!(ax, vec(permutedims(verts[hiatus[2]])); kwargs...)
+    end
+end
+
+"""
+    profile_plot!(ax, header, data_slice; mesh_args...)
+
+Generic profile plot. This sets up a mesh for plotting with the Makie `mesh!`
+function, plots the initial topography and the mesh by passing `mesh_args...`.
+
+The `color` array should have the same size as a single facies for `data.production`.
+"""
+function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::AbstractArray, mesh_args...)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
-    n_facies = size(data.production)[1]
+
+    n_facies, n_x, n_t = size(data.production)
     ξ = elevation(header, data)  # |> in_units_of(u"m")
 
-    verts = zeros(Float64, length(x), length(t), 2)
+    verts = zeros(Float64, n_x, n_t+1, 2)
     @views verts[:, :, 1] .= x
     @views verts[:, :, 2] .= ξ |> in_units_of(u"m")
     v, f = explode_quad_vertices(verts)
 
-    water_depth = ξ .- (header.subsidence_rate.*(header.axes.t.-header.axes.t[end]).+header.sea_level)[na, :]
-    hiatus = skeleton(water_depth .> 0.0u"m")
-
     total_subsidence = header.subsidence_rate * header.axes.t[end]
     bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |> in_units_of(u"m")
     lower_limit = minimum(bedrock) - 20
-    band!(ax, x, lower_limit, bedrock; color=:gray)
-    lines!(ax, x, bedrock; color=:black)
+    band!(ax, x, lower_limit, bedrock; color=:gray, label="initial topography")
+    lines!(ax, x, bedrock; color=:black, label="initial topography")
     ylims!(ax, lower_limit + 10, nothing)
     xlims!(ax, x[1], x[end])
     ax.xlabel = "position [km]"
     ax.ylabel = "depth [m]"
-    ax.title = "sediment profile"
 
-    c = reshape(colormax(data)[:, :], length(x) * (length(t) - 1))
-    mesh!(ax, v, f, color=vcat(c, c), alpha=1.0, colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
-
-    if !isempty(hiatus[1])
-        verts = [(x[pt[1]], ξ[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
-        linesegments!(ax, vec(permutedims(verts[hiatus[2]])); color=:white, linestyle=:dash, linewidth=2)
-    end
+    c = reshape(color, n_x * n_t)
+    mesh!(ax, v, f; color=vcat(c, c), mesh_args...)
 end
 
-function sediment_profile(header::Header, data_slice::DataSlice)
+"""
+    profile_plot!(f, ax, header, data_slice; mesh_args...)
+
+Instead of explicitely passing the color data as an array, this generates the
+colors from a function `f` over the deposition data. So `f` should have signature
+`AbstractVector -> Float` or possibly `AbstractVector -> RGB` (whatever Makie accepts).
+Here the vector input has size of the number of facies.
+"""
+function profile_plot!(f::F, ax::Axis, header::Header, data::DataSlice; mesh_args...) where {F}
+    color = f.(eachslice(data.deposition, dims=(2, 3)))
+    profile_plot!(ax, header, data; color=color, mesh_args...)
+end
+
+"""
+    sediment_profile!(ax, header, data; show_unconformities)
+
+Plot the sediment profile, choosing colour by dominant facies type (argmax). Unconformaties
+are shown when the sediment is subaerially exposed (even if sediment is still deposited
+due to a set intertidal zone).
+"""
+function sediment_profile!(ax::Axis, header::Header, data::DataSlice; show_unconformities::Union{Nothing,Bool,Int} = true)
+    x = header.axes.x |> in_units_of(u"km")
+    t = header.axes.t |> in_units_of(u"Myr")
+    n_facies = size(data.production)[1]
+
+    plot = profile_plot!(argmax, ax, header, data; alpha=1.0,
+        colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+
+    minwidth = show_unconformities
+    plot_unconformities(ax, header, data, minwidth; label = "unconformities",
+                        color=:white, linestyle=:dash, linewidth=1)
+
+    ax.title = "sediment profile"
+    return plot
+end
+
+"""
+    sediment_profile(header, data_slice; show_unconformities=true)
+
+Plot the sediment profile from `data_slice`. This takes the deposited sediments and
+find the dominant facies at every point. By default unconformities are shown using
+dashed white lines. If this generates too much visual noise, you can increase the
+treshold (default 10).
+"""
+function sediment_profile(header::Header, data_slice::DataSlice; show_unconformities::Union{Bool,Int,Nothing} = true)
     fig = Figure(size=(1000, 600))
     ax = Axis(fig[1, 1])
-    sediment_profile!(ax, header, data_slice)
+    sediment_profile!(ax, header, data_slice; show_unconformities = show_unconformities)
     return fig
 end
 

@@ -51,7 +51,8 @@ const HEADER1 = Header(
     time_steps=10,
     initial_topography=zeros(typeof(1.0u"m"), 3, 3),
     sea_level=zeros(typeof(1.0u"m"), 11),
-    subsidence_rate=10u"m/Myr")
+    subsidence_rate=10u"m/Myr",
+    data_sets=Dict())
 
 const PRODUCTION1 = reshape(
     hcat(ones(Amount, 10),
@@ -352,6 +353,14 @@ const na = [CartesianIndex()]
     t::Vector{Time}
 end
 
+const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
+
+@kwdef struct DataHeader
+    kind::Symbol
+    slice::Slice2
+    write_interval::Int
+end
+
 @kwdef struct Header
     tag::String
     axes::Axes
@@ -360,9 +369,8 @@ end
     initial_topography::Matrix{Amount}
     sea_level::Vector{Length}
     subsidence_rate::Rate
+    data_sets::Dict{Symbol, DataHeader}
 end
-
-const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
 
 @kwdef struct Data{F, D}
 	slice::Slice2
@@ -417,14 +425,18 @@ data_kind(::Int, _) = :slice
 data_kind(_, ::Int) = :slice
 data_kind(_, _) = :volume
 
+
+function data_kind(gid::HDF5.Group)
+	slice = parse_multi_slice(attrs(gid)["slice"])
+	return data_kind(slice...)
+end
+
 function data_kind(fid::HDF5.File, group)
 	group_name = string(group)
 	if group_name == "input"
 		return :metadata
 	end
-	gid = fid[group_name]
-	slice = parse_multi_slice(attrs(gid)["slice"])
-	return data_kind(slice...)
+    return data_kind(fid[group_name])
 end
 
 function group_datasets(fid::HDF5.File)
@@ -441,6 +453,14 @@ function group_datasets(fid::HDF5.File)
 	return result
 end
 
+function data_header(gid::HDF5.Group)
+	slice = parse_multi_slice(attrs(gid)["slice"])
+    kind = data_kind(slice...)
+    write_interval = attrs(gid)["write_interval"]
+    return DataHeader(
+        slice=slice, kind=kind, write_interval=write_interval)
+end
+
 function read_header(fid)
     attrs = HDF5.attributes(fid["input"])
 
@@ -449,6 +469,14 @@ function read_header(fid)
         fid["input/y"][] * u"m",
         fid["input/t"][] * u"Myr")
 
+    data_sets = Dict()
+    for k in keys(fid)
+        if k == "input"
+            continue
+        end
+        data_sets[Symbol(k)] = data_header(fid[k])
+    end
+
     return Header(
         attrs["tag"][],
         axes,
@@ -456,7 +484,8 @@ function read_header(fid)
         attrs["time_steps"][],
         fid["input/initial_topography"][] * u"m",
         fid["input/sea_level"][] * u"m",
-        attrs["subsidence_rate"][] * u"m/Myr")
+        attrs["subsidence_rate"][] * u"m/Myr",
+        data_sets)
 end
 
 function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {dim}

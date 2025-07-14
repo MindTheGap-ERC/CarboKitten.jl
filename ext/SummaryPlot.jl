@@ -11,7 +11,7 @@ using Makie
 
 summary_plot(filename::AbstractString; kwargs...) = h5open(fid->summary_plot(fid; kwargs...), filename, "r")
 
-function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
+function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1), show_unconformities=true)
     header = read_header(fid)
     data_groups = group_datasets(fid)
 
@@ -31,7 +31,7 @@ function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
         end
 
         volume_data = read_volume(fid[data_groups[:volume][1]])
-        ax = Axis3(fig[1, 3]; zlabel="depth [m]", xlabel="x [km]", ylabel="y [km]")
+        ax = Axis3(fig[1, 3]; title="topography", zlabel="depth [m]", xlabel="x [km]", ylabel="y [km]")
         glamour_view!(ax, header, volume_data)
         volume_data
     end
@@ -48,7 +48,8 @@ function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1))
     n_facies = size(section_data.production)[1]
 
     ax1 = Axis(fig[1:2,1:2])
-    sediment_profile!(ax1, header, section_data)
+    sediment_profile!(ax1, header, section_data; show_unconformities = show_unconformities)
+    axislegend(ax1; merge=true, backgroundcolor=:gray80)
 
     ax2 = Axis(fig[4,1])
     ax3 = Axis(fig[4,2])

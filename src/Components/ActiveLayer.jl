@@ -2,7 +2,7 @@
 @compose module ActiveLayer
 @mixin WaterDepth, FaciesBase, SedimentBuffer
 
-export disintegrator, transporter
+export disintegrator, transporter, precipitation_factor
 
 using ..Common
 using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
@@ -22,7 +22,7 @@ end
 @kwdef struct Input <: AbstractInput
     intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
-    precipitation_fraction::Float64 = 1.0
+    precipitation_rate::Union{typeof(1.0u"1/Myr"), Nothing} = nothing
     transport_solver = Val{:RK4}
     transport_substeps = :adaptive 
 end
@@ -33,6 +33,14 @@ courant_max(::Type{Val{:forward_euler}}) = 1.0
 transport_solver(f, _) = f
 transport_solver(::Type{Val{:RK4}}, box) = runge_kutta_4(typeof(1.0u"m"), box)
 transport_solver(::Type{Val{:forward_euler}}, _) = forward_euler
+
+function precipitation_factor(input::AbstractInput)
+    if input.precipitation_rate === nothing
+        return 1.0
+    else
+        return exp(input.time.Δt * input.precipitation_rate)
+    end
+end
 
 function adaptive_transporter(input)
     solver = transport_solver(input.transport_solver, input.box)

@@ -22,7 +22,7 @@ end
 @kwdef struct Input <: AbstractInput
     intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
-    precipitation_rate::Union{typeof(1.0u"1/Myr"), Nothing} = nothing
+    precipitation_time::Union{typeof(1.0u"Myr"), Nothing} = nothing
     transport_solver = Val{:RK4}
     transport_substeps = :adaptive 
 end
@@ -38,7 +38,7 @@ function precipitation_factor(input::AbstractInput)
     if input.precipitation_rate === nothing
         return 1.0
     else
-        return 1.0 - exp(input.time.Δt * input.precipitation_rate)
+        return 1.0 - exp(input.time.Δt * log(1/2) / input.precipitation_time)
     end
 end
 

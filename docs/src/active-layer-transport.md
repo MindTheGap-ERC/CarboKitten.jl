@@ -553,7 +553,7 @@ CarboKitten.Components.ActiveLayer
 @compose module ActiveLayer
 @mixin WaterDepth, FaciesBase, SedimentBuffer
 
-export disintegrator, transporter
+export disintegrator, transporter, precipitation_factor
 
 using ..Common
 using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
@@ -566,9 +566,14 @@ using GeometryBasics
     wave_velocity = _ -> (Vec2(0.0u"m/Myr", 0.0u"m/Myr"), Vec2(0.0u"1/Myr", 0.0u"1/Myr"))
 end
 
+@kwdef mutable struct State <: AbstractState
+    active_layer::Array{Amount, 3}
+end
+
 @kwdef struct Input <: AbstractInput
     intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
+    precipitation_time::Union{typeof(1.0u"Myr"), Nothing} = nothing
     transport_solver = Val{:RK4}
     transport_substeps = :adaptive 
 end
@@ -579,6 +584,14 @@ courant_max(::Type{Val{:forward_euler}}) = 1.0
 transport_solver(f, _) = f
 transport_solver(::Type{Val{:RK4}}, box) = runge_kutta_4(typeof(1.0u"m"), box)
 transport_solver(::Type{Val{:forward_euler}}, _) = forward_euler
+
+function precipitation_factor(input::AbstractInput)
+    if input.precipitation_time === nothing
+        return 1.0
+    else
+        return 1.0 - exp(input.time.Δt * log(1/2) / input.precipitation_time)
+    end
+end
 
 function adaptive_transporter(input)
     solver = transport_solver(input.transport_solver, input.box)
@@ -593,10 +606,11 @@ function adaptive_transporter(input)
     cm = courant_max(input.transport_solver)
     iz = input.intertidal_zone
 
-    return function (state, C::Array{Amount,3})
+    return function (state)
         wd = w(state)
         wd .+= iz
 
+        C = state.active_layer
         for (i, f) in pairs(fs)
             advection_coef!(box, f.diffusion_coefficient, f.wave_velocity, wd, adv, rct)
             m = max_dt(adv, box.phys_scale, cm)
@@ -665,10 +679,11 @@ function transporter(input)
     fs = input.facies
     iz = input.intertidal_zone
 
-    return function (state, C::Array{Amount,3})
+    return function (state)
         wd = w(state)
         wd .+= iz
 
+        C = state.active_layer
         for (i, f) in pairs(fs)
             for j in 1:steps
                 solver(

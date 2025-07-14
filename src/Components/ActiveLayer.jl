@@ -35,7 +35,7 @@ transport_solver(::Type{Val{:RK4}}, box) = runge_kutta_4(typeof(1.0u"m"), box)
 transport_solver(::Type{Val{:forward_euler}}, _) = forward_euler
 
 function precipitation_factor(input::AbstractInput)
-    if input.precipitation_rate === nothing
+    if input.precipitation_time === nothing
         return 1.0
     else
         return 1.0 - exp(input.time.Δt * log(1/2) / input.precipitation_time)

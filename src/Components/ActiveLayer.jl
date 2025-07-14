@@ -38,7 +38,7 @@ function precipitation_factor(input::AbstractInput)
     if input.precipitation_rate === nothing
         return 1.0
     else
-        return exp(input.time.Δt * input.precipitation_rate)
+        return 1.0 - exp(input.time.Δt * input.precipitation_rate)
     end
 end
 

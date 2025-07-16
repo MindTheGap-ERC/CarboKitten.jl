@@ -81,12 +81,17 @@ function read_header(fid)
         end
         data_sets[Symbol(k)] = data_header(fid[k])
     end
+    
+    grid_size = (length(axes.x), length(axes.y))
+    n_facies = attrs["n_facies"][]
 
     return Header(
         attrs["tag"][],
         axes,
         attrs["delta_t"][] * u"Myr",
         attrs["time_steps"][],
+        grid_size,
+        n_facies,
         fid["input/initial_topography"][] * u"m",
         fid["input/sea_level"][] * u"m",
         attrs["subsidence_rate"][] * u"m/Myr",

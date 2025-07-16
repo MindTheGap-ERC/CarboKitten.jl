@@ -49,6 +49,8 @@ const HEADER1 = Header(
     axes=AXES1,
     Δt=0.1u"Myr",
     time_steps=10,
+    grid_size=(3, 1),
+    n_facies=1,
     initial_topography=zeros(typeof(1.0u"m"), 3, 3),
     sea_level=zeros(typeof(1.0u"m"), 11),
     subsidence_rate=10u"m/Myr",
@@ -401,11 +403,16 @@ function read_header(fid)
         data_sets[Symbol(k)] = data_header(fid[k])
     end
 
+    grid_size = (length(axes.x), length(axes.y))
+    n_facies = attrs["n_facies"][]
+
     return Header(
         attrs["tag"][],
         axes,
         attrs["delta_t"][] * u"Myr",
         attrs["time_steps"][],
+        grid_size,
+        n_facies,
         fid["input/initial_topography"][] * u"m",
         fid["input/sea_level"][] * u"m",
         attrs["subsidence_rate"][] * u"m/Myr",

@@ -6,17 +6,11 @@
     using HDF5
 
     import ...CarboKitten: run_model, Model
+    import ...OutputData: AbstractOutputSpec
 
     @mixin Boxes, TimeIntegration, FaciesBase, WaterDepth
 
     # ~/~ begin <<docs/src/components/hdf5.md#hdf5-output-spec>>[init]
-    const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
-
-    @kwdef struct OutputSpec <: AbstractOutputSpec
-        slice::Slice2 = (:, :)
-        write_interval::Int = 1
-    end
-
     @kwdef struct Input <: AbstractInput
         output = Dict(:full => OutputSpec((:,:), 1)) 
     end

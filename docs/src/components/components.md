@@ -93,13 +93,6 @@ abstract type AbstractFacies end
 abstract type AbstractInput end
 abstract type AbstractState end
 abstract type AbstractFrame end
-abstract type AbstractOutputSpec end
-
-@kwdef struct Frame
-    disintegration::Union{Array{Sediment,3},Nothing} = nothing   # facies, x, y
-    production::Union{Array{Sediment,3},Nothing} = nothing
-    deposition::Union{Array{Sediment,3},Nothing} = nothing
-end
 
 end
 ```

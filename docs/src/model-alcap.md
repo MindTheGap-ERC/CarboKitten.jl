@@ -125,7 +125,7 @@ using Unitful
 using ..ALCAP: ALCAP
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
-using CarboKitten.Components.H5Writer: OutputSpec
+using CarboKitten.OutputData: OutputSpec
 
 <<alcap-example-input>>
 

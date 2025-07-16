@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/memory-writer.md#src/OutputData.jl>>[init]
 module OutputData
 
-export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput
+export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
 export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer
 
 using Unitful
@@ -14,7 +14,9 @@ const Sediment = typeof(1.0u"m")
 const Rate = typeof(1.0u"m/Myr")
 
 abstract type AbstractOutputSpec end
+abstract type AbstractInput end
 abstract type AbstractOutput end
+abstract type AbstractState end
 
 @kwdef struct OutputSpec <: AbstractOutputSpec
     slice::Slice2 = (:, :)

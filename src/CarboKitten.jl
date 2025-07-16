@@ -102,7 +102,7 @@ include("./Visualization.jl")
 include("./Testing.jl")
 
 using .Components.Common: in_units_of, @u_str
-using .Components.H5Writer: OutputSpec
+using .OutputData: OutputSpec
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 using GeometryBasics: Vec2

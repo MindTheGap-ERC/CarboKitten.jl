@@ -407,16 +407,16 @@ function read_header(fid)
     n_facies = attrs["n_facies"][]
 
     return Header(
-        attrs["tag"][],
-        axes,
-        attrs["delta_t"][] * u"Myr",
-        attrs["time_steps"][],
-        grid_size,
-        n_facies,
-        fid["input/initial_topography"][] * u"m",
-        fid["input/sea_level"][] * u"m",
-        attrs["subsidence_rate"][] * u"m/Myr",
-        data_sets)
+        tag = attrs["tag"][],
+        axes = axes,
+        Δt = attrs["delta_t"][] * u"Myr",
+        time_steps = attrs["time_steps"][],
+        grid_size = grid_size,
+        n_facies = n_facies,
+        initial_topography = fid["input/initial_topography"][] * u"m",
+        sea_level = fid["input/sea_level"][] * u"m",
+        subsidence_rate = attrs["subsidence_rate"][] * u"m/Myr",
+        data_sets = data_sets)
 end
 
 function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {dim}

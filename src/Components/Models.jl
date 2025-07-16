@@ -6,6 +6,7 @@
     using ..TimeIntegration: n_writes
 
     import ...CarboKitten: run_model
+    using ...OutputData
 
     using Unitful
     using ProgressLogging

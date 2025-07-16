@@ -14,6 +14,7 @@ Running a model, we store the changes in each time step. The `Frame` type stores
     using ..TimeIntegration: n_writes
 
     import ...CarboKitten: run_model
+    using ...OutputData
 
     using Unitful
     using ProgressLogging

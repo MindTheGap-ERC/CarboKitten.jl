@@ -1,5 +1,41 @@
 # Output
 
+There are two options for writing output: to HDF5 and memory. To write to an HDF5 file, you may run:
+
+```julia
+run_model(Model{M}, input, "my_hdf5_output.h5")
+```
+
+In cases where you don't want to write output immediately, you can output to memory:
+
+```julia
+result = run_model(Model{M}, input, new_output(MemoryOutput))
+```
+
+The `result` is of type `MemoryOutput` and contains a `header` field as well as
+`data_volumes`, `data_slices` and `data_columns`, containing data sets for each
+`OutputSpec` that you configured in `input.output`. Assuming the default, there will be
+a `DataVolume` with name `:full`.
+
+```julia
+header, data = (result.header, result.data_volumes[:full])
+```
+
+Or, in case you write to HDF5:
+
+```julia
+header, data = read_volume("my_hdf5_output.h5", :full)
+```
+
+You can always subscript a `DataVolume` into `DataSlice` or `DataColumn`.
+
+```julia
+data[:, 25] isa DataSlice
+data[40, 25] isa DataColumn
+```
+
+These can be used for subsequent visualization or CSV export.
+
 ## Data Structures
 
 ``` {.julia file=src/OutputData.jl}

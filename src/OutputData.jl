@@ -1,8 +1,4 @@
-# Output
-
-## Data Structures
-
-``` {.julia file=src/OutputData.jl}
+# ~/~ begin <<docs/src/memory-writer.md#src/OutputData.jl>>[init]
 module OutputData
 
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes
@@ -93,13 +89,4 @@ data_kind(_, ::Int) = :slice
 data_kind(_, _) = :volume
 
 end
-```
-
-## Memory Writer
-
-Sometimes we don't want to write to HDF5, but just get a `DataVolume` directly.
-
-``` {.julia file=src/MemoryWriter.jl}
-module MemoryWriter
-end
-```
+# ~/~ end

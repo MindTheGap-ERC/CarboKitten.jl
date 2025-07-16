@@ -76,6 +76,8 @@
             # and does no accumulation
             write_state(w+1, state)
         end
+
+        return output
     end
 end
 # ~/~ end

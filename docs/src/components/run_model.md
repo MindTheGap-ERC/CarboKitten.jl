@@ -84,6 +84,8 @@ Running a model, we store the changes in each time step. The `Frame` type stores
             # and does no accumulation
             write_state(w+1, state)
         end
+
+        return output
     end
 end
 ```

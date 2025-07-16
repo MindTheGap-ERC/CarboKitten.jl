@@ -187,7 +187,6 @@ function state_writer(input::AbstractInput, out)
 
     return function(idx::Int, state::AbstractState)
         for (k, v) in output_sets
-            size = axis_size.(v.slice, grid_size)
             if mod(idx-1, v.write_interval) == 0
                 write_sediment_thickness(
                     out, k, div(idx-1, v.write_interval)+1,
@@ -209,7 +208,7 @@ The default implementation writes the state for all output data sets, and calls
 `write_sediment_thickness`.
 """
 function frame_writer(input::AbstractInput, out)
-	n_f = n_facies(input)
+    n_f = length(input.facies)
     grid_size = input.box.grid_size
 
     return function(idx::Int, frame::Frame)

@@ -8,6 +8,7 @@ import ..OutputData:
 
 using ..Components.Common
 using ..Components.WaterDepth: initial_topography
+using ..CarboKitten: time_axis, box_axes
 
 struct MemoryOutput <: AbstractOutput
     header::Header
@@ -20,7 +21,7 @@ function new_output(::Type{MemoryOutput}, input::AbstractInput)
     t_axis = time_axis(input.time)
     x_axis, y_axis = box_axes(input.box)
     axes = Axes(x = x_axis, y = y_axis, t = t_axis)
-    h0 = input.initial_topography(input)
+    h0 = initial_topography(input)
     sl = input.sea_level.(t_axis)
 
     header = Header(
@@ -86,11 +87,11 @@ function set_attribute(out::MemoryOutput, name::Symbol, value::Any)
 end
 
 write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 0}) =
-    out.data_columns[label].sediment_thickness[:, idx] .= data
+    out.data_columns[label].sediment_thickness[idx] .= data
 write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 1}) =
-    out.data_slices[label].sediment_thickness[:, :, idx] .= data
+    out.data_slices[label].sediment_thickness[:, idx] .= data
 write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 2}) =
-    out.data_volumes[label].sediment_thickness[:, :, :, idx] .= data
+    out.data_volumes[label].sediment_thickness[:, :, idx] .= data
 
 write_production(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 1}) =
     out.data_columns[label].production[:, idx] .+= data

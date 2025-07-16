@@ -191,7 +191,6 @@ function state_writer(input::AbstractInput, out)
 
     return function(idx::Int, state::AbstractState)
         for (k, v) in output_sets
-            size = axis_size.(v.slice, grid_size)
             if mod(idx-1, v.write_interval) == 0
                 write_sediment_thickness(
                     out, k, div(idx-1, v.write_interval)+1,
@@ -213,7 +212,7 @@ The default implementation writes the state for all output data sets, and calls
 `write_sediment_thickness`.
 """
 function frame_writer(input::AbstractInput, out)
-	n_f = n_facies(input)
+    n_f = length(input.facies)
     grid_size = input.box.grid_size
 
     return function(idx::Int, frame::Frame)
@@ -248,6 +247,7 @@ import ..OutputData:
 
 using ..Components.Common
 using ..Components.WaterDepth: initial_topography
+using ..CarboKitten: time_axis, box_axes
 
 struct MemoryOutput <: AbstractOutput
     header::Header
@@ -260,7 +260,7 @@ function new_output(::Type{MemoryOutput}, input::AbstractInput)
     t_axis = time_axis(input.time)
     x_axis, y_axis = box_axes(input.box)
     axes = Axes(x = x_axis, y = y_axis, t = t_axis)
-    h0 = input.initial_topography(input)
+    h0 = initial_topography(input)
     sl = input.sea_level.(t_axis)
 
     header = Header(
@@ -326,11 +326,11 @@ function set_attribute(out::MemoryOutput, name::Symbol, value::Any)
 end
 
 write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 0}) =
-    out.data_columns[label].sediment_thickness[:, idx] .= data
+    out.data_columns[label].sediment_thickness[idx] .= data
 write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 1}) =
-    out.data_slices[label].sediment_thickness[:, :, idx] .= data
+    out.data_slices[label].sediment_thickness[:, idx] .= data
 write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 2}) =
-    out.data_volumes[label].sediment_thickness[:, :, :, idx] .= data
+    out.data_volumes[label].sediment_thickness[:, :, idx] .= data
 
 write_production(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 1}) =
     out.data_columns[label].production[:, idx] .+= data

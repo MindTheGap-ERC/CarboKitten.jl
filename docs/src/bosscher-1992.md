@@ -219,7 +219,7 @@ end
 function step!(input::Input)
     τ = uniform_production(input)
     function (state::State)
-        prod = τ(state) .* input.time.Δt
+        prod = τ(state)
         Δη = sum(prod; dims=1)[1, :, :]
         state.sediment_height .+= Δη
         state.step += 1
@@ -257,8 +257,8 @@ const INPUT = BS92.Input(
     box = Box{Coast}(grid_size=(100, 1), phys_scale=600.0u"m"),
     time = TimeProperties(
       Δt = 10.0u"yr",
-      steps = 8000,
-      write_interval = 100),
+      steps = 8000),
+    output = Dict(:full => OutputSpec(write_interval=100)),
     sea_level = let sc = sealevel_curve()
       t -> -sc(t)
     end,
@@ -324,8 +324,7 @@ const INPUT = BS92.Input(
     box = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
     time = TimeProperties(
         Δt = 200.0u"yr",
-        steps = 5000,
-        write_interval = 1),
+        steps = 5000),
     sea_level = t -> 4.0u"m" * sin(2π * t / 0.2u"Myr"),
     initial_topography = (x, y) -> - x / 300.0,
     subsidence_rate = 50.0u"m/Myr",

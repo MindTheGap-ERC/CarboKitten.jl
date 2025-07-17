@@ -16,7 +16,7 @@ elevation(h::Header, d::DataSlice) =
     let bl = h.initial_topography[d.slice..., na],
         sr = h.axes.t[end] * h.subsidence_rate
 
-        bl .+ d.sediment_elevation .- sr
+        bl .+ d.sediment_thickness .- sr
     end
 
 water_depth(header::Header, data::DataSlice) =
@@ -33,7 +33,7 @@ function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
     smooth_size::NTuple{2,Int}=(3, 11),
     colormap=Reverse(:curl),
     range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
-    magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ (header.Δt * header.write_interval)
+    magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ (header.Δt * data.write_interval)
     blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
     wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
     blur(water_depth(header, data) / u"m", wd)
@@ -47,8 +47,8 @@ function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
 
     sa = heatmap!(ax, xkm, tmyr, mag;
         colormap=colormap, colorrange=range ./ u"m/Myr")
-    contour!(ax, xkm, tmyr, wd;
-        levels=[0], color=:red, linewidth=2, linestyle=:dash)
+    #contour!(ax, xkm, tmyr, wd;
+    #    levels=[0], color=:red, linewidth=2, linestyle=:dash)
     return sa
 end
 
@@ -73,8 +73,8 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
         colorrange=(0.5, n_facies + 0.5))
     contourf!(ax, xkm, tmyr, wd;
         levels=[0.0, 10000.0], colormap=Reverse(:grays))
-    contour!(ax, xkm, tmyr, wd;
-        levels=[0], color=:black, linewidth=2)
+    #contour!(ax, xkm, tmyr, wd;
+    #    levels=[0], color=:black, linewidth=2)
     return ft
 end
 

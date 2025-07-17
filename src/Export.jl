@@ -11,6 +11,9 @@ using Unitful
 using DataFrames
 using .Iterators: flatten
 
+using ..OutputData
+import ..OutputData: data_kind
+
 const Rate = typeof(1.0u"m/Myr")
 const Amount = typeof(1.0u"m")
 const Length = typeof(1.0u"m")
@@ -22,51 +25,45 @@ const na = [CartesianIndex()]
 abstract type ExportSpecification end
 
 @kwdef struct CSV <: ExportSpecification
-    grid_locations::Vector{NTuple{2,Int}}
     output_files::IdDict{Symbol,String}
 end
 
-CSV(grid_locations, kwargs...) = CSV(grid_locations, IdDict(kwargs...))
+CSV(kwargs...) = CSV(IdDict(kwargs...))
 # ~/~ end
 
-@kwdef struct Axes
-    x::Vector{Length}
-    y::Vector{Length}
-    t::Vector{Time}
+function data_kind(gid::HDF5.Group)
+	slice = parse_multi_slice(attrs(gid)["slice"])
+	return data_kind(slice...)
 end
 
-@kwdef struct Header
-    tag::String
-    axes::Axes
-    Δt::Time
-    write_interval::Int
-    time_steps::Int
-    initial_topography::Matrix{Amount}
-    sea_level::Vector{Length}
-    subsidence_rate::Rate
+function data_kind(fid::HDF5.File, group)
+	group_name = string(group)
+	if group_name == "input"
+		return :metadata
+	end
+    return data_kind(fid[group_name])
 end
 
-@kwdef struct Data
-    disintegration::Array{Amount,4}
-    production::Array{Amount,4}
-    deposition::Array{Amount,4}
-    sediment_elevation::Array{Amount,3}
+function group_datasets(fid::HDF5.File)
+	result = Dict{Symbol, Vector{String}}(
+		:metadata => [],
+		:volume => [],
+		:slice => [],
+		:column => [])
+
+	for k in keys(fid)
+		kind = data_kind(fid, k)
+		push!(result[kind], k)
+	end
+	return result
 end
 
-struct DataSlice
-    slice::NTuple{2,Union{Colon,Int}}
-    disintegration::Array{Amount,3}
-    production::Array{Amount,3}
-    deposition::Array{Amount,3}
-    sediment_elevation::Array{Amount,2}
-end
-
-struct DataColumn
-    slice::NTuple{2,Int}
-    disintegration::Array{Amount,2}
-    production::Array{Amount,2}
-    deposition::Array{Amount,2}
-    sediment_elevation::Array{Amount,1}
+function data_header(gid::HDF5.Group)
+	slice = parse_multi_slice(attrs(gid)["slice"])
+    kind = data_kind(slice...)
+    write_interval = attrs(gid)["write_interval"]
+    return DataHeader(
+        slice=slice, kind=kind, write_interval=write_interval)
 end
 
 function read_header(fid)
@@ -77,58 +74,59 @@ function read_header(fid)
         fid["input/y"][] * u"m",
         fid["input/t"][] * u"Myr")
 
+    data_sets = Dict()
+    for k in keys(fid)
+        if k == "input"
+            continue
+        end
+        data_sets[Symbol(k)] = data_header(fid[k])
+    end
+    
+    grid_size = (length(axes.x), length(axes.y))
+    n_facies = attrs["n_facies"][]
+
     return Header(
-        attrs["tag"][],
-        axes,
-        attrs["delta_t"][] * u"Myr",
-        attrs["write_interval"][],
-        attrs["time_steps"][],
-        fid["input/initial_topography"][] * u"m",
-        fid["input/sea_level"][] * u"m",
-        attrs["subsidence_rate"][] * u"m/Myr")
+        tag = attrs["tag"][],
+        axes = axes,
+        Δt = attrs["delta_t"][] * u"Myr",
+        time_steps = attrs["time_steps"][],
+        grid_size = grid_size,
+        n_facies = n_facies,
+        initial_topography = fid["input/initial_topography"][] * u"m",
+        sea_level = fid["input/sea_level"][] * u"m",
+        subsidence_rate = attrs["subsidence_rate"][] * u"m/Myr",
+        data_sets = data_sets)
 end
 
-function read_data(filename)
+function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {dim}
+	slice = parse_multi_slice(string(attrs(gid)["slice"]))
+	write_interval = attrs(gid)["write_interval"]
+
+	reduce(_) = (:)
+	reduce(::Int) = 1
+
+	Data{dim+1,dim}(
+		slice, write_interval,
+		gid["disintegration"][:, reduce.(slice)..., :] * u"m",
+		gid["production"][:, reduce.(slice)..., :] * u"m",
+		gid["deposition"][:, reduce.(slice)..., :] * u"m",
+		gid["sediment_thickness"][reduce.(slice)..., :] * u"m")
+end
+
+function read_data(D::Type{Val{dim}}, filename::AbstractString, group) where {dim}
     h5open(filename) do fid
         header = read_header(fid)
-        data = Data(
-            fid["disintegration"][] * u"m",
-            fid["production"][] * u"m",
-            fid["deposition"][] * u"m",
-            fid["sediment_height"][] * u"m")
+		gid = fid[string(group)]
+		data = read_data(D, gid)
         header, data
     end
 end
 
-read_slice(fid::HDF5.File, slice...) = DataSlice(
-    slice,
-    fid["disintegration"][:, slice..., :] * u"m",
-    fid["production"][:, slice..., :] * u"m",
-    fid["deposition"][:, slice..., :] * u"m",
-    fid["sediment_height"][slice..., :] * u"m")
+read_volume(args...) = read_data(Val{3}, args...)
+read_slice(args...) = read_data(Val{2}, args...)
+read_column(args...) = read_data(Val{1}, args...)
 
-function read_slice(filename::AbstractString, slice...)
-    h5open(filename) do fid
-        header = read_header(fid)
-        data = read_slice(fid, slice...)
-        header, data
-    end
-end
-
-read_column(fid::HDF5.File, slice...) = DataColumn(
-    slice,
-    fid["disintegration"][:, slice..., :] * u"m",
-    fid["production"][:, slice..., :] * u"m",
-    fid["deposition"][:, slice..., :] * u"m",
-    fid["sediment_height"][slice..., :] * u"m")
-
-function read_column(filename::AbstractString, slice...)
-    h5open(filename) do fid
-        header = read_header(fid)
-        data = read_column(fid, slice...)
-        header, data
-    end
-end
+time(header::Header, data::Data) = header.axes.t[1:data.write_interval:end]
 
 # ~/~ begin <<docs/src/data-export.md#export-function>>[init]
 """
@@ -176,62 +174,47 @@ age_depth_model(sac_df::DataFrame) =
     let sac_cols = filter(contains("sac"), names(sac_df)),
         adm_cols = replace.(sac_cols, "sac" => "adm")
 
-        select(sac_df, "time", (sac => age_depth_model => adm
-                                for (sac, adm) in zip(sac_cols, adm_cols))...)
+        select(sac_df, "timestep",
+               (sac => age_depth_model => adm
+                for (sac, adm) in zip(sac_cols, adm_cols))...)
     end
 # ~/~ end
 # ~/~ begin <<docs/src/data-export.md#export-function>>[2]
 """
-    stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
+    stratigraphic_column(header::Header, column::DataColumn, facies::Int)
 
 Compute the Stratigraphic Column for a given grid position `loc` and `facies` index.
 Returns an `Array{Quantity, 2}` where the `Quantity` is in units of meters.
 """
-function stratigraphic_column(header::Header, data::Data, loc::NTuple{2,Int}, facies::Int)
-    dc = DataColumn(
-        loc,
-        data.disintegration[:, loc..., :],
-        data.production[:, loc..., :],
-        data.deposition[:, loc..., :],
-        data.sediment_elevation[loc..., :])
-    return stratigraphic_column(header, dc, facies)
-end
+function stratigraphic_column(header::Header, column::DataColumn, facies::Int)
+	n_steps = size(column.production, 2)	
+    delta = column.deposition[facies,:] .- column.disintegration[facies,:]
 
-function stratigraphic_column(header::Header, data::DataColumn, facies::Int)
-    n_times = length(header.axes.t) - 1
-    sc = zeros(typeof(1.0u"m"), n_times)
-
-    for ts = 1:n_times
-        acc = data.deposition[facies, ts] - data.disintegration[facies, ts]
-        if acc > 0.0u"m"
-            sc[ts] = acc
-            continue
-        end
-        ts_down = ts - 1
-        while acc < 0.0u"m"
-            ts_down < 1 && break
-            if -acc < sc[ts_down]
-                sc[ts_down] -= acc
+	for step in 1:n_steps
+        debt = 0.0u"m"
+        for pos in (step:-1:2)
+            if delta[pos] > 0.0u"m"
                 break
-            else
-                acc += sc[ts_down]
-                sc[ts_down] = 0.0u"m"
             end
-            ts_down -= 1
-        end
-    end
 
-    sc
+            delta[pos-1] += delta[pos]
+            delta[pos] = 0.0u"m"
+        end
+	end
+
+	return delta
 end
 # ~/~ end
 # ~/~ begin <<docs/src/data-export.md#export-function>>[3]
 struct CSVExportTrait{S} end
 
-function data_export(spec::T, filepath::String) where {T<:ExportSpecification}
-    data_export(spec, read_data(filepath)...)
-end
+"""
+	data_export(spec::CSV, header::Header, data)
 
-function data_export(spec::CSV, header::Header, data::Data)
+Exports `data` to CSV. Here, `data` should be a collection or iterable
+of `DataColumn`.
+"""
+function data_export(spec::CSV, header::Header, data)
     for (key, filename) in spec.output_files
         if key == :metadata
             md = Dict(
@@ -241,11 +224,11 @@ function data_export(spec::CSV, header::Header, data::Data)
                     "time_steps" => header.time_steps,
                     "delta_t" => header.Δt),
                 "locations" => [Dict(
-                    "number" => i,
-                    "x" => header.axes.x[loc[1]],
-                    "y" => header.axes.y[loc[2]],
-                    "initial_topography" => header.initial_topography[loc...])
-                                for (i, loc) in enumerate(spec.grid_locations)],
+                    "label" => string(label),
+                    "x" => header.axes.x[col.slice[1]],
+                    "y" => header.axes.y[col.slice[2]],
+                    "initial_topography" => header.initial_topography[col.slice...])
+                    for (label, col) in pairs(data)],
                 "files" => spec.output_files)
             open(filename, "w") do io
                 TOML.print(io, md) do obj
@@ -259,79 +242,83 @@ function data_export(spec::CSV, header::Header, data::Data)
             continue
         end
         open(filename, "w") do io
-            data_export(CSVExportTrait{key}, io, header, data, spec.grid_locations)
+            time_df = DataFrame(
+                :timestep => 0:header.time_steps,
+                :time => header.axes.t)
+            df = innerjoin(
+                time_df,
+                (data_export(CSVExportTrait{key}, header, column, label)
+                 for (label, column) in pairs(data))...,
+                on=:timestep)
+            write_unitful_csv(io, df)
         end
     end
 end
 
-function data_export(::Type{CSVExportTrait{S}}, args...) where {S}
+function data_export(::Type{CSVExportTrait{S}}, header::Header, data::DataColumn, label) where {S}
     error("Unknown CSV data export: `$(S)`")
 end
 
-function data_export(::Type{CSVExportTrait{:sediment_accumulation_curve}},
-    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-
-    sac = extract_sac(header, data, grid_locations)
-    write_unitful_csv(io, sac)
+function data_export(E::Type{CSVExportTrait{S}}, header::Header, columns) where {S}
+    return innerjoin(
+        (data_export(E, header, column, label)
+         for (label, column) in pairs(columns))...,
+        on=:timestep)
 end
 
-function data_export(::Type{CSVExportTrait{:age_depth_model}},
-    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+data_export(::Type{CSVExportTrait{:sediment_accumulation_curve}}, header::Header, data::DataColumn, label) =
+    extract_sac(header, data, label)
+data_export(::Type{CSVExportTrait{:stratigraphic_column}}, header::Header, data::DataColumn, label) =
+    extract_sc(header, data, label)
+data_export(::Type{CSVExportTrait{:water_depth}}, header::Header, data::DataColumn, label) =
+    extract_wd(header, data, label)
+data_export(::Type{CSVExportTrait{:age_depth_model}}, header::Header, data::DataColumn, label) =
+    extract_sac(header, data, label) |> age_depth_model
 
-    adm = extract_sac(header, data, grid_locations) |> age_depth_model
-    write_unitful_csv(io, adm)
-end
+"""
+    extract_sac(header::Header, data::DataColumn)
 
-function data_export(::Type{CSVExportTrait{:stratigraphic_column}},
-    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-
-    sc = extract_sc(header, data, grid_locations)
-    write_unitful_csv(io, sc)
-end
-
-function data_export(::Type{CSVExportTrait{:water_depth}},
-    io::IO, header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-    wd = extract_wd(header, data, grid_locations)
-    write_unitful_csv(io, wd)
+Extract Sediment Accumumlation Curve (SAC) from the data. The SAC is directly
+copied from `data.sediment_thickness`. Returns a `DataFrame` with `time` and
+`sac_<n>` columns where `<n>` is in the range `1:length(grid_locations)`.
+"""
+function extract_sac(header::Header, data::DataColumn, label)
+    DataFrame(
+        "timestep" => 0:data.write_interval:header.time_steps, 
+        "sac_$(label)" => data.sediment_thickness)
 end
 
 """
-    extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    extract_sc(header::Header, data::DataColumn)
 
-Extract Sediment Accumumlation Curve (SAC) from the data. The SAC is directly copied from
-`data.sediment_elevation`. Returns a `DataFrame` with `time` and `sac<n>` columns where `<n>`
-is in the range `1:length(grid_locations)`.
+Extract Stratigraphic Column (SC) from the data. Returns a `DataFrame` with
+`time` and `sc<n>` columns where `<n>` is in the range `1:length(grid_locations)`.
 """
-function extract_sac(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-    DataFrame(:time => header.axes.t[1:end],
-        (Symbol("sac$(i)") => data.sediment_elevation[loc..., :]
-         for (i, loc) in enumerate(grid_locations))...)
-end
-
-"""
-    extract_sc(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
-
-Extract Stratigraphic Column (SC) from the data. Returns a `DataFrame` with `time` and `sc<n>` columns where `<n>`
-is in the range `1:length(grid_locations)`.
-"""
-function extract_sc(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+function extract_sc(header::Header, data::DataColumn, label)
     n_facies = size(data.production)[1]
-    DataFrame("time" => header.axes.t[1:end-1],
-        ("sc$(i)_f$(f)" => stratigraphic_column(header, data, loc, f)
-         for f in 1:n_facies, (i, loc) in enumerate(grid_locations))...)
+    DataFrame(
+        "timestep" => data.write_interval:data.write_interval:header.time_steps, 
+        ("sc_$(label)_f$(f)" => stratigraphic_column(header, data, f)
+         for f in 1:n_facies)...)
 end
 
 """
-    extract_wd(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+    extract_wd(header::Header, data::DataColumn)
 
-Extract the water depth from the data. Returns a `DataFrame` with `time` and `wd<n>` columns where `<n>`
-is in the range `1:length(grid_locations)`.
+Extract the water depth from the data. Returns a `DataFrame` with `time` and
+`wd<n>` columns where `<n>` is in the range `1:length(grid_locations)`.
 """
-function extract_wd(header::Header, data::Data, grid_locations::Vector{NTuple{2,Int}})
+function extract_wd(header::Header, data::DataColumn, label)
     na = [CartesianIndex()]
-    wd = header.subsidence_rate .* header.axes.t[na, na, :] .- header.initial_topography[:, :, na] .- data.sediment_elevation
-    DataFrame("time" => header.axes.t,
-        ("wd$(i)" => wd[loc..., :] for (i, loc) in enumerate(grid_locations))...)
+    t = header.axes.t[1:data.write_interval:end]
+    sea_level = header.sea_level[1:data.write_interval:end]
+    wd = header.subsidence_rate .* t .- 
+        header.initial_topography[data.slice...] .- 
+        data.sediment_thickness .+
+        sea_level
+    return DataFrame(
+        "timestep" => 0:data.write_interval:header.time_steps, 
+        "wd_$(label)" => wd)
 end
 # ~/~ end
 

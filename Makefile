@@ -16,4 +16,4 @@ test:
 	julia +1.10 --project=. -e 'using Pkg; Pkg.instantiate(); Pkg.test()'
 
 pluto:
-	julia +1.10 --project=workenv -e 'using Pluto; Pluto.run()'
+	julia --project=workenv -e 'using Pluto; Pluto.run()'

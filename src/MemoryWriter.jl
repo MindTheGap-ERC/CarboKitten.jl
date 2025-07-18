@@ -17,6 +17,8 @@ struct MemoryOutput <: AbstractOutput
     data_columns::Dict{Symbol, DataColumn}
 end
 
+MemoryOutput(input::AbstractInput) = new_output(MemoryOutput, input)
+
 function new_output(::Type{MemoryOutput}, input::AbstractInput)
     t_axis = time_axis(input.time)
     x_axis, y_axis = box_axes(input.box)
@@ -87,7 +89,7 @@ function set_attribute(out::MemoryOutput, name::Symbol, value::Any)
 end
 
 write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 0}) =
-    out.data_columns[label].sediment_thickness[idx] .= data
+    out.data_columns[label].sediment_thickness[idx] = data[]
 write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 1}) =
     out.data_slices[label].sediment_thickness[:, idx] .= data
 write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 2}) =

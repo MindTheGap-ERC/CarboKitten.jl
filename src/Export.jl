@@ -81,7 +81,7 @@ function read_header(fid)
         end
         data_sets[Symbol(k)] = data_header(fid[k])
     end
-    
+
     grid_size = (length(axes.x), length(axes.y))
     n_facies = attrs["n_facies"][]
 

@@ -115,6 +115,7 @@ makedocs(
         ],
         "Input & Output" => [
             "Input Methods" => "input-methods.md",
+            "Output" => "memory-writer.md",
             "CSV Export" => "data-export.md"
         ],
         "Algorithms" => [

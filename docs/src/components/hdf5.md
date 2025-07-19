@@ -20,13 +20,6 @@ const INPUT = ALCAP.Input(
 Saving the full output of this simulation would take several hundreds of gigabytes, not gargantuan, but a bit unwieldy if you want to save many simulation runs. With this output specification, we cut down on this significantly.
 
 ``` {.julia #hdf5-output-spec}
-const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
-
-@kwdef struct OutputSpec <: AbstractOutputSpec
-    slice::Slice2 = (:, :)
-    write_interval::Int = 1
-end
-
 @kwdef struct Input <: AbstractInput
     output = Dict(:full => OutputSpec((:,:), 1)) 
 end
@@ -91,6 +84,7 @@ end
     using HDF5
 
     import ...CarboKitten: run_model, Model
+    import ...OutputData: AbstractOutputSpec
 
     @mixin Boxes, TimeIntegration, FaciesBase, WaterDepth
 

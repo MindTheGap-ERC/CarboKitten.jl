@@ -15,7 +15,7 @@ function main()
 
 	x = header.axes.x
 	t = header.axes.t
-	
+
     plot = profile_plot!(x -> x[2]/sum(x), ax, header, slice; colorrange=(0, 1))
     Colorbar(fig[1, 2], plot; label=L"f_2 / f_{total}")
 

@@ -11,6 +11,9 @@ using Unitful
 using DataFrames
 using .Iterators: flatten
 
+using ..OutputData
+import ..OutputData: data_kind
+
 const Rate = typeof(1.0u"m/Myr")
 const Amount = typeof(1.0u"m")
 const Length = typeof(1.0u"m")
@@ -27,85 +30,6 @@ end
 
 CSV(kwargs...) = CSV(IdDict(kwargs...))
 # ~/~ end
-
-@kwdef struct Axes
-    x::Vector{Length}
-    y::Vector{Length}
-    t::Vector{Time}
-end
-
-const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
-
-@kwdef struct DataHeader
-    kind::Symbol
-    slice::Slice2
-    write_interval::Int
-end
-
-@kwdef struct Header
-    tag::String
-    axes::Axes
-    Δt::Time
-    time_steps::Int
-    initial_topography::Matrix{Amount}
-    sea_level::Vector{Length}
-    subsidence_rate::Rate
-    data_sets::Dict{Symbol, DataHeader}
-end
-
-@kwdef struct Data{F, D}
-	slice::Slice2
-	write_interval::Int
-	# Julia doesn't allow to say Array{Amount,D+1} here
-    disintegration::Array{Amount,F}
-	production::Array{Amount,F}
-    deposition::Array{Amount,F}
-    sediment_thickness::Array{Amount,D}
-end
-
-const DataVolume = Data{4, 3}
-const DataSlice = Data{3, 2}
-const DataColumn = Data{2, 1}
-
-count_ints(::Int, args...) = 1 + count_ints(args...)
-count_ints(_, args...) = count_ints(args...)
-count_ints() = 0
-
-reduce_slice(s::Tuple{Colon, Colon}, x, y) = (x, y)
-reduce_slice(s::Tuple{Int, Colon}, y::Int) = (s[1], y)
-reduce_slice(s::Tuple{Colon, Int}, x::Int) = (x, s[2])
-
-Base.getindex(v::Data{F,D}, args...) where {F, D} = let k = count_ints(args...)
-	Data{F-k, D-k}(
-		reduce_slice(v.slice, args...),
-		v.write_interval,
-		v.disintegration[:, args..., :],
-		v.production[:, args..., :],
-		v.deposition[:, args..., :],
-		v.sediment_thickness[args..., :])
-end
-
-function parse_slice(s::AbstractString)
-	if s == ":"
-		return (:)
-	end
-
-	elements =  split(s, ":")
-	if length(elements) == 1
-		return parse(Int, s)
-	end
-
-	a, b = elements
-	return parse(Int, a):parse(Int, b)
-end
-
-parse_multi_slice(s::AbstractString) = Slice2(parse_slice.(split(s, ",")))
-
-data_kind(::Int, ::Int) = :column
-data_kind(::Int, _) = :slice
-data_kind(_, ::Int) = :slice
-data_kind(_, _) = :volume
-
 
 function data_kind(gid::HDF5.Group)
 	slice = parse_multi_slice(attrs(gid)["slice"])
@@ -158,15 +82,20 @@ function read_header(fid)
         data_sets[Symbol(k)] = data_header(fid[k])
     end
 
+    grid_size = (length(axes.x), length(axes.y))
+    n_facies = attrs["n_facies"][]
+
     return Header(
-        attrs["tag"][],
-        axes,
-        attrs["delta_t"][] * u"Myr",
-        attrs["time_steps"][],
-        fid["input/initial_topography"][] * u"m",
-        fid["input/sea_level"][] * u"m",
-        attrs["subsidence_rate"][] * u"m/Myr",
-        data_sets)
+        tag = attrs["tag"][],
+        axes = axes,
+        Δt = attrs["delta_t"][] * u"Myr",
+        time_steps = attrs["time_steps"][],
+        grid_size = grid_size,
+        n_facies = n_facies,
+        initial_topography = fid["input/initial_topography"][] * u"m",
+        sea_level = fid["input/sea_level"][] * u"m",
+        subsidence_rate = attrs["subsidence_rate"][] * u"m/Myr",
+        data_sets = data_sets)
 end
 
 function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {dim}

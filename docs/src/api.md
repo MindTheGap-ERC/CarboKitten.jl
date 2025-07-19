@@ -14,6 +14,12 @@ time_axis
 Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer]
 ```
 
+## Output
+
+```@autodocs
+Modules = [CarboKitten.OutputData]
+```
+
 ## Utility
 
 ```@autodocs

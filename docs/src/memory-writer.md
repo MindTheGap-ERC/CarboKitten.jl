@@ -42,11 +42,11 @@ These can be used for subsequent visualization or CSV export.
 module AutoCycles
 
 using CarboKitten
-using CarboKitten: Box
 using CarboKitten.Models: WithoutCA as M
 using CarboKitten.Visualization: profile_plot!
 
 using Makie
+using CarboKitten: Box
 
 v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
 
@@ -69,7 +69,7 @@ function run()
 
 
     input = M.Input(
-        box=Box{Coast}(grid_size=(500, 1), phys_scale=50.0u"m"),
+        box=CarboKitten.Box{Coast}(grid_size=(500, 1), phys_scale=50.0u"m"),
         time=TimeProperties(
             Δt=20u"yr",
             steps=40000),
@@ -132,6 +132,7 @@ function plot(result::MemoryOutput)
 end
 
 end
+
 ```
 
 ## Data Structures

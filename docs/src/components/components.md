@@ -64,6 +64,7 @@ Depth = 1
 module Common
 export @u_str, Quantity, Amount, Time, Location, Rate, Intensity, Height, Sediment
 export AbstractFacies, AbstractInput, AbstractState, AbstractFrame, AbstractOutputSpec
+export OutputSpec
 export Box, box_axes, Boundary, Coast, Periodic, Reflected, TimeProperties
 export in_units_of
 export Model
@@ -80,6 +81,7 @@ using ...BoundaryTrait
 using ...Config: TimeProperties
 using ...Boxes: Box, box_axes
 using ...Utility: in_units_of
+using ...OutputData: AbstractInput, AbstractState, Frame, OutputSpec
 
 const Amount = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
@@ -90,16 +92,6 @@ const Intensity = typeof(1.0u"W/m^2")
 const Sediment = typeof(1.0u"m")
 
 abstract type AbstractFacies end
-abstract type AbstractInput end
-abstract type AbstractState end
-abstract type AbstractFrame end
-abstract type AbstractOutputSpec end
-
-@kwdef struct Frame
-    disintegration::Union{Array{Sediment,3},Nothing} = nothing   # facies, x, y
-    production::Union{Array{Sediment,3},Nothing} = nothing
-    deposition::Union{Array{Sediment,3},Nothing} = nothing
-end
 
 end
 ```

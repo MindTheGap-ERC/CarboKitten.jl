@@ -702,6 +702,17 @@ C, wd),
     end
 end
 
+function write_header(fid, input::AbstractInput)
+    gid = fid["input"]
+    attr = attributes(gid)
+
+    attr["intertidal_zone"] = input.intertidal_zone |> in_units_of(u"m")
+    attr["disintegration_rate"] = input.disintegration_rate |> in_units_of(u"m/Myr")
+    if input.precipitation_time !== nothing
+        attr["precipitation_time"] = input.precipitation_time |> in_units_of(u"Myr")
+    end
+end
+
 end
 ```
 

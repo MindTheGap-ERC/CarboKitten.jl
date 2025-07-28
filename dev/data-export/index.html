@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>CSV Export · CarboKitten</title><meta name="title" content="CSV Export · CarboKitten"/><meta property="og:title" content="CSV Export · CarboKitten"/><meta property="twitter:title" content="CSV Export · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li><li><a class="tocitem" href="../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/run_model/">Model Runner</a></li><li><a class="tocitem" href="../components/hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../onshore-transport/">Onshore Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../input-methods/">Input Methods</a></li><li class="is-active"><a class="tocitem" href>CSV Export</a><ul class="internal"><li><a class="tocitem" href="#Tests"><span>Tests</span></a></li><li><a class="tocitem" href="#Writing-CSV-files"><span>Writing CSV files</span></a></li><li><a class="tocitem" href="#Age-depth-model"><span>Age-depth model</span></a></li><li><a class="tocitem" href="#Stratigraphic-Column"><span>Stratigraphic Column</span></a></li><li><a class="tocitem" href="#Dispatch"><span>Dispatch</span></a></li></ul></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li><li><a class="tocitem" href="../finite-difference-transport/">Finite Difference</a></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Input &amp; Output</a></li><li class="is-active"><a href>CSV Export</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>CSV Export</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/data-export.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Data-export"><a class="docs-heading-anchor" href="#Data-export">Data export</a><a id="Data-export-1"></a><a class="docs-heading-anchor-permalink" href="#Data-export" title="Permalink"></a></h1><p>We provide several ways to export reduced data from CarboKitten to CSV files that are easier to read, visualize and post-process for most people.</p><div class="noweb-label">⪡export-specification⪢≣</div><pre><code class="language- julia hljs">abstract type ExportSpecification end
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>CSV Export · CarboKitten</title><meta name="title" content="CSV Export · CarboKitten"/><meta property="og:title" content="CSV Export · CarboKitten"/><meta property="twitter:title" content="CSV Export · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li><li><a class="tocitem" href="../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/run_model/">Model Runner</a></li><li><a class="tocitem" href="../components/hdf5/">HDF5 Writer</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../onshore-transport/">Onshore Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../memory-writer/">Output</a></li><li class="is-active"><a class="tocitem" href>CSV Export</a><ul class="internal"><li><a class="tocitem" href="#Tests"><span>Tests</span></a></li><li><a class="tocitem" href="#Writing-CSV-files"><span>Writing CSV files</span></a></li><li><a class="tocitem" href="#Age-depth-model"><span>Age-depth model</span></a></li><li><a class="tocitem" href="#Stratigraphic-Column"><span>Stratigraphic Column</span></a></li><li><a class="tocitem" href="#Dispatch"><span>Dispatch</span></a></li></ul></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li><li><a class="tocitem" href="../finite-difference-transport/">Finite Difference</a></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Input &amp; Output</a></li><li class="is-active"><a href>CSV Export</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>CSV Export</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/data-export.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Data-export"><a class="docs-heading-anchor" href="#Data-export">Data export</a><a id="Data-export-1"></a><a class="docs-heading-anchor-permalink" href="#Data-export" title="Permalink"></a></h1><p>We provide several ways to export reduced data from CarboKitten to CSV files that are easier to read, visualize and post-process for most people.</p><div class="noweb-label">⪡export-specification⪢≣</div><pre><code class="language- julia hljs">abstract type ExportSpecification end
 
 @kwdef struct CSV &lt;: ExportSpecification
     output_files::IdDict{Symbol,String}
@@ -21,6 +21,8 @@ const HEADER1 = Header(
     axes=AXES1,
     Δt=0.1u&quot;Myr&quot;,
     time_steps=10,
+    grid_size=(3, 1),
+    n_facies=1,
     initial_topography=zeros(typeof(1.0u&quot;m&quot;), 3, 3),
     sea_level=zeros(typeof(1.0u&quot;m&quot;), 11),
     subsidence_rate=10u&quot;m/Myr&quot;,
@@ -260,6 +262,9 @@ using Unitful
 using DataFrames
 using .Iterators: flatten
 
+using ..OutputData
+import ..OutputData: data_kind
+
 const Rate = typeof(1.0u&quot;m/Myr&quot;)
 const Amount = typeof(1.0u&quot;m&quot;)
 const Length = typeof(1.0u&quot;m&quot;)
@@ -268,85 +273,6 @@ const Time = typeof(1.0u&quot;Myr&quot;)
 const na = [CartesianIndex()]
 
 &lt;&lt;export-specification&gt;&gt;
-
-@kwdef struct Axes
-    x::Vector{Length}
-    y::Vector{Length}
-    t::Vector{Time}
-end
-
-const Slice2 = NTuple{2, Union{Int, Colon, UnitRange{Int}}}
-
-@kwdef struct DataHeader
-    kind::Symbol
-    slice::Slice2
-    write_interval::Int
-end
-
-@kwdef struct Header
-    tag::String
-    axes::Axes
-    Δt::Time
-    time_steps::Int
-    initial_topography::Matrix{Amount}
-    sea_level::Vector{Length}
-    subsidence_rate::Rate
-    data_sets::Dict{Symbol, DataHeader}
-end
-
-@kwdef struct Data{F, D}
-	slice::Slice2
-	write_interval::Int
-	# Julia doesn&#39;t allow to say Array{Amount,D+1} here
-    disintegration::Array{Amount,F}
-	production::Array{Amount,F}
-    deposition::Array{Amount,F}
-    sediment_thickness::Array{Amount,D}
-end
-
-const DataVolume = Data{4, 3}
-const DataSlice = Data{3, 2}
-const DataColumn = Data{2, 1}
-
-count_ints(::Int, args...) = 1 + count_ints(args...)
-count_ints(_, args...) = count_ints(args...)
-count_ints() = 0
-
-reduce_slice(s::Tuple{Colon, Colon}, x, y) = (x, y)
-reduce_slice(s::Tuple{Int, Colon}, y::Int) = (s[1], y)
-reduce_slice(s::Tuple{Colon, Int}, x::Int) = (x, s[2])
-
-Base.getindex(v::Data{F,D}, args...) where {F, D} = let k = count_ints(args...)
-	Data{F-k, D-k}(
-		reduce_slice(v.slice, args...),
-		v.write_interval,
-		v.disintegration[:, args..., :],
-		v.production[:, args..., :],
-		v.deposition[:, args..., :],
-		v.sediment_thickness[args..., :])
-end
-
-function parse_slice(s::AbstractString)
-	if s == &quot;:&quot;
-		return (:)
-	end
-
-	elements =  split(s, &quot;:&quot;)
-	if length(elements) == 1
-		return parse(Int, s)
-	end
-
-	a, b = elements
-	return parse(Int, a):parse(Int, b)
-end
-
-parse_multi_slice(s::AbstractString) = Slice2(parse_slice.(split(s, &quot;,&quot;)))
-
-data_kind(::Int, ::Int) = :column
-data_kind(::Int, _) = :slice
-data_kind(_, ::Int) = :slice
-data_kind(_, _) = :volume
-
 
 function data_kind(gid::HDF5.Group)
 	slice = parse_multi_slice(attrs(gid)[&quot;slice&quot;])
@@ -399,15 +325,20 @@ function read_header(fid)
         data_sets[Symbol(k)] = data_header(fid[k])
     end
 
+    grid_size = (length(axes.x), length(axes.y))
+    n_facies = attrs[&quot;n_facies&quot;][]
+
     return Header(
-        attrs[&quot;tag&quot;][],
-        axes,
-        attrs[&quot;delta_t&quot;][] * u&quot;Myr&quot;,
-        attrs[&quot;time_steps&quot;][],
-        fid[&quot;input/initial_topography&quot;][] * u&quot;m&quot;,
-        fid[&quot;input/sea_level&quot;][] * u&quot;m&quot;,
-        attrs[&quot;subsidence_rate&quot;][] * u&quot;m/Myr&quot;,
-        data_sets)
+        tag = attrs[&quot;tag&quot;][],
+        axes = axes,
+        Δt = attrs[&quot;delta_t&quot;][] * u&quot;Myr&quot;,
+        time_steps = attrs[&quot;time_steps&quot;][],
+        grid_size = grid_size,
+        n_facies = n_facies,
+        initial_topography = fid[&quot;input/initial_topography&quot;][] * u&quot;m&quot;,
+        sea_level = fid[&quot;input/sea_level&quot;][] * u&quot;m&quot;,
+        subsidence_rate = attrs[&quot;subsidence_rate&quot;][] * u&quot;m/Myr&quot;,
+        data_sets = data_sets)
 end
 
 function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {dim}
@@ -501,4 +432,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../input-methods/">« Input Methods</a><a class="docs-footer-nextpage" href="../unitful/">Unitful »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Tuesday 15 July 2025 13:59">Tuesday 15 July 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../memory-writer/">« Output</a><a class="docs-footer-nextpage" href="../unitful/">Unitful »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 28 July 2025 14:25">Monday 28 July 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

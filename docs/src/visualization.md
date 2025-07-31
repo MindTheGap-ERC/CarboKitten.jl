@@ -461,14 +461,14 @@ const na = [CartesianIndex()]
 
 elevation(h::Header, d::Data) =
     let bl = h.initial_topography[:, :, na],
-        sr = h.axes.t[end] * h.subsidence_rate
+        sr = (h.axes.t[end]-h.axes.t[1]) * h.subsidence_rate
 
         bl .+ d.sediment_thickness .- sr
     end
 
 elevation(h::Header, d::DataSlice) =
     let bl = h.initial_topography[d.slice..., na],
-        sr = h.axes.t[end] * h.subsidence_rate
+        sr = (h.axes.t[end]-h.axes.t[1]) * h.subsidence_rate
 
         bl .+ d.sediment_thickness .- sr
     end
@@ -552,7 +552,7 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
     @views verts[:, :, 2] .= ξ |> in_units_of(u"m")
     v, f = explode_quad_vertices(verts)
 
-    total_subsidence = header.subsidence_rate * header.axes.t[end]
+    total_subsidence = header.subsidence_rate * (header.axes.t[end] - header.axes.t[1])
     bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |> in_units_of(u"m")
     lower_limit = minimum(bedrock) - 20
     band!(ax, x, lower_limit, bedrock; color=:gray, label="initial topography")

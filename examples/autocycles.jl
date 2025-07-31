@@ -27,7 +27,7 @@ function run()
             diffusion_coefficient=10.0u"m/yr",
             wave_velocity=v_const(0.0u"m/yr"))]
 
-    
+
     input = M.Input(
         box=CarboKitten.Box{Coast}(grid_size=(500, 1), phys_scale=50.0u"m"),
         time=TimeProperties(
@@ -69,7 +69,7 @@ function plot(result::MemoryOutput)
 
 	x = header.axes.x
 	t = header.axes.t
-	
+
 	plot = profile_plot!(ax1, header, slice; colorrange=(0.2, 1.0)) do x; x[1] / sum(x) end 
     col_positions = [x[col.slice[1]] |> in_units_of(u"km") for col in values(result.data_columns)]
     vlines!(ax1, col_positions; color=:red)
@@ -92,5 +92,4 @@ function plot(result::MemoryOutput)
 end
 
 end
-
 # ~/~ end

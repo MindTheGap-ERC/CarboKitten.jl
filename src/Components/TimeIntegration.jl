@@ -23,6 +23,9 @@ Return the time given input and state.
 """
 time(input::AbstractInput, state::AbstractState) = input.time.t0 + state.step * input.time.Δt
 time(tprop::TimeProperties, state::AbstractState) = tprop.t0 + state.step * tprop.Δt
+time(input::AbstractInput) = let t0 = input.time.t0, dt = input.time.Δt
+    s -> t0 + s.step * dt
+end
 
 write_times(input::AbstractInput) = write_times(input.time)
 write_times(time::TimeProperties) = (0:n_writes(time)) .* time.Δt .+ time.t0

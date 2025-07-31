@@ -132,7 +132,6 @@ function plot(result::MemoryOutput)
 end
 
 end
-
 ```
 
 ## Data Structures

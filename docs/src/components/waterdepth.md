@@ -23,6 +23,7 @@ saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation p
 @mixin TimeIntegration, Boxes
 using ..Common
 using HDF5
+using ..TimeIntegration: time
 
 export water_depth
 
@@ -55,11 +56,13 @@ function water_depth(input::AbstractInput)
     eta0 = initial_topography(input)
     sea_level = input.sea_level
     subsidence_rate = input.subsidence_rate
+    t0 = input.time.t0
+    get_time = time(input)
 
     return function (state::AbstractState)
-        t = TimeIntegration.time(input, state)
+        t = get_time(state)
         return sea_level(t) .- eta0 .+
-               (subsidence_rate * t) .- state.sediment_height
+            (subsidence_rate * (t - t0)) .- state.sediment_height
     end
 end
 

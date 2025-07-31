@@ -86,7 +86,7 @@ function run()
 
         subsidence_rate=50.0u"m/Myr",
         disintegration_rate=100.0u"m/Myr",
-        precipitation_time=50.0u"yr",
+        cementation_time=50.0u"yr",
 
         insolation=400.0u"W/m^2",
         sediment_buffer_size=50,

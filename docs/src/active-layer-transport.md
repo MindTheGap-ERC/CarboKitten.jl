@@ -42,6 +42,8 @@ So we have a advection component with velocity $\nu' \nabla P_f$ and a diffusion
 
 As part of the production $P_f$ we disintegrate older sediment at a fixed rate.
 
+![Schema of active layer processes](fig/active-layer-diagram.plain.svg)
+
 ## Test 1: production transport
 
 Suppose we have an incline in one direction, as per usual on a coastal slice. Production is happening in a circular patch in our box, with constant rate. In addition, we'll release the top 1m of sediment for further transport.

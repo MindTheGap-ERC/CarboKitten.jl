@@ -553,7 +553,7 @@ CarboKitten.Components.ActiveLayer
 @compose module ActiveLayer
 @mixin WaterDepth, FaciesBase, SedimentBuffer
 
-export disintegrator, transporter, precipitation_factor
+export disintegrator, transporter, cementation_factor
 
 using ..Common
 using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
@@ -573,7 +573,7 @@ end
 @kwdef struct Input <: AbstractInput
     intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
-    precipitation_time::Union{typeof(1.0u"Myr"), Nothing} = nothing
+    cementation_time::Union{typeof(1.0u"Myr"), Nothing} = nothing
     transport_solver = Val{:RK4}
     transport_substeps = :adaptive 
 end
@@ -585,11 +585,11 @@ transport_solver(f, _) = f
 transport_solver(::Type{Val{:RK4}}, box) = runge_kutta_4(typeof(1.0u"m"), box)
 transport_solver(::Type{Val{:forward_euler}}, _) = forward_euler
 
-function precipitation_factor(input::AbstractInput)
-    if input.precipitation_time === nothing
+function cementation_factor(input::AbstractInput)
+    if input.cementation_time === nothing
         return 1.0
     else
-        return 1.0 - exp(input.time.Δt * log(1/2) / input.precipitation_time)
+        return 1.0 - exp(input.time.Δt * log(1/2) / input.cementation_time)
     end
 end
 
@@ -708,8 +708,8 @@ function write_header(fid, input::AbstractInput)
 
     attr["intertidal_zone"] = input.intertidal_zone |> in_units_of(u"m")
     attr["disintegration_rate"] = input.disintegration_rate |> in_units_of(u"m/Myr")
-    if input.precipitation_time !== nothing
-        attr["precipitation_time"] = input.precipitation_time |> in_units_of(u"Myr")
+    if input.cementation_time !== nothing
+        attr["cementation_time"] = input.cementation_time |> in_units_of(u"Myr")
     end
 end
 

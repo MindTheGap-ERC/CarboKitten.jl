@@ -57,14 +57,30 @@ The single-cell version of `push_sediment!` takes as argument `col` a column (ph
 
 ``` {.julia #sediment-stack-impl}
 function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
+    @assert size(col, 2) == length(parcel) "column $(size(col)) doesn't match parcel $(size(parcel))"
     <<push-sediment>>
+end
+```
+
+First we check if the amount of sediment is larger than the buffer. A warning is printed and the entire buffer filled in the specified fractions.
+
+``` {.julia #push-sediment}
+mass = sum(parcel)
+if mass == 0.0
+    return
+end
+
+if mass > size(col)[1]
+    @warn "pushing a very large parcel of sediment: $mass times depositional resolution"
+    frac = parcel ./ mass
+    col .= frac
+    return
 end
 ```
 
 First we determine the total sediment amount $\Delta$, being the sum of the parcel, as well as the amount of sediment in our *bucket*, the head row.
 
 ``` {.julia #push-sediment}
-mass = sum(parcel)
 bucket = sum(col[1, :])
 @assert bucket >= 0.0 && bucket <= 1.0
 ```
@@ -86,13 +102,6 @@ col[1,:] .+= frac .* (1.0 - bucket)
 mass -= (1.0 - bucket)
 n = floor(Int64, mass)
 
-if n > size(col)[1] ÷ 2
-    @warn "pushing a too large parcel of sediment: Δ = $mass, reduce your timestep"
-end
-if n > size(col)[1] - 2
-    @error "pushing a way too large parcel of sediment: Δ = $mass, parcel = $parcel"
-    error("fatal error, too much sediment for buffer")
-end
 col[n+2:end,:] .= col[1:end-n-1,:]
 ```
 
@@ -178,6 +187,7 @@ export push_sediment!, pop_sediment!, peek_sediment
 
 function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) where F <: Real
   _, x, y = size(p)
+  @assert size(sediment, 2) == size(p, 1) "shapes for sediment $(size(sediment)) doesn't match p $(size(p))"
   @views for i in CartesianIndices((x, y))
     push_sediment!(sediment[:, :, i[1], i[2]], p[:, i[1], i[2]])
   end

@@ -19,8 +19,8 @@ const INPUT = BS92.Input(
     box = Box{Coast}(grid_size=(100, 1), phys_scale=600.0u"m"),
     time = TimeProperties(
       Δt = 10.0u"yr",
-      steps = 8000,
-      write_interval = 100),
+      steps = 8000),
+    output = Dict(:full => OutputSpec(write_interval=100)),
     sea_level = let sc = sealevel_curve()
       t -> -sc(t)
     end,

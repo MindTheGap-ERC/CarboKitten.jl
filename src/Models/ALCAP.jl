@@ -1,11 +1,11 @@
 # ~/~ begin <<docs/src/model-alcap.md#src/Models/ALCAP.jl>>[init]
 @compose module ALCAP
-@mixin Tag, H5Writer, CAProduction, ActiveLayer
+@mixin Tag, H5Writer, CAProduction, ActiveLayer, InitialSediment
 
 using ..Common
 using ..CAProduction: production
 using ..TimeIntegration
-using ..WaterDepth
+using ..WaterDepth: water_depth
 using ModuleMixins: @for_each
 
 export Input, Facies
@@ -18,11 +18,16 @@ function initial_state(input::AbstractInput)
 
     sediment_height = zeros(Height, input.box.grid_size...)
     sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
+    active_layer = zeros(Amount, n_facies(input), input.box.grid_size...)
 
-    return State(
+    state = State(
         step=0, sediment_height=sediment_height,
         sediment_buffer=sediment_buffer,
+        active_layer = active_layer,
         ca=ca_state.ca, ca_priority=ca_state.ca_priority)
+
+    InitialSediment.push_initial_sediment!(input, state)
+    return state
 end
 
 function step!(input::Input)
@@ -30,26 +35,33 @@ function step!(input::Input)
     disintegrate! = ActiveLayer.disintegrator(input)
     produce = production(input)
     transport! = ActiveLayer.transporter(input)
+    local_water_depth = water_depth(input)
+    na = [CartesianIndex()]
+    pf = cementation_factor(input)
 
     function (state::State)
         if mod(state.step, input.ca_interval) == 0
             step_ca!(state)
         end
 
-        p = produce(state)
+        wd = local_water_depth(state)
+        p = produce(state, wd)
         d = disintegrate!(state)
 
-        active_layer = p .+ d
-        transport!(state, active_layer)
+        state.active_layer .+= p
+        state.active_layer .+= d
+        transport!(state)
 
-        push_sediment!(state.sediment_buffer, active_layer ./ input.depositional_resolution .|> NoUnits)
-        state.sediment_height .+= sum(active_layer; dims=1)[1,:,:]
+        deposit = pf .* state.active_layer
+        push_sediment!(state.sediment_buffer, deposit ./ input.depositional_resolution .|> NoUnits)
+        state.active_layer .-= deposit
+        state.sediment_height .+= sum(deposit; dims=1)[1,:,:]
         state.step += 1
 
         return Frame(
             production = p,
             disintegration = d,
-            deposition = active_layer)
+            deposition = deposit)
     end
 end
 

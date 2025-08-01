@@ -24,8 +24,7 @@ const INPUT = BS92.Input(
     box = Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
     time = TimeProperties(
         Δt = 200.0u"yr",
-        steps = 5000,
-        write_interval = 1),
+        steps = 5000),
     sea_level = t -> 4.0u"m" * sin(2π * t / 0.2u"Myr"),
     initial_topography = (x, y) -> - x / 300.0,
     subsidence_rate = 50.0u"m/Myr",

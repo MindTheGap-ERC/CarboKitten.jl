@@ -80,7 +80,8 @@ makedocs(
             "Bosscher and Schlager 1992" => "bosscher-1992.md",
             "Model with CA and Production" => "ca-with-production.md",
             # "With Denudation" => "ca-prod-with-denudation.md",
-            "ALCAPS" => "model-alcap.md"
+            "ALCAPS" => "model-alcap.md",
+            "Model without CA" => "models/without-ca.md"
         ],
         "Examples" => [
             "Tutorial (Pluto notebook)" => "first_tutorial.md",
@@ -114,6 +115,7 @@ makedocs(
         ],
         "Input & Output" => [
             "Input Methods" => "input-methods.md",
+            "Output" => "memory-writer.md",
             "CSV Export" => "data-export.md"
         ],
         "Algorithms" => [

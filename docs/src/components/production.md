@@ -16,7 +16,12 @@ function production_rate(insolation, facies, water_depth)
     gₘ = facies.maximum_growth_rate
     I = insolation / facies.saturation_intensity
     x = water_depth * facies.extinction_coefficient
-    return water_depth > 0.0u"m" ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
+    return x > 0.0 ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
+end
+
+function capped_production(insolation, facies, water_depth, dt)
+    p = production_rate(insolation, facies, water_depth) * dt
+    return min(p, max(0.0u"m", water_depth))
 end
 ```
 
@@ -33,7 +38,7 @@ using ..TimeIntegration: time, write_times
 using HDF5
 using Logging
 
-export production_rate, uniform_production
+export production_rate, capped_production, uniform_production
 
 @kwdef struct Facies <: AbstractFacies
     maximum_growth_rate::Rate
@@ -88,13 +93,14 @@ function uniform_production(input::AbstractInput)
     na = [CartesianIndex()]
     insolation_func = insolation(input)
     facies = input.facies
+    dt = input.time.Δt
 
-    return function (state::AbstractState)
-        return production_rate.(
-            insolation_func(state),
-            facies[:, na, na],
-            w(state)[na, :, :])
-    end
+    p(state::AbstractState, wd::AbstractMatrix) =
+        capped_production.(insolation_func(state), facies[:, na, na], wd[na, :, :], dt)
+
+    p(state::AbstractState) = p(state, w(state))
+
+    return p
 end
 end
 ```
@@ -118,29 +124,87 @@ The `CAProduction` component gives production that depends on the provided CA.
     function production(input::AbstractInput)
         w = water_depth(input)
         na = [CartesianIndex()]
-        output = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
+        output_ = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
 
         w = water_depth(input)
         s = insolation(input)
         n_f = n_facies(input)
         facies = input.facies
-        Δt = input.time.Δt
+        dt = input.time.Δt
 
-        return function(state::AbstractState)
-            insolation = s(state)
-            for f = 1:n_f
-                output[f, :, :] = ifelse.(
-                    state.ca .== f,
-                    production_rate.(insolation, (facies[f],), w(state)) .* Δt,
-                    0.0u"m")
+        function p(state::AbstractState, wd::AbstractMatrix)::Array{Amount,3}
+            output::Array{Amount, 3} = output_
+            insolation::typeof(1.0u"W/m^2") = s(state)
+            for i in eachindex(IndexCartesian(), wd)
+                for f in 1:n_f
+                    output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u"m" :
+                    capped_production(insolation, facies[f], wd[i], dt)
+                end
             end
             return output
         end
+
+        @inline p(state::AbstractState) = p(state, w(state))
+
+        return p
     end
 end
 ```
 
 ## Tests
+
+### If production is higher in shallower water 
+
+```{.julia #production-spec}
+@testset "Components/Production" begin
+    let facies = Facies(
+            maximum_growth_rate = 500u"m/Myr",
+            extinction_coefficient = 0.8u"m^-1",
+            saturation_intensity = 60u"W/m^2"),
+        input = Input(
+            box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
+            time = TimeProperties(Δt=1.0u"kyr", steps=10),
+            sea_level = t -> 0.0u"m",
+            initial_topography = (x, y) -> -10u"m",
+            subsidence_rate = 0.0u"m/Myr",
+            facies = [facies],
+            insolation = 400.0u"W/m^2")
+
+        state = initial_state(input)
+        prod = uniform_production(input)(state)
+        @test all(prod[1:end-1,:] .>= prod[2:end,:])
+    end
+end
+```
+
+### Variable insolation
+
+If insolation increases linearly with time, production at t = 10 should be higher than at t = 1.
+
+```{.julia #production-spec}
+@testset "Components/Production/variable_insolation" begin
+    let facies = Facies(
+            maximum_growth_rate = 500u"m/Myr",
+            extinction_coefficient = 0.8u"m^-1",
+            saturation_intensity = 60u"W/m^2"),
+        input = Input(
+            box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
+            time = TimeProperties(Δt=1.0u"kyr", steps=10),
+            sea_level = t -> 0.0u"m",
+            initial_topography = (x, y) -> -10u"m",
+            subsidence_rate = 0.0u"m/Myr",
+            facies = [facies],
+            insolation = t -> 40.0u"W/m^2/kyr" * t)
+
+        state = initial_state(input)
+        state.step = 1
+        prod1 = copy(uniform_production(input)(state))
+        state.step = 10
+        prod2 = copy(uniform_production(input)(state))
+        @test all(prod2 .> prod1)
+    end
+end
+```
 
 ``` {.julia file=test/Components/ProductionSpec.jl}
 module ProductionSpec
@@ -149,47 +213,6 @@ module ProductionSpec
     using CarboKitten.Components.Production: Facies, Input, uniform_production
     using CarboKitten.Components.WaterDepth: initial_state
 
-    @testset "Components/Production" begin
-        let facies = Facies(
-                maximum_growth_rate = 500u"m/Myr",
-                extinction_coefficient = 0.8u"m^-1",
-                saturation_intensity = 60u"W/m^2"),
-            input = Input(
-                box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
-                time = TimeProperties(Δt=1.0u"kyr", steps=10),
-                sea_level = t -> 0.0u"m",
-		        initial_topography = (x, y) -> -10u"m",
-		        subsidence_rate = 0.0u"m/Myr",
-                facies = [facies],
-                insolation = 400.0u"W/m^2")
-
-            state = initial_state(input)
-            prod = uniform_production(input)(state)
-            @test all(prod[1:end-1,:] .>= prod[2:end,:])
-        end
-    end
-
-    @testset "Components/Production/variable_insolation" begin
-        let facies = Facies(
-                maximum_growth_rate = 500u"m/Myr",
-                extinction_coefficient = 0.8u"m^-1",
-                saturation_intensity = 60u"W/m^2"),
-            input = Input(
-                box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
-                time = TimeProperties(Δt=1.0u"kyr", steps=10),
-                sea_level = t -> 0.0u"m",
-                initial_topography = (x, y) -> -10u"m",
-                subsidence_rate = 0.0u"m/Myr",
-                facies = [facies],
-                insolation = t -> 40.0u"W/m^2/kyr" * t)
-
-            state = initial_state(input)
-            state.step = 1
-            prod1 = copy(uniform_production(input)(state))
-            state.step = 10
-            prod2 = copy(uniform_production(input)(state))
-            @test all(prod2 .> prod1)
-        end
-    end
+    <<production-spec>>
 end
 ```

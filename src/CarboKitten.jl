@@ -51,17 +51,16 @@ number of steps between writing output.
     t0::typeof(1.0u"Myr") = 0.0u"Myr"
     Δt::typeof(1.0u"Myr")
     steps::Int
-    write_interval::Int = 1
 end
 
-n_writes(time::TimeProperties) = div(time.steps, time.write_interval)
+n_writes(time::TimeProperties) = time.steps
 
 """
     time_axis(time::TimeProperties)
 
 Retrieve the time values for which output was/will be written. Returns a range.
 """
-time_axis(time::TimeProperties) = (0:n_writes(time)) .* (time.Δt * time.write_interval) .+ time.t0
+time_axis(time::TimeProperties) = (0:n_writes(time)) .* time.Δt .+ time.t0
 
 include("./BoundaryTrait.jl")
 include("./Vectors.jl")
@@ -72,6 +71,7 @@ include("./SedimentStack.jl")
 include("./Utility.jl")
 include("./DataSets.jl")
 include("./Skeleton.jl")
+include("./OutputData.jl")
 
 include("./Denudation.jl")
 
@@ -93,18 +93,25 @@ include("./Models/BS92.jl")
 include("./Models/CAP.jl")
 include("./Models/ALCAP.jl")
 include("./Models/WithDenudation.jl")
+include("./Models/WithoutCA.jl")
 
 end
 
 include("./Export.jl")
+include("./MemoryWriter.jl")
 include("./Visualization.jl")
+include("./Testing.jl")
 
 using .Components.Common: in_units_of, @u_str
+using .OutputData: OutputSpec, new_output
+using .MemoryWriter: MemoryOutput
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
+using GeometryBasics: Vec2
 
 export run_model, Box, box_axes, TimeProperties, time_axis,
        Model, BS92, CAP, ALCAP, in_units_of, @u_str,
-       AbstractBox, Boundary, Coast, Periodic, Reflected
+       AbstractBox, Boundary, Coast, Periodic, Reflected,
+       Vec2, OutputSpec, MemoryOutput, new_output
 
 end # module CarboKitten

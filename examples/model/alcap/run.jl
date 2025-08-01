@@ -60,6 +60,7 @@ const INPUT = ALCAP.Input(
     facies=FACIES)
 # ~/~ end
 
+# ~/~ begin <<docs/src/getting-started.md#alcap-data_export>>[init]
 function main()
     run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
     header, profile = read_slice("$(PATH)/$(TAG).h5", :profile)
@@ -73,6 +74,7 @@ function main()
          header,
          columns)
 end
+# ~/~ end
 
 end
 

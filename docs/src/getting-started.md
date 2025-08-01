@@ -33,7 +33,7 @@ This creates a local `Project.toml` file and installs CarboKitten and its depend
 
 ### Verify installation
 
-**Test your installation** with this verification sequence:
+Test your installation with this verification sequence:
 
 ```julia
 using CarboKitten
@@ -80,6 +80,8 @@ The easiest way to start modelling is to modify the existing script. The followi
 #| creates: examples/model/alcap/run.jl
 ```
 
+You can save this script under a new name in your project and change the parameters there.
+
 ## Working with simulation outputs
 
 #### HDF5 data format structure
@@ -101,7 +103,7 @@ Then the model becomes accessible for examination as described in [Output](https
 
 The example script used above defines what parts of the simulation are exported into CSV. 
 
-``` {.julia #data_export}
+``` {.julia #alcap-data_export}
 
 ```
 

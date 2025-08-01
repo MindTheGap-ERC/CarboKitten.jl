@@ -67,7 +67,7 @@ In this document we refer to running the ALCAP model, CarboKitten's flagship mod
 
 We strongly recommend **creating a script**, i.e. a saved file, for each of your simulations, even if you're just playing around. You can use any text editor and save the script with the `.jl` extension. Most IDEs are suitable for writing and executing Julia scripts, e.g. VS Code/Codium or R Studio. 
 
-CarboKitten can save model output into the memory or into an HDF5 file, from where it can be read again. In the following examples we will use some HDF5 files. They are binary and therefore not suitable to be tracked by git, so you can put them into a separate folder `data/output` and into `.gitignore`. The script won't work if the folder does not exist.
+CarboKitten can save model output into the memory or into an HDF5 file, from where it can be read again. The **HDF5 format** (`.h5` files) provides hierarchical, self-documenting data storage with metadata. This format is cross-platform compatible and readable by multiple programming languages, including Python, MATLAB, and R. In the following examples we will use some HDF5 files. They are binary and therefore not suitable to be tracked by git, so you can put them into a separate folder `data/output` and into `.gitignore`. The script won't work if the folder does not exist.
 
 ```shell
 mkdir data
@@ -84,10 +84,6 @@ You can save this script under a new name in your project and change the paramet
 
 ## Working with simulation outputs
 
-#### HDF5 data format structure
-
-CarboKitten saves all simulation data in **HDF5 format** (`.h5` files), which provides hierarchical, self-documenting data storage with metadata. This format is cross-platform compatible and readable by multiple programming languages, including Python, MATLAB, and R.
-
 #### Reading and accessing HDF5 data
 
 You can open the model contents using a general package for handling HDF5 datasets, but we recommend using the functions written specifically for handling CarboKitten outputs. 
@@ -95,9 +91,44 @@ You can open the model contents using a general package for handling HDF5 datase
 This will load the entire model into the memory from an existing file:
 
 ``` julia
+using CarboKitten.Export: read_volume
+
 header, data = read_volume("data/output/alcap-example.h5", :full)
 ```
 Then the model becomes accessible for examination as described in [Output](https://mindthegap-erc.github.io/CarboKitten.jl/dev/memory-writer/).
+
+In a typical situation of setting up a simulation and adjusting the parameters, we might want to take a look at a cross section of an output. In such case it will be much faster to save and access only one slice of the grid. In the `INPUT` struct we would define then:
+
+```julia
+output=Dict(
+        :profile => OutputSpec(slice=(:, 25), write_interval=1)),
+```
+
+which would save only a slice at the coordinate of y = 25, in the previous example corresponding to the middle of the grid. We can access it using:
+
+```julia
+using CarboKitten.Export: read_slice
+
+header, data = read_slice("data/output/alcap-example.h5", :profile)
+```
+
+which can then be plotted and saved with:
+
+``` julia
+using GLMakie
+using CarboKitten.Visualization: sediment_profile
+
+fig = sediment_profile(header, data)
+save("data/output/alcap_cross_section_y25.png", fig)
+```
+
+If we already have a file containing the entire output, we can extract parts of it:
+
+``` julia
+using CarboKitten.Export: read_volume
+
+header, data = read_volume("data/output/alcap-example.h5", :full)
+```
 
 #### Exporting and reading CSV files
 

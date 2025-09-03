@@ -28,7 +28,7 @@ function step!(input::Input)
     dt = input.time.Δt
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
-    pf = precipitation_factor(input)
+    pf = cementation_factor(input)
 
     function (state::State)
         wd = local_water_depth(state)

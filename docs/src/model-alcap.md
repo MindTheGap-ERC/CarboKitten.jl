@@ -171,7 +171,7 @@ function step!(input::Input)
     transport! = ActiveLayer.transporter(input)
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
-    pf = precipitation_factor(input)
+    pf = cementation_factor(input)
 
     function (state::State)
         if mod(state.step, input.ca_interval) == 0

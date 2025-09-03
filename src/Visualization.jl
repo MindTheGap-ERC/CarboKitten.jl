@@ -18,7 +18,6 @@ wheeler_diagram(args...) = print_instructions("wheeler_diagram", args)
 production_curve(args...) = print_instructions("production_curve", args)
 production_curve!(args...) = print_instructions("production_curve!", args)
 stratigraphic_column!(args...) = print_instructions("production_curve!", args)
-age_depth_model!(args...) = print_instructions("age_depth_model!", args)
 glamour_view!(args...) = print_instructions("glamour_view!", args)
 summary_plot(args...) = print_instructions("summary_plot", args)
 

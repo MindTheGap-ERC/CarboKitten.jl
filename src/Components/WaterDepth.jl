@@ -38,7 +38,7 @@ function water_depth(input::AbstractInput)
     subsidence_rate = input.subsidence_rate
     t0 = input.time.t0
     get_time = time(input)
-    
+
     return function (state::AbstractState)
         t = get_time(state)
         return sea_level(t) .- eta0 .+

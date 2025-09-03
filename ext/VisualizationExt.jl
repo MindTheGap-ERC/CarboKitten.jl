@@ -4,7 +4,6 @@ module VisualizationExt
 include("WheelerDiagram.jl")
 include("ProductionCurve.jl")
 include("StratigraphicColumn.jl")
-include("AgeDepthModel.jl")
 include("SedimentProfile.jl")
 include("GlamourView.jl")
 include("SummaryPlot.jl")

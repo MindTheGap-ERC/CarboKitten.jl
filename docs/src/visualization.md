@@ -61,7 +61,6 @@ wheeler_diagram(args...) = print_instructions("wheeler_diagram", args)
 production_curve(args...) = print_instructions("production_curve", args)
 production_curve!(args...) = print_instructions("production_curve!", args)
 stratigraphic_column!(args...) = print_instructions("production_curve!", args)
-age_depth_model!(args...) = print_instructions("age_depth_model!", args)
 glamour_view!(args...) = print_instructions("glamour_view!", args)
 summary_plot(args...) = print_instructions("summary_plot", args)
 
@@ -74,7 +73,6 @@ module VisualizationExt
 include("WheelerDiagram.jl")
 include("ProductionCurve.jl")
 include("StratigraphicColumn.jl")
-include("AgeDepthModel.jl")
 include("SedimentProfile.jl")
 include("GlamourView.jl")
 include("SummaryPlot.jl")
@@ -785,16 +783,3 @@ end
 end
 ```
 
-## Age-depth Model
-
-``` {.julia file=ext/AgeDepthModel.jl}
-module AgeDepthModel
-
-using Makie
-using Unitful
-
-using CarboKitten.Visualization
-using CarboKitten.Export
-
-end
-```

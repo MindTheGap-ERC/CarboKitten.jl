@@ -68,6 +68,8 @@ mkpath(path)
 Entangled.transpile_file.(joinpath(@__DIR__, "src"), sources, path)
 run(`touch $(joinpath(path, "first_tutorial.md"))`)
 copydir(joinpath(@__DIR__, "src/fig"), joinpath(path, "fig"))
+mkpath(joinpath(path, "assets"))
+cp(joinpath(@__DIR__, "src", "fig", "logo.svg"), joinpath(path, "assets", "logo.svg"))
 
 makedocs(
     source=path,

@@ -4,6 +4,8 @@
 [![Documentation Badge](https://img.shields.io/badge/Documentation-CarboKitten.jl-blue)](https://mindthegap-erc.github.io/CarboKitten.jl)
 [![Entangled badge](https://img.shields.io/badge/entangled-Use%20the%20source!-%2300aeff)](https://entangled.github.io/)
 
+![CarboKitten logo](docs/src/fig/logo.svg)
+
 CarboKitten is a reimplementation of Peter Burgess' CarboCAT, a model for generating carbonate platform stratigraphies. CarboKitten is a three-dimensional model, having two spatial dimensions and one for stored stediment.
 
 Features:

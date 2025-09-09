@@ -84,8 +84,9 @@ end
 
 function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Int; kwargs...)
     x = header.axes.x |> in_units_of(u"km")
+    wi = data.write_interval
     ξ = elevation(header, data)  # |> in_units_of(u"m")
-    water_depth = ξ .- (header.subsidence_rate .* (header.axes.t .- header.axes.t[end]) .+ header.sea_level)[na, :]
+    water_depth = ξ .- (header.subsidence_rate .* (header.axes.t[1:wi:end] .- header.axes.t[end]) .+ header.sea_level[1:wi:end])[na, :]
     hiatus = skeleton(water_depth .> 0.0u"m", minwidth=minwidth)
 
     if !isempty(hiatus[1])

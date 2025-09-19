@@ -36,7 +36,34 @@ function Base.iterate(s::Select, state)
     end
 end
 
-# ~/~ begin <<docs/src/utility.md#utility>>[init]
+# ~/~ begin <<docs/src/unitful.md#utility>>[init]
+function in_units_of(unit)
+    function magnitude(a)
+        error("Units of $(a*unit) not compatible with $unit")
+    end
+
+    function magnitude(a::AbstractArray{Quantity{RT, NoDims, U}, dim}) where {RT <: Real, U, dim}
+        return a .|> NoUnits
+    end
+
+    function magnitude(a::AbstractArray{RT, dim}) where {RT <: Real, dim}
+        return a
+    end
+
+    function magnitude(a::RT) where {RT <: Real}
+        return a
+    end
+
+    function magnitude(a::Quantity{RT, NoDims, U}) where {RT <: Real, U}
+        return a |> NoUnits
+    end
+
+    function (x)
+        x / unit |> magnitude
+    end
+end
+# ~/~ end
+# ~/~ begin <<docs/src/utility.md#utility>>[0]
 struct RangeFinder
 	v::AbstractVector{Bool}
 end
@@ -110,33 +137,6 @@ holds:
 enumerate_seq(s::T) where T = TagVectors{T}(s)
 
 export enumerate_seq
-# ~/~ end
-# ~/~ begin <<docs/src/unitful.md#utility>>[0]
-function in_units_of(unit)
-    function magnitude(a)
-        error("Units of $(a*unit) not compatible with $unit")
-    end
-
-    function magnitude(a::AbstractArray{Quantity{RT, NoDims, U}, dim}) where {RT <: Real, U, dim}
-        return a .|> NoUnits
-    end
-
-    function magnitude(a::AbstractArray{RT, dim}) where {RT <: Real, dim}
-        return a
-    end
-
-    function magnitude(a::RT) where {RT <: Real}
-        return a
-    end
-
-    function magnitude(a::Quantity{RT, NoDims, U}) where {RT <: Real, U}
-        return a |> NoUnits
-    end
-
-    function (x)
-        x / unit |> magnitude
-    end
-end
 # ~/~ end
 
 end

@@ -21,8 +21,9 @@ elevation(h::Header, d::DataSlice) =
 
 water_depth(header::Header, data::DataSlice) =
     let h = elevation(header, data),
-        s = header.subsidence_rate .* (header.axes.t .- header.axes.t[end]),
-        l = header.sea_level
+        wi = data.write_interval,
+        s = header.subsidence_rate .* (header.axes.t[1:wi:end] .- header.axes.t[end]),
+        l = header.sea_level[1:wi:end]
 
         h .- (s.+l)[na, :]
     end
@@ -33,17 +34,18 @@ function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
     smooth_size::NTuple{2,Int}=(3, 11),
     colormap=Reverse(:curl),
     range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
-    magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ (header.Δt * data.write_interval)
+    wi = data.write_interval
+    magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ (header.Δt * wi)
     blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
-    wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
+    wd = zeros(Float64, length(header.axes.x), length(header.axes.t[1:wi:end]))
     blur(water_depth(header, data) / u"m", wd)
-    mag = zeros(Float64, length(header.axes.x), length(header.axes.t) - 1)
+    mag = zeros(Float64, length(header.axes.x), length(header.axes.t[1:wi:end]) - 1)
     blur(magnitude / u"m/Myr", mag)
 
     ax.ylabel = "time [Myr]"
     ax.xlabel = "position [km]"
     xkm = header.axes.x |> in_units_of(u"km")
-    tmyr = header.axes.t |> in_units_of(u"Myr")
+    tmyr = header.axes.t[1:wi:end] |> in_units_of(u"Myr")
 
     sa = heatmap!(ax, xkm, tmyr, mag;
         colormap=colormap, colorrange=range ./ u"m/Myr")
@@ -58,16 +60,17 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
     n_facies = size(data.production)[1]
     colormax(d) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 
+    wi = data.write_interval
     dominant_facies = colormax(data.deposition)
     blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
-    wd = zeros(Float64, length(header.axes.x), length(header.axes.t))
+    wd = zeros(Float64, length(header.axes.x), length(header.axes.t[1:wi:end]))
     blur(water_depth(header, data) / u"m", wd)
 
     ax.ylabel = "time [Myr]"
     ax.xlabel = "position [km]"
 
     xkm = header.axes.x |> in_units_of(u"km")
-    tmyr = header.axes.t |> in_units_of(u"Myr")
+    tmyr = header.axes.t[1:wi:end] |> in_units_of(u"Myr")
     ft = heatmap!(ax, xkm, tmyr, dominant_facies;
         colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
         colorrange=(0.5, n_facies + 0.5))

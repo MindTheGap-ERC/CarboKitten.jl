@@ -74,10 +74,14 @@
         end
 
         for (k, v) in input.output
-            grp = fid[string(k)]
-            try_write(grp["production"], frame.production, v)
-            try_write(grp["disintegration"], frame.disintegration, v)
-            try_write(grp["deposition"], frame.deposition, v)
+            n_writes = div(input.time.steps, v.write_interval)
+            # only write if still within bounds of array
+            if div(idx-1, v.write_interval)+1 <= n_writes
+                grp = fid[string(k)]
+                try_write(grp["production"], frame.production, v)
+                try_write(grp["disintegration"], frame.disintegration, v)
+                try_write(grp["deposition"], frame.deposition, v)
+            end
         end
     end
 

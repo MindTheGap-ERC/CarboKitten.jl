@@ -56,6 +56,14 @@ end
 n_writes(time::TimeProperties) = time.steps
 
 """
+    n_steps(input)
+
+Returns the number of steps from a given input.
+"""
+function n_steps end
+
+
+"""
     time_axis(time::TimeProperties)
 
 Retrieve the time values for which output was/will be written. Returns a range.
@@ -71,7 +79,9 @@ include("./SedimentStack.jl")
 include("./Utility.jl")
 include("./DataSets.jl")
 include("./Skeleton.jl")
+
 include("./OutputData.jl")
+include("./RunModel.jl")
 
 include("./Denudation.jl")
 

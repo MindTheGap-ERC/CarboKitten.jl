@@ -78,7 +78,81 @@ Each component is automatically documented with a graph that shows the component
 Because this mechanism is highly idiosyncratic, we're still exploring other ways to modularize CarboKitten.
 
 ## Model run
+A model run is nothing but a loop running the `step!` function `n` times. The `run_model` method is overloaded to provide multiple levels of abstraction. In its most basic form, the `for` loop is abstracted into a `do` block, so we can run:
 
-If you want to understand how a model run is abstracted, please study the [Model Component code](./components/run_model.md).
+```julia
+state = M.initial_state(input)
+run_model(Model{M}, input, state) do step, frame
+    ...
+end
+```
 
-FIXME: Explain it all here.
+Note that the `state` variable is mutable, and we can use this to store/handle/inspect intermediate model states.
+
+``` {.julia #run-model}
+"""
+    run_model(f, ::Type{Model{M}}, input::AbstractInput) where M
+    run_model(f, ::Type{Model{M}}, input::AbstractInput, state::AbstractState) where M
+
+Run a model and send `Frame`s to callback `f`. The type parameter `M` should be a model,
+being a module with both `initial_state!` and `step!` defined.
+
+The second version with explicit state is used by `H5Writer` so we can perform an additional
+action between creating the initial state and starting the model run (saving metadata to the
+HDF5 file).
+"""
+run_model(f, ::Type{Model{M}}, input::AbstractInput) where M =
+    run_model(f, Model{M}, input, M.initial_state(input))
+
+function run_model(f, ::Type{Model{M}}, input::AbstractInput, state::AbstractState) where M
+    step! = M.step!(input)
+
+    @progress for w = 1:n_steps(input)
+        f(w, step!(state))
+    end
+end
+```
+
+On top of this we have defined a `run_model` method that writes output in some form.
+
+``` {.julia #run-model}
+"""
+    run_model(::Type{Model{M}}, input::AbstractInput, output::AbstractOutput) where M
+
+Run a model and save the output to `output`.
+"""
+function run_model(::Type{Model{M}}, input::AbstractInput, output::AbstractOutput) where M
+    state = M.initial_state(input)
+    write_state = state_writer(input, output)
+    write_frame = frame_writer(input, output)
+
+    # create a group for every output item
+    for (k, v) in input.output
+        add_data_set(output, k, v)
+    end
+    write_state(1, state)
+
+    run_model(Model{M}, input, state) do w, df
+        # write_frame chooses to advance in a dataset
+        # or just to increment on the current frame
+        write_frame(w, df)
+        # write_state only writes one in every write_interval
+        # and does no accumulation
+        write_state(w+1, state)
+    end
+
+    return output
+end
+```
+
+``` {.julia file=src/RunModel.jl}
+module RunModel
+
+import ..CarboKitten: n_steps, run_model
+using ..OutputData: state_writer, frame_writer, add_data_set
+using ProgressLogging
+
+<<run-model>>
+
+end
+```

@@ -22,7 +22,6 @@ include("Components/InitialSediment.jl")
 include("Components/ActiveLayer.jl")
 include("Components/Denudation.jl")
 
-include("Components/Models.jl")
 include("Components/H5Writer.jl")
 
 list_components() = filter(

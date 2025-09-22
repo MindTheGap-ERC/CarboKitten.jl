@@ -134,7 +134,7 @@ end
 
 ``` {.julia file=src/Models/ALCAP.jl}
 @compose module ALCAP
-@mixin Tag, H5Writer, CAProduction, ActiveLayer, InitialSediment
+@mixin Tag, Output, CAProduction, ActiveLayer, InitialSediment
 
 using ..Common
 using ..CAProduction: production

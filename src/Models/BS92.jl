@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/bosscher-1992.md#src/Models/BS92.jl>>[init]
 @compose module BS92
-@mixin Tag, H5Writer, Production
+@mixin Tag, Output, Production
 
 using ..Common
 using ..Production: uniform_production

@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/memory-writer.md#src/MemoryWriter.jl>>[init]
+# ~/~ begin <<docs/src/memory-writer.md#src/Output/MemoryWriter.jl>>[init]
 module MemoryWriter
 
 using ..OutputData
@@ -73,7 +73,7 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::AbstractOutputSpec
             zeros(Amount, n_facies, slice_size, n_steps),
             zeros(Amount, n_facies, slice_size, n_steps),
             zeros(Amount, n_facies, slice_size, n_steps),
-            zeros(Amount, slice_size, n_steps + 1)) 
+            zeros(Amount, slice_size, n_steps + 1))
     elseif h.kind == :column
         out.data_columns[label] = DataColumn(
             slice, write_interval,

@@ -110,7 +110,7 @@ function plot(result::MemoryOutput)
 	x = header.axes.x
 	t = header.axes.t
 
-	plot = profile_plot!(ax1, header, slice; colorrange=(0.2, 1.0)) do x; x[1] / sum(x) end 
+	plot = profile_plot!(ax1, header, slice; colorrange=(0.2, 1.0)) do x; x[1] / sum(x) end
     col_positions = [x[col.slice[1]] |> in_units_of(u"km") for col in values(result.data_columns)]
     vlines!(ax1, col_positions; color=:red)
 
@@ -136,8 +136,8 @@ end
 
 ## Data Structures
 
-``` {.julia file=src/OutputData.jl}
-module OutputData
+``` {.julia file=src/Output/Abstract.jl}
+module Abstract
 
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
 export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer
@@ -328,7 +328,7 @@ function state_writer(input::AbstractInput, out)
             if mod(idx-1, v.write_interval) == 0
                 write_sediment_thickness(
                     out, k, div(idx-1, v.write_interval)+1,
-                    view(state.sediment_height, v.slice...)) 
+                    view(state.sediment_height, v.slice...))
             end
         end
     end
@@ -371,7 +371,7 @@ end
 
 Sometimes we don't want to write to HDF5, but just get a `DataVolume` directly.
 
-``` {.julia file=src/MemoryWriter.jl}
+``` {.julia file=src/Output/MemoryWriter.jl}
 module MemoryWriter
 
 using ..OutputData
@@ -446,7 +446,7 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::AbstractOutputSpec
             zeros(Amount, n_facies, slice_size, n_steps),
             zeros(Amount, n_facies, slice_size, n_steps),
             zeros(Amount, n_facies, slice_size, n_steps),
-            zeros(Amount, slice_size, n_steps + 1)) 
+            zeros(Amount, slice_size, n_steps + 1))
     elseif h.kind == :column
         out.data_columns[label] = DataColumn(
             slice, write_interval,

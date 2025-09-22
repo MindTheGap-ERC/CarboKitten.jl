@@ -1,5 +1,5 @@
-# ~/~ begin <<docs/src/memory-writer.md#src/OutputData.jl>>[init]
-module OutputData
+# ~/~ begin <<docs/src/memory-writer.md#src/Output/Abstract.jl>>[init]
+module Abstract
 
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
 export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer
@@ -190,7 +190,7 @@ function state_writer(input::AbstractInput, out)
             if mod(idx-1, v.write_interval) == 0
                 write_sediment_thickness(
                     out, k, div(idx-1, v.write_interval)+1,
-                    view(state.sediment_height, v.slice...)) 
+                    view(state.sediment_height, v.slice...))
             end
         end
     end

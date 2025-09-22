@@ -56,10 +56,10 @@ function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1), show_unconformities
     sm, df = wheeler_diagram!(ax2, ax3, header, section_data; smooth_size=wheeler_smooth)
     Colorbar(fig[3,1], sm; vertical=false, label="sedimentation rate [m/Myr]")
     Colorbar(fig[3,2], df; vertical=false, label="dominant facies", ticks=1:n_facies)
-
+    wi = section_data.write_interval
     ax4 = Axis(fig[4,3], title="sealevel curve", xlabel="sealevel [m]",
                limits=(nothing, (header.axes.t[1] |> in_units_of(u"Myr"),
-                                 header.axes.t[end] |> in_units_of(u"Myr"))))
+                                 header.axes.t[1:wi:end][end] |> in_units_of(u"Myr"))))
     lines!(ax4, header.sea_level |> in_units_of(u"m"), header.axes.t |> in_units_of(u"Myr"))
 
     ax5 = Axis(fig[2,3])

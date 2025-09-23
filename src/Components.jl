@@ -22,7 +22,7 @@ include("Components/InitialSediment.jl")
 include("Components/ActiveLayer.jl")
 include("Components/Denudation.jl")
 
-include("Components/H5Writer.jl")
+include("Components/Output.jl")
 
 list_components() = filter(
     c->:AST in names(c, all=true),

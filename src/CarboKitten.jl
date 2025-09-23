@@ -80,7 +80,12 @@ include("./Utility.jl")
 include("./DataSets.jl")
 include("./Skeleton.jl")
 
-include("./OutputData.jl")
+module Output
+include("./Output/Abstract.jl")
+include("./Output/H5Writer.jl")
+include("./Output/MemoryWriter.jl")
+end
+
 include("./RunModel.jl")
 
 include("./Denudation.jl")
@@ -113,7 +118,7 @@ include("./Visualization.jl")
 include("./Testing.jl")
 
 using .Components.Common: in_units_of, @u_str
-using .OutputData: OutputSpec, new_output
+using .Output.Abstract: OutputSpec, new_output
 using .MemoryWriter: MemoryOutput
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected

@@ -116,9 +116,7 @@ end
 ``` {.julia file=src/RunModel.jl}
 module RunModel
 
-import ..CarboKitten: n_steps, run_model, Model
-using ..Output.Abstract: state_writer, frame_writer, add_data_set,
-                    AbstractInput, AbstractOutput, AbstractState
+import ..CarboKitten: n_steps, run_model, Model, AbstractInput, AbstractState
 using ProgressLogging
 
 <<run-model>>

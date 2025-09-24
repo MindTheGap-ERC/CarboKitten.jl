@@ -15,9 +15,8 @@ using HDF5
     tag::String = "untagged run"
 end
 
-function write_header(fid, input::AbstractInput)
-    attr = attributes(fid["input"])
-    attr["tag"] = input.tag
+function write_header(input::AbstractInput, output::AbstractOutput)
+    set_attribute(output, "tag", input.tag)
 end
 end
 ```

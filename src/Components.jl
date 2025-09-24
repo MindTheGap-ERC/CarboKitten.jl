@@ -2,8 +2,8 @@
 module Components
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
-       CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
-       ActiveLayerOnshore, Denudation, InitialSediment
+    CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
+    ActiveLayerOnshore, Denudation, InitialSediment, Output
 
 using ModuleMixins: @compose
 
@@ -25,7 +25,7 @@ include("Components/Denudation.jl")
 include("Components/Output.jl")
 
 list_components() = filter(
-    c->:AST in names(c, all=true),
+    c -> :AST in names(c, all=true),
     map(eval, names(Components)))
 
 end

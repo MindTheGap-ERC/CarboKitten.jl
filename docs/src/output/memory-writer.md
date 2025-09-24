@@ -143,19 +143,19 @@ Sometimes we don't want to write to HDF5, but just get a `DataVolume` directly.
 ``` {.julia file=src/Output/MemoryWriter.jl}
 module MemoryWriter
 
+using ..Abstract
 import ..Abstract:
     new_output, add_data_set, set_attribute, write_sediment_thickness,
-    write_production, write_disintegration, write_deposition, AbstractOutputSpec
-
+    write_production, write_disintegration, write_deposition
 using ...Components.Common
 using ...Components.WaterDepth: initial_topography
-using ...CarboKitten: time_axis, box_axes
+using ...CarboKitten: time_axis, box_axes, OutputSpec, AbstractOutput, AbstractInput, AbstractState
 
 struct MemoryOutput <: AbstractOutput
     header::Header
-    data_volumes::Dict{Symbol, DataVolume}
-    data_slices::Dict{Symbol, DataSlice}
-    data_columns::Dict{Symbol, DataColumn}
+    data_volumes::Dict{Symbol,DataVolume}
+    data_slices::Dict{Symbol,DataSlice}
+    data_columns::Dict{Symbol,DataColumn}
 end
 
 MemoryOutput(input::AbstractInput) = new_output(MemoryOutput, input)
@@ -163,22 +163,22 @@ MemoryOutput(input::AbstractInput) = new_output(MemoryOutput, input)
 function new_output(::Type{MemoryOutput}, input::AbstractInput)
     t_axis = time_axis(input.time)
     x_axis, y_axis = box_axes(input.box)
-    axes = Axes(x = x_axis, y = y_axis, t = t_axis)
+    axes = Axes(x=x_axis, y=y_axis, t=t_axis)
     h0 = initial_topography(input)
     sl = input.sea_level.(t_axis)
 
     header = Header(
-        tag = input.tag,
-        axes = axes,
-        Δt = input.time.Δt,
-        time_steps = input.time.steps,
-        grid_size = input.box.grid_size,
-        n_facies = length(input.facies),
-        initial_topography = h0,
-        sea_level = sl,
-        subsidence_rate = input.subsidence_rate,
-        data_sets = Dict(),
-        attributes = Dict())
+        tag=input.tag,
+        axes=axes,
+        Δt=input.time.Δt,
+        time_steps=input.time.steps,
+        grid_size=input.box.grid_size,
+        n_facies=length(input.facies),
+        initial_topography=h0,
+        sea_level=sl,
+        subsidence_rate=input.subsidence_rate,
+        data_sets=Dict(),
+        attributes=Dict())
 
     return MemoryOutput(header, Dict(), Dict(), Dict())
 end
@@ -187,7 +187,7 @@ axis_size(::Colon, a::Int) = a
 axis_size(::Int, _) = 1
 axis_size(r::AbstractRange{Int}, _) = length(r)
 
-function add_data_set(out::MemoryOutput, label::Symbol, spec::AbstractOutputSpec)
+function add_data_set(out::MemoryOutput, label::Symbol, spec::OutputSpec)
     h = DataHeader(data_kind(spec), spec.slice, spec.write_interval)
     out.header.data_sets[label] = h
 
@@ -225,36 +225,36 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::AbstractOutputSpec
     end
 end
 
-function set_attribute(out::MemoryOutput, name::Symbol, value::Any)
+function set_attribute(out::MemoryOutput, name::String, value::Any)
     out.header.attributes[name] = value
 end
 
-write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 0}) =
+write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,0}) =
     out.data_columns[label].sediment_thickness[idx] = data[]
-write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 1}) =
+write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
     out.data_slices[label].sediment_thickness[:, idx] .= data
-write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 2}) =
+write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
     out.data_volumes[label].sediment_thickness[:, :, idx] .= data
 
-write_production(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 1}) =
+write_production(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
     out.data_columns[label].production[:, idx] .+= data
-write_production(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 2}) =
+write_production(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
     out.data_slices[label].production[:, :, idx] .+= data
-write_production(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 3}) =
+write_production(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,3}) =
     out.data_volumes[label].production[:, :, :, idx] .+= data
 
-write_disintegration(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 1}) =
+write_disintegration(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
     out.data_columns[label].disintegration[:, idx] .+= data
-write_disintegration(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 2}) =
+write_disintegration(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
     out.data_slices[label].disintegration[:, :, idx] .+= data
-write_disintegration(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 3}) =
+write_disintegration(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,3}) =
     out.data_volumes[label].disintegration[:, :, :, idx] .+= data
 
-write_deposition(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 1}) =
+write_deposition(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
     out.data_columns[label].deposition[:, idx] .+= data
-write_deposition(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 2}) =
+write_deposition(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
     out.data_slices[label].deposition[:, :, idx] .+= data
-write_deposition(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount, 3}) =
+write_deposition(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,3}) =
     out.data_volumes[label].deposition[:, :, :, idx] .+= data
 
 end

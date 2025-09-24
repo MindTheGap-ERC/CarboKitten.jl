@@ -14,6 +14,7 @@ using ModuleMixins: @for_each
 using ...Stencil
 using ...BoundaryTrait
 using ...Denudation.EmpiricalDenudationMod: slope_kernel
+using ...Output: Frame
 export Input, Facies
 
 function initial_state(input::Input)
@@ -39,7 +40,7 @@ function step!(input::Input)
     denudate = denudation(input)
     redistribute = redistribution(input)
     water_depth_fn = water_depth(input)
-    slopefn = slope_function(input,input.box)
+    slopefn = slope_function(input, input.box)
     # Somehow deal with the units here
 
     slope = Array{Float64}(undef, input.box.grid_size...)
@@ -50,7 +51,7 @@ function step!(input::Input)
             step_ca!(state)
         end
 
-        w = water_depth_fn(state) ./u"m"
+        w = water_depth_fn(state) ./ u"m"
         slopefn(w, slope, input.box.phys_scale ./ u"m")
 
         # submarine: production and transport
@@ -63,9 +64,9 @@ function step!(input::Input)
 
         # subaerial: denudation and redistribution
         # this code should go into the Denudation component
-        denudation_mass = denudate(state,w,slope)
+        denudation_mass = denudate(state, w, slope)
         if denudation_mass !== nothing
-            denudation_mass = denudate(state,w,slope) |> x -> sum(x,dims=1) |> x -> dropdims(x,dims=1) |> x -> min.(x, state.sediment_height)
+            denudation_mass = denudate(state, w, slope) |> x -> sum(x, dims=1) |> x -> dropdims(x, dims=1) |> x -> min.(x, state.sediment_height)
 
             state.sediment_height -= denudation_mass
             pop_sediment!(state.sediment_buffer, denudation_mass ./ input.depositional_resolution .|> NoUnits, denuded_sediment)
@@ -80,18 +81,18 @@ function step!(input::Input)
 
         push_sediment!(state.sediment_buffer, sediment ./ input.depositional_resolution .|> NoUnits)
 
-        state.sediment_height .+= sum(sediment; dims=1)[1,:,:]
+        state.sediment_height .+= sum(sediment; dims=1)[1, :, :]
         state.step += 1
 
         return Frame(
-            production = p,
-            disintegration = d,
-            deposition = sediment)
+            production=p,
+            disintegration=d,
+            deposition=sediment)
     end
 end
 
-function write_header(fid, input::AbstractInput)
-    @for_each(P -> P.write_header(fid, input), PARENTS)
+function write_header(input::AbstractInput, output::AbstractOutput)
+    @for_each(P -> P.write_header(input, output), PARENTS)
 end
 end
 ```

@@ -36,22 +36,23 @@ function insolation(input::AbstractInput)
     end
 end
 
-function write_header(fid, input::AbstractInput)
+function write_header(input::AbstractInput, output::AbstractOutput)
     if input.insolation isa Quantity
-        fid["input"]["insolation"] = fill(input.insolation |> in_units_of(u"W/m^2"), input.time.steps)
+        set_attribute(output, "insolation",
+            fill(input.insolation |> in_units_of(u"W/m^2"), input.time.steps))
     elseif input.insolation isa AbstractVector
-        fid["input"]["insolation"] = input.insolation |> in_units_of(u"W/m^2")
+        set_attribute(output, "insolation",
+            input.insolation |> in_units_of(u"W/m^2"))
     else
         t = write_times(input)[1:end-1]
-        fid["input"]["insolation"] = input.insolation.(t) |> in_units_of(u"W/m^2")
+        set_attribute(output, "insolation",
+            input.insolation.(t) |> in_units_of(u"W/m^2"))
     end
 
-    # fid["input"]["insolation"] = insolation(input) |> in_units_of(u"W/m^2")
     for (i, f) in enumerate(input.facies)
-        attr = attributes(fid["input/facies$(i)"])
-        attr["maximum_growth_rate"] = f.maximum_growth_rate |> in_units_of(u"m/Myr")
-        attr["extinction_coefficient"] = f.extinction_coefficient |> in_units_of(u"m^-1")
-        attr["saturation_intensity"] = f.saturation_intensity |> in_units_of(u"W/m^2")
+        set_attribute(output, "facies$(i)/maximum_growth_rate", f.maximum_growth_rate |> in_units_of(u"m/Myr"))
+        set_attribute(output, "facies$(i)/exctinction_coefficient", f.extinction_coefficient |> in_units_of(u"m^-1"))
+        set_attribute(output, "facies$(i)/saturation_intensity", f.saturation_intensity |> in_units_of(u"W/m^2"))
     end
 end
 

@@ -23,7 +23,7 @@ saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation p
 @mixin TimeIntegration, Boxes
 using ..Common
 using HDF5
-using ..TimeIntegration: time
+using ..TimeIntegration: time, time_axis
 
 export water_depth
 
@@ -62,25 +62,16 @@ function water_depth(input::AbstractInput)
     return function (state::AbstractState)
         t = get_time(state)
         return sea_level(t) .- eta0 .+
-            (subsidence_rate * (t - t0)) .- state.sediment_height
+               (subsidence_rate * (t - t0)) .- state.sediment_height
     end
 end
 
-function write_header(fid, input::AbstractInput)
-    gid = fid["input"]
-    attr = attributes(gid)
+function write_header(input::AbstractInput, output::AbstractOutput)
     x, y = box_axes(input.box)
-    t = TimeIntegration.write_times(input)
-
-    gid["initial_topography"] = initial_topography(input) |> in_units_of(u"m")
-    gid["sea_level"] = input.sea_level.(t) .|> in_units_of(u"m")
-    attr["subsidence_rate"] = input.subsidence_rate |> in_units_of(u"m/Myr")
-end
-
-function create_dataset(fid, input::AbstractInput)
-    return HDF5.create_dataset(fid, "sediment_height", datatype(Float64),
-        dataspace(input.box.grid_size..., input.time.steps),
-        chunk=(input.box.grid_size..., 1))
+    t = time_axis(input)
+    set_attribute(output, "initial_topography", initial_topography(input) |> in_units_of(u"m"))
+    set_attribute(output, "sea_level", input.sea_level.(t) .|> in_units_of(u"m"))
+    set_attribute(output, "subsidence_rate", input.subsidence_rate |> in_units_of(u"m/Myr"))
 end
 
 end

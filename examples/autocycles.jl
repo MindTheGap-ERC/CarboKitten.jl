@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/memory-writer.md#examples/autocycles.jl>>[init]
+# ~/~ begin <<docs/src/output/memory-writer.md#examples/autocycles.jl>>[init]
 module AutoCycles
 
 using CarboKitten

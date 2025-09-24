@@ -2,7 +2,8 @@
 module RunModel
 
 import ...CarboKitten: run_model, Model
-using ..Abstract 
+using ...CarboKitten: AbstractInput, AbstractOutput
+using ..Abstract
 
 # ~/~ begin <<docs/src/output/abstract.md#run-model-output>>[init]
 """
@@ -10,7 +11,9 @@ using ..Abstract
 
 Run a model and save the output to `output`.
 """
-function run_model(::Type{Model{M}}, input::AbstractInput, output::AbstractOutput) where M
+function run_model(::Type{Model{M}}, input::AbstractInput, output::AbstractOutput) where {M}
+    M.write_header(input, output)
+
     state = M.initial_state(input)
     write_state = state_writer(input, output)
     write_frame = frame_writer(input, output)
@@ -27,7 +30,7 @@ function run_model(::Type{Model{M}}, input::AbstractInput, output::AbstractOutpu
         write_frame(w, df)
         # write_state only writes one in every write_interval
         # and does no accumulation
-        write_state(w+1, state)
+        write_state(w + 1, state)
     end
 
     return output

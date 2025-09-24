@@ -15,12 +15,13 @@ struct Model{M} end
 function run_model end
 
 abstract type AbstractBox{BT} end
-abstract type AbstractOutputSpec end
 abstract type AbstractInput end
 abstract type AbstractOutput end
 abstract type AbstractState end
 
-@kwdef struct OutputSpec <: AbstractOutputSpec
+const Slice2 = NTuple{2,Union{Int,Colon,UnitRange{Int}}}
+
+@kwdef struct OutputSpec
     slice::Slice2 = (:, :)
     write_interval::Int = 1
 end
@@ -42,9 +43,9 @@ Return the `x` and `y` components of the box grid in meters. The grid starts at
 `0.0u"m"` and runs to `(box.grid_size .- 1) .* box.phys_scale`.
 """
 function box_axes(box::Box)
-	y_axis = (0:(box.grid_size[2] - 1)) .* box.phys_scale
-	x_axis = (0:(box.grid_size[1] - 1)) .* box.phys_scale
-	return x_axis, y_axis
+    y_axis = (0:(box.grid_size[2]-1)) .* box.phys_scale
+    x_axis = (0:(box.grid_size[1]-1)) .* box.phys_scale
+    return x_axis, y_axis
 end
 
 abstract type AbstractTimeProperties end
@@ -100,13 +101,20 @@ include("./Transport/Solvers.jl")
 include("./Transport/Advection.jl")
 end
 
+function set_attribute end
+
 include("./Components.jl")
 
 module Output
+
 include("./Output/Abstract.jl")
 include("./Output/RunModel.jl")
 include("./Output/H5Writer.jl")
 include("./Output/MemoryWriter.jl")
+
+using .Abstract: Frame
+export Frame
+
 end
 
 module Models
@@ -122,20 +130,19 @@ include("./Models/WithoutCA.jl")
 end
 
 include("./Export.jl")
-include("./MemoryWriter.jl")
 include("./Visualization.jl")
 include("./Testing.jl")
 
 using .Components.Common: in_units_of, @u_str
 using .Output.Abstract: OutputSpec, new_output
-using .MemoryWriter: MemoryOutput
+using .Output.MemoryWriter: MemoryOutput
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 using GeometryBasics: Vec2
 
 export run_model, Box, box_axes, TimeProperties, time_axis,
-       Model, BS92, CAP, ALCAP, in_units_of, @u_str,
-       AbstractBox, Boundary, Coast, Periodic, Reflected,
-       Vec2, OutputSpec, MemoryOutput, new_output
+    Model, BS92, CAP, ALCAP, in_units_of, @u_str,
+    AbstractBox, Boundary, Coast, Periodic, Reflected,
+    Vec2, OutputSpec, MemoryOutput, new_output
 
 end # module CarboKitten

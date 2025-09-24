@@ -6,6 +6,7 @@ using ..Common
 using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth: water_depth
+using ...Output: Frame
 using ModuleMixins: @for_each
 
 export Input, Facies
@@ -23,7 +24,7 @@ function initial_state(input::AbstractInput)
     state = State(
         step=0, sediment_height=sediment_height,
         sediment_buffer=sediment_buffer,
-        active_layer = active_layer,
+        active_layer=active_layer,
         ca=ca_state.ca, ca_priority=ca_state.ca_priority)
 
     InitialSediment.push_initial_sediment!(input, state)
@@ -55,18 +56,18 @@ function step!(input::Input)
         deposit = pf .* state.active_layer
         push_sediment!(state.sediment_buffer, deposit ./ input.depositional_resolution .|> NoUnits)
         state.active_layer .-= deposit
-        state.sediment_height .+= sum(deposit; dims=1)[1,:,:]
+        state.sediment_height .+= sum(deposit; dims=1)[1, :, :]
         state.step += 1
 
         return Frame(
-            production = p,
-            disintegration = d,
-            deposition = deposit)
+            production=p,
+            disintegration=d,
+            deposition=deposit)
     end
 end
 
-function write_header(fid, input::AbstractInput)
-    @for_each(P -> P.write_header(fid, input), PARENTS)
+function write_header(input::AbstractInput, output::AbstractOutput)
+    @for_each(P -> P.write_header(input, output), PARENTS)
 end
 
 include("ALCAP/Example.jl")

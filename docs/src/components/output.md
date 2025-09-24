@@ -21,7 +21,7 @@ Saving the full output of this simulation would take several hundreds of gigabyt
 
 ``` {.julia #output-spec}
 @kwdef struct Input <: AbstractInput
-    output = Dict(:full => OutputSpec((:,:), 1))
+    output = Dict(:full => OutputSpec((:, :), 1))
 end
 ```
 
@@ -33,6 +33,8 @@ The default is to write all output, which is fine for smaller runs. The `slice` 
 
 ``` {.julia file=src/Components/Output.jl}
 @compose module Output
-    <<output-spec>>
+using ..Common
+
+<<output-spec>>
 end
 ```

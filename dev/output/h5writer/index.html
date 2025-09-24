@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>HDF5 Output · CarboKitten</title><meta name="title" content="HDF5 Output · CarboKitten"/><meta property="og:title" content="HDF5 Output · CarboKitten"/><meta property="twitter:title" content="HDF5 Output · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../model-alcap/">ALCAPS</a></li><li><a class="tocitem" href="../../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../../components/components/">Components</a></li><li><a class="tocitem" href="../../components/tag/">Tags</a></li><li><a class="tocitem" href="../../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../../components/time/">Time</a></li><li><a class="tocitem" href="../../components/output/">Output</a></li><li><a class="tocitem" href="../../components/facies/">Facies</a></li><li><a class="tocitem" href="../../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../../components/production/">Production</a></li><li><a class="tocitem" href="../../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><a class="tocitem" href="../../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../abstract/">Output</a></li><li class="is-active"><a class="tocitem" href>HDF5 Output</a><ul class="internal"><li><a class="tocitem" href="#Main-loop"><span>Main loop</span></a></li><li><a class="tocitem" href="#Implementation"><span>Implementation</span></a></li><li><a class="tocitem" href="#Tests"><span>Tests</span></a></li></ul></li><li><a class="tocitem" href="../memory-writer/">Output to Memory</a></li><li><a class="tocitem" href="../../data-export/">CSV Export</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li><li><a class="tocitem" href="../../finite-difference-transport/">Finite Difference</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Input &amp; Output</a></li><li class="is-active"><a href>HDF5 Output</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>HDF5 Output</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/output/h5writer.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="HDF5-Writer"><a class="docs-heading-anchor" href="#HDF5-Writer">HDF5 Writer</a><a id="HDF5-Writer-1"></a><a class="docs-heading-anchor-permalink" href="#HDF5-Writer" title="Permalink"></a></h1><h2 id="Main-loop"><a class="docs-heading-anchor" href="#Main-loop">Main loop</a><a id="Main-loop-1"></a><a class="docs-heading-anchor-permalink" href="#Main-loop" title="Permalink"></a></h2><p>The <code>H5Writer</code> runs through an overloaded version of <code>run_model</code>. For example:</p><pre><code class="language-julia hljs">run_model(Model{ALCAP}, ALCAP.Example.INPUT, &quot;example.h5&quot;)</code></pre><div class="noweb-label">⪡hdf5-run-model⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
+    run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where M
+
+Run a model and write output to HDF5.
+
+    run_model(Model{ALCAP}, ALCAP.Example.INPUT, &quot;example.h5&quot;)
+&quot;&quot;&quot;
+function run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where {M}
+    output = H5Output(input, filename)
+    run_model(Model{M}, input, output)
+    return filename
+end</code></pre><h2 id="Implementation"><a class="docs-heading-anchor" href="#Implementation">Implementation</a><a id="Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Implementation" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Output/H5Writer.jl</i></div><pre><code class="language- julia hljs">module H5Writer
+
+using HDF5
+using Unitful
+
+import ...CarboKitten: run_model, Model, AbstractOutput, AbstractInput, OutputSpec, AbstractState
+
+using ...CarboKitten: time_axis, box_axes
+using ...Components.WaterDepth: initial_topography
+
+using ...Utility: in_units_of
+using ..Abstract
+import ..Abstract: add_data_set, set_attribute, frame_writer, state_writer
+
+mutable struct H5Output &lt;: AbstractOutput
+    header::Header
+    fid::HDF5.File
+end
+
+function H5Output(input::AbstractInput, filename::String)
+    t_axis = time_axis(input.time)
+    x_axis, y_axis = box_axes(input.box)
+    axes = Axes(x=x_axis, y=y_axis, t=t_axis)
+    h0 = initial_topography(input)
+    sl = input.sea_level.(t_axis)
+
+    header = Header(
+        tag=input.tag,
+        axes=axes,
+        Δt=input.time.Δt,
+        time_steps=input.time.steps,
+        grid_size=input.box.grid_size,
+        n_facies=length(input.facies),
+        initial_topography=h0,
+        sea_level=sl,
+        subsidence_rate=input.subsidence_rate,
+        data_sets=Dict(),
+        attributes=Dict())
+
+    fid = h5open(filename, &quot;w&quot;)
+    create_group(fid, &quot;input&quot;)
+
+    finalizer(H5Output(header, fid)) do x
+        close(x.fid)
+    end
+end
+
+axis_size(::Colon, a::Int) = a
+axis_size(::Int, _) = 1
+axis_size(r::AbstractRange{Int}, _) = length(r)
+
+slice_str(::Colon) = &quot;:&quot;
+slice_str(r::AbstractRange{Int}) = &quot;$(r.start):$(r.stop)&quot;
+slice_str(i::Int) = &quot;$(i)&quot;
+
+is_column(::Int, ::Int) = true
+is_column(_, _) = false
+
+function add_data_set(out::H5Output, name::Symbol, spec::OutputSpec)
+    header = out.header
+    fid = out.fid
+
+    nf = header.n_facies
+    nw = div(header.time_steps, spec.write_interval)
+    size = axis_size.(spec.slice, header.grid_size)
+
+    grp = HDF5.create_group(fid, string(name))
+    attrs = attributes(grp)
+    attrs[&quot;slice&quot;] = join(slice_str.(spec.slice), &quot;,&quot;)
+    attrs[&quot;write_interval&quot;] = spec.write_interval
+
+    HDF5.create_dataset(grp, &quot;production&quot;, datatype(Float64),
+        dataspace(nf, size..., nw),
+        chunk=(nf, size..., 1), deflate=3)
+    HDF5.create_dataset(grp, &quot;disintegration&quot;, datatype(Float64),
+        dataspace(nf, size..., nw),
+        chunk=(nf, size..., 1), deflate=3)
+    HDF5.create_dataset(grp, &quot;deposition&quot;, datatype(Float64),
+        dataspace(nf, size..., nw),
+        chunk=(nf, size..., 1), deflate=3)
+    HDF5.create_dataset(grp, &quot;sediment_thickness&quot;, datatype(Float64),
+        dataspace(size..., nw + 1),
+        chunk=(size..., 1), deflate=3)
+end
+
+function get_group(fid::HDF5.File, name::String)
+    path = split(name, &quot;/&quot;)
+    gid = fid[&quot;input&quot;]
+    for n in path[1:end-1]
+        if !haskey(gid, n)
+            create_group(gid, n)
+        end
+        gid = gid[n]
+    end
+    return gid
+end
+
+function set_attribute(out::H5Output, name::String, value::AbstractArray{T,Dim}) where {T,Dim}
+    gid = get_group(out.fid, name)
+    gid[name] = value
+end
+
+function set_attribute(out::H5Output, name::String, value)
+    gid = get_group(out.fid, name)
+    attr = attributes(gid)
+    attr[name] = value
+end
+
+function state_writer(input::AbstractInput, out::H5Output)
+    output_spec = input.output
+    fid = out.fid
+    grid_size = out.header.grid_size
+
+    function (idx::Int, state::AbstractState)
+        for (k, v) in output_spec
+            size = axis_size.(v.slice, grid_size)
+            if mod(idx - 1, v.write_interval) == 0
+                fid[string(k)][&quot;sediment_thickness&quot;][:, :, div(idx - 1, v.write_interval)+1] =
+                    (is_column(v.slice...) ?
+                     Float64[state.sediment_height[v.slice...] |&gt; in_units_of(u&quot;m&quot;);] :
+                     reshape(state.sediment_height[v.slice...], size) |&gt; in_units_of(u&quot;m&quot;))
+            end
+        end
+    end
+end
+
+function frame_writer(input::AbstractInput, out::H5Output)
+    n_f = out.header.n_facies
+    grid_size = out.header.grid_size
+    output_spec = input.output
+
+    function (idx::Int, frame::Frame)
+        try_write(tgt, ::Nothing, v) = ()
+        function try_write(tgt, src::AbstractArray, v)
+            size = axis_size.(v.slice, grid_size)
+            tgt[:, :, :, div(idx - 1, v.write_interval)+1] +=
+                (reshape(src[:, v.slice...], (n_f, size...)) |&gt; in_units_of(u&quot;m&quot;))
+        end
+
+        for (k, v) in input.output
+            n_writes = div(input.time.steps, v.write_interval)
+            if div(idx-1, v.write_interval) + 1 &lt;= n_writes
+                grp = out.fid[string(k)]
+                try_write(grp[&quot;production&quot;], frame.production, v)
+                try_write(grp[&quot;disintegration&quot;], frame.disintegration, v)
+                try_write(grp[&quot;deposition&quot;], frame.deposition, v)
+            end
+        end
+    end
+end
+
+&lt;&lt;hdf5-run-model&gt;&gt;
+
+end</code></pre><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><div class="noweb-label">file:<i>test/Output/H5WriterSpec.jl</i></div><pre><code class="language- julia hljs">module H5WriterSpec
+
+using CarboKitten
+using HDF5
+using CarboKitten.Output.Abstract: frame_writer, add_data_set, Frame
+using CarboKitten.Output.H5Writer: H5Output
+using Unitful
+using Test
+
+const DummyFacies = [
+    ALCAP.Facies(
+        viability_range = (0, 0),
+        activation_range = (0, 0),
+        maximum_growth_rate=0.0u&quot;m/Myr&quot;,
+        extinction_coefficient=0.0u&quot;m^-1&quot;,
+        saturation_intensity=0.0u&quot;W/m^2&quot;,
+        diffusion_coefficient=0.0u&quot;m/yr&quot;)]
+
+const input = ALCAP.Input(
+    tag=&quot;test&quot;,
+    box=Box{Periodic{2}}(grid_size=(5, 1), phys_scale=5.0u&quot;m&quot;),
+    time=TimeProperties(
+        Δt=0.0001u&quot;Myr&quot;,
+        steps=10),
+    output=Dict(
+        :wi1 =&gt; OutputSpec(slice=(:,:), write_interval=1),
+        :wi2 =&gt; OutputSpec(slice=(:,:), write_interval=2),
+        :wi3 =&gt; OutputSpec(slice=(:,:), write_interval=3),
+        :wi4 =&gt; OutputSpec(slice=(:,:), write_interval=4)),
+    ca_interval=1,
+    initial_topography=(x, y) -&gt; -0.0u&quot;m&quot;,
+    sea_level = t -&gt; 0.0u&quot;m&quot;,
+    subsidence_rate=0.0u&quot;m/Myr&quot;,
+    disintegration_rate=0.0u&quot;m/Myr&quot;,
+    insolation=0.0u&quot;W/m^2&quot;,
+    sediment_buffer_size=0,
+    depositional_resolution=0.0u&quot;m&quot;,
+    facies=DummyFacies)
+
+const filename = &quot;testH5.h5&quot;
+
+
+@testset &quot;Components/H5Writer&quot; begin
+    mktempdir() do path
+        fpath = joinpath(path, filename)
+        output = H5Output(input, fpath)
+        write_frame = frame_writer(input, output)
+
+        ALCAP.write_header(input, output)
+
+        for (k, v) in input.output
+            add_data_set(output, k, v)
+        end
+
+        # create a frame of ones to be the deposition etc. each time step
+        dummy_data = ones(Float64, 1, 5, 1) * u&quot;m&quot;
+        inc = Frame(
+            production = dummy_data,
+            deposition = dummy_data,
+            disintegration = dummy_data
+        )
+
+        for t = 1:input.time.steps
+            write_frame(t, inc)
+        end
+
+        close(output.fid)
+
+        @testset &quot;size of output array&quot; begin
+            h5open(fpath, &quot;r&quot;) do f
+                @test size(f[&quot;wi1&quot;][&quot;deposition&quot;][])[4] == 10
+                @test size(f[&quot;wi2&quot;][&quot;deposition&quot;][])[4] == 5
+                @test size(f[&quot;wi3&quot;][&quot;deposition&quot;][])[4] == 3
+                @test size(f[&quot;wi4&quot;][&quot;deposition&quot;][])[4] == 2
+            end
+        end
+
+        @testset &quot;frame written only every write_interval&quot; begin
+            h5open(fpath, &quot;r&quot;) do f
+                @test all(f[&quot;wi1&quot;][&quot;deposition&quot;][] .≈ attrs(f[&quot;wi1&quot;])[&quot;write_interval&quot;])
+                @test all(f[&quot;wi2&quot;][&quot;deposition&quot;][] .≈ attrs(f[&quot;wi2&quot;])[&quot;write_interval&quot;])
+                @test all(f[&quot;wi3&quot;][&quot;deposition&quot;][] .≈ attrs(f[&quot;wi3&quot;])[&quot;write_interval&quot;])
+                @test all(f[&quot;wi4&quot;][&quot;deposition&quot;][] .≈ attrs(f[&quot;wi4&quot;])[&quot;write_interval&quot;])
+            end
+        end
+    end
+end
+
+end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../abstract/">« Output</a><a class="docs-footer-nextpage" href="../memory-writer/">Output to Memory »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 24 September 2025 14:59">Wednesday 24 September 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

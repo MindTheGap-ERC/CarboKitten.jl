@@ -15,6 +15,15 @@ struct Model{M} end
 function run_model end
 
 abstract type AbstractBox{BT} end
+abstract type AbstractOutputSpec end
+abstract type AbstractInput end
+abstract type AbstractOutput end
+abstract type AbstractState end
+
+@kwdef struct OutputSpec <: AbstractOutputSpec
+    slice::Slice2 = (:, :)
+    write_interval::Int = 1
+end
 
 """
     Box{BoundaryType}(grid_size, phys_scale)
@@ -80,12 +89,6 @@ include("./Utility.jl")
 include("./DataSets.jl")
 include("./Skeleton.jl")
 
-module Output
-include("./Output/Abstract.jl")
-include("./Output/H5Writer.jl")
-include("./Output/MemoryWriter.jl")
-end
-
 include("./RunModel.jl")
 
 include("./Denudation.jl")
@@ -99,6 +102,13 @@ end
 
 include("./Components.jl")
 
+module Output
+include("./Output/Abstract.jl")
+include("./Output/RunModel.jl")
+include("./Output/H5Writer.jl")
+include("./Output/MemoryWriter.jl")
+end
+
 module Models
 using ModuleMixins: @compose
 using CarboKitten.Components.Common
@@ -109,7 +119,6 @@ include("./Models/CAP.jl")
 include("./Models/ALCAP.jl")
 include("./Models/WithDenudation.jl")
 include("./Models/WithoutCA.jl")
-
 end
 
 include("./Export.jl")

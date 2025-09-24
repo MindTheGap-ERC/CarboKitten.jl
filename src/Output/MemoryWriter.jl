@@ -1,14 +1,13 @@
 # ~/~ begin <<docs/src/memory-writer.md#src/Output/MemoryWriter.jl>>[init]
 module MemoryWriter
 
-using ..OutputData
-import ..OutputData:
+import ..Abstract:
     new_output, add_data_set, set_attribute, write_sediment_thickness,
     write_production, write_disintegration, write_deposition, AbstractOutputSpec
 
-using ..Components.Common
-using ..Components.WaterDepth: initial_topography
-using ..CarboKitten: time_axis, box_axes
+using ...Components.Common
+using ...Components.WaterDepth: initial_topography
+using ...CarboKitten: time_axis, box_axes
 
 struct MemoryOutput <: AbstractOutput
     header::Header

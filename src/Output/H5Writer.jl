@@ -2,10 +2,11 @@
 module H5Writer
 
 using HDF5
+using Unitful
 
-import ...CarboKitten: run_model, Model
-import ..OutputData: Frame, AbstractInput, AbstractOutput, OutputSpec, AbstractState,
-                     add_data_set, set_attribute, frame_writer, state_writer
+import ...CarboKitten: run_model, Model, in_units_of
+import ..Abstract: Frame, AbstractInput, AbstractOutput, OutputSpec, AbstractState,
+                     add_data_set, set_attribute, frame_writer, state_writer, Header
 
 struct H5Output <: AbstractOutput
     header::Header

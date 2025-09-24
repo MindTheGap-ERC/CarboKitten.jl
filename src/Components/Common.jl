@@ -19,7 +19,7 @@ using ...BoundaryTrait
 using ...Config: TimeProperties
 using ...Boxes: Box, box_axes
 using ...Utility: in_units_of
-using ...OutputData: AbstractInput, AbstractState, Frame, OutputSpec
+using ...Output.Abstract: AbstractInput, AbstractState, Frame, OutputSpec
 
 const Amount = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")

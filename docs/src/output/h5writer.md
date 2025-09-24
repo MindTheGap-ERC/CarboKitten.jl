@@ -30,7 +30,7 @@ module H5Writer
 using HDF5
 
 import ...CarboKitten: run_model, Model
-import ..OutputData: Frame, AbstractInput, AbstractOutput, OutputSpec, AbstractState,
+import ..Abstract: Frame, AbstractInput, AbstractOutput, OutputSpec, AbstractState,
                      add_data_set, set_attribute, frame_writer, state_writer
 
 struct H5Output <: AbstractOutput

@@ -340,8 +340,8 @@ using Unitful
 using DataFrames
 using .Iterators: flatten
 
-using ..OutputData
-import ..OutputData: data_kind
+using ..Output.Abstract
+import ..Output.Abstract: data_kind
 
 const Rate = typeof(1.0u"m/Myr")
 const Amount = typeof(1.0u"m")

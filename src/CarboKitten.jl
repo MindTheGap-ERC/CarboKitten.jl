@@ -143,6 +143,6 @@ using GeometryBasics: Vec2
 export run_model, Box, box_axes, TimeProperties, time_axis,
     Model, BS92, CAP, ALCAP, in_units_of, @u_str,
     AbstractBox, Boundary, Coast, Periodic, Reflected,
-    Vec2, OutputSpec, MemoryOutput, new_output
+    Vec2, OutputSpec, MemoryOutput, new_output, n_steps
 
 end # module CarboKitten

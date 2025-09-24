@@ -6,6 +6,7 @@ Box
 box_axes
 TimeProperties
 time_axis
+n_steps
 ```
 
 ## Components

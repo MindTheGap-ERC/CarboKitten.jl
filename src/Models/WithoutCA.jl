@@ -1,11 +1,12 @@
 # ~/~ begin <<docs/src/models/without-ca.md#src/Models/WithoutCA.jl>>[init]
 @compose module WithoutCA
-@mixin Tag, H5Writer, Production, ActiveLayer
+@mixin Tag, Output, Production, ActiveLayer
 
 using ..Common
 using ..Production: uniform_production
 using ..TimeIntegration
 using ..WaterDepth
+using ...Output: Frame
 using ModuleMixins: @for_each
 
 export Input, Facies
@@ -38,18 +39,18 @@ function step!(input::Input)
         deposit = pf .* state.active_layer
         push_sediment!(state.sediment_buffer, deposit ./ input.depositional_resolution .|> NoUnits)
         state.active_layer .-= deposit
-        state.sediment_height .+= sum(deposit; dims=1)[1,:,:]
+        state.sediment_height .+= sum(deposit; dims=1)[1, :, :]
         state.step += 1
 
         return Frame(
-            production = p,
-            disintegration = d,
-            deposition = deposit)
+            production=p,
+            disintegration=d,
+            deposition=deposit)
     end
 end
 
-function write_header(fid, input::AbstractInput)
-    @for_each(P -> P.write_header(fid, input), PARENTS)
+function write_header(input::AbstractInput, output::AbstractOutput)
+    @for_each(P -> P.write_header(input, output), PARENTS)
 end
 
 end

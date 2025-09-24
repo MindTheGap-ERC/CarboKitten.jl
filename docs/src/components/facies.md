@@ -36,12 +36,8 @@ end
 
 n_facies(input::AbstractInput) = length(input.facies)
 
-function write_header(fid, input::AbstractInput)
-    attr = attributes(fid["input"])
-    attr["n_facies"] = n_facies(input)
-    for i in 1:n_facies(input)
-        create_group(fid["input"], "facies$(i)")
-    end
+function write_header(input::AbstractInput, output::AbstractOutput)
+    set_attribute(output, "n_facies", n_facies(input))
 end
 end
 ```

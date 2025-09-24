@@ -73,7 +73,7 @@ cp(joinpath(@__DIR__, "src", "fig", "logo.svg"), joinpath(path, "assets", "logo.
 
 makedocs(
     source=path,
-    modules = [CarboKitten],
+    modules=[CarboKitten],
     sitename="CarboKitten",
     # repo=Remotes.GitHub("MindTheGap-ERC", "CarboKitten"),
     pages=[
@@ -92,11 +92,10 @@ makedocs(
         "Architecture" => "architecture.md",
         "Model Components" => [
             "Components" => "components/components.md",
-            "Model Runner" => "components/run_model.md",
-            "HDF5 Writer" => "components/hdf5.md",
             "Tags" => "components/tag.md",
             "Boxes" => "components/boxes.md",
             "Time" => "components/time.md",
+            "Output" => "components/output.md",
             "Facies" => "components/facies.md",
             "Cellular Automata" => "components/cellular-automata.md",
             "Water Depth" => "components/waterdepth.md",
@@ -117,7 +116,9 @@ makedocs(
         ],
         "Input & Output" => [
             "Input Methods" => "input-methods.md",
-            "Output" => "memory-writer.md",
+            "Output" => "output/abstract.md",
+            "HDF5 Output" => "output/h5writer.md",
+            "Output to Memory" => "output/memory-writer.md",
             "CSV Export" => "data-export.md"
         ],
         "Algorithms" => [

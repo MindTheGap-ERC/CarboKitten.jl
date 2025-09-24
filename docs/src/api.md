@@ -6,6 +6,7 @@ Box
 box_axes
 TimeProperties
 time_axis
+n_steps
 ```
 
 ## Components
@@ -17,7 +18,7 @@ Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.Acti
 ## Output
 
 ```@autodocs
-Modules = [CarboKitten.OutputData]
+Modules = [CarboKitten.Output.Abstract, CarboKitten.Output.H5Writer, CarboKitten.Output.MemoryWriter]
 ```
 
 ## Utility

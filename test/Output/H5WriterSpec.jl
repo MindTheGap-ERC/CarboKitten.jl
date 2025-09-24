@@ -1,9 +1,10 @@
-# ~/~ begin <<docs/src/components/hdf5.md#test/Components/H5WriterSpec.jl>>[init]
+# ~/~ begin <<docs/src/output/h5writer.md#test/Output/H5WriterSpec.jl>>[init]
 module H5WriterSpec
+
 using CarboKitten
 using HDF5
-using CarboKitten.Components.H5Writer: write_frame, create_ck_group
-using CarboKitten.Models: Frame
+using CarboKitten.Output.Abstract: frame_writer, add_data_set, Frame
+using CarboKitten.Output.H5Writer: H5Output
 using Unitful
 using Test
 
@@ -41,27 +42,30 @@ const filename = "testH5.h5"
 
 
 @testset "Components/H5Writer" begin
-
     mktempdir() do path
         fpath = joinpath(path, filename)
-        h5open(fpath, "w") do fid
-            create_group(fid, "input")
-            ALCAP.write_header(fid, input)
+        output = H5Output(input, fpath)
+        write_frame = frame_writer(input, output)
 
-            for (k, v) in input.output
-                create_ck_group(fid, input, k, v)
-            end
+        ALCAP.write_header(input, output)
 
-            # create a frame of ones to be the deposition etc. each time step
-            inc = zeros(Frame, input)
-            inc.production .= 1.0u"m"
-            inc.deposition .= 1.0u"m"
-            inc.disintegration .= 1.0u"m"
-
-            for t = 1:input.time.steps
-                write_frame(fid, input, t, inc)
-            end
+        for (k, v) in input.output
+            add_data_set(output, k, v)
         end
+
+        # create a frame of ones to be the deposition etc. each time step
+        dummy_data = ones(Float64, 1, 5, 1) * u"m"
+        inc = Frame(
+            production = dummy_data,
+            deposition = dummy_data,
+            disintegration = dummy_data
+        )
+
+        for t = 1:input.time.steps
+            write_frame(t, inc)
+        end
+
+        close(output.fid)
 
         @testset "size of output array" begin
             h5open(fpath, "r") do f

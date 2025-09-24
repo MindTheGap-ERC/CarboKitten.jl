@@ -63,25 +63,24 @@ Depth = 1
 ``` {.julia file=src/Components/Common.jl}
 module Common
 export @u_str, Quantity, Amount, Time, Location, Rate, Intensity, Height, Sediment
-export AbstractFacies, AbstractInput, AbstractState, AbstractFrame, AbstractOutputSpec
+export AbstractFacies, AbstractInput, AbstractState, AbstractOutput, set_attribute
 export OutputSpec
 export Box, box_axes, Boundary, Coast, Periodic, Reflected, TimeProperties
 export in_units_of
 export Model
 export @for_each
 export Size
-export Frame
+export n_steps
 
 using ModuleMixins
 using Unitful
 using StaticArrays
 
-using ...CarboKitten: Model
+using ...CarboKitten: Model, AbstractInput, AbstractState, AbstractOutput, OutputSpec, set_attribute, n_steps
 using ...BoundaryTrait
 using ...Config: TimeProperties
 using ...Boxes: Box, box_axes
 using ...Utility: in_units_of
-using ...OutputData: AbstractInput, AbstractState, Frame, OutputSpec
 
 const Amount = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
@@ -100,8 +99,8 @@ end
 module Components
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
-       CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
-       ActiveLayerOnshore, Denudation, InitialSediment
+    CAProduction, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
+    ActiveLayerOnshore, Denudation, InitialSediment, Output
 
 using ModuleMixins: @compose
 
@@ -120,11 +119,10 @@ include("Components/InitialSediment.jl")
 include("Components/ActiveLayer.jl")
 include("Components/Denudation.jl")
 
-include("Components/Models.jl")
-include("Components/H5Writer.jl")
+include("Components/Output.jl")
 
 list_components() = filter(
-    c->:AST in names(c, all=true),
+    c -> :AST in names(c, all=true),
     map(eval, names(Components)))
 
 end

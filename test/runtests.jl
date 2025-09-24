@@ -44,11 +44,11 @@ TEST_PATH = mktempdir()
     include("Components/BoxesSpec.jl")
     include("Components/ProductionSpec.jl")
     include("Components/InitialSedimentSpec.jl")
-    include("Components/H5WriterSpec.jl")
 
     include("Transport/AdvectionSpec.jl")
     include("Transport/IntertidalZoneSpec.jl")
 
     include("ExportSpec.jl")
-    include("OutputDataSpec.jl")
+    include("Output/DataSpec.jl")
+    include("Output/H5WriterSpec.jl")
 end

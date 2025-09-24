@@ -87,12 +87,13 @@ CarboKitten.Models.CAP
 
 ``` {.julia file=src/Models/CAP.jl}
 @compose module CAP
-@mixin Tag, H5Writer, CAProduction
+@mixin Tag, Output, CAProduction
 
 using ..Common
 using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
+using ...Output: Frame
 using ModuleMixins: @for_each
 
 export Input, Facies
@@ -124,13 +125,13 @@ function step!(input::Input)
         state.step += 1
 
         return Frame(
-            production = prod,
-            deposition = prod)
+            production=prod,
+            deposition=prod)
     end
 end
 
-function write_header(fid, input::AbstractInput)
-    @for_each(P -> P.write_header(fid, input), PARENTS)
+function write_header(input::AbstractInput, output::AbstractOutput)
+    @for_each(P -> P.write_header(input, output), PARENTS)
 end
 end
 ```

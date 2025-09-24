@@ -16,15 +16,15 @@ using GeometryBasics
 end
 
 @kwdef mutable struct State <: AbstractState
-    active_layer::Array{Amount, 3}
+    active_layer::Array{Amount,3}
 end
 
 @kwdef struct Input <: AbstractInput
     intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
-    cementation_time::Union{typeof(1.0u"Myr"), Nothing} = nothing
+    cementation_time::Union{typeof(1.0u"Myr"),Nothing} = nothing
     transport_solver = Val{:RK4}
-    transport_substeps = :adaptive 
+    transport_substeps = :adaptive
 end
 
 courant_max(::Type{Val{:RK4}}) = 2.0
@@ -38,7 +38,7 @@ function cementation_factor(input::AbstractInput)
     if input.cementation_time === nothing
         return 1.0
     else
-        return 1.0 - exp(input.time.Δt * log(1/2) / input.cementation_time)
+        return 1.0 - exp(input.time.Δt * log(1 / 2) / input.cementation_time)
     end
 end
 
@@ -138,7 +138,7 @@ function transporter(input)
                 solver(
                     (C, _) -> transport(
                         input.box, f.diffusion_coefficient, f.wave_velocity,
-C, wd),
+                        C, wd),
                     view(C, i, :, :), TimeIntegration.time(input, state), Δt)
             end
         end
@@ -151,14 +151,11 @@ C, wd),
     end
 end
 
-function write_header(fid, input::AbstractInput)
-    gid = fid["input"]
-    attr = attributes(gid)
-
-    attr["intertidal_zone"] = input.intertidal_zone |> in_units_of(u"m")
-    attr["disintegration_rate"] = input.disintegration_rate |> in_units_of(u"m/Myr")
+function write_header(input::AbstractInput, output::AbstractOutput)
+    set_attribute(output, "intertidal_zone", input.intertidal_zone |> in_units_of(u"m"))
+    set_attribute(output, "disintegration_rate", input.disintegration_rate |> in_units_of(u"m/Myr"))
     if input.cementation_time !== nothing
-        attr["cementation_time"] = input.cementation_time |> in_units_of(u"Myr")
+        set_attribute(output, "cementation_time", input.cementation_time |> in_units_of(u"Myr"))
     end
 end
 

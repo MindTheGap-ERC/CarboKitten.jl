@@ -5,7 +5,7 @@ using Unitful
 using ..ALCAP: ALCAP
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
-using CarboKitten.OutputData: OutputSpec
+using CarboKitten.Output.Abstract: OutputSpec
 
 # ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]
 const TAG = "alcap-example"

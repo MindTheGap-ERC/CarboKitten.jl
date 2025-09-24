@@ -265,9 +265,8 @@ end
 ```{.julia file=test/Output/DataSpec.jl}
 module OutputDataSpec
 using CarboKitten
-using CarboKitten.MemoryWriter: add_data_set
-using CarboKitten.OutputData: frame_writer
-using CarboKitten.Models: Frame
+using CarboKitten.Output.Abstract: frame_writer, add_data_set, Frame
+using CarboKitten.Output.MemoryWriter: MemoryOutput
 using Unitful
 using Test
 
@@ -311,10 +310,12 @@ const input = ALCAP.Input(
     end
 
     # create a frame of ones to be the deposition etc. each time step
-    inc = zeros(Frame, input)
-    inc.production .= 1.0u"m"
-    inc.deposition .= 1.0u"m"
-    inc.disintegration .= 1.0u"m"
+    dummy_data = ones(Float64, 1, 5, 1) * u"m"
+    inc = Frame(
+        production = dummy_data,
+        deposition = dummy_data,
+        disintegration = dummy_data
+    )
 
     for t = 1:input.time.steps
         write_frame(t, inc)

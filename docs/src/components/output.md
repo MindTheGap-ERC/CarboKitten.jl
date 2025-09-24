@@ -31,6 +31,8 @@ The default is to write all output, which is fine for smaller runs. The `slice` 
 - `(<n>, :)` or `(:, <n>)` output a slice of the model, either with a fixed $x$ or a fixed $y$ coordinate. In our examples we always have the $x$ axis orthogonal to the shoreline, so slicing with a fixed $y$ (the second form) is what we use.
 - `(<m>, <n>)`, output a column of the model. If you have a very precise experiment workflow, this could be of use. You'll have to specify each column as a separate output. Most of the time though, we can extract columns from slice data in a post-processing stage, so if all your columns have the same $y$ coordinate, taking a slice is the preferred option.
 
+If an output with a `write_interval` that does not divide the total number of timesteps is specified, the output array will contain `div(time.steps, write_interval)` values and the value for the remainder of the steps at the end of the model will not be recorded (since this will not cover an equal interval of time as the rest of the values).
+
 ``` {.julia file=src/Components/Output.jl}
 @compose module Output
 using ..Common

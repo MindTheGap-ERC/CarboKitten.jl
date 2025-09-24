@@ -139,10 +139,13 @@ function frame_writer(input::AbstractInput, out::H5Output)
         end
 
         for (k, v) in input.output
-            grp = out.fid[string(k)]
-            try_write(grp["production"], frame.production, v)
-            try_write(grp["disintegration"], frame.disintegration, v)
-            try_write(grp["deposition"], frame.deposition, v)
+            n_writes = div(input.time.steps, v.write_interval)
+            if div(idx-1, v.write_interval) + 1 <= n_writes
+                grp = out.fid[string(k)]
+                try_write(grp["production"], frame.production, v)
+                try_write(grp["disintegration"], frame.disintegration, v)
+                try_write(grp["deposition"], frame.deposition, v)
+            end
         end
     end
 end

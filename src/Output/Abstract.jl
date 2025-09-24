@@ -212,9 +212,12 @@ function frame_writer(input::AbstractInput, out)
         end
 
         for (k, v) in input.output
-            try_write(write_production, frame.production, k, v)
-            try_write(write_disintegration, frame.disintegration, k, v)
-            try_write(write_deposition, frame.deposition, k, v)
+            n_writes = div(input.time.steps, v.write_interval)
+            if div(idx-1, v.write_interval) + 1 <= n_writes
+                try_write(write_production, frame.production, k, v)
+                try_write(write_disintegration, frame.disintegration, k, v)
+                try_write(write_deposition, frame.deposition, k, v)
+            end
         end
     end
 end

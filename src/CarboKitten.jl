@@ -112,8 +112,8 @@ include("./Output/RunModel.jl")
 include("./Output/H5Writer.jl")
 include("./Output/MemoryWriter.jl")
 
-using .Abstract: Frame
-export Frame
+using .Abstract: Frame, frame_writer, state_writer
+export Frame, frame_writer, state_writer
 
 end
 

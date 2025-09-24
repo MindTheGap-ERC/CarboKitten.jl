@@ -49,4 +49,6 @@ TEST_PATH = mktempdir()
     include("Transport/IntertidalZoneSpec.jl")
 
     include("ExportSpec.jl")
+    include("Output/DataSpec.jl")
+    include("Output/H5WriterSpec.jl")
 end

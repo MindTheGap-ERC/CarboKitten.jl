@@ -46,7 +46,7 @@ using CarboKitten.Components: CellularAutomaton as CA
         @test state.ca_priority == [1,3]
 
         # inactive facies shouldn't appear in the ca
-        
+
         @test all(state.ca .!= 2)
         @test all(state.ca .!= 4)
 

@@ -9,6 +9,7 @@
     @kwdef struct Facies <: AbstractFacies
         viability_range::Tuple{Int,Int} = (4, 10)
         activation_range::Tuple{Int,Int} = (6, 10)
+        active::Bool = true
     end
 
     @kwdef struct Input <: AbstractInput
@@ -69,8 +70,9 @@
 
     function initial_state(input::AbstractInput)
         n_facies = length(input.facies)
-        ca = rand(MersenneTwister(input.ca_random_seed), 0:n_facies, input.box.grid_size...)
-        return State(ca, 1:n_facies |> collect)
+        active_facies = 1:n_facies |> filter(f->input.facies[f].active==true)
+        ca = rand(MersenneTwister(input.ca_random_seed), [0; active_facies], input.box.grid_size...)
+        return State(ca, active_facies |> collect)
     end
 
     function step!(input::AbstractInput)

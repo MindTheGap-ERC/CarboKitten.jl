@@ -41,9 +41,9 @@ using Logging
 export production_rate, capped_production, uniform_production
 
 @kwdef struct Facies <: AbstractFacies
-    maximum_growth_rate::Rate
-    extinction_coefficient::typeof(1.0u"m^-1")
-    saturation_intensity::Intensity
+    maximum_growth_rate::Rate = 0.0
+    extinction_coefficient::typeof(1.0u"m^-1") = 0.0u"m^-1"
+    saturation_intensity::Intensity = 1.0
 end
 
 @kwdef struct Input <: AbstractInput

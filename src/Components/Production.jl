@@ -53,7 +53,6 @@ function write_header(input::AbstractInput, output::AbstractOutput)
         set_attribute(output, "facies$(i)/maximum_growth_rate", f.maximum_growth_rate |> in_units_of(u"m/Myr"))
         set_attribute(output, "facies$(i)/extinction_coefficient", f.extinction_coefficient |> in_units_of(u"m^-1"))
         set_attribute(output, "facies$(i)/saturation_intensity", f.saturation_intensity |> in_units_of(u"W/m^2"))
-        set_attribute(output, "facies$(i)/active", f.active)
     end
 end
 

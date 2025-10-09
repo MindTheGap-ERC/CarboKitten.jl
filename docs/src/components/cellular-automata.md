@@ -6,7 +6,7 @@ CarboKitten.Components.CellularAutomaton
 
 This component implements the cellular automaton as described by [Burgess2013](@cite). 
 
-We depend on the box properties being defined. Each `Facies` should have a `viability_range` and `activation_range` defined. Two other parameters are the `ca_interval` setting how many time steps between every CA advancement, and the `ca_random_seed` setting the random seed for generating the initial noise.
+We depend on the box properties being defined. Each `Facies` should have a `viability_range` and `activation_range` defined.  The `active` property determines whether a facies is active in the cellular automaton. Two other parameters are the `ca_interval` setting how many time steps between every CA advancement, and the `ca_random_seed` setting the random seed for generating the initial noise.
 
 ``` {.julia #ca-input}
 @kwdef struct Facies <: AbstractFacies

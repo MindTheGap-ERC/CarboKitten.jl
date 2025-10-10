@@ -6,7 +6,10 @@ using CarboKitten.Components.Common
 using CarboKitten.Components: CellularAutomaton as CA
 
 @testset "Components/CellularAutomaton" begin
-    let facies = fill(CA.Facies((4, 10), (6, 10), true), 3),
+    let facies = fill(CA.Facies(
+            viability_range=(4, 10),
+            activation_range=(6, 10),
+            active=true), 3),
         input1 = CA.Input(
             box=Box{Periodic{2}}(grid_size=(50, 50), phys_scale=1.0u"m"),
             facies=facies),
@@ -33,11 +36,11 @@ using CarboKitten.Components: CellularAutomaton as CA
         @test state2.ca == state3.ca
     end
 
-    @testset "inactive facies" begin 
-        let facies = [CA.Facies((4, 10), (6, 10), true),
-                      CA.Facies((4, 10), (6, 10), false),
-                      CA.Facies((4, 10), (6, 10), true),
-                      CA.Facies((4, 10), (6, 10), false)],   
+    @testset "inactive facies" begin
+        let facies = [CA.Facies(active=true),
+                      CA.Facies(active=false),
+                      CA.Facies(active=true),
+                      CA.Facies(active=false)],
             input = CA.Input(
                 box=Box{Periodic{2}}(grid_size=(10, 10), phys_scale=1.0u"m"),
                 facies=facies)

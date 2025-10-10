@@ -181,9 +181,9 @@ using Logging
 export production_rate, capped_production, uniform_production
 
 @kwdef struct Facies &lt;: AbstractFacies
-    maximum_growth_rate::Rate
-    extinction_coefficient::typeof(1.0u&quot;m^-1&quot;)
-    saturation_intensity::Intensity
+    maximum_growth_rate::Rate = 0.0u&quot;m/Myr&quot;
+    extinction_coefficient::typeof(1.0u&quot;m^-1&quot;) = 0.0u&quot;m^-1&quot;
+    saturation_intensity::Intensity = 1.0u&quot;W/m^2&quot;
 end
 
 @kwdef struct Input &lt;: AbstractInput
@@ -222,7 +222,7 @@ function write_header(input::AbstractInput, output::AbstractOutput)
 
     for (i, f) in enumerate(input.facies)
         set_attribute(output, &quot;facies$(i)/maximum_growth_rate&quot;, f.maximum_growth_rate |&gt; in_units_of(u&quot;m/Myr&quot;))
-        set_attribute(output, &quot;facies$(i)/exctinction_coefficient&quot;, f.extinction_coefficient |&gt; in_units_of(u&quot;m^-1&quot;))
+        set_attribute(output, &quot;facies$(i)/extinction_coefficient&quot;, f.extinction_coefficient |&gt; in_units_of(u&quot;m^-1&quot;))
         set_attribute(output, &quot;facies$(i)/saturation_intensity&quot;, f.saturation_intensity |&gt; in_units_of(u&quot;W/m^2&quot;))
     end
 end
@@ -341,34 +341,39 @@ end</code></pre><h2 id="CA-Production"><a class="docs-heading-anchor" href="#CA-
 <!-- CellularAutomaton -->
 <g id="node7" class="node">
 <title>CellularAutomaton</title>
-<path fill="none" stroke="black" d="M593.5,-179.5C593.5,-179.5 332.5,-179.5 332.5,-179.5 326.5,-179.5 320.5,-173.5 320.5,-167.5 320.5,-167.5 320.5,-93.5 320.5,-93.5 320.5,-87.5 326.5,-81.5 332.5,-81.5 332.5,-81.5 593.5,-81.5 593.5,-81.5 599.5,-81.5 605.5,-87.5 605.5,-93.5 605.5,-93.5 605.5,-167.5 605.5,-167.5 605.5,-173.5 599.5,-179.5 593.5,-179.5"/>
-<polyline fill="none" stroke="black" points="328,-149.5 599,-149.5 "/>
-<text text-anchor="start" x="388" y="-158.3" font-family="Times,serif" font-weight="bold" font-size="14.00">CellularAutomaton</text>
-<polygon fill="#cccccc" stroke="transparent" points="328,-126.5 328,-149.5 421,-149.5 421,-126.5 328,-126.5"/>
-<polyline fill="none" stroke="black" points="328,-126.5 421,-126.5 421,-149.5 328,-149.5 "/>
-<text text-anchor="start" x="332" y="-134.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="421,-126.5 421,-149.5 526,-149.5 526,-126.5 421,-126.5"/>
-<polygon fill="none" stroke="black" points="421,-126.5 421,-149.5 526,-149.5 526,-126.5 421,-126.5"/>
-<text text-anchor="start" x="425" y="-134.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="526,-126.5 526,-149.5 599,-149.5 599,-126.5 526,-126.5"/>
-<polyline fill="none" stroke="black" points="599,-149.5 526,-149.5 526,-126.5 599,-126.5 "/>
-<text text-anchor="start" x="530" y="-134.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="421,-107.5 421,-126.5 "/>
-<text text-anchor="start" x="332" y="-114.5" font-family="monospace" font-size="10.00">ca_interval</text>
-<polyline fill="none" stroke="black" points="526,-107.5 526,-126.5 "/>
-<text text-anchor="start" x="425" y="-114.5" font-family="monospace" font-size="10.00">viability_range</text>
-<text text-anchor="start" x="529" y="-114.5" font-family="monospace" font-size="10.00">ca</text>
-<polyline fill="none" stroke="black" points="421,-88.5 421,-107.5 "/>
-<text text-anchor="start" x="332" y="-95.5" font-family="monospace" font-size="10.00">ca_random_seed</text>
-<polyline fill="none" stroke="black" points="526,-88.5 526,-107.5 "/>
-<text text-anchor="start" x="425" y="-95.5" font-family="monospace" font-size="10.00">activation_range</text>
-<text text-anchor="start" x="529" y="-95.5" font-family="monospace" font-size="10.00">ca_priority</text>
+<path fill="none" stroke="black" d="M593.5,-189C593.5,-189 332.5,-189 332.5,-189 326.5,-189 320.5,-183 320.5,-177 320.5,-177 320.5,-84 320.5,-84 320.5,-78 326.5,-72 332.5,-72 332.5,-72 593.5,-72 593.5,-72 599.5,-72 605.5,-78 605.5,-84 605.5,-84 605.5,-177 605.5,-177 605.5,-183 599.5,-189 593.5,-189"/>
+<polyline fill="none" stroke="black" points="328,-158.5 599,-158.5 "/>
+<text text-anchor="start" x="388" y="-167.3" font-family="Times,serif" font-weight="bold" font-size="14.00">CellularAutomaton</text>
+<polygon fill="#cccccc" stroke="transparent" points="328,-135.5 328,-158.5 421,-158.5 421,-135.5 328,-135.5"/>
+<polyline fill="none" stroke="black" points="328,-135.5 421,-135.5 421,-158.5 328,-158.5 "/>
+<text text-anchor="start" x="332" y="-143.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="421,-135.5 421,-158.5 526,-158.5 526,-135.5 421,-135.5"/>
+<polygon fill="none" stroke="black" points="421,-135.5 421,-158.5 526,-158.5 526,-135.5 421,-135.5"/>
+<text text-anchor="start" x="425" y="-143.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="526,-135.5 526,-158.5 599,-158.5 599,-135.5 526,-135.5"/>
+<polyline fill="none" stroke="black" points="599,-158.5 526,-158.5 526,-135.5 599,-135.5 "/>
+<text text-anchor="start" x="530" y="-143.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="421,-116.5 421,-135.5 "/>
+<text text-anchor="start" x="332" y="-123.5" font-family="monospace" font-size="10.00">ca_interval</text>
+<polyline fill="none" stroke="black" points="526,-116.5 526,-135.5 "/>
+<text text-anchor="start" x="425" y="-123.5" font-family="monospace" font-size="10.00">viability_range</text>
+<text text-anchor="start" x="529" y="-123.5" font-family="monospace" font-size="10.00">ca</text>
+<polyline fill="none" stroke="black" points="421,-97.5 421,-116.5 "/>
+<text text-anchor="start" x="332" y="-104.5" font-family="monospace" font-size="10.00">ca_random_seed</text>
+<polyline fill="none" stroke="black" points="526,-97.5 526,-116.5 "/>
+<text text-anchor="start" x="425" y="-104.5" font-family="monospace" font-size="10.00">activation_range</text>
+<text text-anchor="start" x="529" y="-104.5" font-family="monospace" font-size="10.00">ca_priority</text>
+<polyline fill="none" stroke="black" points="421,-78.5 421,-97.5 "/>
+<text text-anchor="start" x="332" y="-85.5" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="526,-78.5 526,-97.5 "/>
+<text text-anchor="start" x="425" y="-85.5" font-family="monospace" font-size="10.00">active</text>
+<text text-anchor="start" x="529" y="-85.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- Boxes&#45;&gt;CellularAutomaton -->
 <g id="edge7" class="edge">
 <title>Boxes&#45;&gt;CellularAutomaton</title>
-<path fill="none" stroke="black" d="M448.74,-377.61C457.81,-367.05 466.1,-354.93 471,-342 489.59,-292.99 484.85,-232.87 477.09,-189.45"/>
-<polygon fill="black" stroke="black" points="480.52,-188.79 475.22,-179.62 473.65,-190.09 480.52,-188.79"/>
+<path fill="none" stroke="black" d="M448.74,-377.61C457.81,-367.05 466.1,-354.93 471,-342 488.23,-296.57 485.42,-241.6 478.73,-199.23"/>
+<polygon fill="black" stroke="black" points="482.17,-198.58 477.06,-189.3 475.27,-199.74 482.17,-198.58"/>
 </g>
 <!-- Production -->
 <g id="node5" class="node">
@@ -437,8 +442,8 @@ end</code></pre><h2 id="CA-Production"><a class="docs-heading-anchor" href="#CA-
 <!-- FaciesBase&#45;&gt;CellularAutomaton -->
 <g id="edge8" class="edge">
 <title>FaciesBase&#45;&gt;CellularAutomaton</title>
-<path fill="none" stroke="black" d="M402.12,-243.61C411.21,-226.87 422.03,-206.95 432,-188.58"/>
-<polygon fill="black" stroke="black" points="435.12,-190.17 436.82,-179.71 428.97,-186.83 435.12,-190.17"/>
+<path fill="none" stroke="black" d="M402.12,-243.61C409.65,-229.73 418.37,-213.68 426.82,-198.13"/>
+<polygon fill="black" stroke="black" points="430.05,-199.51 431.75,-189.05 423.9,-196.17 430.05,-199.51"/>
 </g>
 <!-- CAProduction -->
 <g id="node6" class="node">
@@ -455,8 +460,8 @@ end</code></pre><h2 id="CA-Production"><a class="docs-heading-anchor" href="#CA-
 <!-- CellularAutomaton&#45;&gt;CAProduction -->
 <g id="edge5" class="edge">
 <title>CellularAutomaton&#45;&gt;CAProduction</title>
-<path fill="none" stroke="black" d="M398.52,-81.35C380.24,-67.71 361.19,-53.48 345.9,-42.07"/>
-<polygon fill="black" stroke="black" points="347.93,-39.21 337.82,-36.04 343.74,-44.82 347.93,-39.21"/>
+<path fill="none" stroke="black" d="M385.97,-71.98C371.84,-61.43 357.85,-51 346.08,-42.21"/>
+<polygon fill="black" stroke="black" points="348.04,-39.3 337.94,-36.12 343.86,-44.91 348.04,-39.3"/>
 </g>
 </g>
 </svg>
@@ -545,4 +550,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../waterdepth/">« Water Depth</a><a class="docs-footer-nextpage" href="../sediment_buffer/">Sediment Buffers »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 24 September 2025 14:59">Wednesday 24 September 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../waterdepth/">« Water Depth</a><a class="docs-footer-nextpage" href="../sediment_buffer/">Sediment Buffers »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Friday 10 October 2025 20:09">Friday 10 October 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

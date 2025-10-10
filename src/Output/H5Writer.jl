@@ -98,13 +98,15 @@ end
 
 function set_attribute(out::H5Output, name::String, value::AbstractArray{T,Dim}) where {T,Dim}
     gid = get_group(out.fid, name)
-    gid[name] = value
+    tag = split(name,"/")[end]
+    gid[tag] = value
 end
 
 function set_attribute(out::H5Output, name::String, value)
     gid = get_group(out.fid, name)
     attr = attributes(gid)
-    attr[name] = value
+    tag = split(name,"/")[end]
+    attr[tag] = value
 end
 
 function state_writer(input::AbstractInput, out::H5Output)

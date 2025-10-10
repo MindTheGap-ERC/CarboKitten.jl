@@ -41,9 +41,9 @@ using Logging
 export production_rate, capped_production, uniform_production
 
 @kwdef struct Facies <: AbstractFacies
-    maximum_growth_rate::Rate
-    extinction_coefficient::typeof(1.0u"m^-1")
-    saturation_intensity::Intensity
+    maximum_growth_rate::Rate = 0.0u"m/Myr"
+    extinction_coefficient::typeof(1.0u"m^-1") = 0.0u"m^-1"
+    saturation_intensity::Intensity = 1.0u"W/m^2"
 end
 
 @kwdef struct Input <: AbstractInput
@@ -82,7 +82,7 @@ function write_header(input::AbstractInput, output::AbstractOutput)
 
     for (i, f) in enumerate(input.facies)
         set_attribute(output, "facies$(i)/maximum_growth_rate", f.maximum_growth_rate |> in_units_of(u"m/Myr"))
-        set_attribute(output, "facies$(i)/exctinction_coefficient", f.extinction_coefficient |> in_units_of(u"m^-1"))
+        set_attribute(output, "facies$(i)/extinction_coefficient", f.extinction_coefficient |> in_units_of(u"m^-1"))
         set_attribute(output, "facies$(i)/saturation_intensity", f.saturation_intensity |> in_units_of(u"W/m^2"))
     end
 end

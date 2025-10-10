@@ -6,12 +6,13 @@ CarboKitten.Components.CellularAutomaton
 
 This component implements the cellular automaton as described by [Burgess2013](@cite). 
 
-We depend on the box properties being defined. Each `Facies` should have a `viability_range` and `activation_range` defined. Two other parameters are the `ca_interval` setting how many time steps between every CA advancement, and the `ca_random_seed` setting the random seed for generating the initial noise.
+We depend on the box properties being defined. Each `Facies` should have a `viability_range` and `activation_range` defined.  The `active` property determines whether a facies is active in the cellular automaton. Two other parameters are the `ca_interval` setting how many time steps between every CA advancement, and the `ca_random_seed` setting the random seed for generating the initial noise.
 
 ``` {.julia #ca-input}
 @kwdef struct Facies <: AbstractFacies
     viability_range::Tuple{Int,Int} = (4, 10)
     activation_range::Tuple{Int,Int} = (6, 10)
+    active::Bool = true
 end
 
 @kwdef struct Input <: AbstractInput
@@ -148,7 +149,7 @@ using CarboKitten.Components.Common
 using CarboKitten.Components: CellularAutomaton as CA
 
 @testset "Components/CellularAutomaton" begin
-    let facies = fill(CA.Facies((4, 10), (6, 10)), 3),
+    let facies = fill(CA.Facies((4, 10), (6, 10), true), 3),
         input1 = CA.Input(
             box=Box{Periodic{2}}(grid_size=(50, 50), phys_scale=1.0u"m"),
             facies=facies),
@@ -174,6 +175,25 @@ using CarboKitten.Components: CellularAutomaton as CA
         @test state1.ca != state2.ca
         @test state2.ca == state3.ca
     end
+
+    @testset "inactive facies" begin 
+        let facies = [CA.Facies((4, 10), (6, 10), true),
+                      CA.Facies((4, 10), (6, 10), false),
+                      CA.Facies((4, 10), (6, 10), true),
+                      CA.Facies((4, 10), (6, 10), false)],   
+            input = CA.Input(
+                box=Box{Periodic{2}}(grid_size=(10, 10), phys_scale=1.0u"m"),
+                facies=facies)
+
+            state = CA.initial_state(input)
+            @test state.ca_priority == [1,3]
+
+            # inactive facies shouldn't appear in the ca
+            @test all(state.ca .!= 2)
+            @test all(state.ca .!= 4)
+
+        end
+    end
 end
 
 end
@@ -194,8 +214,9 @@ end
 
     function initial_state(input::AbstractInput)
         n_facies = length(input.facies)
-        ca = rand(MersenneTwister(input.ca_random_seed), 0:n_facies, input.box.grid_size...)
-        return State(ca, 1:n_facies |> collect)
+        active_facies = 1:n_facies |> filter(f->input.facies[f].active==true)
+        ca = rand(MersenneTwister(input.ca_random_seed), [0; active_facies], input.box.grid_size...)
+        return State(ca, active_facies |> collect)
     end
 
     function step!(input::AbstractInput)

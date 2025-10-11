@@ -26,6 +26,7 @@ function step!(input::Input)
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
     pf = cementation_factor(input)
+    dtf = input.disintegration_transfer
 
     function (state::State)
         wd = local_water_depth(state)
@@ -33,7 +34,7 @@ function step!(input::Input)
         d = disintegrate!(state)
 
         state.active_layer .+= p
-        state.active_layer .+= d
+        state.active_layer .+= dtf(d)
         transport!(state)
 
         deposit = pf .* state.active_layer

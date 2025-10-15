@@ -85,7 +85,7 @@
 <polyline fill="none" stroke="black" points="234,-159.5 234,-178.5 "/>
 <text text-anchor="start" x="191" y="-166.5" font-family="monospace" font-size="10.00">facies</text>
 <polyline fill="none" stroke="black" points="288,-159.5 288,-178.5 "/>
-<text text-anchor="start" x="238" y="-166.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="238" y="-166.5" font-family="monospace" font-size="10.00">name</text>
 <text text-anchor="start" x="291" y="-166.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- FaciesBase&#45;&gt;CellularAutomaton -->
@@ -203,7 +203,10 @@ using CarboKitten.Components.Common
 using CarboKitten.Components: CellularAutomaton as CA
 
 @testset &quot;Components/CellularAutomaton&quot; begin
-    let facies = fill(CA.Facies((4, 10), (6, 10), true), 3),
+    let facies = fill(CA.Facies(
+            viability_range=(4, 10),
+            activation_range=(6, 10),
+            active=true), 3),
         input1 = CA.Input(
             box=Box{Periodic{2}}(grid_size=(50, 50), phys_scale=1.0u&quot;m&quot;),
             facies=facies),
@@ -230,11 +233,11 @@ using CarboKitten.Components: CellularAutomaton as CA
         @test state2.ca == state3.ca
     end
 
-    @testset &quot;inactive facies&quot; begin 
-        let facies = [CA.Facies((4, 10), (6, 10), true),
-                      CA.Facies((4, 10), (6, 10), false),
-                      CA.Facies((4, 10), (6, 10), true),
-                      CA.Facies((4, 10), (6, 10), false)],   
+    @testset &quot;inactive facies&quot; begin
+        let facies = [CA.Facies(active=true),
+                      CA.Facies(active=false),
+                      CA.Facies(active=true),
+                      CA.Facies(active=false)],
             input = CA.Input(
                 box=Box{Periodic{2}}(grid_size=(10, 10), phys_scale=1.0u&quot;m&quot;),
                 facies=facies)
@@ -275,4 +278,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../facies/">« Facies</a><a class="docs-footer-nextpage" href="../waterdepth/">Water Depth »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Friday 10 October 2025 20:09">Friday 10 October 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../facies/">« Facies</a><a class="docs-footer-nextpage" href="../waterdepth/">Water Depth »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 15 October 2025 11:10">Wednesday 15 October 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

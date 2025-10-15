@@ -27,7 +27,7 @@
 <polyline fill="none" stroke="black" points="54,-6.5 54,-25.5 "/>
 <text text-anchor="start" x="11" y="-13.5" font-family="monospace" font-size="10.00">facies</text>
 <polyline fill="none" stroke="black" points="108,-6.5 108,-25.5 "/>
-<text text-anchor="start" x="58" y="-13.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="58" y="-13.5" font-family="monospace" font-size="10.00">name</text>
 <text text-anchor="start" x="111" y="-13.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 </g>
@@ -49,6 +49,7 @@ using HDF5
 export n_facies
 
 @kwdef struct Facies &lt;: AbstractFacies
+    name::Union{String,Nothing} = nothing
 end
 
 @kwdef struct Input &lt;: AbstractInput
@@ -59,10 +60,16 @@ n_facies(input::AbstractInput) = length(input.facies)
 
 function write_header(input::AbstractInput, output::AbstractOutput)
     set_attribute(output, &quot;n_facies&quot;, n_facies(input))
+
+    for (i, f) in enumerate(input.facies)
+        if f.name !== nothing
+            set_attribute(output, &quot;facies$(i)/name&quot;, f.name)
+        end
+    end
 end
 end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../output/">« Output</a><a class="docs-footer-nextpage" href="../cellular-automata/">Cellular Automata »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Friday 10 October 2025 20:09">Friday 10 October 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../output/">« Output</a><a class="docs-footer-nextpage" href="../cellular-automata/">Cellular Automata »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 15 October 2025 11:10">Wednesday 15 October 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

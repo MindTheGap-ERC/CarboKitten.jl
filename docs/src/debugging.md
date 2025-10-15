@@ -12,7 +12,7 @@ As with any numerical model, there are many ways to shoot yourself in the foot u
 CarboKitten.Components.Production
 ```
 
-You can enable diagnostic mode by setting `diagnostics = true` in the input settings. This will enable all debug messages, but some of these diagnostics can be expensive to compute.
+You can enable diagnostic mode by setting `diagnostics = true` in the input settings. This will enable all debug messages, but some of these diagnostics can be expensive to compute. By default, the detailed diagnostics are written to `carbokitten.log`, but this can be changed by setting `log_file` in the input.
 
 ## Implementation
 

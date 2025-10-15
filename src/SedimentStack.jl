@@ -11,6 +11,10 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
     if mass == 0.0
         return
     end
+    if isnan(mass)
+        @warn "tried to push a parcel with NaN values: $parcel"
+        return
+    end
 
     if mass > size(col)[1]
         @warn "pushing a very large parcel of sediment: $mass times depositional resolution"

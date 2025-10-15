@@ -1,7 +1,4 @@
 # ~/~ begin <<docs/src/bosscher-1992.md#examples/model/bs92/fig8.jl>>[init]
-#| creates: docs/src/_fig/bs92-fig8.svg
-#| requires: examples/model/bs92/using_ode.jl
-#| collect: figures
 
 module Script
      include("using_ode.jl")

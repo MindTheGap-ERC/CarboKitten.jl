@@ -1,7 +1,4 @@
 # ~/~ begin <<docs/src/denudation/empirical.md#examples/denudation/empirical-test.jl>>[init]
-#| requires: examples/denudation/empirical-test.jl
-#| creates: docs/src/_fig/EmpiricalPrecipitation.png
-#| collect: figures
 
 module EmpiricalSpec
 using CairoMakie

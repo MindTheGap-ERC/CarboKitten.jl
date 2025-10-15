@@ -1,6 +1,4 @@
 # ~/~ begin <<docs/src/input-methods.md#examples/tabular-sea-level/ornstein-uhlenbeck.jl>>[init]
-#| creates: docs/src/_fig/OU.png
-#| collect: figures
 
 module Script
 

@@ -1,5 +1,4 @@
 # ~/~ begin <<docs/src/bosscher-1992.md#examples/model/bs92/multi-facies-run.jl>>[init]
-#| creates: data/output/bs92-multi-facies.h5
 
 module Script
 

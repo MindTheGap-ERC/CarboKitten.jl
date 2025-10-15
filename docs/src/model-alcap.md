@@ -183,9 +183,12 @@ function step!(input::Input)
         p = produce(state, wd)
         d = disintegrate!(state)
 
+        @debug "al 1:" extrema(state.active_layer)
         state.active_layer .+= p
         state.active_layer .+= d
+        @debug "al 2:" extrema(state.active_layer)
         transport!(state)
+        @debug "al 3:" extrema(state.active_layer)
 
         deposit = pf .* state.active_layer
         push_sediment!(state.sediment_buffer, deposit ./ input.depositional_resolution .|> NoUnits)

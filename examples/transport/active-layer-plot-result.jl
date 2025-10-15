@@ -1,7 +1,4 @@
 # ~/~ begin <<docs/src/active-layer-transport.md#examples/transport/active-layer-plot-result.jl>>[init]
-#| requires: examples/transport/active-layer.jl
-#| creates: docs/src/_fig/active-layer-test.png
-#| collect: figures
 
 module ActiveLayerPlot
 

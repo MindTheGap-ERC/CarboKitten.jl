@@ -1,7 +1,4 @@
 # ~/~ begin <<docs/src/visualization.md#examples/visualization/wheeler_diagram.jl>>[init]
-#| creates: docs/src/_fig/wheeler_diagram.png
-#| requires: data/output/alcap-example.h5
-#| collect: figures
 
 module Script
 

@@ -1,7 +1,4 @@
 # ~/~ begin <<docs/src/visualization.md#examples/visualization/sediment_profile.jl>>[init]
-#| creates: docs/src/_fig/sediment_profile.png
-#| requires: data/output/alcap-example.h5
-#| collect: figures
 
 module Script
 using CairoMakie

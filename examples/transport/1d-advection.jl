@@ -1,6 +1,4 @@
 # ~/~ begin <<docs/src/active-layer-transport.md#examples/transport/1d-advection.jl>>[init]
-#| creates: docs/src/_fig/1d-advection.svg
-#| collect: figures
 
 module Script
     using CarboKitten

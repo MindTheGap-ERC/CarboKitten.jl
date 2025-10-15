@@ -1,7 +1,4 @@
 # ~/~ begin <<docs/src/denudation/physical_erosion.md#examples/denudation/physical-test.jl>>[init]
-#| requires: examples/denudation/physical-test.jl
-#| creates: docs/src/_fig/PhysicalSlope.png
-#| collect: figures
 module PhysicalSpec
 
 using CairoMakie

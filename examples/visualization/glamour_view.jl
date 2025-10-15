@@ -1,7 +1,4 @@
 # ~/~ begin <<docs/src/visualization.md#examples/visualization/glamour_view.jl>>[init]
-#| creates: docs/src/_fig/glamour_view.png
-#| requires: data/output/cap1.h5
-#| collect: figures
 
 module Script
 

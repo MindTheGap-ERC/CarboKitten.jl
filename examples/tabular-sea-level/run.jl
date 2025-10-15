@@ -1,5 +1,4 @@
 # ~/~ begin <<docs/src/cases/tabular-sea-level.md#examples/tabular-sea-level/run.jl>>[init]
-#| creates: data/output/lisiecki-sea-level.h5
 
 module TabularSeaLevel
 

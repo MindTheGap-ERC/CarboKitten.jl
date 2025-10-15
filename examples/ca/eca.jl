@@ -1,7 +1,4 @@
 # ~/~ begin <<docs/src/stencils.md#examples/ca/eca.jl>>[init]
-#| creates: docs/src/_fig/eca.png
-#| requires: src/Stencil.jl
-#| collect: figures
 
 module ECA
     using CarboKitten.BoundaryTrait

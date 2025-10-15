@@ -1,6 +1,4 @@
 # ~/~ begin <<docs/src/input-methods.md#examples/tabular-sea-level/loess.jl>>[init]
-#| creates: docs/src/_fig/loess.png
-#| collect: figures
 
 module Script
 

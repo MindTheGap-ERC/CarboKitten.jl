@@ -1,6 +1,4 @@
 # ~/~ begin <<docs/src/components/cellular-automata.md#examples/ca/burgess-2013.jl>>[init]
-#| creates: ["docs/src/_fig/ca-long-term.svg"]
-#| collect: figures
 module Script
 using CarboKitten
 using CarboKitten.Components: CellularAutomaton as CA

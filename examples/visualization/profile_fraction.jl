@@ -1,7 +1,4 @@
 # ~/~ begin <<docs/src/visualization.md#examples/visualization/profile_fraction.jl>>[init]
-#| creates: docs/src/_fig/profile_fraction.png
-#| requires: data/output/alcap-example.h5
-#| collect: figures
 
 module Script
 using GLMakie

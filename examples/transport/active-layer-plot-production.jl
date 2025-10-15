@@ -1,7 +1,4 @@
 # ~/~ begin <<docs/src/active-layer-transport.md#examples/transport/active-layer-plot-production.jl>>[init]
-#| requires: examples/transport/active-layer.jl
-#| creates: docs/src/_fig/active-layer-production-patch.png
-#| collect: figures
 
 include("active-layer.jl")
 using Unitful

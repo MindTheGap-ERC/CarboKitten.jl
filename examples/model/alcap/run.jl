@@ -1,6 +1,4 @@
 # ~/~ begin <<docs/src/model-alcap.md#examples/model/alcap/run.jl>>[init]
-#| requires: src/Models/ALCAP.jl
-#| creates: data/output/alcap-example.h5
 
 module Script
 

@@ -37,6 +37,7 @@ const PERIOD2 = 0.2u"Myr"
 const AMPLITUDE2 = 2.5u"m"
 
 const INPUT = ALCAP.Input(
+    diagnostics=true,
     tag="$TAG",
     box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TimeProperties(

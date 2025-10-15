@@ -105,10 +105,13 @@ run_model(f, ::Type{Model{M}}, input::AbstractInput) where M =
     run_model(f, Model{M}, input, M.initial_state(input))
 
 function run_model(f, ::Type{Model{M}}, input::AbstractInput, state::AbstractState) where M
-    step! = M.step!(input)
+    logger = get_logger(input)
+    with_logger(logger) do
+        step! = M.step!(input)
 
-    @progress for w = 1:n_steps(input)
-        f(w, step!(state))
+        @progress for w = 1:n_steps(input)
+            f(w, step!(state))
+        end
     end
 end
 ```
@@ -116,8 +119,9 @@ end
 ``` {.julia file=src/RunModel.jl}
 module RunModel
 
-import ..CarboKitten: n_steps, run_model, Model, AbstractInput, AbstractState
+import ..CarboKitten: n_steps, run_model, get_logger, Model, AbstractInput, AbstractState
 using ProgressLogging
+using Logging: with_logger
 
 <<run-model>>
 

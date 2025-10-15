@@ -8,6 +8,10 @@ As with any numerical model, there are many ways to shoot yourself in the foot u
 
 ## Diagnostic mode
 
+```component-dag
+CarboKitten.Components.Production
+```
+
 You can enable diagnostic mode by setting `diagnostics = true` in the input settings. This will enable all debug messages, but some of these diagnostics can be expensive to compute.
 
 ## Implementation
@@ -15,7 +19,9 @@ You can enable diagnostic mode by setting `diagnostics = true` in the input sett
 ``` {.julia file=src/Components/Diagnostics.jl}
 @compose module Diagnostics
 
+import ...CarboKitten: get_logger
 using ..Common
+using Logging
 using TerminalLoggers: TerminalLogger
 using LoggingExtras: TeeLogger, MinLevelLogger, FileLogger
 
@@ -28,7 +34,7 @@ function get_logger(input::AbstractInput)
     if input.diagnostics
         io = open(input.log_file, "w+")
         file_logger = MinLevelLogger(FileLogger(input.log_file), Logging.Debug)
-        terminal_logger = MinLevelLogger(TerminalLogger(right_justify=80), Logging.Info)
+        terminal_logger = TerminalLogger(right_justify=80)
         return TeeLogger(file_logger, terminal_logger)
     else
         return TerminalLogger(right_justify=80)

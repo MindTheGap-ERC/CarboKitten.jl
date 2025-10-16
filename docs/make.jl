@@ -120,7 +120,7 @@ makedocs(
             "HDF5 Output" => "output/h5writer.md",
             "Output to Memory" => "output/memory-writer.md",
             "CSV Export" => "data-export.md",
-            "Trouble shooting and diagnostics" => "debug.md"
+            "Trouble shooting and diagnostics" => "debugging.md"
         ],
         "Algorithms" => [
             "Unitful" => "unitful.md",

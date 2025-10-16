@@ -534,6 +534,36 @@ function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth
     end
 end
 
+function plot_coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Bool)
+    if !n_tics
+        return
+    else
+        plot_coeval_lines!(ax, header, data)
+    end
+end
+
+function plot_coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int} = (4, 8))
+    n_steps = div(header.time_steps, data.write_interval)
+    x = header.axes.x |> in_units_of(u"km")
+    h = elevation(header, data) |> in_units_of(u"m")
+
+    n_major_tics, n_minor_tics = n_tics
+
+    major_tics = div.(n_steps:n_steps:n_steps*n_major_tics, n_major_tics) .+ 1
+    minor_tics = div.(n_steps:n_steps:n_steps*n_minor_tics, n_minor_tics) .+ 1
+
+    for t in major_tics
+        lines!(ax, x, h[:, t], color=:black, linewidth=1)
+    end
+
+    for t in minor_tics
+        if t in major_tics
+            continue
+        end
+        lines!(ax, x, h[:, t], color=:black, linewidth=1, linestyle=:dot)
+    end
+end
+
 """
     profile_plot!(ax, header, data_slice; mesh_args...)
 
@@ -588,13 +618,17 @@ Plot the sediment profile, choosing colour by dominant facies type (argmax). Unc
 are shown when the sediment is subaerially exposed (even if sediment is still deposited
 due to a set intertidal zone).
 """
-function sediment_profile!(ax::Axis, header::Header, data::DataSlice; show_unconformities::Union{Nothing,Bool,Int} = true)
+function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
+                           show_unconformities::Union{Nothing,Bool,Int} = true,
+                           show_coeval_lines::Union{Bool,Int,Tuple{Int, Int}} = true)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
     n_facies = size(data.production)[1]
 
     plot = profile_plot!(argmax, ax, header, data; alpha=1.0,
         colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+
+    plot_coeval_lines!(ax, header, data, show_coeval_lines)
 
     minwidth = show_unconformities
     plot_unconformities(ax, header, data, minwidth; label = "unconformities",

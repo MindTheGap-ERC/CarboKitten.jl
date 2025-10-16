@@ -125,6 +125,12 @@ function plot_coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::T
     end
 end
 
+
+function plot_sealevel!(ax::Axis, header::Header)
+    sea_level = header.sea_level[end] |> in_units_of(u"m")
+    hlines!(ax, sea_level, color=:lightblue, linewidth=5, label="end sea level")
+end
+
 """
     profile_plot!(ax, header, data_slice; mesh_args...)
 
@@ -181,10 +187,15 @@ due to a set intertidal zone).
 """
 function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
                            show_unconformities::Union{Nothing,Bool,Int} = true,
-                           show_coeval_lines::Union{Bool,Int,Tuple{Int, Int}} = true)
+                           show_coeval_lines::Union{Bool,Int,Tuple{Int, Int}} = true,
+                           show_sealevel::Bool = true)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
     n_facies = size(data.production)[1]
+
+    if show_sealevel
+        plot_sealevel!(ax, header)
+    end
 
     plot = profile_plot!(argmax, ax, header, data; alpha=1.0,
         colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))

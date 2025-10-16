@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/models/with-denudation.md#src/Models/WithDenudation.jl>>[init]
 @compose module WithDenudation
-@mixin Tag, Output, CAProduction, ActiveLayer, Denudation
+@mixin Tag, Diagnostics, Output, CAProduction, ActiveLayer, Denudation
 
 using ..Common
 using ..CAProduction: production

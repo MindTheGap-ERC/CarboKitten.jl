@@ -201,7 +201,7 @@ Within the CarboKitten design, we can express the BS92 model a bit more succinct
 
 ``` {.julia file=src/Models/BS92.jl}
 @compose module BS92
-@mixin Tag, Output, Production
+@mixin Tag, Diagnostics, Output, Production
 
 using ..Common
 using ..Production: uniform_production

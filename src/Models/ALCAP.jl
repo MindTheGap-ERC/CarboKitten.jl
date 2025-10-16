@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/model-alcap.md#src/Models/ALCAP.jl>>[init]
 @compose module ALCAP
-@mixin Tag, Output, CAProduction, ActiveLayer, InitialSediment
+@mixin Tag, Output, CAProduction, ActiveLayer, InitialSediment, Diagnostics
 
 using ..Common
 using ..CAProduction: production
@@ -39,8 +39,14 @@ function step!(input::Input)
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
     pf = cementation_factor(input)
+    debug = input.diagnostics
 
     function (state::State)
+        if debug
+            @debug "step: " state.step
+            @debug "   current active layer ambitus: " extrema(state.active_layer)
+        end
+
         if mod(state.step, input.ca_interval) == 0
             step_ca!(state)
         end
@@ -51,7 +57,16 @@ function step!(input::Input)
 
         state.active_layer .+= p
         state.active_layer .+= d
+
+        if debug
+            @debug "   post-production ambitus: " extrema(state.active_layer)
+        end
+
         transport!(state)
+
+        if debug
+            @debug "   post-transport ambitus: " extrema(state.active_layer)
+        end
 
         deposit = pf .* state.active_layer
         push_sediment!(state.sediment_buffer, deposit ./ input.depositional_resolution .|> NoUnits)

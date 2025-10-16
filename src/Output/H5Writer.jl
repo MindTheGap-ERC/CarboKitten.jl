@@ -18,7 +18,8 @@ mutable struct H5Output <: AbstractOutput
     fid::HDF5.File
 end
 
-function H5Output(input::AbstractInput, filename::String)
+
+function make_header(input::AbstractInput)
     t_axis = time_axis(input.time)
     x_axis, y_axis = box_axes(input.box)
     axes = Axes(x=x_axis, y=y_axis, t=t_axis)
@@ -37,7 +38,11 @@ function H5Output(input::AbstractInput, filename::String)
         subsidence_rate=input.subsidence_rate,
         data_sets=Dict(),
         attributes=Dict())
+end
 
+
+function H5Output(input::AbstractInput, filename::String)
+    header = make_header(input)
     fid = h5open(filename, "w")
     create_group(fid, "input")
 
@@ -45,6 +50,17 @@ function H5Output(input::AbstractInput, filename::String)
         close(x.fid)
     end
 end
+
+
+function H5Output(f, input::AbstractInput, filename::String)
+    header = make_header(input)
+    h5open(filename, "w") do fid
+        create_group(fid, "input")
+        out = H5Output(header, fid)
+        f(out)
+    end
+end
+
 
 axis_size(::Colon, a::Int) = a
 axis_size(::Int, _) = 1
@@ -161,8 +177,9 @@ Run a model and write output to HDF5.
     run_model(Model{ALCAP}, ALCAP.Example.INPUT, "example.h5")
 """
 function run_model(::Type{Model{M}}, input::AbstractInput, filename::AbstractString) where {M}
-    output = H5Output(input, filename)
-    run_model(Model{M}, input, output)
+    H5Output(input, filename) do output
+        run_model(Model{M}, input, output)
+    end
     return filename
 end
 # ~/~ end

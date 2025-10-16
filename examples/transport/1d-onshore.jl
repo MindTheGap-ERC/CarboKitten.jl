@@ -1,6 +1,4 @@
 # ~/~ begin <<docs/src/active-layer-transport.md#examples/transport/1d-onshore.jl>>[init]
-#| creates: docs/src/_fig/1d-onshore.svg
-#| collect: figures
 
 module Script
     using CarboKitten

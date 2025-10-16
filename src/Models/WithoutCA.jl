@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/models/without-ca.md#src/Models/WithoutCA.jl>>[init]
 @compose module WithoutCA
-@mixin Tag, Output, Production, ActiveLayer
+@mixin Tag, Diagnostics, Output, Production, ActiveLayer
 
 using ..Common
 using ..Production: uniform_production

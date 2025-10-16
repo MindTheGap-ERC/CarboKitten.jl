@@ -1,6 +1,4 @@
 # ~/~ begin <<docs/src/finite-difference-transport.md#examples/transport/flying_cat.jl>>[init]
-#| creates: docs/src/_fig/flying_cat.png
-#| collect: figures
 
 module FlyingCat
 

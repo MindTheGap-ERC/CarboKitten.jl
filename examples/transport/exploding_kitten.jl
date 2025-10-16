@@ -1,6 +1,4 @@
 # ~/~ begin <<docs/src/finite-difference-transport.md#examples/transport/exploding_kitten.jl>>[init]
-#| creates: docs/src/_fig/exploding_kitten.png
-#| collect: figures
 
 module ExplodingKitten
 

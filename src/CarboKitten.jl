@@ -13,6 +13,7 @@ end
 
 struct Model{M} end
 function run_model end
+function get_logger end
 
 abstract type AbstractBox{BT} end
 abstract type AbstractInput end

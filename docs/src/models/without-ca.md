@@ -4,7 +4,7 @@ The following model is similar to the ALCAP model, with the exception that produ
 
 ``` {.julia file=src/Models/WithoutCA.jl}
 @compose module WithoutCA
-@mixin Tag, Output, Production, ActiveLayer
+@mixin Tag, Diagnostics, Output, Production, ActiveLayer
 
 using ..Common
 using ..Production: uniform_production

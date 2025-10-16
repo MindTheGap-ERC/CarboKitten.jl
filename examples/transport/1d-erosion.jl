@@ -1,6 +1,4 @@
 # ~/~ begin <<docs/src/active-layer-transport.md#examples/transport/1d-erosion.jl>>[init]
-#| creates: docs/src/_fig/1d-erosion.svg
-#| collect: figures
 
 module Script
     using CarboKitten

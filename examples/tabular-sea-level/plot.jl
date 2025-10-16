@@ -1,10 +1,4 @@
 # ~/~ begin <<docs/src/cases/tabular-sea-level.md#examples/tabular-sea-level/plot.jl>>[init]
-#| requires: data/output/lisiecki-sea-level.h5
-#| creates:
-#|      - docs/src/_fig/miller-sea-level.svg
-#|      - docs/src/_fig/lisiecki-selection.svg
-#|      - docs/src/_fig/lisiecki-sea-level-summary.png
-#| collect: figures
 
 module PlotTabularSeaLevel
 

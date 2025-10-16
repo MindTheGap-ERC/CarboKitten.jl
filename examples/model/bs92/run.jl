@@ -1,5 +1,4 @@
 # ~/~ begin <<docs/src/bosscher-1992.md#examples/model/bs92/run.jl>>[init]
-#| creates: data/output/bs92.h5
 
 module Script
 

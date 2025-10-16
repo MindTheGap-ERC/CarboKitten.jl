@@ -1,7 +1,4 @@
 # ~/~ begin <<docs/src/stencils.md#examples/ca/life.jl>>[init]
-#| creates: docs/src/_fig/life.gif
-#| requires: src/Stencil.jl
-#| collect: figures
 
 module Life
     using CarboKitten.BoundaryTrait

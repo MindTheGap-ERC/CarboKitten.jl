@@ -1,6 +1,4 @@
 # ~/~ begin <<docs/src/ca-with-production.md#examples/model/cap/run.jl>>[init]
-#| creates: data/output/cap1.h5
-#| requires: src/Models/CAP.jl
 
 module Script
 

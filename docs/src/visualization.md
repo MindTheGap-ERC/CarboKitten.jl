@@ -44,7 +44,7 @@ The Project Extension requires a front-end where the available methods are expos
 ``` {.julia file=src/Visualization.jl}
 module Visualization
 export sediment_profile!, sediment_profile, wheeler_diagram!, wheeler_diagram, production_curve!,
-       production_curve, glamour_view!, summary_plot
+       production_curve, glamour_view!, coeval_lines!, summary_plot
 
 function print_instructions(func_name, args)
     println("Called `$(func_name)` with args `$(typeof.(args))`")
@@ -54,6 +54,7 @@ end
 function profile_plot! end
 
 # profile_plot!(args...; kwargs...) = print_instructions("profile_plot!", args)
+coeval_lines!(args...) = print_instructions("coeval_lines!", args)
 sediment_profile!(args...) = print_instructions("sediment_profile!", args)
 sediment_profile(args...) = print_instructions("sediment_profile", args)
 wheeler_diagram!(args...) = print_instructions("wheeler_diagram!", args)
@@ -440,7 +441,7 @@ Script.main()
 ```{.julia file=ext/SedimentProfile.jl}
 module SedimentProfile
 
-import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!
+import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!
 
 using CarboKitten.Visualization
 using CarboKitten.Utility: in_units_of
@@ -534,36 +535,64 @@ function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth
     end
 end
 
-function plot_coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Bool)
+"""
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Bool)
+
+Plot coeval lines using default settings. If `tics` is false, nothing is done.
+"""
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Bool)
     if !n_tics
         return
     else
-        plot_coeval_lines!(ax, header, data)
+        coeval_lines!(ax, header, data)
     end
 end
 
-function plot_coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int} = (4, 8))
-    n_steps = div(header.time_steps, data.write_interval)
-    x = header.axes.x |> in_units_of(u"km")
-    h = elevation(header, data) |> in_units_of(u"m")
+"""
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...)
 
+Plot coeval lines for given times. The times in `tics` are looked up in `header.axes.t`
+to find which indices to plot.
+"""
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...)
+    t = header.axes.t[1:data.write_interval:end]
+    indices::Vector{Int} = [searchsortedfirst(t, i) for i in tics]
+    coeval_lines!(ax, header, data, indices; kwargs...)
+end
+
+"""
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int})
+
+Plot coeval lines on regular intervals given by `n_tics`. The tuple gives the number of intervals
+for both minor and major tics, plotted as dotted and solid black lines respectively.
+If you need more control over the aestetics of these lines, use the other `coeval_lines!` methods.
+"""
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int} = (4, 8))
+    n_steps = div(header.time_steps, data.write_interval)
     n_major_tics, n_minor_tics = n_tics
 
     major_tics = div.(n_steps:n_steps:n_steps*n_major_tics, n_major_tics) .+ 1
-    minor_tics = div.(n_steps:n_steps:n_steps*n_minor_tics, n_minor_tics) .+ 1
+    minor_tics = filter(
+        t->!(t in major_tics),
+        div.(n_steps:n_steps:n_steps*n_minor_tics, n_minor_tics) .+ 1) |> collect
 
-    for t in major_tics
-        lines!(ax, x, h[:, t], color=:black, linewidth=1)
-    end
-
-    for t in minor_tics
-        if t in major_tics
-            continue
-        end
-        lines!(ax, x, h[:, t], color=:black, linewidth=1, linestyle=:dot)
-    end
+    coeval_lines!(ax, header, data, minor_tics, color=:black, linewidth=1, linestyle=:dot)
+    coeval_lines!(ax, header, data, major_tics, color=:black, linewidth=1, linestyle=:solid)
 end
 
+""" 
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...)
+
+Plot coeval lines for the given indices. The `kwargs...` are forwarded to a call to Makie's
+`lines!` procedure.
+"""
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...)
+    x = header.axes.x |> in_units_of(u"km")
+    h = elevation(header, data) |> in_units_of(u"m")
+    for t in tics
+        lines!(ax, x, h[:, t]; kwargs...)
+    end
+end
 
 function plot_sealevel!(ax::Axis, header::Header)
     sea_level = header.sea_level[end] |> in_units_of(u"m")
@@ -626,7 +655,7 @@ due to a set intertidal zone).
 """
 function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
                            show_unconformities::Union{Nothing,Bool,Int} = true,
-                           show_coeval_lines::Union{Bool,Int,Tuple{Int, Int}} = true,
+                           show_coeval_lines::Union{Bool,Int,Tuple{Int, Int},Vector{Int},Vector{Time}} = true,
                            show_sealevel::Bool = true)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
@@ -639,7 +668,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
     plot = profile_plot!(argmax, ax, header, data; alpha=1.0,
         colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
-    plot_coeval_lines!(ax, header, data, show_coeval_lines)
+    coeval_lines!(ax, header, data, show_coeval_lines)
 
     minwidth = show_unconformities
     plot_unconformities(ax, header, data, minwidth; label = "unconformities",

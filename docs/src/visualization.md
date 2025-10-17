@@ -176,7 +176,7 @@ using CarboKitten.Export: read_slice
 using CarboKitten.Visualization: wheeler_diagram
 
 function main()
-  header, data = read_slice("data/output/alcap-example.h5", :, 25)
+  header, data = read_slice("data/output/alcap-example.h5", :profile)
   fig = wheeler_diagram(header, data)
   save("docs/src/_fig/wheeler_diagram.png", fig)
 end
@@ -395,7 +395,7 @@ using CarboKitten.Visualization: sediment_profile
 
 function main()
     save("docs/src/_fig/sediment_profile.png",
-        sediment_profile(read_slice("data/output/alcap-example.h5", :slice)...))
+        sediment_profile(read_slice("data/output/alcap-example.h5", :profile)...))
 end
 end
 
@@ -760,16 +760,16 @@ Not very useful but highly glamourous.
 
 module Script
 
-using CairoMakie
+using GLMakie
+using CarboKitten.Export: read_volume
 using CarboKitten.Visualization: glamour_view!
 using HDF5
 
 function main()
     fig = Figure()
     ax = Axis3(fig[1,1])
-    h5open("data/output/cap1.h5", "r") do fid
-        glamour_view!(ax, fid)
-    end
+    header, volume = read_volume("data/output/cap1.h5", :topography)
+    glamour_view!(ax, header, volume)
     save("docs/src/_fig/glamour_view.png", fig)
 end
 

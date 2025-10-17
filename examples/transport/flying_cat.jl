@@ -17,7 +17,7 @@ const BOX = CarboKitten.Box{Periodic{2}}(
 
 const INPUT = TestModel.Input(
     box = BOX,
-    time = TimeProperties(Δt=100u"yr", steps=50),
+    time = TimeProperties(Δt=50u"yr", steps=100),
     topography = zeros(typeof(1.0u"m"), BOX.grid_size),
     initial_state = load("data/cat256.pgm")'[:, end:-1:1] .|> Float64,
     wave_velocity = _ -> ((0.4u"m/yr", -0.3u"m/yr"), (0.0u"1/yr", 0.0u"1/yr")),

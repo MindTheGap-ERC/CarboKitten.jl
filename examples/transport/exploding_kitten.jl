@@ -2,14 +2,13 @@
 
 module ExplodingKitten
 
-include("runner.jl")
 include("test_model.jl")
 
 using CarboKitten
 using FileIO
 using GLMakie
 
-using CarboKitten.Transport.Solvers: runge_kutta_4
+using CarboKitten.Transport.Solvers: runge_kutta_4, forward_euler
 
 GLMakie.activate!()
 
@@ -30,7 +29,7 @@ const INPUT = TestModel.Input(
     initial_state = load_cat(),
     topography = ((x, y) -> 30.0u"m" * exp(-((x-7.2u"km")^2 + (y-7.2u"km")^2)/(2*(3.0u"km")^2)) - 30.0u"m").(X, Y'),
     diffusivity = 30.0u"m/yr",
-    solver = runge_kutta_4(Float64, BOX)
+    solver = forward_euler
 )
 
 function run()
@@ -38,12 +37,17 @@ function run()
 
     fig = Figure(size=(800, 400))
     ax1 = Axis(fig[1, 1], aspect=1)
-    hm1 = heatmap!(ax1, x, y, INPUT.topography / u"m")
+    hm1 = heatmap!(ax1,
+        x |> in_units_of(u"km"), y |> in_units_of(u"km"),
+        INPUT.topography / u"m")
     Colorbar(fig[2,1], hm1, vertical=false)
 
-    out = Runner.run_model(Model{TestModel}, INPUT)
+    do_nothing(_, _) = nothing
+    out = run_model(do_nothing, Model{TestModel}, INPUT)
     ax2 = Axis(fig[1, 2], aspect=1)
-    hm2 = heatmap!(ax2, x, y, out.value, colorrange=(0.0,0.8))
+    hm2 = heatmap!(ax2,
+        x |> in_units_of(u"km"), y |> in_units_of(u"km"),
+        out.value, colorrange=(0.0,0.8))
     Colorbar(fig[2,2], hm2, vertical=false)
 
     save("docs/src/_fig/exploding_kitten.png", fig)

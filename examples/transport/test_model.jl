@@ -2,10 +2,11 @@
 module TestModel
 
 using CarboKitten
+using CarboKitten: AbstractInput, AbstractState
 using CarboKitten.Transport.Advection: transport
 using Unitful
 
-@kwdef struct Input
+@kwdef struct Input <: AbstractInput
     box::Box
     time::TimeProperties
     initial_state::Array{Float64}
@@ -15,9 +16,11 @@ using Unitful
     wave_velocity = _ -> ((0.0u"m/Myr", 0.0u"m/Myr"), (0.0u"1/Myr", 0.0u"1/Myr"))
 
     solver
+
+    diagnostics::Bool = false
 end
 
-@kwdef mutable struct State
+@kwdef mutable struct State <: AbstractState
     time::typeof(1.0u"Myr")
     value::Array{Float64}
 end
@@ -26,13 +29,15 @@ initial_state(input) = State(
     time = input.time.t0,
     value = copy(input.initial_state))
 
-function step!(input, state)
-    input.solver(
-        (a, t) -> transport(
-            input.box, input.diffusivity, input.wave_velocity,
-            a, .-input.topography),
-        state.value, state.time, input.time.Δt)
-    state.time += input.time.Δt
+function step!(input)
+    function (state)
+        input.solver(
+            (a, t) -> transport(
+                input.box, input.diffusivity, input.wave_velocity,
+                a, .-input.topography),
+            state.value, state.time, input.time.Δt)
+        state.time += input.time.Δt
+    end
 end
 
 end

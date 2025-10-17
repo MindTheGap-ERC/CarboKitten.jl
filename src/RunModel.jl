@@ -29,6 +29,8 @@ function run_model(f, ::Type{Model{M}}, input::AbstractInput, state::AbstractSta
             f(w, step!(state))
         end
     end
+
+    return state
 end
 # ~/~ end
 

@@ -2,16 +2,16 @@
 
 module Script
 
-using CairoMakie
+using GLMakie
+using CarboKitten.Export: read_volume
 using CarboKitten.Visualization: glamour_view!
 using HDF5
 
 function main()
     fig = Figure()
     ax = Axis3(fig[1,1])
-    h5open("data/output/cap1.h5", "r") do fid
-        glamour_view!(ax, fid)
-    end
+    header, volume = read_volume("data/output/cap1.h5", :topography)
+    glamour_view!(ax, header, volume)
     save("docs/src/_fig/glamour_view.png", fig)
 end
 

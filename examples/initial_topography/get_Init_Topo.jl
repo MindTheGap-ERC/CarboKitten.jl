@@ -1,3 +1,5 @@
+# ~/~ begin <<docs/src/initial_topography.md#examples/initial_topography/get_Init_Topo.jl>>[init]
+
 using CarboKitten
 
 using Unitful
@@ -10,6 +12,7 @@ const PATH = "data/init_topo"
 
 const TAG = "example_init_topo"
 
+# ~/~ begin <<docs/src/initial_topography.md#example-init-topo>>[init]
 const FACIES = [
     ALCAP.Facies(
         viability_range=(4, 10),
@@ -53,7 +56,9 @@ const INPUT = ALCAP.Input(
     facies=FACIES)
 
 run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+# ~/~ end
 
+# ~/~ begin <<docs/src/initial_topography.md#example-init-topo>>[1]
 function extract_topography(PATH,TAG)
     h5open("$(PATH)/$(TAG).h5", "r") do fid
         disintegration = read(fid["full/disintegration"])[1,:,:,end]
@@ -78,6 +83,7 @@ function extract_topography(PATH,TAG)
         return data_dis.*1.0u"m", data_pro.*1.0u"m", data_dep.*1.0u"m", data_sed.*1.0u"m"
 end
 end
+# ~/~ end
 
 data_dis, data_pro, data_dep, data_sed = extract_topography(PATH,TAG)
 
@@ -91,14 +97,17 @@ end
 
 starting_bathy()
 
+# ~/~ begin <<docs/src/initial_topography.md#example-init-topo>>[2]
 function calculate_bathymetry(data,INPUT)
     Bathy = zeros(100, 70) .*1.0u"m"
     Bathy .= starting_bathy() .+ data .- INPUT.subsidence_rate .* INPUT.time.Δt .* INPUT.time.steps
     OfficialCSV.write("$(PATH)/$(TAG).csv", DataFrame(Bathy,:auto))
 end
+# ~/~ end
 
 
 calculate_bathymetry(data_sed,INPUT)
 
+# ~/~ end
 
 

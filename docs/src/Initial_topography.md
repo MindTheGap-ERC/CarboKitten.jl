@@ -7,11 +7,21 @@ The workflow to generate the topography is:
 2) export the sedimentation for each cell.
 3) calculate the elvelation for each cell by adding subsidence. 
 
+``` {.julia file=examples/initial_topography.jl}
 In the first step, the code is listed below. One thing should be noticed is that the grids are 100 by 70, with scale of 170 m. These values should be same as your runs lalter.
+
+<<example-init-topo>>
+```
 
 For the second step, the disintegration, production, deposition and sedimentation are exported respectively. The starting bathymetry for this run is set to be a slight slope (slope: 1/300)
 
+``` {.julia #example-init-topo}
+```
+
 For the third step, the elevation is calculated through by substracting the sedimentation with subsidence. 
+
+``` {.julia #example-init-topo}
+```
 
 The resultant initial topography that's ready for your run is stored in csv format. 
 

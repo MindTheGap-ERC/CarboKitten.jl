@@ -1,4 +1,13 @@
-# ~/~ begin <<docs/src/initial-topography.md#examples/initial_topography/get_init_topo.jl>>[init]
+# Generate Initial topography
+
+Many carbonate platforms grow on a pre-exisiting abandoned carbonate platform. Therefore, it is reasonable to start the simulation with a platform-shaped initial topography.
+
+The workflow to generate the topography is:
+1) run the CarboKitten.jl to get the results.
+2) export the sedimentation for each cell.
+3) calculate the elvelation for each cell by adding subsidence. 
+
+``` {.julia file=examples/initial_topography/get_init_topo.jl}
 using CarboKitten
 
 using Unitful
@@ -11,7 +20,10 @@ const PATH = "data/init_topo"
 
 const TAG = "example_init_topo"
 
-# ~/~ begin <<docs/src/initial-topography.md#example-init-topo>>[init]
+<<example-init-topo>>
+```
+In the first step, the code is listed below. One thing should be noticed is that the grids are 100 by 70, with scale of 170 m. These values should be same as your runs lalter.
+``` {.julia #example-init-topo}
 const FACIES = [
     ALCAP.Facies(
         viability_range=(4, 10),
@@ -53,8 +65,11 @@ const INPUT = ALCAP.Input(
     facies=FACIES)
 
 run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
-# ~/~ end
-# ~/~ begin <<docs/src/initial-topography.md#example-init-topo>>[1]
+```
+
+For the second step, the disintegration, production, deposition and sedimentation are exported respectively. The starting bathymetry for this run is set to be a slight slope (slope: 1/300)
+
+``` {.julia #example-init-topo}
 function extract_topography(PATH,TAG)
     h5open("$(PATH)/$(TAG).h5", "r") do fid
         disintegration = read(fid["full/disintegration"])[1,:,:,end]
@@ -89,12 +104,19 @@ function starting_bathy()
     end
     return init
 end
-# ~/~ end
-# ~/~ begin <<docs/src/initial-topography.md#example-init-topo>>[2]
+```
+
+For the third step, the elevation is calculated through by substracting the sedimentation with subsidence. 
+
+``` {.julia #example-init-topo}
 function calculate_bathymetry(data,INPUT)
     Bathy = zeros(100, 70) .*1.0u"m"
     Bathy .= starting_bathy() .+ data .- INPUT.subsidence_rate .* INPUT.time.Δt .* INPUT.time.steps
     OfficialCSV.write("$(PATH)/$(TAG).csv", DataFrame(Bathy,:auto))
 end
-# ~/~ end
-# ~/~ end
+```
+
+The resultant initial topography that's ready for your run is stored in csv format. 
+
+The next step is to import the csv file, through `initial_topography(path)`, where you may need to secify the location of the csv file. 
+

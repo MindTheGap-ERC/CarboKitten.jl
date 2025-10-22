@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/ca-with-production.md#src/Models/CAP.jl>>[init]
 @compose module CAP
-@mixin Tag, Output, CAProduction
+@mixin Tag, Diagnostics, Output, CAProduction
 
 using ..Common
 using ..CAProduction: production

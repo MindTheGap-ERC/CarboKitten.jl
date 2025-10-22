@@ -134,7 +134,7 @@ end
 
 ``` {.julia file=src/Models/ALCAP.jl}
 @compose module ALCAP
-@mixin Tag, Output, CAProduction, ActiveLayer, InitialSediment
+@mixin Tag, Output, CAProduction, ActiveLayer, InitialSediment, Diagnostics
 
 using ..Common
 using ..CAProduction: production
@@ -174,8 +174,14 @@ function step!(input::Input)
     na = [CartesianIndex()]
     pf = cementation_factor(input)
     dtf = input.disintegration_transfer
+    debug = input.diagnostics
 
     function (state::State)
+        if debug
+            @debug "step: " state.step
+            @debug "   current active layer ambitus: " extrema(state.active_layer)
+        end
+
         if mod(state.step, input.ca_interval) == 0
             step_ca!(state)
         end
@@ -186,7 +192,16 @@ function step!(input::Input)
 
         state.active_layer .+= p
         state.active_layer .+= dtf(d)
+
+        if debug
+            @debug "   post-production ambitus: " extrema(state.active_layer)
+        end
+
         transport!(state)
+
+        if debug
+            @debug "   post-transport ambitus: " extrema(state.active_layer)
+        end
 
         deposit = pf .* state.active_layer
         push_sediment!(state.sediment_buffer, deposit ./ input.depositional_resolution .|> NoUnits)

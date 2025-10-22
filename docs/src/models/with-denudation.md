@@ -4,7 +4,7 @@ This is largely identical to the ALCAP model.
 
 ``` {.julia file=src/Models/WithDenudation.jl}
 @compose module WithDenudation
-@mixin Tag, Output, CAProduction, ActiveLayer, Denudation
+@mixin Tag, Diagnostics, Output, CAProduction, ActiveLayer, Denudation
 
 using ..Common
 using ..CAProduction: production

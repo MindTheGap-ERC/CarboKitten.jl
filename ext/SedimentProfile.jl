@@ -215,7 +215,7 @@ due to a set intertidal zone).
 """
 function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
                            show_unconformities::Union{Nothing,Bool,Int} = true,
-                           show_coeval_lines::Union{Bool,Int,Tuple{Int, Int},Vector{Int},Vector{Time}} = true,
+                           show_coeval_lines::Union{Bool,Tuple{Int, Int},Vector{Int},Vector{Time}} = true,
                            show_sealevel::Bool = true)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")

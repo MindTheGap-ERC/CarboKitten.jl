@@ -59,16 +59,16 @@ By default (`ActiveLayer.jl`), `disintegration_transfer` is the identity functio
 For three autochthonous (produced *in situ*) facies and their transported equivalents, one may define:
 
 ```julia
-disintegration_transfer = p -> [0.0u"m", 0.0u"m", 0.0u"m", p[1]+p[4], p[2]+p[5], p[3]+p[6]]
+disintegration_transfer = x -> [0.0u"m", 0.0u"m", 0.0u"m", x[1]+x[4], x[2]+x[5], x[3]+x[6]]
 ```
 
-The transfer function takes the produced sediment vector `p`, sets facies 1-3 to zero and moves all the transported material into the "transported" facies (4-6). 
+The transfer function takes the produced sediment vector `x`, sets facies 1-3 to zero and moves all the transported material into the "transported" facies (4-6). 
 
 Transporting only 50% of disintegrated material into "transported" facies would look like this:
 
 ```julia
-disintegration_transfer = p -> [p[1]*0.5, p[2]*0.5, p[3]*0.5, 
-                                 p[1]*0.5+p[4], p[2]*0.5+p[5], p[3]*0.5+p[6]]
+disintegration_transfer = x -> [x[1]*0.5, x[2]*0.5, x[3]*0.5, 
+                                 x[1]*0.5+x[4], x[2]*0.5+x[5], x[3]*0.5+x[6]]
 ```
 
 for the same number (3) of initial and transported facies.

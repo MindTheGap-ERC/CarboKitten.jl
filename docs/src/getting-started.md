@@ -120,7 +120,7 @@ This step will likely take longer than installing CarboKitten itself. On a slow 
 
 Create a new file called `plot_results.jl`:
 
-```{.julia file=examples/plot_alcap.jl}
+```{.julia file=examples/model/alcap/plot_alcap.jl}
 using GLMakie
 using CarboKitten.Visualization
 

@@ -78,6 +78,7 @@ makedocs(
     # repo=Remotes.GitHub("MindTheGap-ERC", "CarboKitten"),
     pages=[
         "Introduction" => "index.md",
+        "Getting started" => "getting-started.md"
         "Models" => [
             "Bosscher and Schlager 1992" => "bosscher-1992.md",
             "Model with CA and Production" => "ca-with-production.md",

@@ -80,67 +80,13 @@ The steps below propose having two separate scripts for running a model and for 
 
 Create a new file called `run_model.jl` in your project directory with the following content:
 
-```julia
-using Unitful
-using CarboKitten
+``` {.julia file=examples/model/alcap/run.jl}
 
-# Enable progress logging
-CarboKitten.init()
-
-# Define facies types
-const FACIES = [
-    ALCAP.Facies(
-        viability_range = (4, 10),
-        activation_range = (6, 10),
-        maximum_growth_rate=500u"m/Myr",
-        extinction_coefficient=0.8u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=50.0u"m/yr"),
-    ALCAP.Facies(
-        viability_range = (4, 10),
-        activation_range = (6, 10),
-        maximum_growth_rate=400u"m/Myr",
-        extinction_coefficient=0.1u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=25.0u"m/yr"),
-    ALCAP.Facies(
-        viability_range = (4, 10),
-        activation_range = (6, 10),
-        maximum_growth_rate=100u"m/Myr",
-        extinction_coefficient=0.005u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=12.5u"m/yr")
-]
-
-# Configure sea level oscillation
-const PERIOD = 0.2u"Myr"
-const AMPLITUDE = 4.0u"m"
-
-# Define model input parameters
-const INPUT = ALCAP.Input(
-    tag="my-first-model",
-    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
-    time=TimeProperties(
-        Δt=0.0002u"Myr",
-        steps=1000),
-    output=Dict(
-        :topography => OutputSpec(slice=(:,:), write_interval=10),
-        :profile => OutputSpec(slice=(:, 25), write_interval=1)),
-    ca_interval=1,
-    initial_topography=(x, y) -> -x / 300.0,
-    sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
-    subsidence_rate=50.0u"m/Myr",
-    disintegration_rate=50.0u"m/Myr",
-    insolation=400.0u"W/m^2",
-    sediment_buffer_size=50,
-    depositional_resolution=0.5u"m",
-    facies=FACIES)
-
-# Run the model
-run_model(Model{ALCAP}, INPUT, "my-first-model.h5")
 ```
 
 The output will be saved in the `HDF5` format. This is a binary file and should not be tracked by version control. It can be accessed using CarboKitten's built in tools (see below for plotting) or standard libraries for reading HDF5 for Python or R. 
+
+Please note that this script puts all new functions and variables in a module (`Module Script`). This is not obligatory, but recommended. You can [read more about Julia modules](https://docs.julialang.org/en/v1/manual/modules/) if you want to understand why this is useful.
 
 ### Running the Script
 
@@ -156,7 +102,7 @@ Alternatively, from the Julia REPL with the project activated:
 include("run_model.jl")
 ```
 
-The model will run and save output to `my-first-model.h5`. This may take a few minutes depending on your system.
+The model will run and save output to `data/output/alcap-example.h5`. This may take a few minutes depending on your system.
 
 ## Visualizing Results
 
@@ -174,7 +120,7 @@ This step will likely take longer than installing CarboKitten itself. On a slow 
 
 Create a new file called `plot_results.jl`:
 
-```julia
+```{.julia file=examples/plot_alcap.jl}
 using GLMakie
 using CarboKitten.Visualization
 
@@ -217,6 +163,7 @@ The summary plot shows:
 
 ## Next Steps
 
+- Follow the [tutorial](notebooks/first_tutorial.html)
 - Explore different [input parameters](model-alcap.md) to customize your model
 - Learn about [data export](data-export.md) options for further analysis
 - Read about the [ALCAP model](model-alcap.md) components and theory

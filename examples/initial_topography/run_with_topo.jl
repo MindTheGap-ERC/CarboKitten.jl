@@ -6,7 +6,7 @@ using Unitful
 using Interpolations
 using DelimitedFiles
 
-path = "data/init_topo/example_init_topo.csv"
+path = "examples/initial_topography/example_init_topo.csv"
 function initial_topography(path)
     data_matrix, _ = readdlm(path, ',', header=true)
 
@@ -21,13 +21,13 @@ const time = TimeProperties(
 		steps = 12900
 	)
 
-function get_SL()
+function get_SL(sl_path)
 
-	input_sl = readdlm("data/init_topo/miller_sl.txt", '\t', header=false) 
+	input_sl = readdlm(sl_path, '\t', header=false) 
 	time_vector = collect(time_axis(time)) / u"yr" .|> NoUnits
 	interpolator = linear_interpolation(time_vector, vec(input_sl))
     return t -> interpolator(ustrip(u"yr", t)) * u"m"
-end
+end # if you need to input your own sea-level curve	
 
 function main()
 
@@ -52,12 +52,12 @@ function main()
 		)]
 
 	input = ALCAP.Input(
-		tag = ARGS[1],
+		#tag = ARGS[1],
 		time = time,
 		box = Box{Coast}(grid_size = (100, 70), phys_scale = 170.0u"m"),
 		facies = facies,
-		sea_level = get_SL(),
-		initial_topography = initial_topography(),
+		sea_level = t -> 0.0u"m",
+		initial_topography = initial_topography(path),
 # Save sections at 4, 8 and 12 km away from the shore
 		output=Dict(
             :profile => OutputSpec(slice = (:, 35), write_interval = 1)),
@@ -71,13 +71,13 @@ function main()
 		#cementation_time=50.0u"yr",
 		disintegration_rate = 100.0u"m/Myr")
 
-	run_model(Model{ALCAP}, input, "data/init_topo/miller_sl.h5")
-	header, profile = read_slice("data/init_topo/miller_sl.h5", :profile)
+	run_model(Model{ALCAP}, input, "examples/initial_topography/const_0.h5")
+	header, profile = read_slice("examples/initial_topography/const_0.h5", :profile)
     columns = [profile[i] for i in [23, 47, 71]]
     data_export(
         CSV(
-            :stratigraphic_column => "data/init_topo/miller_sl_sc.csv",
-            :metadata => "data/init_topo/miller_sl.toml"),
+            :stratigraphic_column => "examples/initial_topography/const_0_sc.csv",
+            :metadata => "examples/initial_topography/const_0.toml"),
          header,
          columns)
 end

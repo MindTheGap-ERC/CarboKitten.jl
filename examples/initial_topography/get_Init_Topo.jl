@@ -7,7 +7,7 @@ using HDF5
 using DataFrames
 import CSV as OfficialCSV
 
-const PATH = "data/init_topo"
+const PATH = "examples/initial_topography"
 
 const TAG = "example_init_topo"
 

@@ -73,8 +73,11 @@ const INPUT = ALCAP.Input(
     tag="$TAG",
     box=CarboKitten.Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TIME_PROPERTIES,
+    output = Dict(
+        :topography => OutputSpec(write_interval = 5),
+        :profile => OutputSpec(slice = (:, 25))),
     ca_interval=1,
-    initial_topography=(x, y) -> -x / 200.0 - 100.0u"m",
+    initial_topography=(x, y) -> -x / 200.0,
     sea_level=sea_level(),
     subsidence_rate=50.0u"m/Myr",
     disintegration_rate=50.0u"m/Myr",

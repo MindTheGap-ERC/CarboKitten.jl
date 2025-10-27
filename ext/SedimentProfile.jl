@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/visualization.md#ext/SedimentProfile.jl>>[init]
 module SedimentProfile
 
-import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!
+import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!
 
 using CarboKitten.Visualization
 using CarboKitten.Utility: in_units_of
@@ -96,6 +96,70 @@ function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth
 end
 
 """
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Bool)
+
+Plot coeval lines using default settings. If `tics` is false, nothing is done.
+"""
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Bool)
+    if !n_tics
+        return
+    else
+        coeval_lines!(ax, header, data)
+    end
+end
+
+"""
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...)
+
+Plot coeval lines for given times. The times in `tics` are looked up in `header.axes.t`
+to find which indices to plot.
+"""
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...)
+    t = header.axes.t[1:data.write_interval:end]
+    indices::Vector{Int} = [searchsortedfirst(t, i) for i in tics]
+    coeval_lines!(ax, header, data, indices; kwargs...)
+end
+
+"""
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int})
+
+Plot coeval lines on regular intervals given by `n_tics`. The tuple gives the number of intervals
+for both minor and major tics, plotted as dotted and solid black lines respectively.
+If you need more control over the aestetics of these lines, use the other `coeval_lines!` methods.
+"""
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int} = (4, 8))
+    n_steps = div(header.time_steps, data.write_interval)
+    n_major_tics, n_minor_tics = n_tics
+
+    major_tics = div.(n_steps:n_steps:n_steps*n_major_tics, n_major_tics) .+ 1
+    minor_tics = filter(
+        t->!(t in major_tics),
+        div.(n_steps:n_steps:n_steps*n_minor_tics, n_minor_tics) .+ 1) |> collect
+
+    coeval_lines!(ax, header, data, minor_tics, color=:black, linewidth=1, linestyle=:dot)
+    coeval_lines!(ax, header, data, major_tics, color=:black, linewidth=1, linestyle=:solid)
+end
+
+""" 
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...)
+
+Plot coeval lines for the given indices. The `kwargs...` are forwarded to a call to Makie's
+`lines!` procedure.
+"""
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...)
+    x = header.axes.x |> in_units_of(u"km")
+    h = elevation(header, data) |> in_units_of(u"m")
+    for t in tics
+        lines!(ax, x, h[:, t]; kwargs...)
+    end
+end
+
+function plot_sealevel!(ax::Axis, header::Header)
+    sea_level = header.sea_level[end] |> in_units_of(u"m")
+    hlines!(ax, sea_level, color=:lightblue, linewidth=5, label="end sea level")
+end
+
+"""
     profile_plot!(ax, header, data_slice; mesh_args...)
 
 Generic profile plot. This sets up a mesh for plotting with the Makie `mesh!`
@@ -149,13 +213,22 @@ Plot the sediment profile, choosing colour by dominant facies type (argmax). Unc
 are shown when the sediment is subaerially exposed (even if sediment is still deposited
 due to a set intertidal zone).
 """
-function sediment_profile!(ax::Axis, header::Header, data::DataSlice; show_unconformities::Union{Nothing,Bool,Int} = true)
+function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
+                           show_unconformities::Union{Nothing,Bool,Int} = true,
+                           show_coeval_lines::Union{Bool,Tuple{Int, Int},Vector{Int},Vector{Time}} = true,
+                           show_sealevel::Bool = true)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
     n_facies = size(data.production)[1]
 
+    if show_sealevel
+        plot_sealevel!(ax, header)
+    end
+
     plot = profile_plot!(argmax, ax, header, data; alpha=1.0,
         colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+
+    coeval_lines!(ax, header, data, show_coeval_lines)
 
     minwidth = show_unconformities
     plot_unconformities(ax, header, data, minwidth; label = "unconformities",

@@ -468,7 +468,7 @@ module Script
     function main()
         CairoMakie.activate!()
         input = transport_test_input(
-            initial_topography = (x, y)  -> -30.0u"m",
+            initial_topography = (x, y)  -> -31.0u"m",
             initial_sediment = gaussian_initial_sediment,
             disintegration_rate = 50000.0u"m/Myr",
             wave_velocity = v_const(-5u"km/Myr")

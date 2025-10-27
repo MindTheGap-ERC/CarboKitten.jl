@@ -8,7 +8,7 @@ scatter(x, y)</code></pre><p>The other requires a bit more prep, but gives you m
 ax = Axis(fig[1,1])
 scatter!(ax, x, y)</code></pre><p>Here, we create a figure explicitly, then create a new set of axes somewhere on the grid in the figure, and then plot on that set of axes. The plotting functions accepting an <code>Axis</code> argument actually modify an existing context, which is why these functions always end with an exclamation mark, in this case <code>scatter!</code>.</p><p>If you like to know more about Makie, their <a href="https://docs.makie.org/stable/tutorials/getting-started">&quot;Getting started&quot;</a> is a good place to start.</p><h2 id="Colours"><a class="docs-heading-anchor" href="#Colours">Colours</a><a id="Colours-1"></a><a class="docs-heading-anchor-permalink" href="#Colours" title="Permalink"></a></h2><p>We like to use colorblind safe pallete of colours as described on <a href="https://personal.sron.nl/~pault/">Paul Tol&#39;s website</a>: &#39;#4477AA&#39;, &#39;#EE6677&#39;, &#39;#228833&#39;, &#39;#CCBB44&#39;, &#39;#66CCEE&#39;, &#39;#AA3377&#39;, &#39;#BBBBBB&#39;.</p><h2 id="Project-Extension"><a class="docs-heading-anchor" href="#Project-Extension">Project Extension</a><a id="Project-Extension-1"></a><a class="docs-heading-anchor-permalink" href="#Project-Extension" title="Permalink"></a></h2><p>The Project Extension requires a front-end where the available methods are exposed.</p><div class="noweb-label">file:<i>src/Visualization.jl</i></div><pre><code class="language- julia hljs">module Visualization
 export sediment_profile!, sediment_profile, wheeler_diagram!, wheeler_diagram, production_curve!,
-       production_curve, glamour_view!, summary_plot
+       production_curve, glamour_view!, coeval_lines!, summary_plot
 
 function print_instructions(func_name, args)
     println(&quot;Called `$(func_name)` with args `$(typeof.(args))`&quot;)
@@ -18,6 +18,7 @@ end
 function profile_plot! end
 
 # profile_plot!(args...; kwargs...) = print_instructions(&quot;profile_plot!&quot;, args)
+coeval_lines!(args...) = print_instructions(&quot;coeval_lines!&quot;, args)
 sediment_profile!(args...) = print_instructions(&quot;sediment_profile!&quot;, args)
 sediment_profile(args...) = print_instructions(&quot;sediment_profile&quot;, args)
 wheeler_diagram!(args...) = print_instructions(&quot;wheeler_diagram!&quot;, args)
@@ -120,7 +121,7 @@ using CarboKitten.Export: read_slice
 using CarboKitten.Visualization: wheeler_diagram
 
 function main()
-  header, data = read_slice(&quot;data/output/alcap-example.h5&quot;, :, 25)
+  header, data = read_slice(&quot;data/output/alcap-example.h5&quot;, :profile)
   fig = wheeler_diagram(header, data)
   save(&quot;docs/src/_fig/wheeler_diagram.png&quot;, fig)
 end
@@ -313,7 +314,7 @@ using CarboKitten.Visualization: sediment_profile
 
 function main()
     save(&quot;docs/src/_fig/sediment_profile.png&quot;,
-        sediment_profile(read_slice(&quot;data/output/alcap-example.h5&quot;, :slice)...))
+        sediment_profile(read_slice(&quot;data/output/alcap-example.h5&quot;, :profile)...))
 end
 end
 
@@ -344,7 +345,7 @@ end
 
 Script.main()</code></pre><h3 id="Implementation"><a class="docs-heading-anchor" href="#Implementation">Implementation</a><a id="Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Implementation" title="Permalink"></a></h3><div class="noweb-label">file:<i>ext/SedimentProfile.jl</i></div><pre><code class="language- julia hljs">module SedimentProfile
 
-import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!
+import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!
 
 using CarboKitten.Visualization
 using CarboKitten.Utility: in_units_of
@@ -439,6 +440,70 @@ function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth
 end
 
 &quot;&quot;&quot;
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Bool)
+
+Plot coeval lines using default settings. If `tics` is false, nothing is done.
+&quot;&quot;&quot;
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Bool)
+    if !n_tics
+        return
+    else
+        coeval_lines!(ax, header, data)
+    end
+end
+
+&quot;&quot;&quot;
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...)
+
+Plot coeval lines for given times. The times in `tics` are looked up in `header.axes.t`
+to find which indices to plot.
+&quot;&quot;&quot;
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...)
+    t = header.axes.t[1:data.write_interval:end]
+    indices::Vector{Int} = [searchsortedfirst(t, i) for i in tics]
+    coeval_lines!(ax, header, data, indices; kwargs...)
+end
+
+&quot;&quot;&quot;
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int})
+
+Plot coeval lines on regular intervals given by `n_tics`. The tuple gives the number of intervals
+for both minor and major tics, plotted as dotted and solid black lines respectively.
+If you need more control over the aestetics of these lines, use the other `coeval_lines!` methods.
+&quot;&quot;&quot;
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int} = (4, 8))
+    n_steps = div(header.time_steps, data.write_interval)
+    n_major_tics, n_minor_tics = n_tics
+
+    major_tics = div.(n_steps:n_steps:n_steps*n_major_tics, n_major_tics) .+ 1
+    minor_tics = filter(
+        t-&gt;!(t in major_tics),
+        div.(n_steps:n_steps:n_steps*n_minor_tics, n_minor_tics) .+ 1) |&gt; collect
+
+    coeval_lines!(ax, header, data, minor_tics, color=:black, linewidth=1, linestyle=:dot)
+    coeval_lines!(ax, header, data, major_tics, color=:black, linewidth=1, linestyle=:solid)
+end
+
+&quot;&quot;&quot; 
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...)
+
+Plot coeval lines for the given indices. The `kwargs...` are forwarded to a call to Makie&#39;s
+`lines!` procedure.
+&quot;&quot;&quot;
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...)
+    x = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
+    h = elevation(header, data) |&gt; in_units_of(u&quot;m&quot;)
+    for t in tics
+        lines!(ax, x, h[:, t]; kwargs...)
+    end
+end
+
+function plot_sealevel!(ax::Axis, header::Header)
+    sea_level = header.sea_level[end] |&gt; in_units_of(u&quot;m&quot;)
+    hlines!(ax, sea_level, color=:lightblue, linewidth=5, label=&quot;end sea level&quot;)
+end
+
+&quot;&quot;&quot;
     profile_plot!(ax, header, data_slice; mesh_args...)
 
 Generic profile plot. This sets up a mesh for plotting with the Makie `mesh!`
@@ -492,13 +557,22 @@ Plot the sediment profile, choosing colour by dominant facies type (argmax). Unc
 are shown when the sediment is subaerially exposed (even if sediment is still deposited
 due to a set intertidal zone).
 &quot;&quot;&quot;
-function sediment_profile!(ax::Axis, header::Header, data::DataSlice; show_unconformities::Union{Nothing,Bool,Int} = true)
+function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
+                           show_unconformities::Union{Nothing,Bool,Int} = true,
+                           show_coeval_lines::Union{Bool,Tuple{Int, Int},Vector{Int},Vector{Time}} = true,
+                           show_sealevel::Bool = true)
     x = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
     t = header.axes.t |&gt; in_units_of(u&quot;Myr&quot;)
     n_facies = size(data.production)[1]
 
+    if show_sealevel
+        plot_sealevel!(ax, header)
+    end
+
     plot = profile_plot!(argmax, ax, header, data; alpha=1.0,
         colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+
+    coeval_lines!(ax, header, data, show_coeval_lines)
 
     minwidth = show_unconformities
     plot_unconformities(ax, header, data, minwidth; label = &quot;unconformities&quot;,
@@ -597,16 +671,16 @@ end</code></pre><h2 id="Glamour-View-(3D)"><a class="docs-heading-anchor" href="
 
 module Script
 
-using CairoMakie
+using GLMakie
+using CarboKitten.Export: read_volume
 using CarboKitten.Visualization: glamour_view!
 using HDF5
 
 function main()
     fig = Figure()
     ax = Axis3(fig[1,1])
-    h5open(&quot;data/output/cap1.h5&quot;, &quot;r&quot;) do fid
-        glamour_view!(ax, fid)
-    end
+    header, volume = read_volume(&quot;data/output/cap1.h5&quot;, :topography)
+    glamour_view!(ax, header, volume)
     save(&quot;docs/src/_fig/glamour_view.png&quot;, fig)
 end
 
@@ -667,4 +741,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../onshore-transport/">« Onshore Transport</a><a class="docs-footer-nextpage" href="../carbocat/">Summary »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Thursday 16 October 2025 12:37">Thursday 16 October 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../onshore-transport/">« Onshore Transport</a><a class="docs-footer-nextpage" href="../carbocat/">Summary »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 27 October 2025 21:31">Monday 27 October 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -163,7 +163,7 @@ The summary plot shows:
 
 ## Next Steps
 
-- Follow the [tutorial](notebooks/first_tutorial.html)
+- Follow the [tutorial](first_tutorial.md)
 - Explore different [input parameters](model-alcap.md) to customize your model
 - Learn about [data export](data-export.md) options for further analysis
 - Read about the [ALCAP model](model-alcap.md) components and theory

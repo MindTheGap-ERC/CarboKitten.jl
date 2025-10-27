@@ -4,7 +4,8 @@ module PlotTabularSeaLevel
 
 using CarboKitten
 using CarboKitten.DataSets: artifact_dir
-using CarboKitten.Visualization: summary_plot
+using CarboKitten.Visualization: summary_plot, sediment_profile!, coeval_lines!
+using CarboKitten.Export: read_slice
 
 using DelimitedFiles: readdlm
 using CairoMakie
@@ -132,9 +133,19 @@ function plot_result()
     save("docs/src/_fig/lisiecki-sea-level-summary.png", fig)
 end
 
+function plot_gg_boundary()
+    header, data = read_slice("data/output/lisiecki-sea-level.h5", :profile)
+    fig = Figure(size=(1000, 600))
+    ax = Axis(fig[1, 1])
+    sediment_profile!(ax, header, data, show_unconformities = false, show_coeval_lines = false)
+    coeval_lines!(ax, header, data, [-1.8u"Myr"], linewidth = 3, color = :black, linestyle = :solid)
+    save("docs/src/_fig/lisiecki_sed_profile_gg_boundary.png", fig)
+end
+
 end
 
 PlotTabularSeaLevel.plot_miller_data()
 PlotTabularSeaLevel.plot_lisiecki_data()
 PlotTabularSeaLevel.plot_result()
+PlotTabularSeaLevel.plot_gg_boundary()
 # ~/~ end

@@ -22,6 +22,7 @@ end
 @kwdef struct Input <: AbstractInput
     intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
+    disintegration_transfer::Function = x -> x
     cementation_time::Union{typeof(1.0u"Myr"),Nothing} = nothing
     transport_solver = Val{:RK4}
     transport_substeps = :adaptive
@@ -94,6 +95,7 @@ function disintegrator(input)
     output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
     depositional_resolution = input.depositional_resolution
     iz = input.intertidal_zone
+    tf = input.disintegration_transfer
 
     return function (state)
         wn = w(state)

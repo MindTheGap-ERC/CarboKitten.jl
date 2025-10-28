@@ -1,5 +1,43 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Active Layer Transport · CarboKitten</title><meta name="title" content="Active Layer Transport · CarboKitten"/><meta property="og:title" content="Active Layer Transport · CarboKitten"/><meta property="twitter:title" content="Active Layer Transport · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li><li><a class="tocitem" href="../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/output/">Output</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li class="is-active"><a class="tocitem" href>Active Layer Transport</a><ul class="internal"><li><a class="tocitem" href="#Test-1:-production-transport"><span>Test 1: production transport</span></a></li><li><a class="tocitem" href="#One-dimensional-tests"><span>One-dimensional tests</span></a></li><li><a class="tocitem" href="#Active-Layer-Component"><span>Active Layer Component</span></a></li><li><a class="tocitem" href="#Intertidal-zone"><span>Intertidal zone</span></a></li></ul></li><li><a class="tocitem" href="../onshore-transport/">Onshore Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../output/abstract/">Output</a></li><li><a class="tocitem" href="../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../output/memory-writer/">Output to Memory</a></li><li><a class="tocitem" href="../data-export/">CSV Export</a></li><li><a class="tocitem" href="../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li><li><a class="tocitem" href="../finite-difference-transport/">Finite Difference</a></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Model Components</a></li><li class="is-active"><a href>Active Layer Transport</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Active Layer Transport</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/active-layer-transport.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Active-Layer-Transport"><a class="docs-heading-anchor" href="#Active-Layer-Transport">Active Layer Transport</a><a id="Active-Layer-Transport-1"></a><a class="docs-heading-anchor-permalink" href="#Active-Layer-Transport" title="Permalink"></a></h1><p>The following is inspired on well-known <strong>active layer</strong> approaches in river bed sediment transport [<a href="../carbocat/#Paola1992">4</a>] [<a href="../carbocat/#James2010">5</a>] <sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup>. All quantities with subscript <span>$f$</span> are facies dependent. Sediment is measured in meters of deposited material. <span>$P_f$</span> is the production of sediment per facies in <span>$m/s$</span>. Further unit calculations would be more readable if we consider the unit of sediment as separate, so for instance it doesn&#39;t cancel against <span>$m^2$</span> in the units of sediment flux. In the implementation, <span>$\nu$</span> has the units of <span>${\rm m}$</span> which is totaly weird. TBC</p><p>In a model without transport, we could write</p><p class="math-container">\[\sigma + \sum_f {{\partial \eta_f} \over {\partial t}} = \sum_f P_f,\]</p><p>where <span>$\sigma$</span> is the subsidence rate in <span>$m/s$</span>. We consider the mass balance for each facies separately.</p><p>We suppose that loose sediment, either fresh production or disintegrated older sediment, is being transported in a layer on top of the sea bed. The flux in this layer is assumed to be directly proportional to the local slope of the sea bed <span>$| \nabla_x \eta_* |$</span>, where <span>$\eta_* = \sum_f \eta_f$</span>, the sum over all facies contributions, including <span>$\eta_0$</span>, the initial bedrock eleveation.</p><p><img src="../fig/active-layer-export.svg" alt="Schematic of Active Layer approach"/></p><p>The active layer now contains a concentration <span>$C_f$</span> particles of different grain size (for each facies <span>$f$</span>). If needed, <span>$C_f = \alpha_f P_f$</span> where <span>$\alpha_f$</span> is some facies parameter determining the fraction of production that is available for transport. The sediment flux is given as,</p><p class="math-container">\[{\bf q_f} = -\nu_f C_f {\bf \nabla_x} \eta_*.\]</p><p>The following is the mass balance:</p><p class="math-container">\[\sigma + {{\partial \eta_*} \over {\partial t}} = -\sum_f {\bf \nabla_x} \cdot {\bf q_f} + \sum_f P_f,\]</p><p>In our modelling we keep track of individual contributions per facies over time <sup class="footnote-reference"><a id="citeref-2" href="#footnote-2">[2]</a></sup>.</p><p>Combining these equations, and ignoring subsidence for the moment (which is a global effect and can&#39;t be expressed on a per-facies basis), we get a component-wise diffusion equation</p><p class="math-container">\[{{\partial \eta_f(x)}\over{\partial t}} = {\bf \nabla_x} \cdot \big[ \nu_f \alpha_f\ P_f(x)\ {\bf \nabla_x} \eta_{*}(x) \big] + P_f(x),\]</p><p>In our model we need to solve this equation one time-step each iteration. If we solve this using forward methods, we should be reminded of the CFL limit for diffusion equations (depending on the diffusion constants and grid size we shouldn&#39;t pick the time steps too large). Alternatively, for these two-dimensional situations, an implicit approach is feasible. Also we should take care that somehow <span>$\nabla(\nu\alpha P \nabla \eta) + P &gt; 0$</span>. The interpretation being that we can&#39;t transport more than we produce, even if there is capacity to do so.</p><p>To solve this equation, it is nicer to expand the transport-diffusion term using the product rule, in short notation:</p><p class="math-container">\[\partial_t \eta_f = \nu&#39; \nabla P_f(x) \cdot \nabla \eta(x) + \nu&#39; P_f(x) \nabla^2 \eta(x) + P_f(x),\]</p><p>where <span>$\nu&#39; = \nu_f \alpha_f$</span></p><p>So we have a advection component with velocity <span>$\nu&#39; \nabla P_f$</span> and a diffusion component with a coefficient <span>$\nu&#39; P_f$</span>.</p><p>As part of the production <span>$P_f$</span> we disintegrate older sediment at a fixed rate.</p><p><img src="../fig/active-layer-diagram.plain.svg" alt="Schema of active layer processes"/></p><h2 id="Test-1:-production-transport"><a class="docs-heading-anchor" href="#Test-1:-production-transport">Test 1: production transport</a><a id="Test-1:-production-transport-1"></a><a class="docs-heading-anchor-permalink" href="#Test-1:-production-transport" title="Permalink"></a></h2><p>Suppose we have an incline in one direction, as per usual on a coastal slice. Production is happening in a circular patch in our box, with constant rate. In addition, we&#39;ll release the top 1m of sediment for further transport.</p><details><summary>Test model</summary><div class="noweb-label">file:<i>examples/transport/active-layer.jl</i></div><pre><code class="language- julia hljs">module ActiveLayer
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Active Layer Transport · CarboKitten</title><meta name="title" content="Active Layer Transport · CarboKitten"/><meta property="og:title" content="Active Layer Transport · CarboKitten"/><meta property="twitter:title" content="Active Layer Transport · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li><li><a class="tocitem" href="../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/output/">Output</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li class="is-active"><a class="tocitem" href>Active Layer Transport</a><ul class="internal"><li><a class="tocitem" href="#Transport-parameters"><span>Transport parameters</span></a></li><li><a class="tocitem" href="#Test-1:-production-transport"><span>Test 1: production transport</span></a></li><li><a class="tocitem" href="#One-dimensional-tests"><span>One-dimensional tests</span></a></li><li><a class="tocitem" href="#Active-Layer-Component"><span>Active Layer Component</span></a></li><li><a class="tocitem" href="#Intertidal-zone"><span>Intertidal zone</span></a></li></ul></li><li><a class="tocitem" href="../onshore-transport/">Onshore Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../output/abstract/">Output</a></li><li><a class="tocitem" href="../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../output/memory-writer/">Output to Memory</a></li><li><a class="tocitem" href="../data-export/">CSV Export</a></li><li><a class="tocitem" href="../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li><li><a class="tocitem" href="../finite-difference-transport/">Finite Difference</a></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Model Components</a></li><li class="is-active"><a href>Active Layer Transport</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Active Layer Transport</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/active-layer-transport.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Active-Layer-Transport"><a class="docs-heading-anchor" href="#Active-Layer-Transport">Active Layer Transport</a><a id="Active-Layer-Transport-1"></a><a class="docs-heading-anchor-permalink" href="#Active-Layer-Transport" title="Permalink"></a></h1><p>The following is inspired on well-known <strong>active layer</strong> approaches in river bed sediment transport [<a href="../carbocat/#Paola1992">4</a>] [<a href="../carbocat/#James2010">5</a>] <sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup>. All quantities with subscript <span>$f$</span> are facies dependent. Sediment is measured in meters of deposited material. <span>$P_f$</span> is the production of sediment per facies in <span>$m/s$</span>. Further unit calculations would be more readable if we consider the unit of sediment as separate, so for instance it doesn&#39;t cancel against <span>$m^2$</span> in the units of sediment flux. In the implementation, <span>$\nu$</span> has the units of <span>${\rm m}$</span> which is totaly weird. TBC</p><p>In a model without transport, we could write</p><p class="math-container">\[\sigma + \sum_f {{\partial \eta_f} \over {\partial t}} = \sum_f P_f,\]</p><p>where <span>$\sigma$</span> is the subsidence rate in <span>$m/s$</span>. We consider the mass balance for each facies separately.</p><p>We suppose that loose sediment, either fresh production or disintegrated older sediment, is being transported in a layer on top of the sea bed. The flux in this layer is assumed to be directly proportional to the local slope of the sea bed <span>$| \nabla_x \eta_* |$</span>, where <span>$\eta_* = \sum_f \eta_f$</span>, the sum over all facies contributions, including <span>$\eta_0$</span>, the initial bedrock eleveation.</p><p><img src="../fig/active-layer-export.svg" alt="Schematic of Active Layer approach"/></p><p>The active layer now contains a concentration <span>$C_f$</span> particles of different grain size (for each facies <span>$f$</span>). If needed, <span>$C_f = \alpha_f P_f$</span> where <span>$\alpha_f$</span> is some facies parameter determining the fraction of production that is available for transport. The sediment flux is given as,</p><p class="math-container">\[{\bf q_f} = -\nu_f C_f {\bf \nabla_x} \eta_*.\]</p><p>The following is the mass balance:</p><p class="math-container">\[\sigma + {{\partial \eta_*} \over {\partial t}} = -\sum_f {\bf \nabla_x} \cdot {\bf q_f} + \sum_f P_f,\]</p><p>In our modelling we keep track of individual contributions per facies over time <sup class="footnote-reference"><a id="citeref-2" href="#footnote-2">[2]</a></sup>.</p><p>Combining these equations, and ignoring subsidence for the moment (which is a global effect and can&#39;t be expressed on a per-facies basis), we get a component-wise diffusion equation</p><p class="math-container">\[{{\partial \eta_f(x)}\over{\partial t}} = {\bf \nabla_x} \cdot \big[ \nu_f \alpha_f\ P_f(x)\ {\bf \nabla_x} \eta_{*}(x) \big] + P_f(x),\]</p><p>In our model we need to solve this equation one time-step each iteration. If we solve this using forward methods, we should be reminded of the CFL limit for diffusion equations (depending on the diffusion constants and grid size we shouldn&#39;t pick the time steps too large). Alternatively, for these two-dimensional situations, an implicit approach is feasible. Also we should take care that somehow <span>$\nabla(\nu\alpha P \nabla \eta) + P &gt; 0$</span>. The interpretation being that we can&#39;t transport more than we produce, even if there is capacity to do so.</p><p>To solve this equation, it is nicer to expand the transport-diffusion term using the product rule, in short notation:</p><p class="math-container">\[\partial_t \eta_f = \nu&#39; \nabla P_f(x) \cdot \nabla \eta(x) + \nu&#39; P_f(x) \nabla^2 \eta(x) + P_f(x),\]</p><p>where <span>$\nu&#39; = \nu_f \alpha_f$</span></p><p>So we have a advection component with velocity <span>$\nu&#39; \nabla P_f$</span> and a diffusion component with a coefficient <span>$\nu&#39; P_f$</span>.</p><p>As part of the production <span>$P_f$</span> we disintegrate older sediment at a fixed rate.</p><p><img src="../fig/active-layer-diagram.plain.svg" alt="Schema of active layer processes"/></p><h2 id="Transport-parameters"><a class="docs-heading-anchor" href="#Transport-parameters">Transport parameters</a><a id="Transport-parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Transport-parameters" title="Permalink"></a></h2><h3 id="Disintegration-transfer"><a class="docs-heading-anchor" href="#Disintegration-transfer">Disintegration transfer</a><a id="Disintegration-transfer-1"></a><a class="docs-heading-anchor-permalink" href="#Disintegration-transfer" title="Permalink"></a></h3><p><code>disintegration_transfer</code> is a function that determines how the disintegrated material from each facies is allocated to the facies in the active layer. </p><h4 id="Default-behavior"><a class="docs-heading-anchor" href="#Default-behavior">Default behavior</a><a id="Default-behavior-1"></a><a class="docs-heading-anchor-permalink" href="#Default-behavior" title="Permalink"></a></h4><p>By default (<code>ActiveLayer.jl</code>), <code>disintegration_transfer</code> is the identity function <code>x -&gt; x</code>, i.e. disintegrated sediment is added back to the same facies it came from.</p><h4 id="Usage-examples"><a class="docs-heading-anchor" href="#Usage-examples">Usage examples</a><a id="Usage-examples-1"></a><a class="docs-heading-anchor-permalink" href="#Usage-examples" title="Permalink"></a></h4><p>For three autochthonous (produced <em>in situ</em>) facies and their transported equivalents, one may define:</p><pre><code class="language-julia hljs">disintegration_transfer = x -&gt; [0.0u&quot;m&quot;, 0.0u&quot;m&quot;, 0.0u&quot;m&quot;, x[1]+x[4], x[2]+x[5], x[3]+x[6]]</code></pre><p>The transfer function takes the produced sediment vector <code>x</code>, sets facies 1-3 to zero and moves all the transported material into the &quot;transported&quot; facies (4-6). </p><p>Transporting only 50% of disintegrated material into &quot;transported&quot; facies would look like this:</p><pre><code class="language-julia hljs">disintegration_transfer = x -&gt; [x[1]*0.5, x[2]*0.5, x[3]*0.5, 
+                                 x[1]*0.5+x[4], x[2]*0.5+x[5], x[3]*0.5+x[6]]</code></pre><p>for the same number (3) of initial and transported facies.  When defining a transfer function, you should make sure that it conserves mass i.e. all the disintegrated sediment must be reallocated to somewhere.</p><h4 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h4><p>A simple unit test verifies that the sediment is redistributed across facies as expected:</p><div class="noweb-label">file:<i>test/Components/ActiveLayerSpec.jl</i></div><pre><code class="language- julia hljs">module ActiveLayerSpec
+
+using Test
+using CarboKitten.Components: ActiveLayer as AL
+using CarboKitten.Components.Common
+
+@testset &quot;Components/ActiveLayer&quot; begin
+    @testset &quot;Disintegration transfer&quot; begin
+        let facies = fill(AL.Facies(), 4),
+            input = AL.Input(
+                box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u&quot;m&quot;),
+                time = TimeProperties(Δt=1.0u&quot;kyr&quot;, steps=10),
+                facies=facies,
+                disintegration_transfer = x -&gt; [0.0u&quot;m&quot;, 0.5*x[2], x[1]+x[3], x[4]+0.5*x[2]],
+            )
+
+            state = AL.State(
+                step = 0,
+                sediment_height = zeros(Height, input.box.grid_size...),
+                sediment_buffer = zeros(Float64, input.sediment_buffer_size, AL.n_facies(input), input.box.grid_size...),
+                active_layer=zeros(Amount, AL.n_facies(input), input.box.grid_size...))
+
+
+            d = ones(Amount, AL.n_facies(input), input.box.grid_size...)
+
+            dtf = input.disintegration_transfer
+            state.active_layer .+= dtf(d)
+
+            @test all(state.active_layer[1,:] .≈ 0.0u&quot;m&quot;)
+            @test all(state.active_layer[2,:] .≈ 0.5u&quot;m&quot;)
+            @test all(state.active_layer[3,:] .≈ 2.0u&quot;m&quot;)
+            @test all(state.active_layer[4,:] .≈ 1.5u&quot;m&quot;)
+
+            @test sum(state.active_layer[:,1,1]) ≈ sum(d[:,1,1])
+        end
+    end
+end
+end</code></pre><h2 id="Test-1:-production-transport"><a class="docs-heading-anchor" href="#Test-1:-production-transport">Test 1: production transport</a><a id="Test-1:-production-transport-1"></a><a class="docs-heading-anchor-permalink" href="#Test-1:-production-transport" title="Permalink"></a></h2><p>Suppose we have an incline in one direction, as per usual on a coastal slice. Production is happening in a circular patch in our box, with constant rate. In addition, we&#39;ll release the top 1m of sediment for further transport.</p><details><summary>Test model</summary><div class="noweb-label">file:<i>examples/transport/active-layer.jl</i></div><pre><code class="language- julia hljs">module ActiveLayer
 
 using Unitful
 using CarboKitten.Config: Box, axes
@@ -379,206 +417,211 @@ Script.main()</code></pre><h2 id="Active-Layer-Component"><a class="docs-heading
 <!-- Generated by graphviz version 2.50.0 (20211204.2007)
  -->
 <!-- Pages: 1 -->
-<svg width="800pt" height="431pt"
- viewBox="0.00 0.00 800.00 431.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 427)">
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-427 796,-427 796,4 -4,4"/>
+<svg width="800pt" height="450pt"
+ viewBox="0.00 0.00 800.00 450.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 446)">
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-446 796,-446 796,4 -4,4"/>
 <!-- TimeIntegration -->
 <g id="node1" class="node">
 <title>TimeIntegration</title>
-<path fill="none" stroke="black" d="M210,-423C210,-423 72,-423 72,-423 66,-423 60,-417 60,-411 60,-411 60,-356 60,-356 60,-350 66,-344 72,-344 72,-344 210,-344 210,-344 216,-344 222,-350 222,-356 222,-356 222,-411 222,-411 222,-417 216,-423 210,-423"/>
-<polyline fill="none" stroke="black" points="67,-392.5 215,-392.5 "/>
-<text text-anchor="start" x="75.5" y="-401.3" font-family="Times,serif" font-weight="bold" font-size="14.00">TimeIntegration</text>
-<polygon fill="#cccccc" stroke="transparent" points="67,-369.5 67,-392.5 114,-392.5 114,-369.5 67,-369.5"/>
-<polyline fill="none" stroke="black" points="67,-369.5 114,-369.5 114,-392.5 67,-392.5 "/>
-<text text-anchor="start" x="71" y="-377.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="114,-369.5 114,-392.5 168,-392.5 168,-369.5 114,-369.5"/>
-<polygon fill="none" stroke="black" points="114,-369.5 114,-392.5 168,-392.5 168,-369.5 114,-369.5"/>
-<text text-anchor="start" x="118" y="-377.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="168,-369.5 168,-392.5 215,-392.5 215,-369.5 168,-369.5"/>
-<polyline fill="none" stroke="black" points="215,-392.5 168,-392.5 168,-369.5 215,-369.5 "/>
-<text text-anchor="start" x="172" y="-377.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="114,-350.5 114,-369.5 "/>
-<text text-anchor="start" x="71" y="-357.5" font-family="monospace" font-size="10.00">time</text>
-<polyline fill="none" stroke="black" points="168,-350.5 168,-369.5 "/>
-<text text-anchor="start" x="118" y="-357.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="171" y="-357.5" font-family="monospace" font-size="10.00">step</text>
+<path fill="none" stroke="black" d="M210,-442C210,-442 72,-442 72,-442 66,-442 60,-436 60,-430 60,-430 60,-375 60,-375 60,-369 66,-363 72,-363 72,-363 210,-363 210,-363 216,-363 222,-369 222,-375 222,-375 222,-430 222,-430 222,-436 216,-442 210,-442"/>
+<polyline fill="none" stroke="black" points="67,-411.5 215,-411.5 "/>
+<text text-anchor="start" x="75.5" y="-420.3" font-family="Times,serif" font-weight="bold" font-size="14.00">TimeIntegration</text>
+<polygon fill="#cccccc" stroke="transparent" points="67,-388.5 67,-411.5 114,-411.5 114,-388.5 67,-388.5"/>
+<polyline fill="none" stroke="black" points="67,-388.5 114,-388.5 114,-411.5 67,-411.5 "/>
+<text text-anchor="start" x="71" y="-396.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="114,-388.5 114,-411.5 168,-411.5 168,-388.5 114,-388.5"/>
+<polygon fill="none" stroke="black" points="114,-388.5 114,-411.5 168,-411.5 168,-388.5 114,-388.5"/>
+<text text-anchor="start" x="118" y="-396.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="168,-388.5 168,-411.5 215,-411.5 215,-388.5 168,-388.5"/>
+<polyline fill="none" stroke="black" points="215,-411.5 168,-411.5 168,-388.5 215,-388.5 "/>
+<text text-anchor="start" x="172" y="-396.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="114,-369.5 114,-388.5 "/>
+<text text-anchor="start" x="71" y="-376.5" font-family="monospace" font-size="10.00">time</text>
+<polyline fill="none" stroke="black" points="168,-369.5 168,-388.5 "/>
+<text text-anchor="start" x="118" y="-376.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="171" y="-376.5" font-family="monospace" font-size="10.00">step</text>
 </g>
 <!-- WaterDepth -->
 <g id="node2" class="node">
 <title>WaterDepth</title>
-<path fill="none" stroke="black" d="M270,-308C270,-308 12,-308 12,-308 6,-308 0,-302 0,-296 0,-296 0,-203 0,-203 0,-197 6,-191 12,-191 12,-191 270,-191 270,-191 276,-191 282,-197 282,-203 282,-203 282,-296 282,-296 282,-302 276,-308 270,-308"/>
-<polyline fill="none" stroke="black" points="7,-277.5 275,-277.5 "/>
-<text text-anchor="start" x="93.5" y="-286.3" font-family="Times,serif" font-weight="bold" font-size="14.00">WaterDepth</text>
-<polygon fill="#cccccc" stroke="transparent" points="7,-254.5 7,-277.5 124,-277.5 124,-254.5 7,-254.5"/>
-<polyline fill="none" stroke="black" points="7,-254.5 124,-254.5 124,-277.5 7,-277.5 "/>
-<text text-anchor="start" x="11" y="-262.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="124,-254.5 124,-277.5 178,-277.5 178,-254.5 124,-254.5"/>
-<polygon fill="none" stroke="black" points="124,-254.5 124,-277.5 178,-277.5 178,-254.5 124,-254.5"/>
-<text text-anchor="start" x="128" y="-262.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="178,-254.5 178,-277.5 275,-277.5 275,-254.5 178,-254.5"/>
-<polyline fill="none" stroke="black" points="275,-277.5 178,-277.5 178,-254.5 275,-254.5 "/>
-<text text-anchor="start" x="182" y="-262.3" font-family="Times,serif" font-size="14.00">State</text>
+<path fill="none" stroke="black" d="M270,-327C270,-327 12,-327 12,-327 6,-327 0,-321 0,-315 0,-315 0,-222 0,-222 0,-216 6,-210 12,-210 12,-210 270,-210 270,-210 276,-210 282,-216 282,-222 282,-222 282,-315 282,-315 282,-321 276,-327 270,-327"/>
+<polyline fill="none" stroke="black" points="7,-296.5 275,-296.5 "/>
+<text text-anchor="start" x="93.5" y="-305.3" font-family="Times,serif" font-weight="bold" font-size="14.00">WaterDepth</text>
+<polygon fill="#cccccc" stroke="transparent" points="7,-273.5 7,-296.5 124,-296.5 124,-273.5 7,-273.5"/>
+<polyline fill="none" stroke="black" points="7,-273.5 124,-273.5 124,-296.5 7,-296.5 "/>
+<text text-anchor="start" x="11" y="-281.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="124,-273.5 124,-296.5 178,-296.5 178,-273.5 124,-273.5"/>
+<polygon fill="none" stroke="black" points="124,-273.5 124,-296.5 178,-296.5 178,-273.5 124,-273.5"/>
+<text text-anchor="start" x="128" y="-281.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="178,-273.5 178,-296.5 275,-296.5 275,-273.5 178,-273.5"/>
+<polyline fill="none" stroke="black" points="275,-296.5 178,-296.5 178,-273.5 275,-273.5 "/>
+<text text-anchor="start" x="182" y="-281.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="124,-254.5 124,-273.5 "/>
+<text text-anchor="start" x="11" y="-261.5" font-family="monospace" font-size="10.00">sea_level</text>
+<polyline fill="none" stroke="black" points="178,-254.5 178,-273.5 "/>
+<text text-anchor="start" x="128" y="-261.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="181" y="-261.5" font-family="monospace" font-size="10.00">sediment_height</text>
 <polyline fill="none" stroke="black" points="124,-235.5 124,-254.5 "/>
-<text text-anchor="start" x="11" y="-242.5" font-family="monospace" font-size="10.00">sea_level</text>
+<text text-anchor="start" x="11" y="-242.5" font-family="monospace" font-size="10.00">initial_topography</text>
 <polyline fill="none" stroke="black" points="178,-235.5 178,-254.5 "/>
 <text text-anchor="start" x="128" y="-242.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="181" y="-242.5" font-family="monospace" font-size="10.00">sediment_height</text>
+<text text-anchor="start" x="181" y="-242.5" font-family="monospace" font-size="10.00"> </text>
 <polyline fill="none" stroke="black" points="124,-216.5 124,-235.5 "/>
-<text text-anchor="start" x="11" y="-223.5" font-family="monospace" font-size="10.00">initial_topography</text>
+<text text-anchor="start" x="11" y="-223.5" font-family="monospace" font-size="10.00">subsidence_rate</text>
 <polyline fill="none" stroke="black" points="178,-216.5 178,-235.5 "/>
 <text text-anchor="start" x="128" y="-223.5" font-family="monospace" font-size="10.00"> </text>
 <text text-anchor="start" x="181" y="-223.5" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="124,-197.5 124,-216.5 "/>
-<text text-anchor="start" x="11" y="-204.5" font-family="monospace" font-size="10.00">subsidence_rate</text>
-<polyline fill="none" stroke="black" points="178,-197.5 178,-216.5 "/>
-<text text-anchor="start" x="128" y="-204.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="181" y="-204.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- TimeIntegration&#45;&gt;WaterDepth -->
 <g id="edge1" class="edge">
 <title>TimeIntegration&#45;&gt;WaterDepth</title>
-<path fill="none" stroke="black" d="M141,-343.97C141,-335.98 141,-327.34 141,-318.65"/>
-<polygon fill="black" stroke="black" points="144.5,-318.47 141,-308.47 137.5,-318.47 144.5,-318.47"/>
+<path fill="none" stroke="black" d="M141,-362.97C141,-354.98 141,-346.34 141,-337.65"/>
+<polygon fill="black" stroke="black" points="144.5,-337.47 141,-327.47 137.5,-337.47 144.5,-337.47"/>
 </g>
 <!-- ActiveLayer -->
 <g id="node6" class="node">
 <title>ActiveLayer</title>
-<path fill="none" stroke="black" d="M544.5,-155C544.5,-155 217.5,-155 217.5,-155 211.5,-155 205.5,-149 205.5,-143 205.5,-143 205.5,-12 205.5,-12 205.5,-6 211.5,0 217.5,0 217.5,0 544.5,0 544.5,0 550.5,0 556.5,-6 556.5,-12 556.5,-12 556.5,-143 556.5,-143 556.5,-149 550.5,-155 544.5,-155"/>
-<polyline fill="none" stroke="black" points="213,-124.5 550,-124.5 "/>
-<text text-anchor="start" x="335.5" y="-133.3" font-family="Times,serif" font-weight="bold" font-size="14.00">ActiveLayer</text>
-<polygon fill="#cccccc" stroke="transparent" points="213,-101.5 213,-124.5 336,-124.5 336,-101.5 213,-101.5"/>
-<polyline fill="none" stroke="black" points="213,-101.5 336,-101.5 336,-124.5 213,-124.5 "/>
-<text text-anchor="start" x="217" y="-109.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="336,-101.5 336,-124.5 471,-124.5 471,-101.5 336,-101.5"/>
-<polygon fill="none" stroke="black" points="336,-101.5 336,-124.5 471,-124.5 471,-101.5 336,-101.5"/>
-<text text-anchor="start" x="340" y="-109.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="471,-101.5 471,-124.5 550,-124.5 550,-101.5 471,-101.5"/>
-<polyline fill="none" stroke="black" points="550,-124.5 471,-124.5 471,-101.5 550,-101.5 "/>
-<text text-anchor="start" x="475" y="-109.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="336,-82.5 336,-101.5 "/>
-<text text-anchor="start" x="217" y="-89.5" font-family="monospace" font-size="10.00">intertidal_zone</text>
-<polyline fill="none" stroke="black" points="471,-82.5 471,-101.5 "/>
-<text text-anchor="start" x="340" y="-89.5" font-family="monospace" font-size="10.00">diffusion_coefficient</text>
-<text text-anchor="start" x="474" y="-89.5" font-family="monospace" font-size="10.00">active_layer</text>
-<polyline fill="none" stroke="black" points="336,-63.5 336,-82.5 "/>
-<text text-anchor="start" x="217" y="-70.5" font-family="monospace" font-size="10.00">disintegration_rate</text>
-<polyline fill="none" stroke="black" points="471,-63.5 471,-82.5 "/>
-<text text-anchor="start" x="340" y="-70.5" font-family="monospace" font-size="10.00">wave_velocity</text>
-<text text-anchor="start" x="474" y="-70.5" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="336,-44.5 336,-63.5 "/>
-<text text-anchor="start" x="217" y="-51.5" font-family="monospace" font-size="10.00">cementation_time</text>
-<polyline fill="none" stroke="black" points="471,-44.5 471,-63.5 "/>
-<text text-anchor="start" x="340" y="-51.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="474" y="-51.5" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="336,-25.5 336,-44.5 "/>
-<text text-anchor="start" x="217" y="-32.5" font-family="monospace" font-size="10.00">transport_solver</text>
-<polyline fill="none" stroke="black" points="471,-25.5 471,-44.5 "/>
-<text text-anchor="start" x="340" y="-32.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="474" y="-32.5" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="336,-6.5 336,-25.5 "/>
-<text text-anchor="start" x="217" y="-13.5" font-family="monospace" font-size="10.00">transport_substeps</text>
-<polyline fill="none" stroke="black" points="471,-6.5 471,-25.5 "/>
-<text text-anchor="start" x="340" y="-13.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="474" y="-13.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M556.5,-174C556.5,-174 205.5,-174 205.5,-174 199.5,-174 193.5,-168 193.5,-162 193.5,-162 193.5,-12 193.5,-12 193.5,-6 199.5,0 205.5,0 205.5,0 556.5,0 556.5,0 562.5,0 568.5,-6 568.5,-12 568.5,-12 568.5,-162 568.5,-162 568.5,-168 562.5,-174 556.5,-174"/>
+<polyline fill="none" stroke="black" points="201,-144 562,-144 "/>
+<text text-anchor="start" x="335.5" y="-152.8" font-family="Times,serif" font-weight="bold" font-size="14.00">ActiveLayer</text>
+<polygon fill="#cccccc" stroke="transparent" points="201,-121 201,-144 348,-144 348,-121 201,-121"/>
+<polyline fill="none" stroke="black" points="201,-121 348,-121 348,-144 201,-144 "/>
+<text text-anchor="start" x="205" y="-128.8" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="348,-121 348,-144 483,-144 483,-121 348,-121"/>
+<polygon fill="none" stroke="black" points="348,-121 348,-144 483,-144 483,-121 348,-121"/>
+<text text-anchor="start" x="352" y="-128.8" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="483,-121 483,-144 562,-144 562,-121 483,-121"/>
+<polyline fill="none" stroke="black" points="562,-144 483,-144 483,-121 562,-121 "/>
+<text text-anchor="start" x="487" y="-128.8" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="348,-102 348,-121 "/>
+<text text-anchor="start" x="205" y="-109" font-family="monospace" font-size="10.00">intertidal_zone</text>
+<polyline fill="none" stroke="black" points="483,-102 483,-121 "/>
+<text text-anchor="start" x="352" y="-109" font-family="monospace" font-size="10.00">diffusion_coefficient</text>
+<text text-anchor="start" x="486" y="-109" font-family="monospace" font-size="10.00">active_layer</text>
+<polyline fill="none" stroke="black" points="348,-83 348,-102 "/>
+<text text-anchor="start" x="205" y="-90" font-family="monospace" font-size="10.00">disintegration_rate</text>
+<polyline fill="none" stroke="black" points="483,-83 483,-102 "/>
+<text text-anchor="start" x="352" y="-90" font-family="monospace" font-size="10.00">wave_velocity</text>
+<text text-anchor="start" x="486" y="-90" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="348,-64 348,-83 "/>
+<text text-anchor="start" x="205" y="-71" font-family="monospace" font-size="10.00">disintegration_transfer</text>
+<polyline fill="none" stroke="black" points="483,-64 483,-83 "/>
+<text text-anchor="start" x="352" y="-71" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="486" y="-71" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="348,-45 348,-64 "/>
+<text text-anchor="start" x="205" y="-52" font-family="monospace" font-size="10.00">cementation_time</text>
+<polyline fill="none" stroke="black" points="483,-45 483,-64 "/>
+<text text-anchor="start" x="352" y="-52" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="486" y="-52" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="348,-26 348,-45 "/>
+<text text-anchor="start" x="205" y="-33" font-family="monospace" font-size="10.00">transport_solver</text>
+<polyline fill="none" stroke="black" points="483,-26 483,-45 "/>
+<text text-anchor="start" x="352" y="-33" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="486" y="-33" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="348,-7 348,-26 "/>
+<text text-anchor="start" x="205" y="-14" font-family="monospace" font-size="10.00">transport_substeps</text>
+<polyline fill="none" stroke="black" points="483,-7 483,-26 "/>
+<text text-anchor="start" x="352" y="-14" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="486" y="-14" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- WaterDepth&#45;&gt;ActiveLayer -->
 <g id="edge4" class="edge">
 <title>WaterDepth&#45;&gt;ActiveLayer</title>
-<path fill="none" stroke="black" d="M222.25,-190.95C235.78,-181.36 250.04,-171.26 264.25,-161.2"/>
-<polygon fill="black" stroke="black" points="266.46,-163.92 272.6,-155.29 262.41,-158.21 266.46,-163.92"/>
+<path fill="none" stroke="black" d="M217.93,-209.96C230.53,-200.54 243.87,-190.57 257.26,-180.55"/>
+<polygon fill="black" stroke="black" points="259.69,-183.1 265.6,-174.31 255.5,-177.49 259.69,-183.1"/>
 </g>
 <!-- Boxes -->
 <g id="node3" class="node">
 <title>Boxes</title>
-<path fill="none" stroke="black" d="M547,-423C547,-423 409,-423 409,-423 403,-423 397,-417 397,-411 397,-411 397,-356 397,-356 397,-350 403,-344 409,-344 409,-344 547,-344 547,-344 553,-344 559,-350 559,-356 559,-356 559,-411 559,-411 559,-417 553,-423 547,-423"/>
-<polyline fill="none" stroke="black" points="404,-392.5 552,-392.5 "/>
-<text text-anchor="start" x="454.5" y="-401.3" font-family="Times,serif" font-weight="bold" font-size="14.00">Boxes</text>
-<polygon fill="#cccccc" stroke="transparent" points="404,-369.5 404,-392.5 451,-392.5 451,-369.5 404,-369.5"/>
-<polyline fill="none" stroke="black" points="404,-369.5 451,-369.5 451,-392.5 404,-392.5 "/>
-<text text-anchor="start" x="408" y="-377.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="451,-369.5 451,-392.5 505,-392.5 505,-369.5 451,-369.5"/>
-<polygon fill="none" stroke="black" points="451,-369.5 451,-392.5 505,-392.5 505,-369.5 451,-369.5"/>
-<text text-anchor="start" x="455" y="-377.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="505,-369.5 505,-392.5 552,-392.5 552,-369.5 505,-369.5"/>
-<polyline fill="none" stroke="black" points="552,-392.5 505,-392.5 505,-369.5 552,-369.5 "/>
-<text text-anchor="start" x="509" y="-377.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="451,-350.5 451,-369.5 "/>
-<text text-anchor="start" x="408" y="-357.5" font-family="monospace" font-size="10.00">box</text>
-<polyline fill="none" stroke="black" points="505,-350.5 505,-369.5 "/>
-<text text-anchor="start" x="455" y="-357.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="508" y="-357.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M547,-442C547,-442 409,-442 409,-442 403,-442 397,-436 397,-430 397,-430 397,-375 397,-375 397,-369 403,-363 409,-363 409,-363 547,-363 547,-363 553,-363 559,-369 559,-375 559,-375 559,-430 559,-430 559,-436 553,-442 547,-442"/>
+<polyline fill="none" stroke="black" points="404,-411.5 552,-411.5 "/>
+<text text-anchor="start" x="454.5" y="-420.3" font-family="Times,serif" font-weight="bold" font-size="14.00">Boxes</text>
+<polygon fill="#cccccc" stroke="transparent" points="404,-388.5 404,-411.5 451,-411.5 451,-388.5 404,-388.5"/>
+<polyline fill="none" stroke="black" points="404,-388.5 451,-388.5 451,-411.5 404,-411.5 "/>
+<text text-anchor="start" x="408" y="-396.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="451,-388.5 451,-411.5 505,-411.5 505,-388.5 451,-388.5"/>
+<polygon fill="none" stroke="black" points="451,-388.5 451,-411.5 505,-411.5 505,-388.5 451,-388.5"/>
+<text text-anchor="start" x="455" y="-396.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="505,-388.5 505,-411.5 552,-411.5 552,-388.5 505,-388.5"/>
+<polyline fill="none" stroke="black" points="552,-411.5 505,-411.5 505,-388.5 552,-388.5 "/>
+<text text-anchor="start" x="509" y="-396.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="451,-369.5 451,-388.5 "/>
+<text text-anchor="start" x="408" y="-376.5" font-family="monospace" font-size="10.00">box</text>
+<polyline fill="none" stroke="black" points="505,-369.5 505,-388.5 "/>
+<text text-anchor="start" x="455" y="-376.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="508" y="-376.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- Boxes&#45;&gt;WaterDepth -->
 <g id="edge2" class="edge">
 <title>Boxes&#45;&gt;WaterDepth</title>
-<path fill="none" stroke="black" d="M396.85,-350.71C365.3,-338.35 328.09,-323.78 291.97,-309.63"/>
-<polygon fill="black" stroke="black" points="292.91,-306.24 282.32,-305.85 290.35,-312.76 292.91,-306.24"/>
+<path fill="none" stroke="black" d="M396.85,-369.71C365.3,-357.35 328.09,-342.78 291.97,-328.63"/>
+<polygon fill="black" stroke="black" points="292.91,-325.24 282.32,-324.85 290.35,-331.76 292.91,-325.24"/>
 </g>
 <!-- SedimentBuffer -->
 <g id="node5" class="node">
 <title>SedimentBuffer</title>
-<path fill="none" stroke="black" d="M780,-298.5C780,-298.5 492,-298.5 492,-298.5 486,-298.5 480,-292.5 480,-286.5 480,-286.5 480,-212.5 480,-212.5 480,-206.5 486,-200.5 492,-200.5 492,-200.5 780,-200.5 780,-200.5 786,-200.5 792,-206.5 792,-212.5 792,-212.5 792,-286.5 792,-286.5 792,-292.5 786,-298.5 780,-298.5"/>
-<polyline fill="none" stroke="black" points="487,-268.5 785,-268.5 "/>
-<text text-anchor="start" x="573" y="-277.3" font-family="Times,serif" font-weight="bold" font-size="14.00">SedimentBuffer</text>
-<polygon fill="#cccccc" stroke="transparent" points="487,-245.5 487,-268.5 634,-268.5 634,-245.5 487,-245.5"/>
-<polyline fill="none" stroke="black" points="487,-245.5 634,-245.5 634,-268.5 487,-268.5 "/>
-<text text-anchor="start" x="491" y="-253.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="634,-245.5 634,-268.5 688,-268.5 688,-245.5 634,-245.5"/>
-<polygon fill="none" stroke="black" points="634,-245.5 634,-268.5 688,-268.5 688,-245.5 634,-245.5"/>
-<text text-anchor="start" x="638" y="-253.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="688,-245.5 688,-268.5 785,-268.5 785,-245.5 688,-245.5"/>
-<polyline fill="none" stroke="black" points="785,-268.5 688,-268.5 688,-245.5 785,-245.5 "/>
-<text text-anchor="start" x="692" y="-253.3" font-family="Times,serif" font-size="14.00">State</text>
+<path fill="none" stroke="black" d="M780,-317.5C780,-317.5 492,-317.5 492,-317.5 486,-317.5 480,-311.5 480,-305.5 480,-305.5 480,-231.5 480,-231.5 480,-225.5 486,-219.5 492,-219.5 492,-219.5 780,-219.5 780,-219.5 786,-219.5 792,-225.5 792,-231.5 792,-231.5 792,-305.5 792,-305.5 792,-311.5 786,-317.5 780,-317.5"/>
+<polyline fill="none" stroke="black" points="487,-287.5 785,-287.5 "/>
+<text text-anchor="start" x="573" y="-296.3" font-family="Times,serif" font-weight="bold" font-size="14.00">SedimentBuffer</text>
+<polygon fill="#cccccc" stroke="transparent" points="487,-264.5 487,-287.5 634,-287.5 634,-264.5 487,-264.5"/>
+<polyline fill="none" stroke="black" points="487,-264.5 634,-264.5 634,-287.5 487,-287.5 "/>
+<text text-anchor="start" x="491" y="-272.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="634,-264.5 634,-287.5 688,-287.5 688,-264.5 634,-264.5"/>
+<polygon fill="none" stroke="black" points="634,-264.5 634,-287.5 688,-287.5 688,-264.5 634,-264.5"/>
+<text text-anchor="start" x="638" y="-272.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="688,-264.5 688,-287.5 785,-287.5 785,-264.5 688,-264.5"/>
+<polyline fill="none" stroke="black" points="785,-287.5 688,-287.5 688,-264.5 785,-264.5 "/>
+<text text-anchor="start" x="692" y="-272.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="634,-245.5 634,-264.5 "/>
+<text text-anchor="start" x="491" y="-252.5" font-family="monospace" font-size="10.00">sediment_buffer_size</text>
+<polyline fill="none" stroke="black" points="688,-245.5 688,-264.5 "/>
+<text text-anchor="start" x="638" y="-252.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="691" y="-252.5" font-family="monospace" font-size="10.00">sediment_buffer</text>
 <polyline fill="none" stroke="black" points="634,-226.5 634,-245.5 "/>
-<text text-anchor="start" x="491" y="-233.5" font-family="monospace" font-size="10.00">sediment_buffer_size</text>
+<text text-anchor="start" x="491" y="-233.5" font-family="monospace" font-size="10.00">depositional_resolution</text>
 <polyline fill="none" stroke="black" points="688,-226.5 688,-245.5 "/>
 <text text-anchor="start" x="638" y="-233.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="691" y="-233.5" font-family="monospace" font-size="10.00">sediment_buffer</text>
-<polyline fill="none" stroke="black" points="634,-207.5 634,-226.5 "/>
-<text text-anchor="start" x="491" y="-214.5" font-family="monospace" font-size="10.00">depositional_resolution</text>
-<polyline fill="none" stroke="black" points="688,-207.5 688,-226.5 "/>
-<text text-anchor="start" x="638" y="-214.5" font-family="monospace" font-size="10.00"> </text>
-<text text-anchor="start" x="691" y="-214.5" font-family="monospace" font-size="10.00"> </text>
+<text text-anchor="start" x="691" y="-233.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- Boxes&#45;&gt;SedimentBuffer -->
 <g id="edge3" class="edge">
 <title>Boxes&#45;&gt;SedimentBuffer</title>
-<path fill="none" stroke="black" d="M524.12,-343.97C538.55,-331.91 554.76,-318.37 570.27,-305.42"/>
-<polygon fill="black" stroke="black" points="572.87,-307.81 578.3,-298.71 568.38,-302.43 572.87,-307.81"/>
+<path fill="none" stroke="black" d="M524.12,-362.97C538.55,-350.91 554.76,-337.37 570.27,-324.42"/>
+<polygon fill="black" stroke="black" points="572.87,-326.81 578.3,-317.71 568.38,-321.43 572.87,-326.81"/>
 </g>
 <!-- FaciesBase -->
 <g id="node4" class="node">
 <title>FaciesBase</title>
-<path fill="none" stroke="black" d="M450,-289C450,-289 312,-289 312,-289 306,-289 300,-283 300,-277 300,-277 300,-222 300,-222 300,-216 306,-210 312,-210 312,-210 450,-210 450,-210 456,-210 462,-216 462,-222 462,-222 462,-277 462,-277 462,-283 456,-289 450,-289"/>
-<polyline fill="none" stroke="black" points="307,-258.5 455,-258.5 "/>
-<text text-anchor="start" x="337" y="-267.3" font-family="Times,serif" font-weight="bold" font-size="14.00">FaciesBase</text>
-<polygon fill="#cccccc" stroke="transparent" points="307,-235.5 307,-258.5 354,-258.5 354,-235.5 307,-235.5"/>
-<polyline fill="none" stroke="black" points="307,-235.5 354,-235.5 354,-258.5 307,-258.5 "/>
-<text text-anchor="start" x="311" y="-243.3" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="transparent" points="354,-235.5 354,-258.5 408,-258.5 408,-235.5 354,-235.5"/>
-<polygon fill="none" stroke="black" points="354,-235.5 354,-258.5 408,-258.5 408,-235.5 354,-235.5"/>
-<text text-anchor="start" x="358" y="-243.3" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="transparent" points="408,-235.5 408,-258.5 455,-258.5 455,-235.5 408,-235.5"/>
-<polyline fill="none" stroke="black" points="455,-258.5 408,-258.5 408,-235.5 455,-235.5 "/>
-<text text-anchor="start" x="412" y="-243.3" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="354,-216.5 354,-235.5 "/>
-<text text-anchor="start" x="311" y="-223.5" font-family="monospace" font-size="10.00">facies</text>
-<polyline fill="none" stroke="black" points="408,-216.5 408,-235.5 "/>
-<text text-anchor="start" x="358" y="-223.5" font-family="monospace" font-size="10.00">name</text>
-<text text-anchor="start" x="411" y="-223.5" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M450,-308C450,-308 312,-308 312,-308 306,-308 300,-302 300,-296 300,-296 300,-241 300,-241 300,-235 306,-229 312,-229 312,-229 450,-229 450,-229 456,-229 462,-235 462,-241 462,-241 462,-296 462,-296 462,-302 456,-308 450,-308"/>
+<polyline fill="none" stroke="black" points="307,-277.5 455,-277.5 "/>
+<text text-anchor="start" x="337" y="-286.3" font-family="Times,serif" font-weight="bold" font-size="14.00">FaciesBase</text>
+<polygon fill="#cccccc" stroke="transparent" points="307,-254.5 307,-277.5 354,-277.5 354,-254.5 307,-254.5"/>
+<polyline fill="none" stroke="black" points="307,-254.5 354,-254.5 354,-277.5 307,-277.5 "/>
+<text text-anchor="start" x="311" y="-262.3" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="transparent" points="354,-254.5 354,-277.5 408,-277.5 408,-254.5 354,-254.5"/>
+<polygon fill="none" stroke="black" points="354,-254.5 354,-277.5 408,-277.5 408,-254.5 354,-254.5"/>
+<text text-anchor="start" x="358" y="-262.3" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="transparent" points="408,-254.5 408,-277.5 455,-277.5 455,-254.5 408,-254.5"/>
+<polyline fill="none" stroke="black" points="455,-277.5 408,-277.5 408,-254.5 455,-254.5 "/>
+<text text-anchor="start" x="412" y="-262.3" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="354,-235.5 354,-254.5 "/>
+<text text-anchor="start" x="311" y="-242.5" font-family="monospace" font-size="10.00">facies</text>
+<polyline fill="none" stroke="black" points="408,-235.5 408,-254.5 "/>
+<text text-anchor="start" x="358" y="-242.5" font-family="monospace" font-size="10.00">name</text>
+<text text-anchor="start" x="411" y="-242.5" font-family="monospace" font-size="10.00"> </text>
 </g>
 <!-- FaciesBase&#45;&gt;ActiveLayer -->
 <g id="edge5" class="edge">
 <title>FaciesBase&#45;&gt;ActiveLayer</title>
-<path fill="none" stroke="black" d="M381,-209.92C381,-196.58 381,-181.04 381,-165.42"/>
-<polygon fill="black" stroke="black" points="384.5,-165.16 381,-155.16 377.5,-165.16 384.5,-165.16"/>
+<path fill="none" stroke="black" d="M381,-228.99C381,-215.73 381,-200.21 381,-184.42"/>
+<polygon fill="black" stroke="black" points="384.5,-184.03 381,-174.03 377.5,-184.03 384.5,-184.03"/>
 </g>
 <!-- SedimentBuffer&#45;&gt;ActiveLayer -->
 <g id="edge6" class="edge">
 <title>SedimentBuffer&#45;&gt;ActiveLayer</title>
-<path fill="none" stroke="black" d="M563.95,-200.47C545.31,-188.04 524.71,-174.3 504.25,-160.67"/>
-<polygon fill="black" stroke="black" points="506.07,-157.67 495.81,-155.04 502.19,-163.5 506.07,-157.67"/>
+<path fill="none" stroke="black" d="M567.66,-219.4C550.24,-207.13 530.92,-193.53 511.5,-179.86"/>
+<polygon fill="black" stroke="black" points="513.37,-176.9 503.18,-174.01 509.34,-182.62 513.37,-176.9"/>
 </g>
 </g>
 </svg>
@@ -605,6 +648,7 @@ end
 @kwdef struct Input &lt;: AbstractInput
     intertidal_zone::Height = 0.0u&quot;m&quot;
     disintegration_rate::Rate = 50.0u&quot;m/Myr&quot;
+    disintegration_transfer::Function = x -&gt; x
     cementation_time::Union{typeof(1.0u&quot;Myr&quot;),Nothing} = nothing
     transport_solver = Val{:RK4}
     transport_substeps = :adaptive
@@ -677,6 +721,7 @@ function disintegrator(input)
     output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
     depositional_resolution = input.depositional_resolution
     iz = input.intertidal_zone
+    tf = input.disintegration_transfer
 
     return function (state)
         wn = w(state)
@@ -834,4 +879,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Literature on active (or mixing) layer transport modeling is vast. Most of which is concerned with much smaller time scales, and more complicated physics than we are mostly dealing with.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Note that in other approaches to active layer transport, like Paola 1992, there would be a factor <span>$1/C_f$</span>. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../components/sediment_buffer/">« Sediment Buffers</a><a class="docs-footer-nextpage" href="../onshore-transport/">Onshore Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 27 October 2025 21:31">Monday 27 October 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Literature on active (or mixing) layer transport modeling is vast. Most of which is concerned with much smaller time scales, and more complicated physics than we are mostly dealing with.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Note that in other approaches to active layer transport, like Paola 1992, there would be a factor <span>$1/C_f$</span>. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../components/sediment_buffer/">« Sediment Buffers</a><a class="docs-footer-nextpage" href="../onshore-transport/">Onshore Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Tuesday 28 October 2025 12:13">Tuesday 28 October 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

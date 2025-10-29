@@ -52,7 +52,7 @@ From package mode in the Julia REPL:
 (MyCarboKittenProject) pkg> add CarboKitten
 ```
 
-This will download and install CarboKitten's latest release and its dependencies. 
+This will download and install CarboKitten's latest release and its dependencies.
 
 ### Option 2: Install from GitHub
 
@@ -80,11 +80,96 @@ The steps below propose having two separate scripts for running a model and for 
 
 Create a new file called `run_model.jl` in your project directory with the following content:
 
-``` {.julia file=examples/model/alcap/run.jl}
+``` {.julia file=examples/getting-started/run_model.jl}
+module Script
 
+using Unitful
+using CarboKitten
+
+function main()
+    # Configure a list of facies types and their production curves
+    facies = [
+        ALCAP.Facies(
+            maximum_growth_rate=500u"m/Myr",
+            extinction_coefficient=0.8u"m^-1",
+            saturation_intensity=60u"W/m^2",
+            diffusion_coefficient=50.0u"m/yr"),
+        ALCAP.Facies(
+            maximum_growth_rate=400u"m/Myr",
+            extinction_coefficient=0.1u"m^-1",
+            saturation_intensity=60u"W/m^2",
+            diffusion_coefficient=25.0u"m/yr"),
+        ALCAP.Facies(
+            maximum_growth_rate=100u"m/Myr",
+            extinction_coefficient=0.005u"m^-1",
+            saturation_intensity=60u"W/m^2",
+            diffusion_coefficient=12.5u"m/yr")
+    ]
+
+    input = ALCAP.Input(
+        # configure a box geometry
+        box = Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+
+        # choose time integration step
+        time = TimeProperties(
+            Δt=0.0002u"Myr",
+            steps=5000),
+
+        # choose what to write to output
+        output = Dict(
+            # complete in space, sampled in time
+            :topography => OutputSpec(write_interval=100),
+            # complete in time, but only for a single pixel slice
+            :profile    => OutputSpec(slice=(:, 25))
+        ),
+
+        # set an initial ramp topography
+        initial_topography=(x, y) -> -x / 300.0,
+
+        # set a relative sea level curve
+        sea_level = t -> 10.0u"m" * sin(2π * t / 0.20u"Myr") +
+                          2.0u"m" * sin(2π * t / 0.03u"Myr"),
+
+        # set a subsidence rate
+        subsidence_rate = 50.0u"m/Myr",
+
+        # set the local mean insolation
+        insolation = 400.0u"W/m^2",
+
+        # include the facies definition
+        facies = facies,
+
+        # set transport properties:
+        #   - the sediment buffer keeps track of past sediment
+        depositional_resolution = 0.5u"m",
+        sediment_buffer_size = 50,
+
+        #   - the disintegration rate sets how fast existing sediment
+        #     is removed from the buffer
+        disintegration_rate = 50.0u"m/Myr",
+
+        #   - the cementation time sets how fast entrained material
+        #     settles, by specifying a half-life time.
+        cementation_time = 100u"yr",
+    )
+
+    # The following is here for your convenience:
+    #   - ensure the output directory exists
+    mkpath("data/output")
+    #   - do not track the contents of the output directory
+    write("data/output/.gitignore", "*\n")
+
+    # run the model
+    run_model(Model{ALCAP}, input, "data/output/first-run.h5")
+end
+
+end  # of module Script
+
+# Run the script
+Script.main()
 ```
 
-The output will be saved in the `HDF5` format. This is a binary file and should not be tracked by version control. It can be accessed using CarboKitten's built in tools (see below for plotting) or standard libraries for reading HDF5 for Python or R. 
+The output will be saved in the `HDF5` format. This is a binary file and should not be tracked by version control. It can be accessed using CarboKitten's built in tools (see below for plotting) or standard libraries for reading HDF5 for Python or R.
 
 Please note that this script puts all new functions and variables in a module (`Module Script`). This is not obligatory, but recommended. You can [read more about Julia modules](https://docs.julialang.org/en/v1/manual/modules/) if you want to understand why this is useful.
 
@@ -96,13 +181,15 @@ From your project directory, run:
 julia --project=. run_model.jl
 ```
 
-Alternatively, from the Julia REPL with the project activated:
+Preferably, you should run the script from the Julia REPL with the project activated:
 
 ```julia
 include("run_model.jl")
 ```
 
-The model will run and save output to `data/output/alcap-example.h5`. This may take a few minutes depending on your system.
+Julia has a run-time overhead for compiling the code, only for the first time in each session. If you want to modify the script and re-run, doing so from the Julia REPL is much much faster.
+
+The model will run and save output to `data/output/first-run.h5`. This may take a few minutes depending on your system.
 
 ## Visualizing Results
 
@@ -114,13 +201,13 @@ To visualize the model output, you need to install a Makie backend. For interact
 (MyCarboKittenProject) pkg> add GLMakie
 ```
 
-This step will likely take longer than installing CarboKitten itself. On a slow computer, it can take more than 10 min. You will only have to do it once per project, although 
+This step will likely take longer than installing CarboKitten itself. On a slow computer, it can take more than 10 min. You will only have to do it once per project though.
 
 ### Creating a Plotting Script
 
 Create a new file called `plot_results.jl`:
 
-```{.julia file=examples/model/alcap/plot_alcap.jl}
+``` {.julia file=examples/getting-started/plot_alcap.jl}
 using GLMakie
 using CarboKitten.Visualization
 
@@ -128,7 +215,7 @@ using CarboKitten.Visualization
 GLMakie.activate!()
 
 # Generate a summary plot
-fig = summary_plot("my-first-model.h5")
+fig = summary_plot("data/output/first-run.h5")
 
 # Display the plot
 display(fig)
@@ -143,7 +230,7 @@ save("my-first-model.png", fig)
 julia --project=. plot_results.jl
 ```
 
-Or from the Julia REPL:
+Or better, from the Julia REPL:
 
 ```julia
 include("plot_results.jl")
@@ -169,16 +256,6 @@ The summary plot shows:
 - Read about the [ALCAP model](model-alcap.md) components and theory
 - Check out the [visualization](visualization.md) options for different plot types
 
-## Multi-threading
-
-To speed up model runs, use multiple threads:
-
-```bash
-julia --project=. -t 4 run_model.jl
-```
-
-This runs Julia with 4 threads. Adjust the number based on your CPU.
-
 ## Troubleshooting
 
 If you encounter issues:
@@ -187,5 +264,5 @@ If you encounter issues:
 2. Verify your project environment is activated (the REPL prompt should show your project name)
 3. Try updating all packages: `pkg> up` in package mode
 4. Check the [documentation](https://mindthegap-erc.github.io/CarboKitten.jl) for more details
-5. Report bugs at [github.com/MindTheGap-ERC/CarboKitten.jl/issues](https://github.com/MindTheGap-ERC/CarboKitten.jl/issues) 
+5. Report bugs at [github.com/MindTheGap-ERC/CarboKitten.jl/issues](https://github.com/MindTheGap-ERC/CarboKitten.jl/issues)
 6. Ask for help at [https://github.com/MindTheGap-ERC/CarboKitten.jl/discussions](https://github.com/MindTheGap-ERC/CarboKitten.jl/discussions)

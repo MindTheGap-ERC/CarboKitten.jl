@@ -22,7 +22,7 @@ const TAG = "example_init_topo"
 
 <<example-init-topo>>
 ```
-In the first step, the code is listed below. One thing should be noticed is that the grids are 100 by 70, with scale of 170 m. These values should be same as your runs lalter.
+In the first step, the code is listed below. In this example run, constant sea-level has been used. One thing should be noticed is that the grids are 100 by 70, with scale of 170 m. These values should be same as your runs later.
 ``` {.julia #example-init-topo}
 const FACIES = [
     ALCAP.Facies(

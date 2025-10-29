@@ -8,9 +8,11 @@ using DataFrames
 import CSV as OfficialCSV
 
 const PATH = "examples/initial_topography"
-
 const TAG = "example_init_topo"
-
+const x_grid_size = 100
+const y_grid_size = 70
+const PHYS_SCALE = 170.0u"m"
+const SLOPE = 300.0
 # ~/~ begin <<docs/src/initial-topography.md#example-init-topo>>[init]
 const FACIES = [
     ALCAP.Facies(
@@ -38,12 +40,12 @@ const FACIES = [
 
 const INPUT = ALCAP.Input(
     tag="$TAG",
-    box=Box{Coast}(grid_size=(100, 70), phys_scale=170.0u"m"),
+    box=Box{Coast}(grid_size=(x_grid_size, y_grid_size), phys_scale=PHYS_SCALE),
     time=TimeProperties(
         Δt=0.0001u"Myr",
         steps=5000),
     ca_interval=1,
-    initial_topography=(x, y) -> -x / 300.0,
+    initial_topography=(x, y) -> -x / SLOPE,
     sea_level= t -> 0.0u"m",
     subsidence_rate=50.0u"m/Myr",
     disintegration_rate=50.0u"m/Myr",
@@ -58,15 +60,12 @@ run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
 function extract_topography(PATH,TAG)
     h5open("$(PATH)/$(TAG).h5", "r") do fid
         disintegration = read(fid["full/disintegration"])[1,:,:,end]
-        @show size(disintegration)
         production = read(fid["full/production"])[1,:,:,end]
         deposition = read(fid["full/deposition"])[1,:,:,end]
         sediment_height = read(fid["full/sediment_thickness"])[:,:,end]
-        @show size(sediment_height)
         data_dis = DataFrame(
             disintegration, :auto
         )
-        @show size(data_dis)
         data_pro = DataFrame(
             production, :auto
         )   
@@ -83,18 +82,20 @@ end
 data_dis, data_pro, data_dep, data_sed = extract_topography(PATH,TAG)
 
 function starting_bathy()
-    init = ones(100, 70) .*1.0u"m"
+    init = ones(x_grid_size, y_grid_size) .*1.0u"m"
     for i in CartesianIndices(init)
-        init[i]   = -(i[1]-1) .* 170u"m" ./ 300
+        init[i]   = -(i[1]-1) .* PHYS_SCALE ./ SLOPE
     end
     return init
 end
 # ~/~ end
 # ~/~ begin <<docs/src/initial-topography.md#example-init-topo>>[2]
 function calculate_bathymetry(data,INPUT)
-    Bathy = zeros(100, 70) .*1.0u"m"
+    Bathy = zeros(x_grid_size, y_grid_size) .*1.0u"m"
     Bathy .= starting_bathy() .+ data .- INPUT.subsidence_rate .* INPUT.time.Δt .* INPUT.time.steps
     OfficialCSV.write("$(PATH)/$(TAG).csv", DataFrame(Bathy,:auto))
 end
+
+calculate_bathymetry(data_sed,INPUT)
 # ~/~ end
 # ~/~ end

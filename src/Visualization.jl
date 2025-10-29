@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/visualization.md#src/Visualization.jl>>[init]
 module Visualization
 export sediment_profile!, sediment_profile, wheeler_diagram!, wheeler_diagram, production_curve!,
-       production_curve, glamour_view!, summary_plot
+       production_curve, glamour_view!, coeval_lines!, summary_plot
 
 function print_instructions(func_name, args)
     println("Called `$(func_name)` with args `$(typeof.(args))`")
@@ -11,6 +11,7 @@ end
 function profile_plot! end
 
 # profile_plot!(args...; kwargs...) = print_instructions("profile_plot!", args)
+coeval_lines!(args...) = print_instructions("coeval_lines!", args)
 sediment_profile!(args...) = print_instructions("sediment_profile!", args)
 sediment_profile(args...) = print_instructions("sediment_profile", args)
 wheeler_diagram!(args...) = print_instructions("wheeler_diagram!", args)

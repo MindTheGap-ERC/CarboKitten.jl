@@ -3,6 +3,7 @@ using CarboKitten
 
 using Unitful
 using CarboKitten.Export: data_export, CSV as CSVCarbo
+using CarboKitten.Export: read_volume
 using HDF5
 using DataFrames
 import CSV as OfficialCSV
@@ -16,22 +17,16 @@ const SLOPE = 300.0
 # ~/~ begin <<docs/src/initial-topography.md#example-init-topo>>[init]
 const FACIES = [
     ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
         maximum_growth_rate=500u"m/Myr",
         extinction_coefficient=0.8u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=50.0u"m/yr"),
     ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
         maximum_growth_rate=400u"m/Myr",
         extinction_coefficient=0.1u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=25.0u"m/yr"),
     ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
         maximum_growth_rate=100u"m/Myr",
         extinction_coefficient=0.005u"m^-1",
         saturation_intensity=60u"W/m^2",
@@ -39,7 +34,7 @@ const FACIES = [
 ]
 
 const INPUT = ALCAP.Input(
-    tag="$TAG",
+    tag=TAG,
     box=Box{Coast}(grid_size=(x_grid_size, y_grid_size), phys_scale=PHYS_SCALE),
     time=TimeProperties(
         Δt=0.0001u"Myr",
@@ -54,32 +49,23 @@ const INPUT = ALCAP.Input(
     depositional_resolution=0.5u"m",
     facies=FACIES)
 
-run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+run_model(Model{ALCAP}, INPUT, "examples/initial_topography/example_init_topo.h5")
+
 # ~/~ end
 # ~/~ begin <<docs/src/initial-topography.md#example-init-topo>>[1]
-function extract_topography(PATH,TAG)
-    h5open("$(PATH)/$(TAG).h5", "r") do fid
-        disintegration = read(fid["full/disintegration"])[1,:,:,end]
-        production = read(fid["full/production"])[1,:,:,end]
-        deposition = read(fid["full/deposition"])[1,:,:,end]
-        sediment_height = read(fid["full/sediment_thickness"])[:,:,end]
-        data_dis = DataFrame(
-            disintegration, :auto
-        )
-        data_pro = DataFrame(
-            production, :auto
-        )   
-        data_dep = DataFrame(
-           deposition, :auto
-        )
+function extract_topography()
+        data = read_volume("examples/initial_topography/example_init_topo.h5", :full)[2]
+
+        sediment_height = data.sediment_thickness[:, :, end]
+
         data_sed = DataFrame(
            sediment_height, :auto
         )
-        return data_dis.*1.0u"m", data_pro.*1.0u"m", data_dep.*1.0u"m", data_sed.*1.0u"m"
-end
+        return data_sed
 end
 
-data_dis, data_pro, data_dep, data_sed = extract_topography(PATH,TAG)
+
+data_sed = extract_topography()
 
 function starting_bathy()
     init = ones(x_grid_size, y_grid_size) .*1.0u"m"
@@ -93,7 +79,7 @@ end
 function calculate_bathymetry(data,INPUT)
     Bathy = zeros(x_grid_size, y_grid_size) .*1.0u"m"
     Bathy .= starting_bathy() .+ data .- INPUT.subsidence_rate .* INPUT.time.Δt .* INPUT.time.steps
-    OfficialCSV.write("$(PATH)/$(TAG).csv", DataFrame(Bathy,:auto))
+    OfficialCSV.write("examples/initial_topography/example_init_topo.csv", DataFrame(Bathy,:auto))
 end
 
 calculate_bathymetry(data_sed,INPUT)

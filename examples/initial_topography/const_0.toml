@@ -1,0 +1,25 @@
+[[locations]]
+label = "1"
+x = [3740.0, "m"]
+initial_topography = [0.0201228841773613, "m"]
+y = [5780.0, "m"]
+[[locations]]
+label = "2"
+x = [7820.0, "m"]
+initial_topography = [-28.368349248236605, "m"]
+y = [5780.0, "m"]
+[[locations]]
+label = "3"
+x = [11900.0, "m"]
+initial_topography = [-54.08865320999047, "m"]
+y = [5780.0, "m"]
+
+[global]
+tag = "untagged run"
+time_steps = 12900
+subsidence_rate = [50.0, "m Myr^-1"]
+delta_t = [0.0002, "Myr"]
+
+[files]
+metadata = "examples/initial_topography/const_0.toml"
+stratigraphic_column = "examples/initial_topography/const_0_sc.csv"

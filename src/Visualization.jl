@@ -11,6 +11,8 @@ end
 function profile_plot! end
 
 # profile_plot!(args...; kwargs...) = print_instructions("profile_plot!", args)
+sediment_accumulation!(args...) = print_instructions("sediment_accumulation!", args)
+dominant_facies!(args...) = print_instructions("dominant_facies!", args)
 coeval_lines!(args...) = print_instructions("coeval_lines!", args)
 sediment_profile!(args...) = print_instructions("sediment_profile!", args)
 sediment_profile(args...) = print_instructions("sediment_profile", args)

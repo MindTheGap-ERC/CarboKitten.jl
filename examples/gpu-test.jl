@@ -67,7 +67,7 @@ end
 end
 
 function production(input::AbstractInput)
-    :(@kernel function production_k(water_depth, facies_map, production_out)
+    :(@kernel function (water_depth, facies_map, production_out)
         I_0 = $(input.insolation |> in_units_of(u"W/m^2") |> Float32)
         dt = $(input.time.Δt |> in_units_of(u"Myr") |> Float32)
         g_m = $([f.maximum_growth_rate |> in_units_of(u"m/Myr") |> Float32 for f in input.facies])
@@ -135,7 +135,7 @@ function main()
     precedence = collect(1:3)
     p_expr = production(input)
     # print(p_expr)
-    eval(p_expr)
+    production_k = eval(p_expr)
 
     backend = get_backend(a)
     for _ in 1:1000
@@ -144,9 +144,8 @@ function main()
         circshift!(precedence, 1)
         a, b = b, a
 
-        Base.invokelatest(
-            Base.invokelatest(production_k, backend, 256),
-            wd, a, total_sediment, ndrange=size(a))
+        production_k(backend, 256)(wd, a, total_sediment, ndrange=size(a))
+
         KernelAbstractions.synchronize(backend)
     end
     Array(total_sediment)

@@ -829,7 +829,7 @@ function glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; colorm
 	grid_size = (length(x), length(y))
 	steps_between = 2
 	selected_steps = [1, ((1:steps_between) .* n_steps .÷ (steps_between + 1))..., n_steps]
-	bedrock = header.initial_topography .- header.axes.t[end] * header.subsidence_rate
+	bedrock = header.initial_topography .- (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
 
 	result = Array{Float64, 3}(undef, grid_size..., length(selected_steps))
 	for (i, j) in enumerate(selected_steps)

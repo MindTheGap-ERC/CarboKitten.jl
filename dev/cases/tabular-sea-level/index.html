@@ -104,7 +104,8 @@ module PlotTabularSeaLevel
 
 using CarboKitten
 using CarboKitten.DataSets: artifact_dir
-using CarboKitten.Visualization: summary_plot
+using CarboKitten.Visualization: summary_plot, sediment_profile!, coeval_lines!
+using CarboKitten.Export: read_slice
 
 using DelimitedFiles: readdlm
 using CairoMakie
@@ -156,13 +157,23 @@ function plot_result()
     save(&quot;docs/src/_fig/lisiecki-sea-level-summary.png&quot;, fig)
 end
 
+function plot_gg_boundary()
+    header, data = read_slice(&quot;data/output/lisiecki-sea-level.h5&quot;, :profile)
+    fig = Figure(size=(1000, 600))
+    ax = Axis(fig[1, 1])
+    sediment_profile!(ax, header, data, show_unconformities = false, show_coeval_lines = false)
+    coeval_lines!(ax, header, data, [-1.8u&quot;Myr&quot;], linewidth = 3, color = :black, linestyle = :solid)
+    save(&quot;docs/src/_fig/lisiecki_sed_profile_gg_boundary.png&quot;, fig)
+end
+
 end
 
 PlotTabularSeaLevel.plot_miller_data()
 PlotTabularSeaLevel.plot_lisiecki_data()
-PlotTabularSeaLevel.plot_result()</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+PlotTabularSeaLevel.plot_result()
+PlotTabularSeaLevel.plot_gg_boundary()</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../first_tutorial/">« Tutorial (Pluto notebook)</a><a class="docs-footer-nextpage" href="../../architecture/">Architecture »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Thursday 30 October 2025 13:31">Thursday 30 October 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../first_tutorial/">« Tutorial (Pluto notebook)</a><a class="docs-footer-nextpage" href="../../architecture/">Architecture »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 17 November 2025 10:30">Monday 17 November 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

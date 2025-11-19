@@ -2,6 +2,8 @@ module GPUTest
 
 using oneAPI
 using KernelAbstractions
+import AcceleratedKernels as AK
+using Adapt: adapt
 
 using Unitful
 using CarboKitten
@@ -37,23 +39,25 @@ using StaticArrays
     b[i] = n == 3 || n == 2 && a[i] == 1
 end
 
-@kernel function ca2d5sq(::Type{BT}, in, out, precedence) where {BT}
-    i = @index(Global, Cartesian)
+function ca2d5sq(::Type{BT}, in, out, precedence) where {BT}
+    AK.foraxes(in, 2) do i
+        for j in axes(in, 1)
+            for f in precedence
+                n = 0
+                for k in CartesianIndices((5, 5))
+                    n += (get_bounded(BT, in, CartesianIndex(j, i) + k - CartesianIndex(3, 3)) == f)
+                end
 
-    for f in precedence
-        n = 0
-        for j in CartesianIndices((5, 5))
-            n += (get_bounded(BT, in, i + j - CartesianIndex(3, 3)) == f)
-        end
-
-        if in[i] == f
-            n -= 1
-            out[i] = 4 <= n && n <= 10 ? f : 0
-            break
-        else
-            if 6 <= n && n <= 10
-                out[i] = f
-                break
+                if in[j, i] == f
+                    n -= 1
+                    out[j, i] = 4 <= n && n <= 10 ? f : 0
+                    break
+                else
+                    if 6 <= n && n <= 10
+                        out[j, i] = f
+                        break
+                    end
+                end
             end
         end
     end
@@ -66,22 +70,25 @@ end
     return x > 0.0f0 ? gₘ * tanh(I * exp(-x)) : 0.0f0
 end
 
-function production(input::AbstractInput)
-    :(@kernel function (water_depth, facies_map, production_out)
-        I_0 = $(input.insolation |> in_units_of(u"W/m^2") |> Float32)
-        dt = $(input.time.Δt |> in_units_of(u"Myr") |> Float32)
-        g_m = $([f.maximum_growth_rate |> in_units_of(u"m/Myr") |> Float32 for f in input.facies])
-        I_k = $([f.saturation_intensity |> in_units_of(u"W/m^2") |> Float32 for f in input.facies])
-        k = $([f.extinction_coefficient |> in_units_of(u"1/m") |> Float32 for f in input.facies])
-        i = @index(Global, Cartesian)
+function production(dev::Type{X}, input::AbstractInput) where {X}
+    I_0 = input.insolation |> in_units_of(u"W/m^2") |> Float32
+    dt = input.time.Δt |> in_units_of(u"Myr") |> Float32
+    g_m = adapt(X, [f.maximum_growth_rate |> in_units_of(u"m/Myr") |> Float32 for f in input.facies])
+    I_k = adapt(X, [f.saturation_intensity |> in_units_of(u"W/m^2") |> Float32 for f in input.facies])
+    k = adapt(X, [f.extinction_coefficient |> in_units_of(u"1/m") |> Float32 for f in input.facies])
 
-        f = facies_map[i]
-        if f != 0
-            wd = water_depth[i]
-            pr = production_rate(I_0, g_m[f], I_k[f], k[f], wd) * dt
-            production_out[f, i[1], i[2]] = min(pr, max(0.0f0, wd))
+    function (water_depth, facies_map, production_out)
+        AK.foraxes(water_depth, 2) do i
+            for j in axes(water_depth, 1)
+                f = facies_map[j, i]
+                if f != 0
+                    wd = water_depth[j, i]
+                    pr = production_rate(I_0, g_m[f], I_k[f], k[f], wd) * dt
+                    production_out[f, j, i] = min(pr, max(0.0f0, wd))
+                end
+            end
         end
-    end)
+    end
 end
 
 function main()
@@ -123,30 +130,29 @@ function main()
         facies = facies
     )
 
-    # a = oneArray(rand(Int32(0):Int32(3), 256, 256))
-    # b = oneArray(zeros(Int32, 256, 256))
-    # total_sediment = oneArray(zeros(Float32, 3, 256, 256))
-    # wd = oneArray(fill(10.0f0, 256, 256))
-    a = rand(Int32(0):Int32(3), 256, 256)
-    b = zeros(Int32, 256, 256)
-    total_sediment = zeros(Float32, 3, 256, 256)
-    wd = fill(10.0f0, 256, 256)
+    dev = Array
+    a = adapt(dev, rand(Int32(0):Int32(3), 256, 256))
+    b = adapt(dev, zeros(Int32, 256, 256))
+    total_sediment = adapt(dev, zeros(Float32, 3, 256, 256))
+    wd = adapt(dev, fill(10.0f0, 256, 256))
+    # a = rand(Int32(0):Int32(3), 256, 256)
+    # b = zeros(Int32, 256, 256)
+    # total_sediment = zeros(Float32, 3, 256, 256)
+    # wd = fill(10.0f0, 256, 256)
 
-    precedence = collect(1:3)
-    p_expr = production(input)
+    precedence = Int32[1, 2, 3]
     # print(p_expr)
-    production_k = eval(p_expr)
+    production_k = production(dev, input) 
 
     backend = get_backend(a)
     for _ in 1:1000
-        ca2d5sq(backend, 256)(Periodic{2}, a, b, precedence, ndrange=size(a))
-        KernelAbstractions.synchronize(backend)
+        ca2d5sq(Periodic{2}, a, b, adapt(dev, precedence))
+        # KernelAbstractions.synchronize(backend)
         circshift!(precedence, 1)
         a, b = b, a
 
-        production_k(backend, 256)(wd, a, total_sediment, ndrange=size(a))
-
-        KernelAbstractions.synchronize(backend)
+        production_k(wd, a, total_sediment)
+        # KernelAbstractions.synchronize(backend)
     end
     Array(total_sediment)
 end

@@ -191,7 +191,7 @@ Open the notebook that you downloaded.
 # ╔═╡ d573309f-c99a-43e9-a89f-083ef4ade5d8
 md"""
 !!! danger "☕ Coffee time! ☕"
-	When you open the notebook and click "Run notebook code" at the top-right corner, Pluto will download and compile all the needed packages. Depending on your machine this may take 5-10 minutes. We would love to hear your feedback: please share it via (this form)[https://forms.office.com/e/8RnBXqxq2D].
+	When you open the notebook and click "Run notebook code" at the top-right corner, Pluto will download and compile all the needed packages. Depending on your machine this may take 5-10 minutes.
 """
 
 # ╔═╡ 3b7fef8b-efb9-467d-b6db-f7cfa132be69
@@ -2765,8 +2765,8 @@ version = "1.9.2+0"
 # ╟─fbf6306d-de6c-4581-9f19-4ac066162709
 # ╠═1d952bc7-4375-4f6b-a47a-a2b0ea915360
 # ╠═eb4a1b28-4ba4-4cd1-9490-e27105b19921
-# ╟─c820f883-fa5b-4a43-a03f-e6961dbe4001
-# ╟─5ca6c8ed-cfd1-478d-a9fe-67fb4ff2ef0f
+# ╠═c820f883-fa5b-4a43-a03f-e6961dbe4001
+# ╠═5ca6c8ed-cfd1-478d-a9fe-67fb4ff2ef0f
 # ╟─c85294f2-3508-48c0-b67d-d82df646ae33
 # ╟─754f7cf0-f3a7-4cff-b20e-ed16874860c7
 # ╟─44308ced-efd2-42fd-94ab-baa178352ed9

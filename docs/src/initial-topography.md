@@ -154,6 +154,11 @@ end  # module MainRun
 
 ![Resulting output](fig/initial_topography_example.png)
 
+Howto Use
+---------
+
+To apply this method to your own models, you can copy the `save_final_topography` and `load_initial_topography` functions to your script. Make sure that, next to `CarboKitten` itself you have the `Tables` and `CSV` packages installed.
+
 Workflow
 --------
 

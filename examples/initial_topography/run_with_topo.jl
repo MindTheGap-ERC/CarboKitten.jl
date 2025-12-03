@@ -1,36 +1,20 @@
+module MainRun
 
+using GLMakie
 using CarboKitten
-using CarboKitten.Components.TimeIntegration: time_axis
-using CarboKitten.Export: read_slice, data_export, CSV
-using Unitful
-using Interpolations
-using DelimitedFiles
+using CarboKitten.Visualization: summary_plot
+using CSV
+using Tables
 
-path = "examples/initial_topography/example_init_topo.csv"
-function initial_topography(path)
-    data_matrix, _ = readdlm(path, ',', header=true)
+include("get_init_topo.jl")
 
-    parsed_matrix = [parse(Float64, strip(replace(s, " m" => ""))) for s in data_matrix]
+const PATH = Prerun.PATH
 
-    return parsed_matrix .* u"m"
-	
+function load_initial_topography()
+    (CSV.File(Prerun.DATAFILE) |> Tables.matrix) * u"m"
 end
 
-const time = TimeProperties(
-		Δt = 200u"yr",
-		steps = 12900
-	)
-
-function get_SL(sl_path)
-
-	input_sl = readdlm(sl_path, '\t', header=false) 
-	time_vector = collect(time_axis(time)) / u"yr" .|> NoUnits
-	interpolator = linear_interpolation(time_vector, vec(input_sl))
-    return t -> interpolator(ustrip(u"yr", t)) * u"m"
-end # if you need to input your own sea-level curve	
-
-function main()
-
+function run()
 	facies = [
 		ALCAP.Facies(
 			maximum_growth_rate = 500.0u"m/Myr",
@@ -52,34 +36,34 @@ function main()
 		)]
 
 	input = ALCAP.Input(
-		#tag = ARGS[1],
-		time = time,
-		box = Box{Coast}(grid_size = (100, 70), phys_scale = 170.0u"m"),
+		tag = "mainrun",
+		time = time = TimeProperties(
+			Δt = 200u"yr",
+			steps = 5000
+		),
+		box = Prerun.INPUT.box,
 		facies = facies,
 		sea_level = t -> 0.0u"m",
-		initial_topography = initial_topography(path),
-# Save sections at 4, 8 and 12 km away from the shore
+		initial_topography = load_initial_topography(),
 		output=Dict(
-            :profile => OutputSpec(slice = (:, 35), write_interval = 1)),
+			:topography => OutputSpec(write_interval=100),
+            :profile => OutputSpec(slice = (:, 35))
+		),
 		subsidence_rate = 50.0u"m/Myr",
 		insolation = 400.0u"W/m^2",
 		
+		transport_solver = Val{:forward_euler},
 		sediment_buffer_size = 50,
-		transport_solver=Val{:forward_euler},
-        intertidal_zone=0.0u"m",
 		depositional_resolution = 0.5u"m",
-		#cementation_time=50.0u"yr",
+		cementation_time = 50.0u"yr",
 		disintegration_rate = 100.0u"m/Myr")
 
-	run_model(Model{ALCAP}, input, "examples/initial_topography/const_0.h5")
-	header, profile = read_slice("examples/initial_topography/const_0.h5", :profile)
-    columns = [profile[i] for i in [23, 47, 71]]
-    data_export(
-        CSV(
-            :stratigraphic_column => "examples/initial_topography/const_0_sc.csv",
-            :metadata => "examples/initial_topography/const_0.toml"),
-         header,
-         columns)
+	run_model(Model{ALCAP}, input, joinpath(PATH, "mainrun.h5"))
 end
 
-main()
+function plot(main_out)
+	fig = summary_plot(main_out)
+	save("docs/src/_fig/initial_topography_example.png", fig)
+end
+
+end  # module MainRun

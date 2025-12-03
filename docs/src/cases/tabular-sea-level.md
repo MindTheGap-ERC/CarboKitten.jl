@@ -106,8 +106,11 @@ const INPUT = ALCAP.Input(
     tag="$TAG",
     box=CarboKitten.Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     time=TIME_PROPERTIES,
+    output = Dict(
+        :topography => OutputSpec(write_interval = 5),
+        :profile => OutputSpec(slice = (:, 25))),
     ca_interval=1,
-    initial_topography=(x, y) -> -x / 200.0 - 100.0u"m",
+    initial_topography=(x, y) -> -x / 200.0,
     sea_level=sea_level(),
     subsidence_rate=50.0u"m/Myr",
     disintegration_rate=50.0u"m/Myr",
@@ -159,7 +162,8 @@ module PlotTabularSeaLevel
 
 using CarboKitten
 using CarboKitten.DataSets: artifact_dir
-using CarboKitten.Visualization: summary_plot
+using CarboKitten.Visualization: summary_plot, sediment_profile!, coeval_lines!
+using CarboKitten.Export: read_slice
 
 using DelimitedFiles: readdlm
 using CairoMakie
@@ -211,9 +215,19 @@ function plot_result()
     save("docs/src/_fig/lisiecki-sea-level-summary.png", fig)
 end
 
+function plot_gg_boundary()
+    header, data = read_slice("data/output/lisiecki-sea-level.h5", :profile)
+    fig = Figure(size=(1000, 600))
+    ax = Axis(fig[1, 1])
+    sediment_profile!(ax, header, data, show_unconformities = false, show_coeval_lines = false)
+    coeval_lines!(ax, header, data, [-1.8u"Myr"], linewidth = 3, color = :black, linestyle = :solid)
+    save("docs/src/_fig/lisiecki_sed_profile_gg_boundary.png", fig)
+end
+
 end
 
 PlotTabularSeaLevel.plot_miller_data()
 PlotTabularSeaLevel.plot_lisiecki_data()
 PlotTabularSeaLevel.plot_result()
+PlotTabularSeaLevel.plot_gg_boundary()
 ```

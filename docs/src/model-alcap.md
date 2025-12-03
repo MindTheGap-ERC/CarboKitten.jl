@@ -173,6 +173,7 @@ function step!(input::Input)
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
     pf = cementation_factor(input)
+    dtf = input.disintegration_transfer
     debug = input.diagnostics
 
     function (state::State)
@@ -190,7 +191,7 @@ function step!(input::Input)
         d = disintegrate!(state)
 
         state.active_layer .+= p
-        state.active_layer .+= d
+        state.active_layer .+= dtf(d)
 
         if debug
             @debug "   post-production ambitus: " extrema(state.active_layer)

@@ -241,39 +241,15 @@ end
 
 The following set of tests all involve mutilating a picture of a kitten. The default settings for `TestModel` have zero wave velocity and diffusivity. We'll enable them one by one. Note again, that what we call diffusivity, in the context of these tests doesn't necessarily behave like diffusion.
 
-``` {.julia file=examples/transport/runner.jl}
-module Runner
-using CarboKitten
-using ProgressLogging
-
-n_steps(input) = input.time.steps
-
-function run_model(f, ::Type{Model{M}}, input) where {M}
-    state = M.initial_state(input)
-    f(0, state)
-
-    @progress for i = 1:n_steps(input)
-        M.step!(input, state)
-        f(i, state)
-    end
-
-    return state
-end
-
-do_nothing(_i, _s) = ()
-
-run_model(::Type{Model{M}}, input) where {M} = run_model(do_nothing, Model{M}, input)
-end
-```
-
 ``` {.julia file=examples/transport/test_model.jl}
 module TestModel
 
 using CarboKitten
+using CarboKitten: AbstractInput, AbstractState
 using CarboKitten.Transport.Advection: transport
 using Unitful
 
-@kwdef struct Input
+@kwdef struct Input <: AbstractInput
     box::Box
     time::TimeProperties
     initial_state::Array{Float64}
@@ -283,9 +259,11 @@ using Unitful
     wave_velocity = _ -> ((0.0u"m/Myr", 0.0u"m/Myr"), (0.0u"1/Myr", 0.0u"1/Myr"))
 
     solver
+
+    diagnostics::Bool = false
 end
 
-@kwdef mutable struct State
+@kwdef mutable struct State <: AbstractState
     time::typeof(1.0u"Myr")
     value::Array{Float64}
 end
@@ -294,13 +272,15 @@ initial_state(input) = State(
     time = input.time.t0,
     value = copy(input.initial_state))
 
-function step!(input, state)
-    input.solver(
-        (a, t) -> transport(
-            input.box, input.diffusivity, input.wave_velocity,
-            a, .-input.topography),
-        state.value, state.time, input.time.Δt)
-    state.time += input.time.Δt
+function step!(input)
+    function (state)
+        input.solver(
+            (a, t) -> transport(
+                input.box, input.diffusivity, input.wave_velocity,
+                a, .-input.topography),
+            state.value, state.time, input.time.Δt)
+        state.time += input.time.Δt
+    end
 end
 
 end
@@ -318,7 +298,6 @@ With only wave induced advection enabled, we should see a clear translation of t
 
 module FlyingCat
 
-include("runner.jl")
 include("test_model.jl")
 
 using CarboKitten
@@ -334,11 +313,11 @@ const BOX = CarboKitten.Box{Periodic{2}}(
 
 const INPUT = TestModel.Input(
     box = BOX,
-    time = TimeProperties(Δt=100u"yr", steps=50),
+    time = TimeProperties(Δt=50u"yr", steps=100),
     topography = zeros(typeof(1.0u"m"), BOX.grid_size),
     initial_state = load("data/cat256.pgm")'[:, end:-1:1] .|> Float64,
     wave_velocity = _ -> ((0.4u"m/yr", -0.3u"m/yr"), (0.0u"1/yr", 0.0u"1/yr")),
-    solver = runge_kutta_4(Float64, BOX)
+    solver = forward_euler   # runge_kutta_4(Float64, BOX)
 )
 
 function run()
@@ -346,12 +325,17 @@ function run()
 
     fig = Figure(size=(800, 400))
     ax1 = Axis(fig[1, 1], aspect=1)
-    hm1 = heatmap!(ax1, x, y, INPUT.initial_state, colorrange=(0.0,0.7))
+    hm1 = heatmap!(ax1,
+            x |> in_units_of(u"km"), y |> in_units_of(u"km"),
+            INPUT.initial_state, colorrange=(0.0,0.7))
     Colorbar(fig[2, 1], hm1, vertical=false)
 
-    out = Runner.run_model(Model{TestModel}, INPUT)
+    do_nothing(_, _) = nothing
+    out = run_model(do_nothing, Model{TestModel}, INPUT)
     ax2 = Axis(fig[1, 2], aspect=1)
-    hm2 = heatmap!(ax2, x, y, out.value, colorrange=(0.0,0.7))
+    hm2 = heatmap!(ax2,
+            x |> in_units_of(u"km"), y |> in_units_of(u"km"),
+            out.value, colorrange=(0.0,0.7))
     Colorbar(fig[2, 2], hm2, vertical=false)
 
     save("docs/src/_fig/flying_cat.png", fig)
@@ -374,14 +358,13 @@ Next, we only enable the diffusivity term. We set a topography of a single Gauss
 
 module ExplodingKitten
 
-include("runner.jl")
 include("test_model.jl")
 
 using CarboKitten
 using FileIO
 using GLMakie
 
-using CarboKitten.Transport.Solvers: runge_kutta_4
+using CarboKitten.Transport.Solvers: runge_kutta_4, forward_euler
 
 GLMakie.activate!()
 
@@ -402,7 +385,7 @@ const INPUT = TestModel.Input(
     initial_state = load_cat(),
     topography = ((x, y) -> 30.0u"m" * exp(-((x-7.2u"km")^2 + (y-7.2u"km")^2)/(2*(3.0u"km")^2)) - 30.0u"m").(X, Y'),
     diffusivity = 30.0u"m/yr",
-    solver = runge_kutta_4(Float64, BOX)
+    solver = forward_euler
 )
 
 function run()
@@ -410,12 +393,17 @@ function run()
 
     fig = Figure(size=(800, 400))
     ax1 = Axis(fig[1, 1], aspect=1)
-    hm1 = heatmap!(ax1, x, y, INPUT.topography / u"m")
+    hm1 = heatmap!(ax1,
+        x |> in_units_of(u"km"), y |> in_units_of(u"km"),
+        INPUT.topography / u"m")
     Colorbar(fig[2,1], hm1, vertical=false)
 
-    out = Runner.run_model(Model{TestModel}, INPUT)
+    do_nothing(_, _) = nothing
+    out = run_model(do_nothing, Model{TestModel}, INPUT)
     ax2 = Axis(fig[1, 2], aspect=1)
-    hm2 = heatmap!(ax2, x, y, out.value, colorrange=(0.0,0.8))
+    hm2 = heatmap!(ax2,
+        x |> in_units_of(u"km"), y |> in_units_of(u"km"),
+        out.value, colorrange=(0.0,0.8))
     Colorbar(fig[2,2], hm2, vertical=false)
 
     save("docs/src/_fig/exploding_kitten.png", fig)

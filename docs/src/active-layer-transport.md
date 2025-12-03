@@ -44,6 +44,78 @@ As part of the production $P_f$ we disintegrate older sediment at a fixed rate.
 
 ![Schema of active layer processes](fig/active-layer-diagram.plain.svg)
 
+## Transport parameters
+
+### Disintegration transfer
+
+`disintegration_transfer` is a function that determines how the disintegrated material from each facies is allocated to the facies in the active layer. 
+
+#### Default behavior
+
+By default (`ActiveLayer.jl`), `disintegration_transfer` is the identity function `x -> x`, i.e. disintegrated sediment is added back to the same facies it came from.
+
+#### Usage examples
+
+For three autochthonous (produced *in situ*) facies and their transported equivalents, one may define:
+
+```julia
+disintegration_transfer = x -> [0.0u"m", 0.0u"m", 0.0u"m", x[1]+x[4], x[2]+x[5], x[3]+x[6]]
+```
+
+The transfer function takes the produced sediment vector `x`, sets facies 1-3 to zero and moves all the transported material into the "transported" facies (4-6). 
+
+Transporting only 50% of disintegrated material into "transported" facies would look like this:
+
+```julia
+disintegration_transfer = x -> [x[1]*0.5, x[2]*0.5, x[3]*0.5, 
+                                 x[1]*0.5+x[4], x[2]*0.5+x[5], x[3]*0.5+x[6]]
+```
+
+for the same number (3) of initial and transported facies.  When defining a transfer function, you should make sure that it conserves mass i.e. all the disintegrated sediment must be reallocated to somewhere.
+
+#### Tests
+A simple unit test verifies that the sediment is redistributed across facies as expected:
+``` {.julia file=test/Components/ActiveLayerSpec.jl}
+module ActiveLayerSpec
+
+using Test
+using CarboKitten.Components: ActiveLayer as AL
+using CarboKitten.Components.Common
+
+@testset "Components/ActiveLayer" begin
+    @testset "Disintegration transfer" begin
+        let facies = fill(AL.Facies(), 4),
+            input = AL.Input(
+                box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
+                time = TimeProperties(Δt=1.0u"kyr", steps=10),
+                facies=facies,
+                disintegration_transfer = x -> [0.0u"m", 0.5*x[2], x[1]+x[3], x[4]+0.5*x[2]],
+            )
+
+            state = AL.State(
+                step = 0,
+                sediment_height = zeros(Height, input.box.grid_size...),
+                sediment_buffer = zeros(Float64, input.sediment_buffer_size, AL.n_facies(input), input.box.grid_size...),
+                active_layer=zeros(Amount, AL.n_facies(input), input.box.grid_size...))
+
+
+            d = ones(Amount, AL.n_facies(input), input.box.grid_size...)
+
+            dtf = input.disintegration_transfer
+            state.active_layer .+= dtf(d)
+
+            @test all(state.active_layer[1,:] .≈ 0.0u"m")
+            @test all(state.active_layer[2,:] .≈ 0.5u"m")
+            @test all(state.active_layer[3,:] .≈ 2.0u"m")
+            @test all(state.active_layer[4,:] .≈ 1.5u"m")
+
+            @test sum(state.active_layer[:,1,1]) ≈ sum(d[:,1,1])
+        end
+    end
+end
+end
+```
+
 ## Test 1: production transport
 
 Suppose we have an incline in one direction, as per usual on a coastal slice. Production is happening in a circular patch in our box, with constant rate. In addition, we'll release the top 1m of sediment for further transport.
@@ -468,7 +540,7 @@ module Script
     function main()
         CairoMakie.activate!()
         input = transport_test_input(
-            initial_topography = (x, y)  -> -30.0u"m",
+            initial_topography = (x, y)  -> -31.0u"m",
             initial_sediment = gaussian_initial_sediment,
             disintegration_rate = 50000.0u"m/Myr",
             wave_velocity = v_const(-5u"km/Myr")
@@ -575,6 +647,7 @@ end
 @kwdef struct Input <: AbstractInput
     intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
+    disintegration_transfer::Function = x -> x
     cementation_time::Union{typeof(1.0u"Myr"),Nothing} = nothing
     transport_solver = Val{:RK4}
     transport_substeps = :adaptive
@@ -647,6 +720,7 @@ function disintegrator(input)
     output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
     depositional_resolution = input.depositional_resolution
     iz = input.intertidal_zone
+    tf = input.disintegration_transfer
 
     return function (state)
         wn = w(state)

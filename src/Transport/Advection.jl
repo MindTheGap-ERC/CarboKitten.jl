@@ -72,7 +72,7 @@ function transport!(box::Box{BT}, diffusivity, wave_velocity, C, w, dC) where {B
         # ~/~ begin <<docs/src/finite-difference-transport.md#advection-transport>>[init]
         d = diffusivity
         v, s = wave_velocity(w[2, 2])
-
+        
         dw = (central_difference(Val{1}, w, dx), central_difference(Val{2}, w, dx))
         adv = upwind(Val{1}, d * dw[1] + v[1], C, dx) + 
               upwind(Val{2}, d * dw[2] + v[2], C, dx)

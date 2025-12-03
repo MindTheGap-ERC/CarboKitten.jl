@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/initial-topography.md#examples/initial_topography/get_init_topo.jl>>[init]
+# ~/~ begin <<docs/src/initial-topography.md#examples/initial_topography/prerun.jl>>[init]
 module Prerun
 
 using CarboKitten
@@ -11,7 +11,7 @@ const PATH = "data/output/initial-topography"
 const TAG = "prerun"
 const DATAFILE = joinpath(PATH, "initial-topography.csv")
 
-# ~/~ begin <<docs/src/initial-topography.md#example-init-topo>>[init]
+# ~/~ begin <<docs/src/initial-topography.md#initial-topography-prerun-param>>[init]
 const FACIES = [
     ALCAP.Facies(
         maximum_growth_rate=500u"m/Myr",
@@ -49,9 +49,8 @@ const INPUT = ALCAP.Input(
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",
     facies=FACIES)
-
 # ~/~ end
-# ~/~ begin <<docs/src/initial-topography.md#example-init-topo>>[1]
+# ~/~ begin <<docs/src/initial-topography.md#initial-topography-export>>[init]
 function prerun()
     mkpath(PATH)
     run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
@@ -69,5 +68,6 @@ function save_final_topography(prerun_filename)
     write_csv(DATAFILE, h |> in_units_of(u"m") |> Tables.table)
 end
 # ~/~ end
+
 end  # module Prerun
 # ~/~ end

@@ -3,6 +3,7 @@
 Many carbonate platforms grow on a pre-exisiting abandoned carbonate platform. Therefore, it is reasonable to start the simulation with a platform-shaped initial topography.
 
 The workflow to generate the topography is:
+
 1. run the CarboKitten.jl to get the results.
 2. export the sedimentation for each cell.
 3. calculate the elvelation for each cell by adding subsidence. 
@@ -22,29 +23,23 @@ const TAG = "example_init_topo"
 
 
 <<example-init-topo>>
-
 ```
+
 In the first step, the code is listed below. In this example run, constant sea-level has been used. One thing should be noticed is that the grids are 100 by 70, with scale of 170 m. These values should be same as your runs later.
 
 ``` {.julia #example-init-topo}
 const FACIES = [
     ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
         maximum_growth_rate=500u"m/Myr",
         extinction_coefficient=0.8u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=50.0u"m/yr"),
     ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
         maximum_growth_rate=400u"m/Myr",
         extinction_coefficient=0.1u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=25.0u"m/yr"),
     ALCAP.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
         maximum_growth_rate=100u"m/Myr",
         extinction_coefficient=0.005u"m^-1",
         saturation_intensity=60u"W/m^2",

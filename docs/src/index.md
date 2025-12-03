@@ -119,12 +119,12 @@ In this case the `prepare()` statement is run once at the beginning of a model r
 
 If you plan to make a contribution to the core of CarboKitten, you should be aware of Entangled.
 
-The documentation for CarboKitten is using [Entangled](https://entangled.github.io) for Literate Programming. This means that code blocks in the documentation contribute to the actual functioning code in the library. When you develop the library code, you should have the Entangled daemon running to keep the documentation synchronized. Included in the `CarboKitten` repository is a `pyproject.toml` that manages the Entangled installation for you through [Poetry](https://python-poetry.org); alternatively, you may install Entangled through `pip install entangled-cli`.
+The documentation for CarboKitten is using [Entangled](https://entangled.github.io) for Literate Programming. This means that code blocks in the documentation contribute to the actual functioning code in the library. When you develop the library code, you should have the Entangled daemon running to keep the documentation synchronized. Included in the `CarboKitten` repository is a `pyproject.toml` that manages the Entangled installation for you through [UV](https://docs.astral.sh/uv/); alternatively, you may install Entangled through `pip install entangled-cli`.
 
-To install, run `poetry install` in the project root, then:
+To install, run `uv sync` in the project root, then:
 
 ```shell
-poetry run entangled watch
+uv run entangled watch
 ```
 
 Entangled is still under development and it may occur that the daemon complains about not knowing wether to `tangle` or `stitch`, for example when you've accidentally written both markdown and source code. If this happens you may manually `entangled tangle` or `entangled stitch` with the `--force` argument to decide the issue. It may be worth saving your work in version control before doing so.
@@ -136,7 +136,7 @@ A somewhat frequent occurence is that you forgot to run `entangled watch` while 
 To recreate the plots in the documentation run
 
 ```shell
-poetry run brei figures
+uv run brei figures
 ```
 
 The documentation can be rendered with `Documenter.jl`.
@@ -169,7 +169,7 @@ julia --workenv=docs docs/make.jl
 The figures from the documentation in "docs/src/fig" are git tracked, but are often regenerated when you change some of their direct dependencies. This makes switching branches harder, it would require issuing "git stash" first. We have made sure that the regenerated figures appear in `docs/src/_fig` and are not git tracked. There is a task in pyproject.toml that takes care of copying from `docs/src/_fig` to `docs/src/fig` when this repo is cloned:
 
 ```shell
-poetry run brei copy_figures
+uv run brei copy_figures
 ```
 
 ## Authors

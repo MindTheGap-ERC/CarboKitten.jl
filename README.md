@@ -45,7 +45,6 @@ You can run the example model as follows:
 
 ```julia
 using CarboKitten
-CarboKitten.init()   # enables progress logging in this session
 run_model(Model{ALCAP}, ALCAP.Example.INPUT, "example.h5")
 ```
 
@@ -79,7 +78,7 @@ pkg> activate .
 pkg> instantiate
 ```
 
-If you want to start a REPL with the correct environment already activated, use the `--project=.` flag. Use the `-t` flag to enable processing in multiple threads.
+If you want to start a REPL with the correct environment already activated, use the `--project=.` flag. Use the `-t` flag to enable processing in multiple threads (Currently CarboKitten is still single threaded, but that will change).
 
 ```shell
 julia --project=. -t 4
@@ -92,6 +91,7 @@ You'll get the best experience by running examples from the Julia REPL. There ar
 ```shell
 julia --project=workenv examples/ca-with-prod.jl
 ```
+
 This command will write the output in the HDF5 format into the `data` folder. You can check that output is written there after executing this command.
 
 However, it is more efficient to run them from the REPL. Either run,
@@ -141,24 +141,24 @@ pkg> instantiate
 We have experimented with using `DaemonMode.jl` to run Julia scripts from the command line, but found too many issues with unreproducible errors. So for the moment `DaemonMode` is not used.
 
 ### Entangled
-While developing, you'll need to run the [Entangled](https://entangled.github.io/) watch daemon to keep documentation in Markdown and Julia code synchronized. You may install Entangled using `pip install entangled-cli`, or use the provided Poetry environment in `pyproject.toml`.
+While developing, you'll need to run the [Entangled](https://entangled.github.io/) watch daemon to keep documentation in Markdown and Julia code synchronized. You may install Entangled using `pip install entangled-cli`, or use the provided UV environment in `pyproject.toml` ([install instructions for UV](https://docs.astral.sh/uv/)).
 
 The first time running, from the project root folder:
 
 ```shell
-poetry install
+uv sync
 ```
 
 Then,
 
 ```shell
-poetry run entangled watch
+uv run entangled watch
 ```
 
 To generate the more expensive figures (actually resulting from simulation etc.), you may run,
 
 ```shell
-poetry run brei figures
+uv run brei figures
 ```
 
 ## Documentation

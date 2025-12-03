@@ -152,7 +152,41 @@ end
 end  # module MainRun
 ```
 
-``` {.julia file=examples/initial_topography/plot.jl}
+![Resulting output](fig/initial_topography_example.png)
+
+Workflow
+--------
+
+``` {.julia .task}
+#| creates: ["data/output/initial-topography/prerun.h5"]
+#| requires:
+#|   - examples/initial_topography/prerun.jl
+include("examples/initial_topography/prerun.jl")
+Prerun.prerun()
+```
+
+``` {.julia .task}
+#| creates: ["data/output/initial-topography/initial-topography.csv"]
+#| requires:
+#|   - examples/initial_topography/prerun.jl
+#|   - data/output/initial-topography/prerun.h5
+include("examples/initial_topography/prerun.jl")
+Prerun.save_final_topography("data/output/initial_topography/prerun.h5")
+```
+
+``` {.julia .task}
+#| creates: ["data/output/initial-topography/mainrun.h5"]
+#| requires:
+#|   - examples/initial_topography/production_run.jl
+#|   - data/output/initial-topography/initial-topography.csv
+include("examples/initial_topography/production_run.jl")
+ProductionRun.run()
+```
+
+``` {.julia .task file=examples/initial_topography/plot.jl}
+#| requires: ["data/output/initial-topography/mainrun.h5"]
+#| creates: ["docs/src/_fig/initial_topography_example.png"]
+#| collect: figures
 module Plot
 
 using GLMakie

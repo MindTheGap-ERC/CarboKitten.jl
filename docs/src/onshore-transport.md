@@ -68,7 +68,7 @@ function main()
 
 	v = first.(f)
 	s = last.(f)
-	
+
 	fig = Figure()
 	ax1 = Axis(fig[1, 1], title="transport velocity", yreversed=true, xlabel="velocity [m/yr]", ylabel="depth [m]")
 	ax2 = Axis(fig[1, 2], title="transport shear", yreversed=true, xlabel="shear [1/yr]", ylabel="depth [m]")

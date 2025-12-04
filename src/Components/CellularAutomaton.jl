@@ -11,7 +11,7 @@
         activation_range::Tuple{Int,Int} = (6, 10)
         active::Bool = true
     end
-
+    
     @kwdef struct Input <: AbstractInput
         ca_interval::Int      = 1
         ca_random_seed::Int   = 0
@@ -46,16 +46,16 @@
     # ~/~ begin <<docs/src/components/cellular-automata.md#ca-step>>[1]
     """
         step_ca(box, facies)
-
+    
     Creates a propagator for the state, updating the celullar automaton in place.
-
+    
     Contract: the `state` should have `ca::Matrix{Int}` and `ca_priority::Vector{Int}`
     members.
     """
     function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
         tmp = Matrix{Int}(undef, box.grid_size)
         facies_ = facies
-
+    
         function (state)
             p = state.ca_priority
             stencil!(BT, Size(5, 5), tmp, state.ca) do nb

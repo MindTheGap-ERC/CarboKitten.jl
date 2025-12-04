@@ -16,6 +16,7 @@ docs/src/_fig/*.svg
 docs/src/_fig/*.gif
 
 .entangled/filedb.json
+.entangled/filedb.lock
 .entangled/tasks.json
 
 scratch

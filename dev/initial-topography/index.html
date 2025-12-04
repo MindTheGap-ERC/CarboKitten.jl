@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Generating Initial Topographies · CarboKitten</title><meta name="title" content="Generating Initial Topographies · CarboKitten"/><meta property="og:title" content="Generating Initial Topographies · CarboKitten"/><meta property="twitter:title" content="Generating Initial Topographies · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../getting-started/">Getting started</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../model-alcap/">ALCAPS</a></li><li><a class="tocitem" href="../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li></ul></li><li><a class="tocitem" href="../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/output/">Output</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../onshore-transport/">Onshore Transport</a></li></ul></li><li><a class="tocitem" href="../visualization/">Visualizations</a></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../output/abstract/">Output</a></li><li><a class="tocitem" href="../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../output/memory-writer/">Output to Memory</a></li><li><a class="tocitem" href="../data-export/">CSV Export</a></li><li><a class="tocitem" href="../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li><li><a class="tocitem" href="../finite-difference-transport/">Finite Difference</a></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Generating Initial Topographies</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Generating Initial Topographies</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/initial-topography.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Generating-Initial-Topographies"><a class="docs-heading-anchor" href="#Generating-Initial-Topographies">Generating Initial Topographies</a><a id="Generating-Initial-Topographies-1"></a><a class="docs-heading-anchor-permalink" href="#Generating-Initial-Topographies" title="Permalink"></a></h1><p>Many carbonate platforms grow on a pre-exisiting abandoned carbonate platform. Therefore, it is reasonable to start the simulation with a platform-shaped initial topography.</p><p>The workflow to generate the initial topography is:</p><ol><li>Run a model with the same grid size as your target, the prerun.</li><li>Export the final topography of the prerun to a CSV file. </li><li>Read the CSV file for one or more production runs.</li></ol><div class="noweb-label">file:<i>examples/initial_topography/prerun.jl</i></div><pre><code class="language- julia hljs">module Prerun
+
+using CarboKitten
+using CarboKitten.Export: read_volume
+
+using Tables
+using CSV: write as write_csv
+
+const PATH = &quot;data/output/initial-topography&quot;
+const TAG = &quot;prerun&quot;
+const DATAFILE = joinpath(PATH, &quot;initial-topography.csv&quot;)
+
+&lt;&lt;initial-topography-prerun-param&gt;&gt;
+&lt;&lt;initial-topography-export&gt;&gt;
+
+end  # module Prerun</code></pre><h2 id="The-Prerun"><a class="docs-heading-anchor" href="#The-Prerun">The Prerun</a><a id="The-Prerun-1"></a><a class="docs-heading-anchor-permalink" href="#The-Prerun" title="Permalink"></a></h2><p>In the first step, we define input parameters for our prerun. In this example run, constant sea-level has been used. One thing should be noticed is that the grids are 100 by 70, with scale of 170 m. Ideally, these values should be same as your runs later (otherwise, you could use an interpolation routine). Alternatively, you can use the <code>WithoutCA</code> model to run a 100 by 1 model, and use the resulting one-dimensional platform curve to seed a subsequent <code>ALCAP</code> run.</p><p>Note that, in the <code>output</code> parameter, we only specify topographic output with a <code>write_interval=1000</code>. After all, we&#39;re only interested in the topography here.</p><div class="noweb-label">⪡initial-topography-prerun-param⪢≣</div><pre><code class="language- julia hljs">const FACIES = [
+    ALCAP.Facies(
+        maximum_growth_rate=500u&quot;m/Myr&quot;,
+        extinction_coefficient=0.8u&quot;m^-1&quot;,
+        saturation_intensity=60u&quot;W/m^2&quot;,
+        diffusion_coefficient=50.0u&quot;m/yr&quot;),
+    ALCAP.Facies(
+        maximum_growth_rate=400u&quot;m/Myr&quot;,
+        extinction_coefficient=0.1u&quot;m^-1&quot;,
+        saturation_intensity=60u&quot;W/m^2&quot;,
+        diffusion_coefficient=25.0u&quot;m/yr&quot;),
+    ALCAP.Facies(
+        maximum_growth_rate=100u&quot;m/Myr&quot;,
+        extinction_coefficient=0.005u&quot;m^-1&quot;,
+        saturation_intensity=60u&quot;W/m^2&quot;,
+        diffusion_coefficient=12.5u&quot;m/yr&quot;)
+]
+
+const INPUT = ALCAP.Input(
+    tag=TAG,
+    box=Box{Coast}(grid_size=(100, 70), phys_scale=170u&quot;m&quot;),
+    time=TimeProperties(
+        Δt=0.0001u&quot;Myr&quot;,
+        steps=5000
+    ),
+    output=Dict(
+        :topography =&gt; OutputSpec(write_interval=1000)
+    ),
+    ca_interval=1,
+    initial_topography=(x, y) -&gt; -x / 300.0,
+    sea_level= t -&gt; 0.0u&quot;m&quot;,
+    subsidence_rate=50.0u&quot;m/Myr&quot;,
+    disintegration_rate=50.0u&quot;m/Myr&quot;,
+    insolation=400.0u&quot;W/m^2&quot;,
+    sediment_buffer_size=50,
+    depositional_resolution=0.5u&quot;m&quot;,
+    facies=FACIES)</code></pre><p>When run, this model will write data to an HDF5 file, which can be a bit unwieldy to work with. This is why we&#39;ll compute the final topography and write it to a CSV file.</p><div class="noweb-label">⪡initial-topography-export⪢≣</div><pre><code class="language- julia hljs">function prerun()
+    mkpath(PATH)
+    run_model(Model{ALCAP}, INPUT, &quot;$(PATH)/$(TAG).h5&quot;)
+end
+
+function save_final_topography(prerun_filename)
+    header, data = read_volume(prerun_filename, :topography)
+
+    t = header.axes.t
+    h0 = header.initial_topography
+    subsidence = header.subsidence_rate * (t[end] - t[1])
+    delta_h = data.sediment_thickness[:, :, end]
+    h = h0 .+ delta_h .- subsidence
+
+    write_csv(DATAFILE, h |&gt; in_units_of(u&quot;m&quot;) |&gt; Tables.table)
+end</code></pre><h2 id="The-Production-Run"><a class="docs-heading-anchor" href="#The-Production-Run">The Production Run</a><a id="The-Production-Run-1"></a><a class="docs-heading-anchor-permalink" href="#The-Production-Run" title="Permalink"></a></h2><p>Next, we need to read the CSV file and use it to seed the main/production run.</p><div class="noweb-label">⪡load-initial-topography⪢≣</div><pre><code class="language- julia hljs">function load_initial_topography()
+    (CSV.File(Prerun.DATAFILE) |&gt; Tables.matrix) * u&quot;m&quot;
+end</code></pre><p>We can pass the resulting <code>Matrix</code> to <code>initial_topography</code> in the next input definition, and run the model as usual. For brevity, we&#39;ll reuse the facies definition from the prerun.</p><div class="noweb-label">file:<i>examples/initial_topography/production_run.jl</i></div><pre><code class="language- julia hljs">module ProductionRun
+
+using CarboKitten
+using CSV
+using Tables
+
+include(&quot;get_init_topo.jl&quot;)
+
+const PATH = Prerun.PATH
+
+&lt;&lt;load-initial-topography&gt;&gt;
+
+function run()
+    input = ALCAP.Input(
+        tag = &quot;mainrun&quot;,
+        time = time = TimeProperties(
+            Δt = 200u&quot;yr&quot;,
+            steps = 5000
+        ),
+        box = Prerun.INPUT.box,
+        facies = Prerun.INPUT.facies,
+        sea_level = t -&gt; 0.0u&quot;m&quot;,
+        initial_topography = load_initial_topography(),
+        output=Dict(
+            :topography =&gt; OutputSpec(write_interval=100),
+            :profile =&gt; OutputSpec(slice = (:, 35))
+        ),
+        subsidence_rate = 50.0u&quot;m/Myr&quot;,
+        insolation = 400.0u&quot;W/m^2&quot;,
+
+        transport_solver = Val{:forward_euler},
+        sediment_buffer_size = 50,
+        depositional_resolution = 0.5u&quot;m&quot;,
+        cementation_time = 50.0u&quot;yr&quot;,
+        disintegration_rate = 100.0u&quot;m/Myr&quot;)
+
+    run_model(Model{ALCAP}, input, joinpath(PATH, &quot;mainrun.h5&quot;))
+end
+
+end  # module MainRun</code></pre><p><img src="../fig/initial_topography_example.png" alt="Resulting output"/></p><h2 id="Howto-Use"><a class="docs-heading-anchor" href="#Howto-Use">Howto Use</a><a id="Howto-Use-1"></a><a class="docs-heading-anchor-permalink" href="#Howto-Use" title="Permalink"></a></h2><p>To apply this method to your own models, you can copy the <code>save_final_topography</code> and <code>load_initial_topography</code> functions to your script. Make sure that, next to <code>CarboKitten</code> itself you have the <code>Tables</code> and <code>CSV</code> packages installed.</p><h2 id="Workflow"><a class="docs-heading-anchor" href="#Workflow">Workflow</a><a id="Workflow-1"></a><a class="docs-heading-anchor-permalink" href="#Workflow" title="Permalink"></a></h2><pre><code class="language- julia hljs">#| creates: [&quot;data/output/initial-topography/prerun.h5&quot;]
+#| requires:
+#|   - examples/initial_topography/prerun.jl
+include(&quot;examples/initial_topography/prerun.jl&quot;)
+Prerun.prerun()</code></pre><pre><code class="language- julia hljs">#| creates: [&quot;data/output/initial-topography/initial-topography.csv&quot;]
+#| requires:
+#|   - examples/initial_topography/prerun.jl
+#|   - data/output/initial-topography/prerun.h5
+include(&quot;examples/initial_topography/prerun.jl&quot;)
+Prerun.save_final_topography(&quot;data/output/initial_topography/prerun.h5&quot;)</code></pre><pre><code class="language- julia hljs">#| creates: [&quot;data/output/initial-topography/mainrun.h5&quot;]
+#| requires:
+#|   - examples/initial_topography/production_run.jl
+#|   - data/output/initial-topography/initial-topography.csv
+include(&quot;examples/initial_topography/production_run.jl&quot;)
+ProductionRun.run()</code></pre><div class="noweb-label">file:<i>examples/initial_topography/plot.jl</i></div><pre><code class="language- julia hljs">#| requires: [&quot;data/output/initial-topography/mainrun.h5&quot;]
+#| creates: [&quot;docs/src/_fig/initial_topography_example.png&quot;]
+#| collect: figures
+module Plot
+
+using GLMakie
+using CarboKitten.Visualization: summary_plot
+
+function plot()
+    fig = summary_plot(&quot;data/output/initial-topography/mainrun.h5&quot;)
+    save(&quot;docs/src/_fig/initial_topography_example.png&quot;, fig)
+end
+
+end
+
+Plot.plot()</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Thursday 4 December 2025 09:23">Thursday 4 December 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -88,7 +88,8 @@ makedocs(
         ],
         "Examples" => [
             "Tutorial (Pluto notebook)" => "first_tutorial.md",
-            "Tabular Sea Levels" => "cases/tabular-sea-level.md"
+            "Tabular Sea Levels" => "cases/tabular-sea-level.md",
+            "Initial Topography" => "initial-topography.md",
         ],
         "Architecture" => "architecture.md",
         "Model Components" => [

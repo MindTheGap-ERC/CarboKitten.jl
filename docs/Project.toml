@@ -12,3 +12,7 @@ MarkdownAST = "d0879d2d-cac2-40c8-9cee-1863dc0c7391"
 ModuleMixins = "2b5f0a26-aae2-5c4c-af55-bc6d20297121"
 Smoothers = "012d725f-b4dd-4916-8440-03955fc52575"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+
+[sources]
+CarboKitten = {path = ".."}
+ModuleMixins = {rev = "main", url = "https://github.com/jhidding/ModuleMixins.jl"}

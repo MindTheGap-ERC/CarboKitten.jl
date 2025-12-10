@@ -81,6 +81,10 @@ Retrieve the time values for which output was/will be written. Returns a range.
 """
 time_axis(time::TimeProperties) = (0:n_writes(time)) .* time.Δt .+ time.t0
 
+module Algorithms
+include("./Algorithms/StratigraphicColumn.jl")
+end
+
 include("./BoundaryTrait.jl")
 include("./Vectors.jl")
 include("./Boxes.jl")

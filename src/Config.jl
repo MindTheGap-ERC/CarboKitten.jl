@@ -14,7 +14,6 @@ using Unitful.DefaultSymbols
 using ..CarboKitten: TimeProperties
 
 # ~/~ begin <<docs/src/boxes.md#config-types>>[init]
-
 # ~/~ end
 
 end

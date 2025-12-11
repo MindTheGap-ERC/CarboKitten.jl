@@ -1,6 +1,6 @@
 # Trouble shooting
 
-As with any numerical model, there are many ways to shoot yourself in the foot using Entangled. Changing input paramaters may lead to numerical instablities and eventually even models crashing. When this happens it can be hard to understand what parameter settings or combinations thereof are responsible. Some tactics that have helped us in the past:
+As with any numerical model, there are many ways to shoot yourself in the foot using CarboKitten. Changing input paramaters may lead to numerical instablities and eventually even models crashing. When this happens it can be hard to understand what parameter settings or combinations thereof are responsible. Some tactics that have helped us in the past:
 
 - Did you set a lithification or cementation time? The default cementation time is set to infinity (meaning the entire contents of the active layer is deposited on every iteration) which can lead to problems. Try a setting that is close in scale to your time step.
 - Try reducing your time step. If you still encounter problems, but later in the simulation, it means that something in the settings is systematically driving the platform to numerical instability.

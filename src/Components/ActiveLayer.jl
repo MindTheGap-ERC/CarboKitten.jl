@@ -78,6 +78,13 @@ function adaptive_transporter(input)
         for i in eachindex(C)
             if C[i] < zero(Amount)
                 C[i] = zero(Amount)
+            elseif isnan(C[i])
+                # solver has returned a NaN, should provide error message to the user explaining this
+                # output the physical location and grid position
+                err_loc = Tuple(CartesianIndices(C)[i])
+                x,y = box_axes(box)
+                error("NaN value found in the active layer after transport solve at grid cell $(err_loc[2:3]) (physical location x = $(x[err_loc[2]]), y = $(y[err_loc[3]])")
+
             end
         end
     end
@@ -148,6 +155,9 @@ function transporter(input)
         for i in eachindex(C)
             if C[i] < zero(Amount)
                 C[i] = zero(Amount)
+            elseif isnan(C[i])
+                # solver has returned a NaN, should provide error message to the user
+                error("NaN found in the active layer!")
             end
         end
     end

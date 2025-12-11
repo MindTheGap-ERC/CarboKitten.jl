@@ -78,13 +78,18 @@ function adaptive_transporter(input)
         for i in eachindex(C)
             if C[i] < zero(Amount)
                 C[i] = zero(Amount)
-            elseif isnan(C[i])
-                # solver has returned a NaN, should provide error message to the user explaining this
-                # output the physical location and grid position
+            elseif isnan(C[i]) || isinf(C[i])
+                # solver has returned a bad value, output the physical location and grid position in error message
                 err_loc = Tuple(CartesianIndices(C)[i])
                 x,y = box_axes(box)
-                error("NaN value found in the active layer after transport solve at grid cell $(err_loc[2:3]) (physical location x = $(x[err_loc[2]]), y = $(y[err_loc[3]])")
+                error("""
 
+                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]), 
+                (physical location x = $(x[err_loc[2]]), y = $(y[err_loc[3]])).
+
+                For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/
+
+                """)
             end
         end
     end
@@ -155,9 +160,19 @@ function transporter(input)
         for i in eachindex(C)
             if C[i] < zero(Amount)
                 C[i] = zero(Amount)
-            elseif isnan(C[i])
-                # solver has returned a NaN, should provide error message to the user
-                error("NaN found in the active layer!")
+            elseif isnan(C[i]) || isinf(C[i])
+                # solver has returned a bad value, output the physical location and grid position in error message
+                err_loc = Tuple(CartesianIndices(C)[i])
+                x,y = box_axes(box)
+                error("""
+
+                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]), 
+                (physical location x = $(x[err_loc[2]]), y = $(y[err_loc[3]])).
+
+                For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/ 
+
+                """)
+
             end
         end
     end

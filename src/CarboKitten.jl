@@ -83,6 +83,8 @@ time_axis(time::TimeProperties) = (0:n_writes(time)) .* time.Δt .+ time.t0
 
 module Algorithms
 include("./Algorithms/StratigraphicColumn.jl")
+
+import .StratigraphicColumn: stratigraphic_column!
 end
 
 include("./BoundaryTrait.jl")

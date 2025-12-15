@@ -35,6 +35,8 @@ If an output with a `write_interval` that does not divide the total number of ti
 module Abstract
 
 import ...CarboKitten: set_attribute
+import ...Algorithms: stratigraphic_column!
+
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
 export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer
 
@@ -136,6 +138,17 @@ data_kind(::Int, _) = :slice
 data_kind(_, ::Int) = :slice
 data_kind(_, _) = :volume
 data_kind(spec::OutputSpec) = data_kind(spec.slice...)
+
+"""
+    stratigraphic_column(data)
+
+Given a data set, compute the stratigrahpic column.
+"""
+function stratigraphic_column(data::Data{F, D}) where {F, D}
+    net_deposition = data.deposition .- data.disintegration
+    stratigraphic_column!(eachslice(net_deposition, dims=1:F-1))
+    return net_deposition
+end
 
 """
     new_output(::Type{T}, input)

@@ -47,3 +47,12 @@ Modules = [
   CarboKitten.Denudation.NoDenudationMod
   ]
 ```
+
+## Algorithms
+
+```@autodocs
+Modules = [
+  CarboKitten.Algorithms.StratigraphicColumn
+]
+```
+

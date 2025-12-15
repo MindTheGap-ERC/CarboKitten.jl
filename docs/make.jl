@@ -129,7 +129,8 @@ makedocs(
             "Boxes" => "boxes.md",
             "Stencils" => "stencils.md",
             "Utility" => "utility.md",
-            "Finite Difference" => "finite-difference-transport.md"
+            "Finite Difference" => "finite-difference-transport.md",
+            "Stratigraphic Column" => "algorithms/stratigraphic_column.md",
         ],
         "API Documentation" => "api.md",
         "References" => "references.md"

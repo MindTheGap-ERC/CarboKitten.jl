@@ -31,7 +31,7 @@ end
 end
 ```
 
-![Example](fig/monotonic_adm.svg)
+![Example](../fig/monotonic_adm.svg)
 
 
 !!! details "Plotting code"

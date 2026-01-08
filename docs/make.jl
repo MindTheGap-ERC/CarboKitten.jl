@@ -106,7 +106,11 @@ makedocs(
             "Active Layer Transport" => "active-layer-transport.md",
             "Onshore Transport" => "onshore-transport.md"
         ],
-        "Visualizations" => "visualization.md",
+        "Visualizations" => [
+            "Overview" => "visualization/overview.md",
+            "Profiles" => "visualization/profiles.md",
+            "Other" => "visualization.md",
+        ],
         "CarboCAT" => [
             "Summary" => "carbocat.md",
         ],

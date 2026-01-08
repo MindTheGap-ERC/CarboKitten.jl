@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/visualization.md#examples/visualization/profile_fraction.jl>>[init]
+# ~/~ begin <<docs/src/visualization/profiles.md#examples/visualization/profile_fraction.jl>>[init]
 
 module Script
 using GLMakie

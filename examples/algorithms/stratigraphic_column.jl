@@ -6,13 +6,13 @@ using CarboKitten.Algorithms.StratigraphicColumn: stratigraphic_column!
 using Random
 
 function moving_average(a::AbstractVector{T}, n) where {T}
-	b = Vector{T}(undef, length(a))
-	m = div(n, 2)
-	for i in eachindex(b)
-		start = min(max(i - m, 1), length(a) - n)
-		b[i] = sum(a[start:start+n]) / n
-	end
-	return b
+   	b = Vector{T}(undef, length(a))
+   	m = div(n, 2)
+   	for i in eachindex(b)
+  		start = min(max(i - m, 1), length(a) - n)
+  		b[i] = sum(a[start:start+n]) / n
+   	end
+   	return b
 end
 
 function main()

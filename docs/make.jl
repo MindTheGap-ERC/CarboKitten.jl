@@ -129,11 +129,15 @@ makedocs(
             "Trouble shooting and diagnostics" => "debugging.md"
         ],
         "Algorithms" => [
+            "Overview" => "algorithms/overview.md",
             "Unitful" => "unitful.md",
             "Boxes" => "boxes.md",
             "Stencils" => "stencils.md",
             "Utility" => "utility.md",
-            "Finite Difference" => "finite-difference-transport.md",
+            "Finite Difference" => "algorithms/finite-difference-transport.md",
+            "Range Finder" => "algorithms/range_finder.md",
+            "Nested Sequence Enumeration" => "algorithms/enumerate_seq.md",
+            "Skeleton" => "algorithms/skeleton.md",
             "Stratigraphic Column" => "algorithms/stratigraphic_column.md",
         ],
         "API Documentation" => "api.md",

@@ -9,6 +9,7 @@ export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, st
 
 using Unitful
 using ...CarboKitten: OutputSpec, AbstractInput, AbstractState
+using .Iterators: repeated
 
 const Length = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
@@ -113,8 +114,24 @@ Given a data set, compute the stratigrahpic column.
 """
 function stratigraphic_column(data::Data{F, D}) where {F, D}
     net_deposition = data.deposition .- data.disintegration
-    stratigraphic_column!(eachslice(net_deposition, dims=1:F-1))
+    for c in eachslice(net_deposition, dims=(1:D...,))
+        stratigraphic_column!(c)
+    end
     return net_deposition
+end
+
+"""
+    water_depth(header, data)
+
+Compute the water depth function for the given data set.
+"""
+function water_depth(header::Header, data::Data{F, D}) where {F, D}
+    na = [CartesianIndex()]
+    delta_t = header.axes.t[1:data.write_interval:end] #  .- header.axes.t[end]
+    return header.sea_level[repeated(na, D-1)..., :] .-
+        header.initial_topography[data.slice..., na] .-
+        data.sediment_thickness .+
+        header.subsidence_rate .* delta_t[repeated(na, D-1)..., :]
 end
 
 """

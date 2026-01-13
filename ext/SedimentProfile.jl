@@ -61,23 +61,23 @@ the default width of 10 time steps is taken.
 
 Additional keyword arguments are forwarded to the `linesegments!` call.
 """
-function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Nothing; kwargs...)
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Nothing; kwargs...)
     @info "Not plotting unconformities, got minwidth: $(minwidth)"
 end
 
-function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Bool; kwargs...)
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Bool; kwargs...)
     if minwidth
-        plot_unconformities(ax, header, data, 10; kwargs...)
+        plot_unconformities(ax, header, data, h, 10; kwargs...)
     end
 end
 
-function plot_unconformities(ax::Axis, header::Header, data::DataSlice, minwidth::Int; kwargs...)
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Int; kwargs...)
     x = header.axes.x |> in_units_of(u"km")
     wi = data.write_interval
-    hiatus = skeleton(water_depth(header, data) .> 0.0u"m", minwidth=minwidth)
+    hiatus = skeleton(water_depth(header, data) .< 0.0u"m", minwidth=minwidth)
 
     if !isempty(hiatus[1])
-        verts = [(x[pt[1]], ξ[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
+        verts = [(x[pt[1]], h[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
         linesegments!(ax, vec(permutedims(verts[hiatus[2]])); kwargs...)
     end
 end
@@ -88,11 +88,11 @@ end
 
 Plot coeval lines using default settings. If `tics` is false, nothing is done.
 """
-function coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Bool)
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, n_tics::Bool)
     if !n_tics
         return
     else
-        coeval_lines!(ax, header, data)
+        coeval_lines!(ax, header, data, adm)
     end
 end
 
@@ -102,10 +102,10 @@ end
 Plot coeval lines for given times. The times in `tics` are looked up in `header.axes.t`
 to find which indices to plot.
 """
-function coeval_lines!(ax::Axis, header::Header, adm::AbstractMatrix{Amount}, tics::Vector{Time}; kwargs...)
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Time}; kwargs...)
     t = header.axes.t[1:data.write_interval:end]
     indices::Vector{Int} = [searchsortedfirst(t, i) for i in tics]
-    coeval_lines!(ax, header, adm, indices; kwargs...)
+    coeval_lines!(ax, header, data, adm, indices; kwargs...)
 end
 
 """
@@ -115,7 +115,7 @@ Plot coeval lines on regular intervals given by `n_tics`. The tuple gives the nu
 for both minor and major tics, plotted as dotted and solid black lines respectively.
 If you need more control over the aestetics of these lines, use the other `coeval_lines!` methods.
 """
-function coeval_lines!(ax::Axis, header::Header, adm::AbstractMatrix{Amount}, n_tics::Tuple{Int, Int} = (4, 8))
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, n_tics::Tuple{Int, Int} = (4, 8))
     n_steps = div(header.time_steps, data.write_interval)
     n_major_tics, n_minor_tics = n_tics
 
@@ -124,8 +124,8 @@ function coeval_lines!(ax::Axis, header::Header, adm::AbstractMatrix{Amount}, n_
         t->!(t in major_tics),
         div.(n_steps:n_steps:n_steps*n_minor_tics, n_minor_tics) .+ 1) |> collect
 
-    coeval_lines!(ax, header, adm, minor_tics, color=:black, linewidth=1, linestyle=:dot)
-    coeval_lines!(ax, header, adm, major_tics, color=:black, linewidth=1, linestyle=:solid)
+    coeval_lines!(ax, header, data, adm, minor_tics, color=:black, linewidth=1, linestyle=:dot)
+    coeval_lines!(ax, header, data, adm, major_tics, color=:black, linewidth=1, linestyle=:solid)
 end
 
 """
@@ -134,7 +134,7 @@ end
 Plot coeval lines for the given indices. The `kwargs...` are forwarded to a call to Makie's
 `lines!` procedure.
 """
-function coeval_lines!(ax::Axis, header::Header, adm::AbstractMatrix{Amount}, tics::Vector{Int}; kwargs...)
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Int}; kwargs...)
     x = header.axes.x |> in_units_of(u"km")
     h = adm |> in_units_of(u"m")
     for t in tics
@@ -164,9 +164,11 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
     total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
-    h = initial_topography[:, na] .+ cumsum(sum(sc, dims=1)[1,:,:], dims=2) .- total_subsidence
+    h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
+    @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
 
     verts = zeros(Float64, n_x, n_t+1, 2)
+    print(size(verts))
     @views verts[:, :, 1] .= x
     @views verts[:, :, 2] .= h |> in_units_of(u"m")
     v, f = explode_quad_vertices(verts)
@@ -211,7 +213,13 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
                            show_sealevel::Bool = true)
     x = header.axes.x |> in_units_of(u"km")
     t = header.axes.t |> in_units_of(u"Myr")
-    n_facies = size(data.production)[1]
+
+    n_facies, n_x, n_t = size(data.production)
+    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    initial_topography = header.initial_topography[data.slice...]
+    sc = stratigraphic_column(data)
+    h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
+    @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
 
     if show_sealevel
         plot_sealevel!(ax, header)
@@ -220,14 +228,10 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
     plot = profile_plot!(argmax, ax, header, data; alpha=1.0,
         colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
-    initial_topography = header.initial_topography[data.slice...]
-    sc = stratigraphic_column(data)
-    h = initial_topography[:, na] .+ cumsum(sum(sc, dims=1)[1,:,:], dims=2) .- total_subsidence
-    coeval_lines!(ax, header, h, show_coeval_lines)
+    coeval_lines!(ax, header, data, h, show_coeval_lines)
 
     minwidth = show_unconformities
-    plot_unconformities(ax, header, data, minwidth; label = "unconformities",
+    plot_unconformities(ax, header, data, h, minwidth; label = "unconformities",
                         color=:white, linestyle=:dash, linewidth=1)
 
     ax.title = "sediment profile"

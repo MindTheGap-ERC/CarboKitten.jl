@@ -11,7 +11,7 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
     if mass == 0.0
         return
     end
-    
+
     if mass > size(col)[1]
         @warn "pushing a very large parcel of sediment: $mass times depositional resolution"
         frac = parcel ./ mass
@@ -34,7 +34,7 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
     col[1,:] .+= frac .* (1.0 - bucket)
     mass -= (1.0 - bucket)
     n = floor(Int64, mass)
-    
+
     col[n+2:end,:] .= col[1:end-n-1,:]
     # ~/~ end
     # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[4]
@@ -62,7 +62,7 @@ function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vect
     # ~/~ begin <<docs/src/components/sediment_buffer.md#pop-sediment>>[init]
     bucket = sum(col[1,:])
     @assert bucket >= 0.0
-    
+
     if Δ < bucket
       return pop_fraction(col, Δ)
     end
@@ -71,19 +71,19 @@ function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vect
     parcel = copy(col[1,:])
     Δ -= bucket
     n = floor(Int64, Δ)
-    
+
     if n > (size(col)[1] - 2)
         @error "too much material popped of the stack: Δ = $Δ"
         parcel .+= sum(col; dims=1)'
         col .= 0.0
         return parcel
     end
-    
+
     parcel .+= sum(col[2:n+1,:]; dims=1)'
     col[1:end-n-1, :] = col[n+2:end, :]
     col[end-n-1:end, :] .= 0
     Δ -= n
-    
+
     parcel .+= pop_fraction(col, Δ)
     return parcel
     # ~/~ end

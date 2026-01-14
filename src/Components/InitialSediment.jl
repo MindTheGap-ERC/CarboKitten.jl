@@ -20,12 +20,12 @@
             @assert dimension(s) == dimension(u"m")
             return fill(s, box.grid_size...)
         end
-    
+
         # s should be callable
         x, y = box_axes(box)
         return s.(x, y')
     end
-    
+
     function push_initial_sediment!(input::AbstractInput, state::AbstractState)
         s = stack(initial_sediment(input.box, f) for f in input.facies; dims=1)
         push_sediment!(state.sediment_buffer, s ./ input.depositional_resolution .|> NoUnits)

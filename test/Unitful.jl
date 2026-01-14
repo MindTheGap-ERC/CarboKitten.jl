@@ -35,7 +35,7 @@
         # ~/~ begin <<docs/src/unitful.md#unitful-photon-example>>[init]
         photon_wave_length(E::Quantity{Float64,𝐄,J}) where {J} =
             uconvert(u"Å", h * c / E)
-        
+
         @test photon_wave_length(2.38u"eV") ≈ 5209.4201u"Å"
         @test_throws MethodError photon_wave_length(1u"m")
         # ~/~ end

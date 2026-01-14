@@ -15,6 +15,7 @@ import ..Abstract: add_data_set, set_attribute, frame_writer, state_writer
 
 mutable struct H5Output <: AbstractOutput
     header::Header
+    save_active_layer::Bool
     fid::HDF5.File
 end
 
@@ -41,22 +42,26 @@ function make_header(input::AbstractInput)
 end
 
 
-function H5Output(input::AbstractInput, filename::String)
+function H5Output(input::Input, filename::String) where {Input <: AbstractInput}
     header = make_header(input)
     fid = h5open(filename, "w")
     create_group(fid, "input")
+    save_active_layer = hasfield(Input, :save_active_layer) ?
+        input.save_active_layer : false
 
-    finalizer(H5Output(header, fid)) do x
+    finalizer(H5Output(header, save_active_layer, fid)) do x
         close(x.fid)
     end
 end
 
 
-function H5Output(f, input::AbstractInput, filename::String)
+function H5Output(f, input::Input, filename::String) where {Input <: AbstractInput}
     header = make_header(input)
+    save_active_layer = hasfield(Input, :save_active_layer) ?
+        input.save_active_layer : false
     h5open(filename, "w") do fid
         create_group(fid, "input")
-        out = H5Output(header, fid)
+        out = H5Output(header, save_active_layer, fid)
         f(out)
     end
 end
@@ -98,6 +103,12 @@ function add_data_set(out::H5Output, name::Symbol, spec::OutputSpec)
     HDF5.create_dataset(grp, "sediment_thickness", datatype(Float64),
         dataspace(size..., nw + 1),
         chunk=(size..., 1), deflate=3)
+
+    if out.save_active_layer
+        HDF5.create_dataset(grp, "active_layer", datatype(Float64),
+            dataspace(nf, size..., nw + 1),
+            chunk=(nf, size..., 1), deflate=3)
+    end
 end
 
 function get_group(fid::HDF5.File, name::String)
@@ -138,6 +149,11 @@ function state_writer(input::AbstractInput, out::H5Output)
                     (is_column(v.slice...) ?
                      Float64[state.sediment_height[v.slice...] |> in_units_of(u"m");] :
                      reshape(state.sediment_height[v.slice...], size) |> in_units_of(u"m"))
+
+                if out.save_active_layer
+                    fid[string(k)]["active_layer"][:, :, :, div(idx - 1, v.write_interval) + 1] =
+                        reshape(state.active_layer[:, v.slice...], (n_facies, size...)) |> in_units_of(u"m")
+                end
             end
         end
     end

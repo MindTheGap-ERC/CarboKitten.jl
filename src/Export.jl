@@ -110,7 +110,8 @@ function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {d
 		gid["disintegration"][:, reduce.(slice)..., :] * u"m",
 		gid["production"][:, reduce.(slice)..., :] * u"m",
 		gid["deposition"][:, reduce.(slice)..., :] * u"m",
-		gid["sediment_thickness"][reduce.(slice)..., :] * u"m")
+		gid["sediment_thickness"][reduce.(slice)..., :] * u"m",
+		"active_layer" in gid ? gid["active_layer"][:, reduce.(slice)..., :] * u"m" : nothing)
 end
 
 function read_data(D::Type{Val{dim}}, filename::AbstractString, group) where {dim}
@@ -187,7 +188,7 @@ Compute the Stratigraphic Column for a given grid position `loc` and `facies` in
 Returns an `Array{Quantity, 2}` where the `Quantity` is in units of meters.
 """
 function stratigraphic_column(header::Header, column::DataColumn, facies::Int)
-	n_steps = size(column.production, 2)	
+	n_steps = size(column.production, 2)
     delta = column.deposition[facies,:] .- column.disintegration[facies,:]
 
 	for step in 1:n_steps
@@ -284,7 +285,7 @@ copied from `data.sediment_thickness`. Returns a `DataFrame` with `time` and
 """
 function extract_sac(header::Header, data::DataColumn, label)
     DataFrame(
-        "timestep" => 0:data.write_interval:header.time_steps, 
+        "timestep" => 0:data.write_interval:header.time_steps,
         "sac_$(label)" => data.sediment_thickness)
 end
 
@@ -297,7 +298,7 @@ Extract Stratigraphic Column (SC) from the data. Returns a `DataFrame` with
 function extract_sc(header::Header, data::DataColumn, label)
     n_facies = size(data.production)[1]
     DataFrame(
-        "timestep" => data.write_interval:data.write_interval:header.time_steps, 
+        "timestep" => data.write_interval:data.write_interval:header.time_steps,
         ("sc_$(label)_f$(f)" => stratigraphic_column(header, data, f)
          for f in 1:n_facies)...)
 end
@@ -312,12 +313,12 @@ function extract_wd(header::Header, data::DataColumn, label)
     na = [CartesianIndex()]
     t = header.axes.t[1:data.write_interval:end]
     sea_level = header.sea_level[1:data.write_interval:end]
-    wd = header.subsidence_rate .* t .- 
-        header.initial_topography[data.slice...] .- 
+    wd = header.subsidence_rate .* t .-
+        header.initial_topography[data.slice...] .-
         data.sediment_thickness .+
         sea_level
     return DataFrame(
-        "timestep" => 0:data.write_interval:header.time_steps, 
+        "timestep" => 0:data.write_interval:header.time_steps,
         "wd_$(label)" => wd)
 end
 # ~/~ end

@@ -257,7 +257,6 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
     @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
 
     verts = zeros(Float64, n_x, n_t+1, 2)
-    print(size(verts))
     @views verts[:, :, 1] .= x
     @views verts[:, :, 2] .= h |> in_units_of(u"m")
     v, f = explode_quad_vertices(verts)

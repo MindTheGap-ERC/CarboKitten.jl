@@ -109,7 +109,7 @@ makedocs(
         "Visualizations" => [
             "Overview" => "visualization/overview.md",
             "Profiles" => "visualization/profiles.md",
-            "Topography" => "Visualizations/topography.md",
+            "Topography" => "visualization/topography.md",
             "Other" => "visualization.md",
         ],
         "CarboCAT" => [

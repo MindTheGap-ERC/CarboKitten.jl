@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/finite-difference-transport.md#src/Transport/Solvers.jl>>[init]
+# ~/~ begin <<docs/src/algorithms/finite-difference-transport.md#src/Transport/Solvers.jl>>[init]
 module Solvers
 
 using Unitful

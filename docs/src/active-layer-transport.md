@@ -649,8 +649,9 @@ end
     disintegration_rate::Rate = 50.0u"m/Myr"
     disintegration_transfer::Function = x -> x
     cementation_time::Union{typeof(1.0u"Myr"),Nothing} = nothing
-    transport_solver = Val{:RK4}
+    transport_solver = Val{:forward_euler}
     transport_substeps = :adaptive
+    save_active_layer::Bool = false
 end
 
 courant_max(::Type{Val{:RK4}}) = 2.0
@@ -709,7 +710,7 @@ function adaptive_transporter(input)
                 x,y = box_axes(box)
                 error("""
 
-                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]), 
+                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]),
                 (physical location x = $(x[err_loc[2]]), y = $(y[err_loc[3]])).
 
                 For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/
@@ -791,10 +792,10 @@ function transporter(input)
                 x,y = box_axes(box)
                 error("""
 
-                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]), 
+                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]),
                 (physical location x = $(x[err_loc[2]]), y = $(y[err_loc[3]])).
 
-                For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/ 
+                For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/
 
                 """)
 
@@ -809,6 +810,160 @@ function write_header(input::AbstractInput, output::AbstractOutput)
     if input.cementation_time !== nothing
         set_attribute(output, "cementation_time", input.cementation_time |> in_units_of(u"Myr"))
     end
+end
+
+end
+```
+
+## Saving and Inspecting the Active Layer
+
+To follow what is happening in the active layer, you can optionally save the active layer to the output. This is enabled by passing `save_active_layer = true` in your input definition.
+
+``` {.julia file=examples/transport/active-layer-inspection.jl}
+module Script
+using CarboKitten
+using CarboKitten.Models: WithoutCA as M
+using CarboKitten.Visualization: profile_plot!
+
+using CairoMakie
+using CarboKitten: Box
+
+v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
+
+function run()
+    CarboKitten.init()
+
+    facies = [
+        M.Facies(
+            maximum_growth_rate=100.0u"m/Myr",
+            extinction_coefficient=0.8u"m^-1",
+            saturation_intensity=60u"W/m^2",
+            diffusion_coefficient=100.0u"m/yr",
+            wave_velocity=v_const(-5.0u"m/yr")),
+        M.Facies(
+            maximum_growth_rate=20.0u"m/Myr",
+            extinction_coefficient=0.8u"m^-1",
+            saturation_intensity=60u"W/m^2",
+            diffusion_coefficient=10.0u"m/yr",
+            wave_velocity=v_const(0.0u"m/yr"))]
+
+
+    input = M.Input(
+        box=CarboKitten.Box{Coast}(grid_size=(500, 1), phys_scale=50.0u"m"),
+        time=TimeProperties(
+            Δt=20u"yr",
+            steps=40000),
+
+        output=Dict(
+            :profile => OutputSpec(slice = (:, 1), write_interval = 40),
+            :col1 => OutputSpec(slice = (100, 1)),
+            :col2 => OutputSpec(slice = (200, 1)),
+            :col3 => OutputSpec(slice = (300, 1)),
+            :col4 => OutputSpec(slice = (400, 1))),
+
+        initial_topography=(x, y) -> (15u"km" - x) / 300.0,
+        sea_level=t -> 0.0u"m",
+
+        subsidence_rate=50.0u"m/Myr",
+        disintegration_rate=100.0u"m/Myr",
+        cementation_time=50.0u"yr",
+
+        insolation=400.0u"W/m^2",
+        sediment_buffer_size=50,
+        depositional_resolution=0.5u"m",
+        facies=facies,
+
+        transport_solver=Val{:forward_euler},
+        intertidal_zone=0.0u"m",
+        save_active_layer=true)
+
+    result = run_model(Model{M}, input, MemoryOutput(input))
+end
+
+function plot(result::MemoryOutput)
+    header = result.header
+    slice = result.data_slices[:profile]
+    n_cols = length(result.data_columns)
+
+	fig = Figure()
+    ax1 = Axis(fig[1, 1:n_cols])
+
+	x = header.axes.x
+	t = header.axes.t
+
+	plot = profile_plot!(ax1, header, slice; colorrange=(0.2, 1.0)) do x; x[1] / sum(x) end
+    col_positions = [x[col.slice[1]] |> in_units_of(u"km") for col in values(result.data_columns)]
+    vlines!(ax1, col_positions; color=:red)
+
+    Colorbar(fig[1, n_cols+1], plot; label=L"f_1 / f_{\textrm{total}}")
+
+    col_names = sort!(collect(keys(result.data_columns)))
+    for (i, k) in enumerate(col_names)
+        f1 = result.data_columns[k].deposition[1,:]
+        f2 = result.data_columns[k].deposition[2,:]
+        f_total = f1 .+ f2
+        ax = Axis(fig[2, i], title=string(k) * " amount")
+        lines!(ax, f1 |> in_units_of(u"m"), t[1:end-1] |> in_units_of(u"Myr"); label="facies 1")
+        lines!(ax, f2 |> in_units_of(u"m"), t[1:end-1] |> in_units_of(u"Myr"); label="facies 2")
+        lines!(ax, f_total |> in_units_of(u"m"), t[1:end-1] |> in_units_of(u"Myr"); label="total", color=:black, linewidth=2)
+        axislegend(ax)
+    end
+
+	fig
+end
+
+main() = plot(run())
+end
+
+Script.main()
+```
+
+``` {.julia file=test/Output/ActiveLayerSpec.jl}
+module ActiveLayerSpec
+
+using CarboKitten
+using CarboKitten.Output.Abstract: state_writer, add_data_set, Frame
+using CarboKitten.Output.MemoryWriter: MemoryOutput
+using Unitful
+using Test
+
+const DummyFacies = [
+    ALCAP.Facies(
+        viability_range = (0, 0),
+        activation_range = (0, 0),
+        maximum_growth_rate=0.0u"m/Myr",
+        extinction_coefficient=0.0u"m^-1",
+        saturation_intensity=0.0u"W/m^2",
+        diffusion_coefficient=0.0u"m/yr")]
+
+const input = ALCAP.Input(
+    tag="test",
+    box=Box{Periodic{2}}(grid_size=(5, 1), phys_scale=5.0u"m"),
+    time=TimeProperties(
+        Δt=0.0001u"Myr",
+        steps=10),
+    output=Dict(
+        :wi1 => OutputSpec(slice=(:,:), write_interval=1)),
+    ca_interval=1,
+    initial_topography=(x, y) -> -0.0u"m",
+    sea_level = t -> 0.0u"m",
+    subsidence_rate=0.0u"m/Myr",
+    disintegration_rate=0.0u"m/Myr",
+    insolation=0.0u"W/m^2",
+    sediment_buffer_size=0,
+    depositional_resolution=0.0u"m",
+    facies=DummyFacies,
+    save_active_layer=true)
+
+@testset "ActiveLayer" begin
+    out = MemoryOutput(input)
+    write_state = state_writer(input, out)
+
+    for (k, v) in input.output
+        add_data_set(out, k, v)
+    end
+
+    @test out.data_volumes[:wi1].active_layer != nothing
 end
 
 end

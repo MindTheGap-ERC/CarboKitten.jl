@@ -46,45 +46,6 @@ end
 end
 ```
 
-## Range finder
-
-The `RangeFinder` iterator is used in our algorithm to trace hiatus in the sediment history. This iterator consumes an iterator of booleans and yields values of type `UnitRange`, giving all ranges for which the input sequence is true consecutively.
-
-``` {.julia #utility-spec}
-a = [false, true, true, false, true]
-@test collect(find_ranges(a)) == [2:3, 5:5]
-```
-
-``` {.julia #utility}
-struct RangeFinder
-	v::AbstractVector{Bool}
-end
-
-Base.iterate(r::RangeFinder) = iterate(r, 1)
-
-function Base.iterate(r::RangeFinder, i::Union{Int, Nothing})
-	isnothing(i) && return nothing
-	a = findnext(r.v, i)
-	isnothing(a) && return nothing
-	b = findnext(!, r.v, a)
-	isnothing(b) && return (a:length(r.v)), nothing
-	return (a:b-1), b
-end
-
-Base.eltype(r::RangeFinder) = UnitRange{Int}
-Base.IteratorSize(::Type{RangeFinder}) = Base.SizeUnknown()
-
-"""
-    find_ranges(v::AbstractVector{Bool})
-
-Take a vector of bools, returns an iterator over all ranges for
-which the vector is `true`.
-"""
-find_ranges(v::AbstractVector{Bool}) = RangeFinder(v)
-
-export find_ranges
-```
-
 ## Tagging a sequence of vectors
 
 The `enumerate_seq` iterator is also used in the algorithm to trace hiatus in sediment accumulation. Here the task is to enumerate a nested sequence while preserving the nested structure.

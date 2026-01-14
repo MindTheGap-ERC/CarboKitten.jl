@@ -135,7 +135,7 @@ Although this is a stencil operation, it is easier to compute this step directly
 
 Here `adv` stands for advection term and `rct` for reaction term, given the generic case
 
-$$dC = - \textrm{adv} \nabla C + \textrm{rct} C$$
+$$dC = - [\textrm{adv}] \nabla C + [\textrm{rct}] C$$
 
 ``` {.julia #advection-coef}
 function advection_coef!(box::Box{BT}, diffusivity, wave_velocity, w, adv, rct) where {BT}
@@ -290,7 +290,7 @@ end
 
 With only wave induced advection enabled, we should see a clear translation of the picture of the kitten. The additional diffusion is so called *false diffusion*, a numerical artifact of the upwind differencing scheme.
 
-![Flying Cat](fig/flying_cat.png)
+![Flying Cat](../fig/flying_cat.png)
 
 ``` {.julia .task file=examples/transport/flying_cat.jl}
 #| creates: docs/src/_fig/flying_cat.png
@@ -350,7 +350,7 @@ FlyingCat.run()
 
 Next, we only enable the diffusivity term. We set a topography of a single Gaussian peak in the center of the box. Sediment is dispersed down slope.
 
-![Exploding Kitten](fig/exploding_kitten.png)
+![Exploding Kitten](../fig/exploding_kitten.png)
 
 ``` {.julia .task file=examples/transport/exploding_kitten.jl}
 #| creates: docs/src/_fig/exploding_kitten.png

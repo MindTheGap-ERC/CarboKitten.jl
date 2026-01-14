@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/visualization.md#examples/visualization/sediment_profile.jl>>[init]
+# ~/~ begin <<docs/src/visualization/profiles.md#examples/visualization/sediment_profile.jl>>[init]
 
 module Script
 using CairoMakie

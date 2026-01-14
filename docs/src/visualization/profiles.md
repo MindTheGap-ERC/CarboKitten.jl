@@ -1,28 +1,76 @@
-# ~/~ begin <<docs/src/visualization/profiles.md#ext/SedimentProfile.jl>>[init]
-module SedimentProfile
+# Profile Plotting
 
-import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!
+![Sediment profile](../fig/sediment_profile.png)
 
-using CarboKitten.Visualization
-using CarboKitten.Utility: in_units_of
-using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
-using CarboKitten.Algorithms: skeleton
-using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
+The sediment profile is probably the most important visualization that we provide. By default it allows us to study the sediment composition of a section, by plotting the `argmax` of the deposition. In cases where significant amounts of sediment is eroded, all deposition is plotted, and it is assumed that newest depositions are shown on top of possible older ones.
 
-using Makie
-using GeometryBasics
-using Unitful
+``` {.julia .task file=examples/visualization/sediment_profile.jl}
+#| creates: docs/src/_fig/sediment_profile.png
+#| requires: data/output/alcap-example.h5
+#| collect: figures
 
-using Statistics: mean
+module Script
+using CairoMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: sediment_profile
 
-const Rate = typeof(1.0u"m/Myr")
-const Amount = typeof(1.0u"m")
-const Length = typeof(1.0u"m")
-const Time = typeof(1.0u"Myr")
+function main()
+    save("docs/src/_fig/sediment_profile.png",
+        sediment_profile(read_slice("data/output/alcap-example.h5", :profile)...))
+end
+end
 
-const na = [CartesianIndex()]
+Script.main()
+```
 
-# ~/~ begin <<docs/src/visualization/profiles.md#explode-vertices>>[init]
+If you want to visualize something other than the `argmax` of the deposition, you may use the `profile_plot!` function. For example, we can plot the fraction of second facies over total.
+
+![](../fig/profile_fraction.png)
+
+``` {.julia .task file=examples/visualization/profile_fraction.jl}
+#| creates: docs/src/_fig/profile_fraction.png
+#| requires: data/output/alcap-example.h5
+#| collect: figures
+
+module Script
+using GLMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: profile_plot!
+
+function main()
+    (header, slice) = read_slice("data/output/alcap-example.h5", :profile)
+    fig = Figure()
+    ax = Axis(fig[1, 1])
+
+    x = header.axes.x
+    t = header.axes.t
+
+    plot = profile_plot!(x -> x[2]/sum(x), ax, header, slice; colorrange=(0, 1))
+    Colorbar(fig[1, 2], plot; label=L"f_2 / f_{total}")
+
+    save("docs/src/_fig/profile_fraction.png", fig)
+    fig
+end
+end
+
+Script.main()
+```
+
+## Implementation
+
+Before we plot anything, we need to make sure that only net positive sediment is still present in our data. We use the [`stratigraphic_column` algorithm](../algorithms/stratigraphic_column.md) to remove sediment from the record that is later disintegrated.
+
+``` {.julia #profile-strat-column}
+
+
+
+```
+
+### Exploding Vertices
+
+The profile plot is rendered using Makie's `mesh` function. This function accepts an array of (two-dimensional) vertices and an array of faces, usually triangles. The way mesh rendering works, is that the colour of a face is interpolated between its vertices. Now, the amount of sediment in a given column can be interpreted as sampling a location so the interpretation of colouring a vertex seems the right one. However in the depth (z) we are indicating a clear layer being **between** two depths. We need to duplicate vertices in the vertical direction in order to give ajacent layers different colours. The `explode_quad_vertices` function does exactly that:
+
+``` {.julia #explode-vertices}
 """
     explode_quad_vertices(v)
 
@@ -47,8 +95,18 @@ function explode_quad_vertices(v::Array{Float64,3})
     return reshape(points, n_vertices, d),
            vcat(hcat(vtx1, vtx2, vtx3), hcat(vtx1, vtx3, vtx4))
 end
-# ~/~ end
-# ~/~ begin <<docs/src/visualization/profiles.md#plot-unconformities>>[init]
+```
+
+To map colours onto the returned mesh, we need to take care to duplicate each row in the input.
+
+### Plotting Unconformities
+
+To indicate unconformities in profile plots, we need to do two things:
+
+1. Find those times and locations where the platform is exposed. To reduce noise we can set a minimum time span for which the platform needs to be exposed before showing up in this visualization.
+2. Reduce the detected unconformities to line segments (see [the Skeleton Algorithm](../algorithms/skeleton.md)). 
+
+``` {.julia #plot-unconformities}
 """
     plot_unconformities(ax, header, data_slice, minwidth; kwargs...)
     plot_unconformities(ax, header, data_slice, minwidth::Bool; kwargs...)
@@ -81,8 +139,11 @@ function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwi
         linesegments!(ax, vec(permutedims(verts[hiatus[2]])); kwargs...)
     end
 end
-# ~/~ end
-# ~/~ begin <<docs/src/visualization/profiles.md#plot-coeval-lines>>[init]
+```
+
+### Plotting Co-eval Lines
+
+``` {.julia #plot-coeval-lines}
 """
     coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Bool)
 
@@ -146,7 +207,35 @@ function plot_sealevel!(ax::Axis, header::Header)
     sea_level = header.sea_level[end] |> in_units_of(u"m")
     hlines!(ax, sea_level, color=:lightblue, linewidth=5, label="end sea level")
 end
-# ~/~ end
+```
+
+```{.julia file=ext/SedimentProfile.jl}
+module SedimentProfile
+
+import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!
+
+using CarboKitten.Visualization
+using CarboKitten.Utility: in_units_of
+using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
+using CarboKitten.Algorithms: skeleton
+using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
+
+using Makie
+using GeometryBasics
+using Unitful
+
+using Statistics: mean
+
+const Rate = typeof(1.0u"m/Myr")
+const Amount = typeof(1.0u"m")
+const Length = typeof(1.0u"m")
+const Time = typeof(1.0u"Myr")
+
+const na = [CartesianIndex()]
+
+<<explode-vertices>>
+<<plot-unconformities>>
+<<plot-coeval-lines>>
 
 """
     profile_plot!(ax, header, data_slice; mesh_args...)
@@ -254,4 +343,4 @@ function sediment_profile(header::Header, data_slice::DataSlice; show_unconformi
 end
 
 end  # module
-# ~/~ end
+```

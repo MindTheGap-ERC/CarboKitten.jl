@@ -9,6 +9,30 @@ We have two kinds of topography plots available.
 Contour Map
 -----------
 
+TODO: This code is not yet available in `CarboKitten.Visualization`, but you can copy paste this for now.
+
+```julia
+function topography!(ax, header, data; colormap=:nuuk, levels=[-10, -5, 0, 5, 10])
+    ax.aspect = DataAspect()
+
+    h = header
+    s = data.sediment_thickness[:, :, end]
+    t = h.initial_topography .+ s .- ((h.axes.t[end] - h.axes.t[1]) * h.subsidence_rate)
+    
+    hm = contourf!(
+        ax,
+        h.axes.x |> in_units_of(u"km"),
+        h.axes.y |> in_units_of(u"km"),
+        t / u"m", levels=levels, colormap=colormap, extendlow=:auto, extendhigh=:auto)
+
+    contour!(
+        ax,
+        h.axes.x |> in_units_of(u"km"),
+        h.axes.y |> in_units_of(u"km"),
+        t / u"m", levels=levels, color=:black, labels=true)
+    return hm
+end
+```
 
 Glamour View
 ------------

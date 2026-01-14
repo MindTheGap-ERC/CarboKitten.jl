@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/visualization.md#ext/GlamourView.jl>>[init]
+# ~/~ begin <<docs/src/visualization/topography.md#ext/GlamourView.jl>>[init]
 module GlamourView
 
 import CarboKitten.Visualization: glamour_view!
@@ -16,12 +16,17 @@ function glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; colorm
     ax.aspect = (xy_aspect, 1, 1)
     ax.azimuth = -π/3
 
-    n_steps = size(data.sediment_thickness)[3]
+    n_steps = size(data.sediment_thickness, 3)
     grid_size = (length(x), length(y))
-    steps_between = 2
-    selected_steps = [1, ((1:steps_between) .* n_steps .÷ (steps_between + 1))..., n_steps]
-    bedrock = header.initial_topography .- (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
 
+    steps_between = 2
+    selected_steps::Vector{Int} = if n_steps > (2 + steps_between)
+        [1, ((1:steps_between) .* n_steps .÷ (steps_between + 1))..., n_steps]
+    else
+        collect(1:n_steps)
+    end
+
+    bedrock = header.initial_topography .- (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
     result = Array{Float64, 3}(undef, grid_size..., length(selected_steps))
     for (i, j) in enumerate(selected_steps)
         result[:, :, i] = (data.sediment_thickness[:,:,j] .+ bedrock) |> in_units_of(u"m")
@@ -32,12 +37,11 @@ function glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; colorm
     colormap=:grays)
 
     for s in eachslice(result[:,:,2:end-1], dims=3)
-    surface!(ax, x, y, s;
-    colormap=(colormap, 0.7))
+        surface!(ax, x, y, s;
+        colormap=(colormap, 0.7))
     end
 
-    surface!(ax, x, y, result[:,:,end];
-    colormap=colormap)
+    surface!(ax, x, y, result[:,:,end]; colormap=colormap)
     lines!(ax, x, zeros(grid_size[1]), result[:, 1, end]; color=(:white, 0.5), linewidth=1)
     lines!(ax, fill(x[end], grid_size[2]), y, result[end, :, end]; color=(:white, 0.5), linewidth=1)
 end

@@ -39,7 +39,7 @@ Glamour View
 
 Not very useful but highly glamourous.
 
-![Glamour view](fig/glamour_view.png)
+![Glamour view](../fig/glamour_view.png)
 
 ### Test 1: CAP Output
 

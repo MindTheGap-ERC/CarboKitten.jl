@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/model-alcap.md#examples/model/alcap/run.jl>>[init]
+# ~/~ begin <<docs/src/models/alcap.md#examples/model/alcap/run.jl>>[init]
 
 module Script
 
@@ -8,7 +8,7 @@ using CarboKitten.Export: read_slice, data_export, CSV
 
 const PATH = "data/output"
 
-# ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]
+# ~/~ begin <<docs/src/models/alcap.md#alcap-example-input>>[init]
 const TAG = "alcap-example"
 
 const FACIES = [

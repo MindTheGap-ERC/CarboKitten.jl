@@ -1,5 +1,4 @@
-# Stress test: Extreme erosion scenario with dramatic sea-level changes
-
+# ~/~ begin <<docs/src/visualization/tests.md#examples/extreme-erosion/run.jl>>[init]
 module ScriptExtremeErosion
 
 using Unitful
@@ -9,26 +8,21 @@ using CarboKitten.Export: read_slice, data_export, CSV
 const PATH = "data/output"
 const TAG = "alcap-extreme-erosion"
 
+# ~/~ begin <<docs/src/visualization/tests.md#standard-facies>>[init]
 const FACIES = [
     ALCAP.Facies(
-        viability_range = (4, 10),
-        activation_range = (6, 10),
         maximum_growth_rate=500u"m/Myr",
         extinction_coefficient=0.8u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=50.0u"m/yr",
         name="euphotic"),
     ALCAP.Facies(
-        viability_range = (4, 10),
-        activation_range = (6, 10),
         maximum_growth_rate=400u"m/Myr",
         extinction_coefficient=0.1u"m^-1",
         saturation_intensity=60u"W/m^2",
         diffusion_coefficient=25.0u"m/yr",
         name="oligophotic"),
     ALCAP.Facies(
-        viability_range = (4, 10),
-        activation_range = (6, 10),
         maximum_growth_rate=100u"m/Myr",
         extinction_coefficient=0.005u"m^-1",
         saturation_intensity=60u"W/m^2",
@@ -48,6 +42,7 @@ const FACIES = [
         diffusion_coefficient=50.0u"m/yr",
         name="aphotic transported")
 ]
+# ~/~ end
 
 const PERIOD = 0.18u"Myr"
 const AMPLITUDE = 5.5u"m"
@@ -64,28 +59,19 @@ const INPUT = ALCAP.Input(
     ca_interval=1,
     initial_topography=(x, y) -> -x / 300.0,
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
-    subsidence_rate=38.0u"m/Myr",  
-    disintegration_rate=80.0u"m/Myr", 
     disintegration_transfer=p->[0.0u"m", 0.0u"m", 0.0u"m", p[1]+p[4], p[2]+p[5], p[3]+p[6]],
     insolation=400.0u"W/m^2",
     sediment_buffer_size=150,  
     depositional_resolution=1.0u"m",  
-    facies=FACIES)
+    facies=FACIES,
+    # ~/~ begin <<docs/src/visualization/tests.md#extreme-erosion-parameters>>[init]
+    subsidence_rate=38.0u"m/Myr",
+    disintegration_rate=80.0u"m/Myr",
+    # ~/~ end
+)
 
-function main()
-    run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
-    header, profile = read_slice("$(PATH)/$(TAG).h5", :profile)
-    columns = [profile[i] for i in 10:20:70]
-    data_export(
-        CSV(:sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
-            :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
-            :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
-            :water_depth => "$(PATH)/$(TAG)_wd.csv",
-            :metadata => "$(PATH)/$(TAG).toml"),
-         header,
-         columns)
-end
-
-end
+main() = run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+end  # module ScriptExtremeErosion
 
 ScriptExtremeErosion.main()
+# ~/~ end

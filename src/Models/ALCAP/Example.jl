@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/model-alcap.md#src/Models/ALCAP/Example.jl>>[init]
+# ~/~ begin <<docs/src/models/alcap.md#src/Models/ALCAP/Example.jl>>[init]
 module Example
 
 using Unitful
@@ -7,7 +7,7 @@ using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
 using CarboKitten.Output.Abstract: OutputSpec
 
-# ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]
+# ~/~ begin <<docs/src/models/alcap.md#alcap-example-input>>[init]
 const TAG = "alcap-example"
 
 const FACIES = [

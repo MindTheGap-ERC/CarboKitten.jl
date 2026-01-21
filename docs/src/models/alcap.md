@@ -2,7 +2,7 @@
 
 The following **S**edimentation model includes the Burgess 2013 **C**ellular **A**utomaton, Bosscher & Schlager 1992 **P**roduction curves and an **A**ctive **L**ayer transport model, based on Paola 1992, henceforth ALCAP.
 
-![Result from alternative input](fig/alcaps-alternative.png)
+![Result from alternative input](../fig/alcaps-alternative.png)
 
 ## Example Input
 

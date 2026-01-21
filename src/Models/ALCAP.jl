@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/model-alcap.md#src/Models/ALCAP.jl>>[init]
+# ~/~ begin <<docs/src/models/alcap.md#src/Models/ALCAP.jl>>[init]
 @compose module ALCAP
 @mixin Tag, Output, CAProduction, ActiveLayer, InitialSediment, Diagnostics
 

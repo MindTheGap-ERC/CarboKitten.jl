@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/model-alcap.md#examples/model/alcap/plot.jl>>[init]
+# ~/~ begin <<docs/src/models/alcap.md#examples/model/alcap/plot.jl>>[init]
 
 using GLMakie
 using CarboKitten.Visualization

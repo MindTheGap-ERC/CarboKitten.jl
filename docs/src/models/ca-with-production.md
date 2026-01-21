@@ -1,8 +1,8 @@
 # CA with production
 
-This model combines BS92 production with the B13 cellular automaton. This production model is implemented in the [`CAProduction` component](components/production.md).
+This model combines BS92 production with the B13 cellular automaton. This production model is implemented in the [`CAProduction` component](../components/production.md).
 
-![Stratigraphy, production and subsidence under oscillating sea level.](fig/cap1-summary.png)
+![Stratigraphy, production and subsidence under oscillating sea level.](../fig/cap1-summary.png)
 
 ## Complete example
 

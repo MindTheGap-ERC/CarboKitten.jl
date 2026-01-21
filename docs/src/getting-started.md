@@ -251,9 +251,9 @@ The summary plot shows:
 ## Next Steps
 
 - Follow the [tutorial](first_tutorial.md)
-- Explore different [input parameters](model-alcap.md) to customize your model
+- Explore different [input parameters](models/alcap.md) to customize your model
 - Learn about [data export](data-export.md) options for further analysis
-- Read about the [ALCAP model](model-alcap.md) components and theory
+- Read about the [ALCAP model](models/alcap.md) components and theory
 - Check out the [visualization](visualization.md) options for different plot types
 
 ## Troubleshooting

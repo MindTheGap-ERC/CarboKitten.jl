@@ -81,9 +81,9 @@ makedocs(
         "Getting started" => "getting-started.md",
         "Models" => [
             "Bosscher and Schlager 1992" => "bosscher-1992.md",
-            "Model with CA and Production" => "ca-with-production.md",
+            "Model with CA and Production" => "models/ca-with-production.md",
             # "With Denudation" => "ca-prod-with-denudation.md",
-            "ALCAPS" => "model-alcap.md",
+            "ALCAPS" => "models/alcap.md",
             "Model without CA" => "models/without-ca.md"
         ],
         "Examples" => [

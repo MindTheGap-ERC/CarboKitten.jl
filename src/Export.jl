@@ -111,7 +111,9 @@ function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {d
 		gid["production"][:, reduce.(slice)..., :] * u"m",
 		gid["deposition"][:, reduce.(slice)..., :] * u"m",
 		gid["sediment_thickness"][reduce.(slice)..., :] * u"m",
-		"active_layer" in gid ? gid["active_layer"][:, reduce.(slice)..., :] * u"m" : nothing)
+		"active_layer" in keys(gid) ?
+		    gid["active_layer"][:, reduce.(slice)..., :] * u"m" :
+			nothing)
 end
 
 function read_data(D::Type{Val{dim}}, filename::AbstractString, group) where {dim}

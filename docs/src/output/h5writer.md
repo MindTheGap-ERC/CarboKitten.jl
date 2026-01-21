@@ -167,6 +167,7 @@ function state_writer(input::AbstractInput, out::H5Output)
     output_spec = input.output
     fid = out.fid
     grid_size = out.header.grid_size
+    n_f = out.header.n_facies
 
     function (idx::Int, state::AbstractState)
         for (k, v) in output_spec
@@ -179,7 +180,7 @@ function state_writer(input::AbstractInput, out::H5Output)
 
                 if out.save_active_layer
                     fid[string(k)]["active_layer"][:, :, :, div(idx - 1, v.write_interval) + 1] =
-                        reshape(state.active_layer[:, v.slice...], (n_facies, size...)) |> in_units_of(u"m")
+                        reshape(state.active_layer[:, v.slice...], (n_f, size...)) |> in_units_of(u"m")
                 end
             end
         end

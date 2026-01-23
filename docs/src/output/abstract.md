@@ -35,11 +35,14 @@ If an output with a `write_interval` that does not divide the total number of ti
 module Abstract
 
 import ...CarboKitten: set_attribute
+import ...Algorithms: stratigraphic_column!
+
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
 export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer
 
 using Unitful
 using ...CarboKitten: OutputSpec, AbstractInput, AbstractState
+using .Iterators: repeated
 
 const Length = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
@@ -136,6 +139,33 @@ data_kind(::Int, _) = :slice
 data_kind(_, ::Int) = :slice
 data_kind(_, _) = :volume
 data_kind(spec::OutputSpec) = data_kind(spec.slice...)
+
+"""
+    stratigraphic_column(data)
+
+Given a data set, compute the stratigrahpic column.
+"""
+function stratigraphic_column(data::Data{F, D}) where {F, D}
+    net_deposition = data.deposition .- data.disintegration
+    for c in eachslice(net_deposition, dims=(1:D...,))
+        stratigraphic_column!(c)
+    end
+    return net_deposition
+end
+
+"""
+    water_depth(header, data)
+
+Compute the water depth function for the given data set.
+"""
+function water_depth(header::Header, data::Data{F, D}) where {F, D}
+    na = [CartesianIndex()]
+    delta_t = header.axes.t[1:data.write_interval:end] #  .- header.axes.t[end]
+    return header.sea_level[repeated(na, D-1)..., :] .-
+        header.initial_topography[data.slice..., na] .-
+        data.sediment_thickness .+
+        header.subsidence_rate .* delta_t[repeated(na, D-1)..., :]
+end
 
 """
     new_output(::Type{T}, input)

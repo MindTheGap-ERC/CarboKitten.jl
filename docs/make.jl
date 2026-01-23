@@ -81,9 +81,9 @@ makedocs(
         "Getting started" => "getting-started.md",
         "Models" => [
             "Bosscher and Schlager 1992" => "bosscher-1992.md",
-            "Model with CA and Production" => "ca-with-production.md",
+            "Model with CA and Production" => "models/ca-with-production.md",
             # "With Denudation" => "ca-prod-with-denudation.md",
-            "ALCAPS" => "model-alcap.md",
+            "ALCAPS" => "models/alcap.md",
             "Model without CA" => "models/without-ca.md"
         ],
         "Examples" => [
@@ -106,7 +106,12 @@ makedocs(
             "Active Layer Transport" => "active-layer-transport.md",
             "Onshore Transport" => "onshore-transport.md"
         ],
-        "Visualizations" => "visualization.md",
+        "Visualizations" => [
+            "Overview" => "visualization/overview.md",
+            "Profiles" => "visualization/profiles.md",
+            "Topography" => "visualization/topography.md",
+            "Other" => "visualization.md",
+        ],
         "CarboCAT" => [
             "Summary" => "carbocat.md",
         ],
@@ -125,11 +130,16 @@ makedocs(
             "Trouble shooting and diagnostics" => "debugging.md"
         ],
         "Algorithms" => [
+            "Overview" => "algorithms/overview.md",
             "Unitful" => "unitful.md",
             "Boxes" => "boxes.md",
             "Stencils" => "stencils.md",
             "Utility" => "utility.md",
-            "Finite Difference" => "finite-difference-transport.md"
+            "Finite Difference" => "algorithms/finite-difference-transport.md",
+            "Range Finder" => "algorithms/range_finder.md",
+            "Nested Sequence Enumeration" => "algorithms/enumerate_seq.md",
+            "Skeleton" => "algorithms/skeleton.md",
+            "Stratigraphic Column" => "algorithms/stratigraphic_column.md",
         ],
         "API Documentation" => "api.md",
         "References" => "references.md"

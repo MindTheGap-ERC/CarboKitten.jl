@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/visualization.md#ext/SummaryPlot.jl>>[init]
+# ~/~ begin <<docs/src/visualization/overview.md#ext/SummaryPlot.jl>>[init]
 module SummaryPlot
 
 using CarboKitten.Visualization

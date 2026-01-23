@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/finite-difference-transport.md#test/Transport/AdvectionSpec.jl>>[init]
+# ~/~ begin <<docs/src/algorithms/finite-difference-transport.md#test/Transport/AdvectionSpec.jl>>[init]
 using CarboKitten
 using CarboKitten: Box, box_axes
 using CarboKitten.Components.TimeIntegration: time
@@ -30,7 +30,7 @@ let box = Box{Periodic{2}}(grid_size=(32, 32), phys_scale=1.0u"m")
 end
 end
 
-# ~/~ begin <<docs/src/finite-difference-transport.md#test-wave-transport>>[init]
+# ~/~ begin <<docs/src/algorithms/finite-difference-transport.md#test-wave-transport>>[init]
 @testset "CarboKitten.Transport.Advection.wave-transport" begin
 
 function gaussian_initial_sediment(x, y)

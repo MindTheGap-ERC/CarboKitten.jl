@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/finite-difference-transport.md#examples/transport/exploding_kitten.jl>>[init]
+# ~/~ begin <<docs/src/algorithms/finite-difference-transport.md#examples/transport/exploding_kitten.jl>>[init]
 
 module ExplodingKitten
 

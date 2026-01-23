@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/finite-difference-transport.md#examples/transport/flying_cat.jl>>[init]
+# ~/~ begin <<docs/src/algorithms/finite-difference-transport.md#examples/transport/flying_cat.jl>>[init]
 
 module FlyingCat
 

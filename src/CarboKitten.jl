@@ -81,6 +81,17 @@ Retrieve the time values for which output was/will be written. Returns a range.
 """
 time_axis(time::TimeProperties) = (0:n_writes(time)) .* time.Δt .+ time.t0
 
+module Algorithms
+include("./Algorithms/RangeFinder.jl")
+import .RangeFinder: find_ranges
+include("./Algorithms/EnumerateSeq.jl")
+import .EnumerateSeq: enumerate_seq
+include("./Algorithms/StratigraphicColumn.jl")
+import .StratigraphicColumn: stratigraphic_column!
+include("./Algorithms/Skeleton.jl")
+import .Skeleton: skeleton
+end
+
 include("./BoundaryTrait.jl")
 include("./Vectors.jl")
 include("./Boxes.jl")
@@ -89,7 +100,6 @@ include("./Stencil.jl")
 include("./SedimentStack.jl")
 include("./Utility.jl")
 include("./DataSets.jl")
-include("./Skeleton.jl")
 
 include("./RunModel.jl")
 

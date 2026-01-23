@@ -54,6 +54,7 @@ end
     production::Array{Amount,F}
     deposition::Array{Amount,F}
     sediment_thickness::Array{Amount,D}
+    active_layer::Union{Array{Amount,F}, Nothing} = nothing
 end
 
 const DataVolume = Data{4,3}
@@ -82,7 +83,8 @@ Base.getindex(v::Data{F,D}, args...) where {F,D} =
             v.disintegration[:, args..., :],
             v.production[:, args..., :],
             v.deposition[:, args..., :],
-            v.sediment_thickness[args..., :])
+            v.sediment_thickness[args..., :],
+            v.active_layer == nothing ? nothing : v.active_layer[:, args..., :])
     end
 
 function parse_slice(s::AbstractString)
@@ -127,8 +129,8 @@ Compute the water depth function for the given data set.
 """
 function water_depth(header::Header, data::Data{F, D}) where {F, D}
     na = [CartesianIndex()]
-    delta_t = header.axes.t[1:data.write_interval:end] #  .- header.axes.t[end]
-    return header.sea_level[repeated(na, D-1)..., :] .-
+    delta_t = header.axes.t[1:data.write_interval:end] .- header.axes.t[1]
+    return header.sea_level[repeated(na, D-1)..., 1:data.write_interval:end] .-
         header.initial_topography[data.slice..., na] .-
         data.sediment_thickness .+
         header.subsidence_rate .* delta_t[repeated(na, D-1)..., :]
@@ -170,6 +172,13 @@ The same goes for `write_production`, `write_disintegration` and `write_depositi
 function write_sediment_thickness end
 
 """
+    write_active_layer(out::T, name::Symbol, idx::Int, data::AbstractArray{Amount, dim}) where {T, dim}
+
+Write the contents of the active layer to the output object.
+"""
+function write_active_layer end
+
+"""
     write_production(out::T, name::Symbol, idx::Int, data::AbstractArray{Amount, dim}) where {T, dim}
 
 See `write_sediment_thickness`. Should accept 1, 2, and 3 dimensional arrays, corresponding to
@@ -204,9 +213,11 @@ of the implementation to choose to write or not based on the set write interval.
 The default implementation writes the state for all output data sets, and calls
 `write_sediment_thickness`.
 """
-function state_writer(input::AbstractInput, out)
+function state_writer(input::Input, out) where {Input <: AbstractInput}
     output_sets = input.output
     grid_size = input.box.grid_size
+    save_active_layer = hasfield(Input, :save_active_layer) ?
+        input.save_active_layer : false
 
     return function (idx::Int, state::AbstractState)
         for (k, v) in output_sets
@@ -214,6 +225,12 @@ function state_writer(input::AbstractInput, out)
                 write_sediment_thickness(
                     out, k, div(idx - 1, v.write_interval) + 1,
                     view(state.sediment_height, v.slice...))
+
+                if save_active_layer
+                    write_active_layer(
+                        out, k, div(idx - 1, v.write_interval) + 1,
+                        view(state.active_layer, :, v.slice...))
+                end
             end
         end
     end

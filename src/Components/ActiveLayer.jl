@@ -24,8 +24,9 @@ end
     disintegration_rate::Rate = 50.0u"m/Myr"
     disintegration_transfer::Function = x -> x
     cementation_time::Union{typeof(1.0u"Myr"),Nothing} = nothing
-    transport_solver = Val{:RK4}
+    transport_solver = Val{:forward_euler}
     transport_substeps = :adaptive
+    save_active_layer::Bool = false
 end
 
 courant_max(::Type{Val{:RK4}}) = 2.0
@@ -84,7 +85,7 @@ function adaptive_transporter(input)
                 x,y = box_axes(box)
                 error("""
 
-                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]), 
+                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]),
                 (physical location x = $(x[err_loc[2]]), y = $(y[err_loc[3]])).
 
                 For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/
@@ -166,10 +167,10 @@ function transporter(input)
                 x,y = box_axes(box)
                 error("""
 
-                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]), 
+                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]),
                 (physical location x = $(x[err_loc[2]]), y = $(y[err_loc[3]])).
 
-                For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/ 
+                For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/
 
                 """)
 

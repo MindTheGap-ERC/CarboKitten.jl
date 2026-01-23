@@ -117,7 +117,7 @@ Compute the Stratigraphic Column for a given grid position `loc` and `facies` in
 Returns an `Array{Quantity, 2}` where the `Quantity` is in units of meters.
 &quot;&quot;&quot;
 function stratigraphic_column(header::Header, column::DataColumn, facies::Int)
-	n_steps = size(column.production, 2)	
+	n_steps = size(column.production, 2)
     delta = column.deposition[facies,:] .- column.disintegration[facies,:]
 
 	for step in 1:n_steps
@@ -215,7 +215,7 @@ copied from `data.sediment_thickness`. Returns a `DataFrame` with `time` and
 &quot;&quot;&quot;
 function extract_sac(header::Header, data::DataColumn, label)
     DataFrame(
-        &quot;timestep&quot; =&gt; 0:data.write_interval:header.time_steps, 
+        &quot;timestep&quot; =&gt; 0:data.write_interval:header.time_steps,
         &quot;sac_$(label)&quot; =&gt; data.sediment_thickness)
 end
 
@@ -228,7 +228,7 @@ Extract Stratigraphic Column (SC) from the data. Returns a `DataFrame` with
 function extract_sc(header::Header, data::DataColumn, label)
     n_facies = size(data.production)[1]
     DataFrame(
-        &quot;timestep&quot; =&gt; data.write_interval:data.write_interval:header.time_steps, 
+        &quot;timestep&quot; =&gt; data.write_interval:data.write_interval:header.time_steps,
         (&quot;sc_$(label)_f$(f)&quot; =&gt; stratigraphic_column(header, data, f)
          for f in 1:n_facies)...)
 end
@@ -243,12 +243,12 @@ function extract_wd(header::Header, data::DataColumn, label)
     na = [CartesianIndex()]
     t = header.axes.t[1:data.write_interval:end]
     sea_level = header.sea_level[1:data.write_interval:end]
-    wd = header.subsidence_rate .* t .- 
-        header.initial_topography[data.slice...] .- 
+    wd = header.subsidence_rate .* t .-
+        header.initial_topography[data.slice...] .-
         data.sediment_thickness .+
         sea_level
     return DataFrame(
-        &quot;timestep&quot; =&gt; 0:data.write_interval:header.time_steps, 
+        &quot;timestep&quot; =&gt; 0:data.write_interval:header.time_steps,
         &quot;wd_$(label)&quot; =&gt; wd)
 end</code></pre><div class="noweb-label">file:<i>src/Export.jl</i></div><pre><code class="language- julia hljs">module Export
 
@@ -353,7 +353,10 @@ function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {d
 		gid[&quot;disintegration&quot;][:, reduce.(slice)..., :] * u&quot;m&quot;,
 		gid[&quot;production&quot;][:, reduce.(slice)..., :] * u&quot;m&quot;,
 		gid[&quot;deposition&quot;][:, reduce.(slice)..., :] * u&quot;m&quot;,
-		gid[&quot;sediment_thickness&quot;][reduce.(slice)..., :] * u&quot;m&quot;)
+		gid[&quot;sediment_thickness&quot;][reduce.(slice)..., :] * u&quot;m&quot;,
+		&quot;active_layer&quot; in keys(gid) ?
+		    gid[&quot;active_layer&quot;][:, reduce.(slice)..., :] * u&quot;m&quot; :
+			nothing)
 end
 
 function read_data(D::Type{Val{dim}}, filename::AbstractString, group) where {dim}

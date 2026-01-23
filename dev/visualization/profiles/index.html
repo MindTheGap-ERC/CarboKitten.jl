@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Profiles · CarboKitten</title><meta name="title" content="Profiles · CarboKitten"/><meta property="og:title" content="Profiles · CarboKitten"/><meta property="twitter:title" content="Profiles · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><a class="tocitem" href="../../getting-started/">Getting started</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../../initial-topography/">Initial Topography</a></li></ul></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../../components/components/">Components</a></li><li><a class="tocitem" href="../../components/tag/">Tags</a></li><li><a class="tocitem" href="../../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../../components/time/">Time</a></li><li><a class="tocitem" href="../../components/output/">Output</a></li><li><a class="tocitem" href="../../components/facies/">Facies</a></li><li><a class="tocitem" href="../../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../../components/production/">Production</a></li><li><a class="tocitem" href="../../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="../overview/">Overview</a></li><li class="is-active"><a class="tocitem" href>Profiles</a><ul class="internal"><li><a class="tocitem" href="#Implementation"><span>Implementation</span></a></li></ul></li><li><a class="tocitem" href="../topography/">Topography</a></li><li><a class="tocitem" href="../">Other</a></li></ul></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../../output/abstract/">Output</a></li><li><a class="tocitem" href="../../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../../output/memory-writer/">Output to Memory</a></li><li><a class="tocitem" href="../../data-export/">CSV Export</a></li><li><a class="tocitem" href="../../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li><li><a class="tocitem" href="../../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../../algorithms/stratigraphic_column/">Stratigraphic Column</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Visualizations</a></li><li class="is-active"><a href>Profiles</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Profiles</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/visualization/profiles.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Profile-Plotting"><a class="docs-heading-anchor" href="#Profile-Plotting">Profile Plotting</a><a id="Profile-Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Profile-Plotting" title="Permalink"></a></h1><p><img src="../../fig/sediment_profile.png" alt="Sediment profile"/></p><p>The sediment profile is probably the most important visualization that we provide. By default it allows us to study the sediment composition of a section, by plotting the <code>argmax</code> of the deposition. In cases where significant amounts of sediment is eroded, all deposition is plotted, and it is assumed that newest depositions are shown on top of possible older ones.</p><div class="noweb-label">file:<i>examples/visualization/sediment_profile.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/sediment_profile.png
+#| requires: data/output/alcap-example.h5
+#| collect: figures
+
+module Script
+using CairoMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: sediment_profile
+
+function main()
+    save(&quot;docs/src/_fig/sediment_profile.png&quot;,
+        sediment_profile(read_slice(&quot;data/output/alcap-example.h5&quot;, :profile)...))
+end
+end
+
+Script.main()</code></pre><p>If you want to visualize something other than the <code>argmax</code> of the deposition, you may use the <code>profile_plot!</code> function. For example, we can plot the fraction of second facies over total.</p><p><img src="../../fig/profile_fraction.png" alt/></p><div class="noweb-label">file:<i>examples/visualization/profile_fraction.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/profile_fraction.png
+#| requires: data/output/alcap-example.h5
+#| collect: figures
+
+module Script
+using GLMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: profile_plot!
+
+function main()
+    (header, slice) = read_slice(&quot;data/output/alcap-example.h5&quot;, :profile)
+    fig = Figure()
+    ax = Axis(fig[1, 1])
+
+    x = header.axes.x
+    t = header.axes.t
+
+    plot = profile_plot!(x -&gt; x[2]/sum(x), ax, header, slice; colorrange=(0, 1))
+    Colorbar(fig[1, 2], plot; label=L&quot;f_2 / f_{total}&quot;)
+
+    save(&quot;docs/src/_fig/profile_fraction.png&quot;, fig)
+    fig
+end
+end
+
+Script.main()</code></pre><h2 id="Implementation"><a class="docs-heading-anchor" href="#Implementation">Implementation</a><a id="Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Implementation" title="Permalink"></a></h2><p>Before we plot anything, we need to make sure that only net positive sediment is still present in our data. We use the <a href="../../algorithms/stratigraphic_column/"><code>stratigraphic_column</code> algorithm</a> to remove sediment from the record that is later disintegrated.</p><div class="noweb-label">⪡profile-strat-column⪢≣</div><pre><code class="language- julia hljs">
+
+</code></pre><h3 id="Exploding-Vertices"><a class="docs-heading-anchor" href="#Exploding-Vertices">Exploding Vertices</a><a id="Exploding-Vertices-1"></a><a class="docs-heading-anchor-permalink" href="#Exploding-Vertices" title="Permalink"></a></h3><p>The profile plot is rendered using Makie&#39;s <code>mesh</code> function. This function accepts an array of (two-dimensional) vertices and an array of faces, usually triangles. The way mesh rendering works, is that the colour of a face is interpolated between its vertices. Now, the amount of sediment in a given column can be interpreted as sampling a location so the interpretation of colouring a vertex seems the right one. However in the depth (z) we are indicating a clear layer being <strong>between</strong> two depths. We need to duplicate vertices in the vertical direction in order to give ajacent layers different colours. The <code>explode_quad_vertices</code> function does exactly that:</p><div class="noweb-label">⪡explode-vertices⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
+    explode_quad_vertices(v)
+
+Takes a three dimensional array representing a grid of vertices. This function duplicates these
+vertices in the vertical direction, so that an amount of sediment can be given a single color.
+
+Returns a tuple of vertices and faces (triangles), suitable for plotting with Makie&#39;s `mesh`
+function.
+&quot;&quot;&quot;
+function explode_quad_vertices(v::Array{Float64,3})
+    w, h, d = size(v)
+    points = zeros(Float64, w, h - 1, 2, d)
+    n_vertices = 2 * w * (h - 1)
+    n_quads = (w - 1) * (h - 1)
+    @views points[:, :, 1, :] = v[1:end, 1:end-1, :]
+    @views points[:, :, 2, :] = v[1:end, 2:end, :]
+    idx = reshape(1:n_vertices, w, (h - 1), 2)
+    vtx1 = reshape(idx[1:end-1, :, 1], n_quads)
+    vtx2 = reshape(idx[2:end, :, 1], n_quads)
+    vtx3 = reshape(idx[2:end, :, 2], n_quads)
+    vtx4 = reshape(idx[1:end-1, :, 2], n_quads)
+    return reshape(points, n_vertices, d),
+           vcat(hcat(vtx1, vtx2, vtx3), hcat(vtx1, vtx3, vtx4))
+end</code></pre><p>To map colours onto the returned mesh, we need to take care to duplicate each row in the input.</p><h3 id="Plotting-Unconformities"><a class="docs-heading-anchor" href="#Plotting-Unconformities">Plotting Unconformities</a><a id="Plotting-Unconformities-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-Unconformities" title="Permalink"></a></h3><p>To indicate unconformities in profile plots, we need to do two things:</p><ol><li>Find those times and locations where the platform is exposed. To reduce noise we can set a minimum time span for which the platform needs to be exposed before showing up in this visualization.</li><li>Reduce the detected unconformities to line segments (see <a href="../../algorithms/skeleton/">the Skeleton Algorithm</a>). </li></ol><div class="noweb-label">⪡plot-unconformities⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
+    plot_unconformities(ax, header, data_slice, minwidth; kwargs...)
+    plot_unconformities(ax, header, data_slice, minwidth::Bool; kwargs...)
+    plot_unconformities(ax, header, data_slice, minwidth::Int; kwargs...)
+
+Scans the given `data_slice` for unconformities, and plots those using
+Makie `linesegments`. The `minwidth` argument controls for how many time
+steps the platform needs to be exposed before we plot it. For `minwidth = true`
+the default width of 10 time steps is taken.
+
+Additional keyword arguments are forwarded to the `linesegments!` call.
+&quot;&quot;&quot;
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Nothing; kwargs...)
+    @info &quot;Not plotting unconformities, got minwidth: $(minwidth)&quot;
+end
+
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Bool; kwargs...)
+    if minwidth
+        plot_unconformities(ax, header, data, h, 10; kwargs...)
+    end
+end
+
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Int; kwargs...)
+    x = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
+    wi = data.write_interval
+    hiatus = skeleton(water_depth(header, data) .&lt; 0.0u&quot;m&quot;, minwidth=minwidth)
+
+    if !isempty(hiatus[1])
+        verts = [(x[pt[1]], h[pt...] |&gt; in_units_of(u&quot;m&quot;)) for pt in hiatus[1]]
+        linesegments!(ax, vec(permutedims(verts[hiatus[2]])); kwargs...)
+    end
+end</code></pre><h3 id="Plotting-Co-eval-Lines"><a class="docs-heading-anchor" href="#Plotting-Co-eval-Lines">Plotting Co-eval Lines</a><a id="Plotting-Co-eval-Lines-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-Co-eval-Lines" title="Permalink"></a></h3><div class="noweb-label">⪡plot-coeval-lines⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Bool)
+
+Plot coeval lines using default settings. If `tics` is false, nothing is done.
+&quot;&quot;&quot;
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, n_tics::Bool)
+    if !n_tics
+        return
+    else
+        coeval_lines!(ax, header, data, adm)
+    end
+end
+
+&quot;&quot;&quot;
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...)
+
+Plot coeval lines for given times. The times in `tics` are looked up in `header.axes.t`
+to find which indices to plot.
+&quot;&quot;&quot;
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Time}; kwargs...)
+    t = header.axes.t[1:data.write_interval:end]
+    indices::Vector{Int} = [searchsortedfirst(t, i) for i in tics]
+    coeval_lines!(ax, header, data, adm, indices; kwargs...)
+end
+
+&quot;&quot;&quot;
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int})
+
+Plot coeval lines on regular intervals given by `n_tics`. The tuple gives the number of intervals
+for both minor and major tics, plotted as dotted and solid black lines respectively.
+If you need more control over the aestetics of these lines, use the other `coeval_lines!` methods.
+&quot;&quot;&quot;
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, n_tics::Tuple{Int, Int} = (4, 8))
+    n_steps = div(header.time_steps, data.write_interval)
+    n_major_tics, n_minor_tics = n_tics
+
+    major_tics = div.(n_steps:n_steps:n_steps*n_major_tics, n_major_tics) .+ 1
+    minor_tics = filter(
+        t-&gt;!(t in major_tics),
+        div.(n_steps:n_steps:n_steps*n_minor_tics, n_minor_tics) .+ 1) |&gt; collect
+
+    coeval_lines!(ax, header, data, adm, minor_tics, color=:black, linewidth=1, linestyle=:dot)
+    coeval_lines!(ax, header, data, adm, major_tics, color=:black, linewidth=1, linestyle=:solid)
+end
+
+&quot;&quot;&quot;
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...)
+
+Plot coeval lines for the given indices. The `kwargs...` are forwarded to a call to Makie&#39;s
+`lines!` procedure.
+&quot;&quot;&quot;
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Int}; kwargs...)
+    x = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
+    h = adm |&gt; in_units_of(u&quot;m&quot;)
+    for t in tics
+        lines!(ax, x, h[:, t]; kwargs...)
+    end
+end
+
+function plot_sealevel!(ax::Axis, header::Header)
+    sea_level = header.sea_level[end] |&gt; in_units_of(u&quot;m&quot;)
+    hlines!(ax, sea_level, color=:lightblue, linewidth=5, label=&quot;end sea level&quot;)
+end</code></pre><div class="noweb-label">file:<i>ext/SedimentProfile.jl</i></div><pre><code class="language- julia hljs">module SedimentProfile
+
+import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!
+
+using CarboKitten.Visualization
+using CarboKitten.Utility: in_units_of
+using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
+using CarboKitten.Algorithms: skeleton
+using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
+
+using Makie
+using GeometryBasics
+using Unitful
+
+using Statistics: mean
+
+const Rate = typeof(1.0u&quot;m/Myr&quot;)
+const Amount = typeof(1.0u&quot;m&quot;)
+const Length = typeof(1.0u&quot;m&quot;)
+const Time = typeof(1.0u&quot;Myr&quot;)
+
+const na = [CartesianIndex()]
+
+&lt;&lt;explode-vertices&gt;&gt;
+&lt;&lt;plot-unconformities&gt;&gt;
+&lt;&lt;plot-coeval-lines&gt;&gt;
+
+&quot;&quot;&quot;
+    profile_plot!(ax, header, data_slice; mesh_args...)
+
+Generic profile plot. This sets up a mesh for plotting with the Makie `mesh!`
+function, plots the initial topography and the mesh by passing `mesh_args...`.
+
+The `color` array should have the same size as a single facies for `data.production`.
+&quot;&quot;&quot;
+function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::AbstractArray, mesh_args...)
+    x = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
+    t = header.axes.t |&gt; in_units_of(u&quot;Myr&quot;)
+
+    n_facies, n_x, n_t = size(data.production)
+    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    initial_topography = header.initial_topography[data.slice...]
+    sc = stratigraphic_column(data)
+    h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
+    @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
+
+    verts = zeros(Float64, n_x, n_t+1, 2)
+    @views verts[:, :, 1] .= x
+    @views verts[:, :, 2] .= h |&gt; in_units_of(u&quot;m&quot;)
+    v, f = explode_quad_vertices(verts)
+
+    total_subsidence = header.subsidence_rate * (header.axes.t[end] - header.axes.t[1])
+    bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |&gt; in_units_of(u&quot;m&quot;)
+    lower_limit = minimum(bedrock) - 20
+    band!(ax, x, lower_limit, bedrock; color=:gray, label=&quot;initial topography&quot;)
+    lines!(ax, x, bedrock; color=:black, label=&quot;initial topography&quot;)
+    ylims!(ax, lower_limit + 10, nothing)
+    xlims!(ax, x[1], x[end])
+    ax.xlabel = &quot;position [km]&quot;
+    ax.ylabel = &quot;depth [m]&quot;
+
+    c = reshape(color, n_x * n_t)
+    mesh!(ax, v, f; color=vcat(c, c), mesh_args...)
+end
+
+&quot;&quot;&quot;
+    profile_plot!(f, ax, header, data_slice; mesh_args...)
+
+Instead of explicitely passing the color data as an array, this generates the
+colors from a function `f` over the deposition data. So `f` should have signature
+`AbstractVector -&gt; Float` or possibly `AbstractVector -&gt; RGB` (whatever Makie accepts).
+Here the vector input has size of the number of facies.
+&quot;&quot;&quot;
+function profile_plot!(f::F, ax::Axis, header::Header, data::DataSlice; mesh_args...) where {F}
+    color = f.(eachslice(data.deposition, dims=(2, 3)))
+    profile_plot!(ax, header, data; color=color, mesh_args...)
+end
+
+&quot;&quot;&quot;
+    sediment_profile!(ax, header, data; show_unconformities)
+
+Plot the sediment profile, choosing colour by dominant facies type (argmax). Unconformaties
+are shown when the sediment is subaerially exposed (even if sediment is still deposited
+due to a set intertidal zone).
+&quot;&quot;&quot;
+function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
+                           show_unconformities::Union{Nothing,Bool,Int} = true,
+                           show_coeval_lines::Union{Bool,Tuple{Int, Int},Vector{Int},Vector{Time}} = true,
+                           show_sealevel::Bool = true)
+    x = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
+    t = header.axes.t |&gt; in_units_of(u&quot;Myr&quot;)
+
+    n_facies, n_x, n_t = size(data.production)
+    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    initial_topography = header.initial_topography[data.slice...]
+    sc = stratigraphic_column(data)
+    h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
+    @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
+
+    if show_sealevel
+        plot_sealevel!(ax, header)
+    end
+
+    plot = profile_plot!(argmax, ax, header, data; alpha=1.0,
+        colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+
+    coeval_lines!(ax, header, data, h, show_coeval_lines)
+
+    minwidth = show_unconformities
+    plot_unconformities(ax, header, data, h, minwidth; label = &quot;unconformities&quot;,
+                        color=:white, linestyle=:dash, linewidth=1)
+
+    ax.title = &quot;sediment profile&quot;
+    return plot
+end
+
+&quot;&quot;&quot;
+    sediment_profile(header, data_slice; show_unconformities=true)
+
+Plot the sediment profile from `data_slice`. This takes the deposited sediments and
+find the dominant facies at every point. By default unconformities are shown using
+dashed white lines. If this generates too much visual noise, you can increase the
+treshold (default 10).
+&quot;&quot;&quot;
+function sediment_profile(header::Header, data_slice::DataSlice; show_unconformities::Union{Bool,Int,Nothing} = true)
+    fig = Figure(size=(1000, 600))
+    ax = Axis(fig[1, 1])
+    sediment_profile!(ax, header, data_slice; show_unconformities = show_unconformities)
+    return fig
+end
+
+end  # module</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../overview/">« Overview</a><a class="docs-footer-nextpage" href="../topography/">Topography »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Friday 23 January 2026 09:54">Friday 23 January 2026</span>. Using Julia version 1.12.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Visualization Tests · CarboKitten</title><meta name="title" content="Visualization Tests · CarboKitten"/><meta property="og:title" content="Visualization Tests · CarboKitten"/><meta property="twitter:title" content="Visualization Tests · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><a class="tocitem" href="../../getting-started/">Getting started</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../../initial-topography/">Initial Topography</a></li></ul></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../../components/components/">Components</a></li><li><a class="tocitem" href="../../components/tag/">Tags</a></li><li><a class="tocitem" href="../../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../../components/time/">Time</a></li><li><a class="tocitem" href="../../components/output/">Output</a></li><li><a class="tocitem" href="../../components/facies/">Facies</a></li><li><a class="tocitem" href="../../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../../components/production/">Production</a></li><li><a class="tocitem" href="../../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="../overview/">Overview</a></li><li><a class="tocitem" href="../profiles/">Profiles</a></li><li><a class="tocitem" href="../topography/">Topography</a></li><li><a class="tocitem" href="../">Other</a></li></ul></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../../output/abstract/">Output</a></li><li><a class="tocitem" href="../../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../../output/memory-writer/">Output to Memory</a></li><li><a class="tocitem" href="../../data-export/">CSV Export</a></li><li><a class="tocitem" href="../../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li><li><a class="tocitem" href="../../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../../algorithms/stratigraphic_column/">Stratigraphic Column</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Visualization Tests</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Visualization Tests</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/visualization/tests.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Visualization-Tests"><a class="docs-heading-anchor" href="#Visualization-Tests">Visualization Tests</a><a id="Visualization-Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Visualization-Tests" title="Permalink"></a></h1><p>Visualization routines are hard to test. There are several options here:</p><ul><li>Perform regression tests against generated output files. Problem: The output of <code>GLMakie</code> depends on the graphics card that is used to render the images. We should expect better from <code>CairoMakie</code>, but no such luck. Perhaps this could work if we&#39;re very strict about the Makie versions that we test on. For now, we don&#39;t perform automated regression tests on visualization.</li><li>Test that the plotting functions don&#39;t throw exceptions.</li><li>Test the inner logic in those visualizations that are more involved.</li><li>Generate plots on a set of model runs automatically and compare manually.</li></ul><p>The rest of this page is doing that last thing.</p><h2 id="Results"><a class="docs-heading-anchor" href="#Results">Results</a><a id="Results-1"></a><a class="docs-heading-anchor-permalink" href="#Results" title="Permalink"></a></h2><p><img src="../../fig/alcap-extreme-erosion.png" alt/></p><p><img src="../../fig/alcap-rapid-oscillation.png" alt/></p><h2 id="Runs"><a class="docs-heading-anchor" href="#Runs">Runs</a><a id="Runs-1"></a><a class="docs-heading-anchor-permalink" href="#Runs" title="Permalink"></a></h2><p>We have the following examples for each model.</p><ul><li><a href="../../models/ca-with-production/">CAP Example</a></li><li><a href="../../models/alcap/">ALCAP Example</a></li><li><a href="../../models/without-ca/">Without CA (ALP)</a></li><li>TODO <a href="../../models/with-denudation/">With Denudation</a></li></ul><p>And some extras to stress test the visualization.</p><h3 id="Standard-Facies"><a class="docs-heading-anchor" href="#Standard-Facies">Standard Facies</a><a id="Standard-Facies-1"></a><a class="docs-heading-anchor-permalink" href="#Standard-Facies" title="Permalink"></a></h3><div class="noweb-label">⪡standard-facies⪢≣</div><pre><code class="language- julia hljs">const FACIES = [
+    ALCAP.Facies(
+        maximum_growth_rate=500u&quot;m/Myr&quot;,
+        extinction_coefficient=0.8u&quot;m^-1&quot;,
+        saturation_intensity=60u&quot;W/m^2&quot;,
+        diffusion_coefficient=50.0u&quot;m/yr&quot;,
+        name=&quot;euphotic&quot;),
+    ALCAP.Facies(
+        maximum_growth_rate=400u&quot;m/Myr&quot;,
+        extinction_coefficient=0.1u&quot;m^-1&quot;,
+        saturation_intensity=60u&quot;W/m^2&quot;,
+        diffusion_coefficient=25.0u&quot;m/yr&quot;,
+        name=&quot;oligophotic&quot;),
+    ALCAP.Facies(
+        maximum_growth_rate=100u&quot;m/Myr&quot;,
+        extinction_coefficient=0.005u&quot;m^-1&quot;,
+        saturation_intensity=60u&quot;W/m^2&quot;,
+        diffusion_coefficient=12.5u&quot;m/yr&quot;,
+        name=&quot;aphotic&quot;),
+
+    ALCAP.Facies(
+        active=false,
+        diffusion_coefficient=50.0u&quot;m/yr&quot;,
+        name=&quot;euphotic transported&quot;),
+    ALCAP.Facies(
+        active=false,
+        diffusion_coefficient=50.0u&quot;m/yr&quot;,
+        name=&quot;oligophotic transported&quot;),
+    ALCAP.Facies(
+        active=false,
+        diffusion_coefficient=50.0u&quot;m/yr&quot;,
+        name=&quot;aphotic transported&quot;)
+]</code></pre><h3 id="Extreme-Submarine-Erosion"><a class="docs-heading-anchor" href="#Extreme-Submarine-Erosion">Extreme Submarine Erosion</a><a id="Extreme-Submarine-Erosion-1"></a><a class="docs-heading-anchor-permalink" href="#Extreme-Submarine-Erosion" title="Permalink"></a></h3><p>This run has an extreme disintegration rate.</p><div class="noweb-label">⪡extreme-erosion-parameters⪢≣</div><pre><code class="language- julia hljs">subsidence_rate=38.0u&quot;m/Myr&quot;,
+disintegration_rate=80.0u&quot;m/Myr&quot;,</code></pre><p>Other parameters are unchanged from our usual settings.</p><div class="noweb-label">file:<i>examples/extreme-erosion/run.jl</i></div><pre><code class="language- julia hljs">#| creates:
+#|   - data/output/alcap-extreme-erosion.h5
+module ScriptExtremeErosion
+
+using Unitful
+using CarboKitten
+using CarboKitten.Export: read_slice, data_export, CSV
+
+const PATH = &quot;data/output&quot;
+const TAG = &quot;alcap-extreme-erosion&quot;
+
+&lt;&lt;standard-facies&gt;&gt;
+
+const PERIOD = 0.18u&quot;Myr&quot;
+const AMPLITUDE = 5.5u&quot;m&quot;
+
+const INPUT = ALCAP.Input(
+    tag=&quot;$TAG&quot;,
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u&quot;m&quot;),
+    time=TimeProperties(
+        Δt=0.0002u&quot;Myr&quot;,
+        steps=5000),
+    output=Dict(
+        :topography =&gt; OutputSpec(slice=(:,:), write_interval=10),
+        :profile =&gt; OutputSpec(slice=(:, 25), write_interval=1)),
+    ca_interval=1,
+    initial_topography=(x, y) -&gt; -x / 300.0,
+    sea_level=t -&gt; AMPLITUDE * sin(2π * t / PERIOD),
+    disintegration_transfer=p-&gt;[0.0u&quot;m&quot;, 0.0u&quot;m&quot;, 0.0u&quot;m&quot;, p[1]+p[4], p[2]+p[5], p[3]+p[6]],
+    insolation=400.0u&quot;W/m^2&quot;,
+    sediment_buffer_size=150,  
+    depositional_resolution=1.0u&quot;m&quot;,  
+    facies=FACIES,
+    &lt;&lt;extreme-erosion-parameters&gt;&gt;
+)
+
+main() = run_model(Model{ALCAP}, INPUT, &quot;$(PATH)/$(TAG).h5&quot;)
+end  # module ScriptExtremeErosion
+
+ScriptExtremeErosion.main()</code></pre><h3 id="Extreme-Sea-Level-Fluctuations"><a class="docs-heading-anchor" href="#Extreme-Sea-Level-Fluctuations">Extreme Sea Level Fluctuations</a><a id="Extreme-Sea-Level-Fluctuations-1"></a><a class="docs-heading-anchor-permalink" href="#Extreme-Sea-Level-Fluctuations" title="Permalink"></a></h3><div class="noweb-label">file:<i>examples/extreme-sealevel/run.jl</i></div><pre><code class="language- julia hljs">module ScriptRapidOscillation
+
+using Unitful
+using CarboKitten
+using CarboKitten.Export: read_slice, data_export, CSV
+
+const PATH = &quot;data/output&quot;
+const TAG = &quot;alcap-rapid-oscillation&quot;
+
+&lt;&lt;standard-facies&gt;&gt;
+
+const PERIOD = 0.1u&quot;Myr&quot;
+const AMPLITUDE = 4.5u&quot;m&quot;
+
+const INPUT = ALCAP.Input(
+    tag=&quot;$TAG&quot;,
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u&quot;m&quot;),
+    time=TimeProperties(
+        Δt=0.0002u&quot;Myr&quot;,
+        steps=5000),
+    output=Dict(
+        :topography =&gt; OutputSpec(slice=(:,:), write_interval=10),
+        :profile =&gt; OutputSpec(slice=(:, 25), write_interval=1)),
+    ca_interval=1,
+    initial_topography=(x, y) -&gt; -x / 300.0,
+    sea_level=t -&gt; AMPLITUDE * sin(2π * t / PERIOD),
+    subsidence_rate=50.0u&quot;m/Myr&quot;,
+    disintegration_rate=65.0u&quot;m/Myr&quot;,  
+    disintegration_transfer=p-&gt;[0.0u&quot;m&quot;, 0.0u&quot;m&quot;, 0.0u&quot;m&quot;, p[1]+p[4], p[2]+p[5], p[3]+p[6]],
+    insolation=400.0u&quot;W/m^2&quot;,
+    sediment_buffer_size=150,  
+    depositional_resolution=1.0u&quot;m&quot;,  
+    facies=FACIES)
+
+main() = run_model(Model{ALCAP}, INPUT, &quot;$(PATH)/$(TAG).h5&quot;)
+
+end
+
+ScriptRapidOscillation.main()</code></pre><h2 id="Plotting"><a class="docs-heading-anchor" href="#Plotting">Plotting</a><a id="Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting" title="Permalink"></a></h2><div class="noweb-label">file:<i>examples/visualization/stress-test.jl</i></div><pre><code class="language- julia hljs">#| requires:
+#|   - data/output/alcap-extreme-erosion.h5
+#|   - data/output/alcap-rapid-oscillation.h5
+#| creates:
+#|   - docs/src/_fig/alcap-extreme-erosion.png
+#|   - docs/src/_fig/alcap-rapid-oscillation.h5
+#| collect: figures
+using GLMakie
+using CarboKitten.Visualization
+
+GLMakie.activate!()
+
+fig_erosion = summary_plot(&quot;data/output/alcap-extreme-erosion.h5&quot;)
+save(&quot;docs/src/_fig/alcap-extreme-erosion.png&quot;, fig_erosion)
+
+fig_oscillation = summary_plot(&quot;data/output/alcap-rapid-oscillation.h5&quot;)
+save(&quot;docs/src/_fig/alcap-rapid-oscillation.png&quot;, fig_oscillation)</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Friday 23 January 2026 09:54">Friday 23 January 2026</span>. Using Julia version 1.12.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

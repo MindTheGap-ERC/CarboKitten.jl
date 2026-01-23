@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Topography · CarboKitten</title><meta name="title" content="Topography · CarboKitten"/><meta property="og:title" content="Topography · CarboKitten"/><meta property="twitter:title" content="Topography · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><a class="tocitem" href="../../getting-started/">Getting started</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../../initial-topography/">Initial Topography</a></li></ul></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../../components/components/">Components</a></li><li><a class="tocitem" href="../../components/tag/">Tags</a></li><li><a class="tocitem" href="../../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../../components/time/">Time</a></li><li><a class="tocitem" href="../../components/output/">Output</a></li><li><a class="tocitem" href="../../components/facies/">Facies</a></li><li><a class="tocitem" href="../../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../../components/production/">Production</a></li><li><a class="tocitem" href="../../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="../overview/">Overview</a></li><li><a class="tocitem" href="../profiles/">Profiles</a></li><li class="is-active"><a class="tocitem" href>Topography</a><ul class="internal"><li><a class="tocitem" href="#Contour-Map"><span>Contour Map</span></a></li><li><a class="tocitem" href="#Glamour-View"><span>Glamour View</span></a></li></ul></li><li><a class="tocitem" href="../">Other</a></li></ul></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../../output/abstract/">Output</a></li><li><a class="tocitem" href="../../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../../output/memory-writer/">Output to Memory</a></li><li><a class="tocitem" href="../../data-export/">CSV Export</a></li><li><a class="tocitem" href="../../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li><li><a class="tocitem" href="../../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../../algorithms/stratigraphic_column/">Stratigraphic Column</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Visualizations</a></li><li class="is-active"><a href>Topography</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Topography</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/visualization/topography.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Topography-Plots"><a class="docs-heading-anchor" href="#Topography-Plots">Topography Plots</a><a id="Topography-Plots-1"></a><a class="docs-heading-anchor-permalink" href="#Topography-Plots" title="Permalink"></a></h1><p>We have two kinds of topography plots available.</p><ol><li>Contour map: good for inspecting the morphology of atolls or small island chains.</li><li>Glamour view: a 3D surface plot. Good for getting a quick overview of the quality of your run, for instance to see if there are no unphysical spikes in the output. Otherwise mostly here for aestethic purposes, which is why it is called <code>glamour_view</code>.</li></ol><h2 id="Contour-Map"><a class="docs-heading-anchor" href="#Contour-Map">Contour Map</a><a id="Contour-Map-1"></a><a class="docs-heading-anchor-permalink" href="#Contour-Map" title="Permalink"></a></h2><p>TODO: This code is not yet available in <code>CarboKitten.Visualization</code>, but you can copy paste this for now.</p><pre><code class="language-julia hljs">function topography!(ax, header, data; colormap=:nuuk, levels=[-10, -5, 0, 5, 10])
+    ax.aspect = DataAspect()
+
+    h = header
+    s = data.sediment_thickness[:, :, end]
+    t = h.initial_topography .+ s .- ((h.axes.t[end] - h.axes.t[1]) * h.subsidence_rate)
+    
+    hm = contourf!(
+        ax,
+        h.axes.x |&gt; in_units_of(u&quot;km&quot;),
+        h.axes.y |&gt; in_units_of(u&quot;km&quot;),
+        t / u&quot;m&quot;, levels=levels, colormap=colormap, extendlow=:auto, extendhigh=:auto)
+
+    contour!(
+        ax,
+        h.axes.x |&gt; in_units_of(u&quot;km&quot;),
+        h.axes.y |&gt; in_units_of(u&quot;km&quot;),
+        t / u&quot;m&quot;, levels=levels, color=:black, labels=true)
+    return hm
+end</code></pre><h2 id="Glamour-View"><a class="docs-heading-anchor" href="#Glamour-View">Glamour View</a><a id="Glamour-View-1"></a><a class="docs-heading-anchor-permalink" href="#Glamour-View" title="Permalink"></a></h2><p>Not very useful but highly glamourous.</p><p><img src="../../fig/glamour_view.png" alt="Glamour view"/></p><h3 id="Test-1:-CAP-Output"><a class="docs-heading-anchor" href="#Test-1:-CAP-Output">Test 1: CAP Output</a><a id="Test-1:-CAP-Output-1"></a><a class="docs-heading-anchor-permalink" href="#Test-1:-CAP-Output" title="Permalink"></a></h3><div class="noweb-label">file:<i>examples/visualization/glamour_view.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/glamour_view.png
+#| requires: data/output/cap1.h5
+#| collect: figures
+
+module Script
+
+using GLMakie
+using CarboKitten.Export: read_volume
+using CarboKitten.Visualization: glamour_view!
+using HDF5
+
+function main()
+    fig = Figure()
+    ax = Axis3(fig[1,1])
+    header, volume = read_volume(&quot;data/output/cap1.h5&quot;, :topography)
+    glamour_view!(ax, header, volume)
+    save(&quot;docs/src/_fig/glamour_view.png&quot;, fig)
+end
+
+end
+
+Script.main()</code></pre><h3 id="Test-2:-Single-Slice-Output-(issue-196)"><a class="docs-heading-anchor" href="#Test-2:-Single-Slice-Output-(issue-196)">Test 2: Single Slice Output (issue 196)</a><a id="Test-2:-Single-Slice-Output-(issue-196)-1"></a><a class="docs-heading-anchor-permalink" href="#Test-2:-Single-Slice-Output-(issue-196)" title="Permalink"></a></h3><p><img src="../../fig/glamour_view_single.png" alt/></p><div class="noweb-label">file:<i>examples/visualization/glamour_view_single.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/glamour_view_single.png
+#| collect: figures
+module Script
+
+using GLMakie
+using CarboKitten
+using CarboKitten.Visualization: glamour_view!
+using HDF5
+
+const PERIOD = 200.0u&quot;kyr&quot;
+const AMPLITUDE = 4.0u&quot;m&quot;
+
+const FACIES = [
+    CAP.Facies(
+    viability_range = (4, 10),
+    activation_range = (6, 10),
+    maximum_growth_rate = 500u&quot;m/Myr&quot;,
+    extinction_coefficient = 0.8u&quot;m^-1&quot;,
+    saturation_intensity = 60u&quot;W/m^2&quot;),
+
+    CAP.Facies(
+    viability_range = (4, 10),
+    activation_range = (6, 10),
+    maximum_growth_rate = 400u&quot;m/Myr&quot;,
+    extinction_coefficient = 0.1u&quot;m^-1&quot;,
+    saturation_intensity = 60u&quot;W/m^2&quot;),
+
+    CAP.Facies(
+    viability_range = (4, 10),
+    activation_range = (6, 10),
+    maximum_growth_rate = 100u&quot;m/Myr&quot;,
+    extinction_coefficient = 0.005u&quot;m^-1&quot;,
+    saturation_intensity = 60u&quot;W/m^2&quot;)
+]
+
+const INPUT = CAP.Input(
+	tag = &quot;cap1&quot;,
+	box = CarboKitten.Box{Coast}(grid_size=(100, 50), phys_scale=150.0u&quot;m&quot;),
+	time = TimeProperties(
+		Δt = 200.0u&quot;yr&quot;,
+		steps = 1000),
+
+    output = Dict(
+        :topography =&gt; OutputSpec(write_interval = 1000),
+        :profile =&gt; OutputSpec(slice = (:, 25))),
+
+	sea_level = t -&gt; 4.0u&quot;m&quot; * sin(2π * t / 0.2u&quot;Myr&quot;),
+	initial_topography = (x, y) -&gt; - x / 300.0,
+	subsidence_rate = 50.0u&quot;m/Myr&quot;,
+	insolation = 400.0u&quot;W/m^2&quot;,
+	facies = FACIES)
+
+function main()
+    fig = Figure()
+    ax = Axis3(fig[1,1])
+    out = MemoryOutput(INPUT)
+    run_model(Model{CAP}, INPUT, out) 
+    glamour_view!(ax, out.header, out.data_volumes[:topography])
+    save(&quot;docs/src/_fig/glamour_view_single.png&quot;, fig)
+end
+
+end
+
+Script.main()</code></pre><h3 id="Implementation"><a class="docs-heading-anchor" href="#Implementation">Implementation</a><a id="Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Implementation" title="Permalink"></a></h3><div class="noweb-label">file:<i>ext/GlamourView.jl</i></div><pre><code class="language- julia hljs">module GlamourView
+
+import CarboKitten.Visualization: glamour_view!
+using CarboKitten.Utility: in_units_of
+using CarboKitten.Export: Header, DataVolume
+using Makie
+using HDF5
+using Unitful
+
+function glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; colormap=Reverse(:speed))
+    x = header.axes.x[data.slice[1]] |&gt; in_units_of(u&quot;km&quot;)
+    y = header.axes.y[data.slice[2]] |&gt; in_units_of(u&quot;km&quot;)
+    xy_aspect = x[end] / y[end]
+
+    ax.aspect = (xy_aspect, 1, 1)
+    ax.azimuth = -π/3
+
+    n_steps = size(data.sediment_thickness, 3)
+    grid_size = (length(x), length(y))
+
+    steps_between = 2
+    selected_steps::Vector{Int} = if n_steps &gt; (2 + steps_between)
+        [1, ((1:steps_between) .* n_steps .÷ (steps_between + 1))..., n_steps]
+    else
+        collect(1:n_steps)
+    end
+
+    bedrock = header.initial_topography .- (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    result = Array{Float64, 3}(undef, grid_size..., length(selected_steps))
+    for (i, j) in enumerate(selected_steps)
+        result[:, :, i] = (data.sediment_thickness[:,:,j] .+ bedrock) |&gt; in_units_of(u&quot;m&quot;)
+    end
+
+    surface!(ax, x, y, result[:,:,1];
+    color=ones(grid_size),
+    colormap=:grays)
+
+    for s in eachslice(result[:,:,2:end-1], dims=3)
+        surface!(ax, x, y, s;
+        colormap=(colormap, 0.7))
+    end
+
+    surface!(ax, x, y, result[:,:,end]; colormap=colormap)
+    lines!(ax, x, zeros(grid_size[1]), result[:, 1, end]; color=(:white, 0.5), linewidth=1)
+    lines!(ax, fill(x[end], grid_size[2]), y, result[end, :, end]; color=(:white, 0.5), linewidth=1)
+end
+
+function glamour_view(header::Header, data::DataVolume; colormap=Reverse(:speed))
+    fig = Figure()
+    ax = Axis3(fig[1, 1])
+    glamour_view!(ax, header, data, colormap=colormap)
+    return fig, ax
+end
+
+end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../profiles/">« Profiles</a><a class="docs-footer-nextpage" href="../">Other »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Friday 23 January 2026 09:54">Friday 23 January 2026</span>. Using Julia version 1.12.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

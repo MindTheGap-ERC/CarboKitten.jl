@@ -8,9 +8,9 @@ In a model without transport, we could write
 
 $$\sigma + \sum_f {{\partial \eta_f} \over {\partial t}} = \sum_f P_f,$$
 
-where $\sigma$ is the subsidence rate in $m/s$. We consider the mass balance for each facies separately.
+where $\sigma$ is the subsidence rate in $m/s$, $\eta_f$ is elevation of the sediment surface relative to a fixed level (as defined by [Paola1992](@cite)). We consider the mass balance for each facies separately.
 
-We suppose that loose sediment, either fresh production or disintegrated older sediment, is being transported in a layer on top of the sea bed. The flux in this layer is assumed to be directly proportional to the local slope of the sea bed $| \nabla_x \eta_* |$, where $\eta_* = \sum_f \eta_f$, the sum over all facies contributions, including $\eta_0$, the initial bedrock eleveation.
+We suppose that loose sediment, either fresh production or disintegrated older sediment, is being transported in a layer on top of the sea bed. The flux in this layer is assumed to be directly proportional to the local slope of the sea bed $| \nabla_x \eta_* |$, where $\eta_* = \sum_f \eta_f$, the sum over all facies contributions, including $\eta_0$, the initial bedrock elevation.
 
 ![Schematic of Active Layer approach](fig/active-layer-export.svg)
 
@@ -72,6 +72,8 @@ disintegration_transfer = x -> [x[1]*0.5, x[2]*0.5, x[3]*0.5,
 ```
 
 for the same number (3) of initial and transported facies.  When defining a transfer function, you should make sure that it conserves mass i.e. all the disintegrated sediment must be reallocated to somewhere.
+
+
 
 #### Tests
 A simple unit test verifies that the sediment is redistributed across facies as expected:
@@ -1075,4 +1077,121 @@ The following tests that we see the expected behaviours both without an intertid
     @test !isapprox(output2[10:30], output2[50:70], atol=1.0u"m")
     @test output2[50:70] ≈ output2[90:110] atol=0.01u"m"
 end
+```
+
+## Empirically justified diffusion coefficients
+
+Kaufman et al.'s (1991) depth-dependent diffusion algorithm incorporates wave velocity profile and sediment transport:
+
+$$D(W) = C_0 × exp(-C_1 × W)$$
+
+where $C_0 = 5000 m^2 / yr$ for carbonates, $C_1 = 0.05 m^{-1}$.
+
+$C_0$ is an effective diffusion coefficient that already accounts for the wave velocity profile and implicitly assumes uniform sediment availability.
+
+CarboKitten's transport equation:
+
+$${{\partial \eta_f(x)}\over{\partial t}} = {\bf \nabla_x} \cdot \big[ \nu_f \alpha_f\ P_f(x)\ {\bf \nabla_x} \eta_{*}(x) \big] + P_f(x),$$
+
+separates molecular-like diffusion from the production, facies-specific parameters $\alpha_f$ and wave velocity and shear as functions of water depth. In $D_{Kaufman}$ these terms are combined.
+
+``` {.julia file=examples/transport/Kaufman_diffusivity.jl}
+module KaufmanCommon
+
+using Unitful
+using CarboKitten
+using CarboKitten.Models.ALCAP
+
+export KAUFMAN_C0, KAUFMAN_C1, BACKGROUND_DIFFUSION
+export kaufman_diffusivity, print_diffusivity_profile
+
+# note to self: I changed the unit from m^2/yr to m/yr to match CK's units - this needs to be clarified
+const KAUFMAN_C0 = 5000.0u"m/yr" # Surface diffusivity for carbonates
+const KAUFMAN_C1 = 0.05u"m^-1" # Depth decay constant
+const BACKGROUND_DIFFUSION = 2.0u"m^2/yr" 
+
+kaufman_diffusivity(depth) = KAUFMAN_C0 * exp(-KAUFMAN_C1 * depth)
+
+function print_diffusivity_profile()
+    D_surface = kaufman_diffusivity(0.0u"m")
+
+    for depth in [0, 2, 5, 10, 20, 30, 50, 100]u"m"
+        D = kaufman_diffusivity(depth)
+        ratio = D / D_surface |> NoUnits
+        println("  $depth   │  $D  │  $ratio")
+    end
+end
+
+end 
+```
+
+### Directly substituting diffusivity from Kaufman et al. into CarboKitten.jl
+
+We can just treat $D(W)$ as "molecular" diffusion and set wave velocity to zero. This is generally wrong, but maybe acceptably wrong? Here we assume depth of 5 m across a shallow platform area. At 5 m, D(W) is ca. 3033 $m^2/yr$.
+
+``` {.julia file=examples/transport/empirical_diffusivity_substitution.jl}
+include("Kaufman_diffusivity.jl")
+using .KaufmanCommon
+
+using CarboKitten
+using CarboKitten.Models.ALCAP
+using Unitful
+using GeometryBasics
+
+function make_input_substitution(;
+        grid_size = (100, 1),
+        phys_scale = 150.0u"m",
+        Δt = 0.0002u"Myr",
+        steps = 2500,
+        tag = "kaufman_substitution")
+
+    avg_depth = 5.0u"m"
+    D_eff = KaufmanCommon.kaufman_diffusivity(avg_depth)
+
+    facies = [
+        ALCAP.Facies(
+            viability_range = (4, 10),
+            activation_range = (6, 10),
+            maximum_growth_rate = 500u"m/Myr",
+            extinction_coefficient = 0.8u"m^-1",
+            saturation_intensity = 60u"W/m^2",
+            diffusion_coefficient = D_eff,
+            wave_velocity = _ -> (Vec2(0.0, 0.0)u"m/yr", Vec2(0.0, 0.0)u"1/yr"),
+            name = "producer"),
+        ALCAP.Facies(
+            active = false,
+            diffusion_coefficient = D_eff,
+            wave_velocity = _ -> (Vec2(0.0, 0.0)u"m/yr", Vec2(0.0, 0.0)u"1/yr"),
+            name = "transported")
+    ]
+
+    PERIOD = 0.2u"Myr"
+    AMPLITUDE = 4.0u"m"
+
+    return ALCAP.Input(
+        tag = tag,
+        box = Box{Coast}(grid_size=grid_size, phys_scale=phys_scale),
+        time = TimeProperties(Δt=Δt, steps=steps),
+        output = Dict(
+            :profile => OutputSpec(slice=(:, 1), write_interval=10)),
+        ca_interval = 1,
+        initial_topography = (x, y) -> -x / 300.0,
+        sea_level = t -> AMPLITUDE * sin(2π * t / PERIOD),
+        subsidence_rate = 50.0u"m/Myr",
+        disintegration_rate = 50.0u"m/Myr",
+        disintegration_transfer = p -> [0.0u"m", p[1] + p[2]],
+        insolation = 400.0u"W/m^2",
+        sediment_buffer_size = 50,
+        depositional_resolution = 0.5u"m",
+        facies = facies)
+end
+
+function main()
+    KaufmanCommon.print_diffusivity_profile()
+    input = make_input_substitution()
+    output = "kaufman_substitution.h5"
+    run_model(Model{ALCAP}, input, output)
+end
+
+main()
 ```

@@ -1,7 +1,7 @@
 # Finite Difference Methods for Transport
 
 
-## Spacial Finite Differences
+## Spatial Finite Differences
 
 ``` {.julia file=src/Transport/DifferentialOperators.jl}
 module DifferentialOperators

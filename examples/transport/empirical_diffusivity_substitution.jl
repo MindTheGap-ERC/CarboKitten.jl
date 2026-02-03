@@ -58,7 +58,7 @@ end
 function main()
     KaufmanCommon.print_diffusivity_profile()
     input = make_input_substitution()
-    output = "kaufman_substitution.h5"
+    output = "data/output/kaufman_substitution.h5"
     run_model(Model{ALCAP}, input, output)
 end
 

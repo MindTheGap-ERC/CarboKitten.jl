@@ -1189,7 +1189,7 @@ end
 function main()
     KaufmanCommon.print_diffusivity_profile()
     input = make_input_substitution()
-    output = "kaufman_substitution.h5"
+    output = "data/output/kaufman_substitution.h5"
     run_model(Model{ALCAP}, input, output)
 end
 
@@ -1243,7 +1243,7 @@ function make_input_decomposition(;
     # Back-calculate surface orbital velocity 
     # u0 = sqrt(D_wave_surface * omega / (u"m/yr"))
     # this cannot be applied because of unit mismatch - why does CK use diffusivity units m/yr? fixme
-    # Meanwhile we set this to some constant number that will hopefully prove realistic
+    # Meanwhile we set this to some constant number that will hopefully prove realistic 
     u0 = 100.0u"m/yr"
     # Wave decay constant (half of Kaufman's because velocity not diffusivity) 
     k_wave = KaufmanCommon.KAUFMAN_C1 / 2

@@ -11,7 +11,7 @@ export kaufman_diffusivity, print_diffusivity_profile
 # note to self: I changed the unit from m^2/yr to m/yr to match CK's units - this needs to be clarified
 const KAUFMAN_C0 = 5000.0u"m/yr" # Surface diffusivity for carbonates
 const KAUFMAN_C1 = 0.05u"m^-1" # Depth decay constant
-const BACKGROUND_DIFFUSION = 2.0u"m^2/yr" 
+const BACKGROUND_DIFFUSION = 2.0u"m/yr" 
 
 kaufman_diffusivity(depth) = KAUFMAN_C0 * exp(-KAUFMAN_C1 * depth)
 

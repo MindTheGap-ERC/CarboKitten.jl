@@ -1108,7 +1108,7 @@ export kaufman_diffusivity, print_diffusivity_profile
 # note to self: I changed the unit from m^2/yr to m/yr to match CK's units - this needs to be clarified
 const KAUFMAN_C0 = 5000.0u"m/yr" # Surface diffusivity for carbonates
 const KAUFMAN_C1 = 0.05u"m^-1" # Depth decay constant
-const BACKGROUND_DIFFUSION = 2.0u"m^2/yr" 
+const BACKGROUND_DIFFUSION = 2.0u"m/yr" 
 
 kaufman_diffusivity(depth) = KAUFMAN_C0 * exp(-KAUFMAN_C1 * depth)
 
@@ -1194,4 +1194,114 @@ function main()
 end
 
 main()
+```
+### Decompose into diffusion and wave-driven advection 
+
+Kaufman's values are NOT tied to specific wave velocity profiles. They're empirical calibrations. The $C_0$ and $C_1$ values are bulk transport behavior averaged over storm cycles and fair-weather periods.
+When using CarboKitten, these values would need to be adjusted every time we change wave velocity profiles, and the correctness can only be evaluated based on whether they produce similar depth-integrated transport. 
+
+They should be related like this (??):
+
+$$\int q(W)d(W) \approx \int D_{Kaufman}(W) \nabla \eta dW$$
+
+Kaufman et al's $D$ represents total transport from wave orbital motion. We can try to decompose it into:
+
+$$D_{Kaufman}(W) = \nu_{base} + D_{wave}(W)$$
+
+where:
+
+- $\nu_{base} \approx 0.1-1 m^2/yr$ (background diffusion from bioturbation, tidal mixing)
+
+- $D_{wave}(W) \approx C_0 \times \exp(-C_1 \times W) - \nu_{base}$ (wave-driven component)
+
+Then model the wave component using wave velocity formulation. 
+For diffusive transport from waves, $D \sim u^2/\omega$, where $u$ is orbital velocity and $\omega$ is wave frequency. Because we can approximate $u \sim u_0 \times \exp(-kW)$ for water depth $W$, we could perhaps estimate $D$ as $D \sim u_0^2 \exp(-2kW)$.
+
+To calculate an example, here we assume background diffusion to be 1 m/yr (again wrong units! fixme), so `BACKGROUND_DIFFUSION`/2 and wind wave period to be 8 s (needs checking but should be realistic?). Kaufman et al. use $C_1 = 0.05 m^{-1}$ and this roughly corresponds to wave decay with $k \approx 0.025 m^{-1}$ (?), which should be realistic for ocean waves.
+
+``` {.julia file=examples/transport/empirical_diffusivity_decomposition.jl}
+include("Kaufman_diffusivity.jl")
+using .KaufmanCommon
+
+using CarboKitten
+using CarboKitten.Models.ALCAP
+using Unitful
+using GeometryBasics
+
+# watch this use of a closure! Gives an end error somewhere but it runs
+function make_input_decomposition(;
+        grid_size = (100, 1),
+        phys_scale = 150.0u"m",
+        Δt = 0.0002u"Myr",
+        steps = 2500, 
+        tag = "kaufman_decomposition")
+
+    D_wave_surface = KaufmanCommon.KAUFMAN_C0 - KaufmanCommon.BACKGROUND_DIFFUSION
+    T_wave = 8.0u"s"
+    omega = (2π / T_wave) |> ustrip |> x -> x * u"1/yr"
+
+    # Back-calculate surface orbital velocity 
+    # u0 = sqrt(D_wave_surface * omega / (u"m/yr"))
+    # this cannot be applied because of unit mismatch - why does CK use diffusivity units m/yr? fixme
+    # Meanwhile we set this to some constant number that will hopefully prove realistic
+    u0 = 100.0u"m/yr"
+    # Wave decay constant (half of Kaufman's because velocity not diffusivity) 
+    k_wave = KaufmanCommon.KAUFMAN_C1 / 2
+
+    wave_velocity_fn = function(water_depth)
+        u = u0 * exp(-k_wave * water_depth)
+        # Onshore transport
+        v = Vec2(-u, 0.0u"m/yr") 
+        # Shear from exponential decay 
+        s = Vec2(k_wave * u, 0.0u"1/yr")  
+        return (v, s)
+    end
+
+    facies = [
+        ALCAP.Facies(
+            viability_range = (4, 10),
+            activation_range = (6, 10),
+            maximum_growth_rate = 500u"m/Myr",
+            extinction_coefficient = 0.8u"m^-1",
+            saturation_intensity = 60u"W/m^2",
+            diffusion_coefficient = KaufmanCommon.BACKGROUND_DIFFUSION/2,
+            wave_velocity = wave_velocity_fn,
+            name = "producer"),
+        ALCAP.Facies(
+            active = false,
+            diffusion_coefficient = KaufmanCommon.BACKGROUND_DIFFUSION/2,
+            wave_velocity = wave_velocity_fn,
+            name = "transported")
+    ]
+
+    PERIOD = 0.2u"Myr"
+    AMPLITUDE = 4.0u"m"
+
+    return ALCAP.Input(
+        tag = tag,
+        box = CarboKitten.Box{Coast}(grid_size=grid_size, phys_scale=phys_scale),
+        time = TimeProperties(Δt=Δt, steps=steps),
+        output = Dict(
+            :profile => OutputSpec(slice=(:, 1), write_interval=10)),
+        ca_interval = 1,
+        initial_topography = (x, y) -> -x / 300.0,
+        sea_level = t -> AMPLITUDE * sin(2π * t / PERIOD),
+        subsidence_rate = 50.0u"m/Myr",
+        disintegration_rate = 50.0u"m/Myr",
+        disintegration_transfer = p -> [0.0u"m", p[1] + p[2]],
+        insolation = 400.0u"W/m^2",
+        sediment_buffer_size = 50,
+        depositional_resolution = 0.5u"m",
+        facies = facies)
+end
+
+
+function main() 
+    input = make_input_decomposition()
+    output = "data/output/kaufman_decomposition.h5"
+    run_model(Model{ALCAP}, input, output)
+end
+
+main()
+end
 ```

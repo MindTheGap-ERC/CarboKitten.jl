@@ -15,15 +15,20 @@
         s = insolation(input)
         n_f = n_facies(input)
         facies = input.facies
+        active_facies = [f for f in facies if f.active]
+        global_facies = [f for f in facies if f.pelagic]
         dt = input.time.Δt
 
         function p(state::AbstractState, wd::AbstractMatrix)::Array{Amount,3}
             output::Array{Amount, 3} = output_
             insolation::typeof(1.0u"W/m^2") = s(state)
             for i in eachindex(IndexCartesian(), wd)
-                for f in 1:n_f
+                for f in active_facies
                     output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u"m" :
                     capped_production(insolation, facies[f], wd[i], dt)
+                end
+                for f in global_facies
+                    # output[f, i[1], i[2]] = 
                 end
             end
             return output

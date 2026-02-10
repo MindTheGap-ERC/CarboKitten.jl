@@ -44,6 +44,7 @@ export production_rate, capped_production, uniform_production
     maximum_growth_rate::Rate = 0.0u"m/Myr"
     extinction_coefficient::typeof(1.0u"m^-1") = 0.0u"m^-1"
     saturation_intensity::Intensity = 1.0u"W/m^2"
+    pelagic::Bool = false
 end
 
 @kwdef struct Input <: AbstractInput
@@ -106,6 +107,16 @@ end
 end
 ```
 
+## Pelagic Production
+
+A facies can be specified as being pelagic, meaning that production is not governed at the sea floor (benthic zone), rather the entire water column above contributes to the production. The local production rate still follows the same function as before (well motivated by exponential decay of available radiation), but now we need to integrate over the water depth:
+
+$$g_p(w) = \int_0^{w} g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right) \textrm{d}w.$$
+
+This integral has no analytic solution, so we'll use a numeric integrator to evaluate the complete production curve, and then linearly interpolate the generated table to obtain production rates.
+
+Pelagic facies do not participate in the CA.
+
 ## CA Production
 
 ```component-dag
@@ -131,15 +142,20 @@ The `CAProduction` component gives production that depends on the provided CA.
         s = insolation(input)
         n_f = n_facies(input)
         facies = input.facies
+        active_facies = [f for f in facies if f.active]
+        global_facies = [f for f in facies if f.pelagic]
         dt = input.time.Δt
 
         function p(state::AbstractState, wd::AbstractMatrix)::Array{Amount,3}
             output::Array{Amount, 3} = output_
             insolation::typeof(1.0u"W/m^2") = s(state)
             for i in eachindex(IndexCartesian(), wd)
-                for f in 1:n_f
+                for f in active_facies
                     output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u"m" :
                     capped_production(insolation, facies[f], wd[i], dt)
+                end
+                for f in global_facies
+                    # output[f, i[1], i[2]] = 
                 end
             end
             return output

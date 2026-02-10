@@ -13,6 +13,7 @@ export production_rate, capped_production, uniform_production
     maximum_growth_rate::Rate = 0.0u"m/Myr"
     extinction_coefficient::typeof(1.0u"m^-1") = 0.0u"m^-1"
     saturation_intensity::Intensity = 1.0u"W/m^2"
+    pelagic::Bool = false
 end
 
 @kwdef struct Input <: AbstractInput

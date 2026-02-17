@@ -90,6 +90,8 @@ include("./Algorithms/StratigraphicColumn.jl")
 import .StratigraphicColumn: stratigraphic_column!
 include("./Algorithms/Skeleton.jl")
 import .Skeleton: skeleton
+include("./Algorithms/Romberg.jl")
+import .Romberg: romberg
 end
 
 include("./BoundaryTrait.jl")

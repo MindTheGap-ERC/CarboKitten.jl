@@ -29,6 +29,25 @@ From just this equation we can define a uniform production process. This require
 
 The `insolation` input may be given as a scalar quantity, say `400u"W/m^2"`, or as a function of time.
 
+## Pelagic Production
+
+A facies can be specified as being pelagic, meaning that production is not governed at the sea floor (benthic zone), rather the entire water column above contributes to the production. The local production rate still follows the same function as before (well motivated by exponential decay of available radiation), but now we need to integrate over the water depth:
+
+$$g_p(w) = \int_0^{w} g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right) \textrm{d}w.$$
+
+This integral has no analytic solution, so we'll use a numeric integrator to evaluate the complete production curve, and then linearly interpolate the generated table to obtain production rates.
+
+Pelagic facies do not participate in the CA.
+
+``` {.julia #pelagic-production}
+
+
+
+function pelagic_production(insolation, facies, water_depth)
+    
+end
+```
+
 ``` {.julia file=src/Components/Production.jl}
 @compose module Production
 @mixin TimeIntegration, WaterDepth, FaciesBase
@@ -36,6 +55,8 @@ using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
 using HDF5
+using QuadGK
+using Interpolations
 using Logging
 
 export production_rate, capped_production, uniform_production
@@ -106,16 +127,6 @@ function uniform_production(input::AbstractInput)
 end
 end
 ```
-
-## Pelagic Production
-
-A facies can be specified as being pelagic, meaning that production is not governed at the sea floor (benthic zone), rather the entire water column above contributes to the production. The local production rate still follows the same function as before (well motivated by exponential decay of available radiation), but now we need to integrate over the water depth:
-
-$$g_p(w) = \int_0^{w} g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right) \textrm{d}w.$$
-
-This integral has no analytic solution, so we'll use a numeric integrator to evaluate the complete production curve, and then linearly interpolate the generated table to obtain production rates.
-
-Pelagic facies do not participate in the CA.
 
 ## CA Production
 

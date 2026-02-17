@@ -5,6 +5,8 @@ using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
 using HDF5
+using QuadGK
+using Interpolations
 using Logging
 
 export production_rate, capped_production, uniform_production

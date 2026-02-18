@@ -10,6 +10,12 @@ CarboKitten.Components.InitialSediment
     using Unitful: dimension, NoUnits
 
     <<initial-sediment>>
+
+    function write_header(input::AbstractInput, output::AbstractOutput)
+        for (i,f) in enumerate(input.facies)
+            set_attribute(output, "facies$(i)/initial_sediment", initial_sediment(input.box, f) |> in_units_of(u"m"))
+        end
+    end
 end
 ```
 

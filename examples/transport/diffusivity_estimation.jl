@@ -6,10 +6,11 @@
 module DiffusivityEstimation
 
 using CarboKitten.Export: read_slice, Header, DataSlice
+using CarboKitten: MemoryOutput
 using CarboKitten.Utility: in_units_of
 using Unitful
 
-# functions from the gist
+# functions from Johan's gist
 
 trapezoid(t, y) = (t[2:end] .- t[1:end-1]) .* (y[2:end] .+ y[1:end-1]) ./ 2 |> sum
 
@@ -33,16 +34,14 @@ function peak_moments(x, h)
 end
 
 """
-    peak_evolution(filename, group=:profile; use_active_layer=true)
+    peak_evolution(header::Header, data::DataSlice; use_active_layer=true)
 
-Read simulation output and compute peak location and width
-at each saved time step.
+Compute peak location and width at each saved time step
+from `Header` and `DataSlice`.
 
 Returns `(t, μ, σ)` vectors.
 """
-function peak_evolution(filename, group=:profile; use_active_layer=true)
-    header, data = read_slice(filename, group)
-
+function peak_evolution(header::Header, data::DataSlice; use_active_layer=true)
     x = header.axes.x
     t = header.axes.t[1:data.write_interval:end]
 
@@ -74,6 +73,31 @@ function peak_evolution(filename, group=:profile; use_active_layer=true)
 end
 
 """
+    peak_evolution(filename, group=:profile; use_active_layer=true)
+
+Read an HDF5 file and compute peak location and width at each saved time step.
+
+Returns `(t, μ, σ)` vectors.
+"""
+function peak_evolution(filename::AbstractString, group=:profile; use_active_layer=true)
+    header, data = read_slice(filename, group)
+    peak_evolution(header, data; use_active_layer)
+end
+
+"""
+    peak_evolution(output::MemoryOutput, group=:profile; use_active_layer=true)
+
+Compute peak location and width at each saved time step
+from MemoryOutput.
+
+Returns `(t, μ, σ)` vectors.
+"""
+function peak_evolution(output::MemoryOutput, group::Symbol=:profile; use_active_layer=true)
+    data = output.data_slices[group]
+    peak_evolution(output.header, data; use_active_layer)
+end
+
+"""
     linear_fit(x, y)
 
 Ordinary least-squares fit of y = a + b·x.
@@ -96,20 +120,11 @@ function linear_fit(x, y)
 end
 
 """
-    estimate_diffusivity(filename, group=:profile; use_active_layer=true, R²_threshold=0.99)
+    _fit_diffusivity(t, μ, σ; R²_threshold=0.99)
 
-Estimate the effective diffusion coefficient from the evolution
-of the peak width. For pure diffusion, σ²(t) = σ₀² + 2Dt,
-so D = slope / 2 from a linear fit of σ²(t).
-
-The fit automatically trims late time steps where σ² saturates
-(e.g. due to boundary effects) by progressively removing points
-from the end until R² exceeds `R²_threshold`.
-
-Returns a named tuple with `D`, `R²`, `n_fit`, `t`, `μ`, `σ`.
+Internal: fit the diffusion coefficient from peak evolution data.
 """
-function estimate_diffusivity(filename, group=:profile; use_active_layer=true, R²_threshold=0.99)
-    t, μ, σ = peak_evolution(filename, group; use_active_layer)
+function _fit_diffusivity(t, μ, σ; R²_threshold=0.99)
 
     # Filter out NaN entries (e.g. t=0 with no sediment)
     valid = .!isnan.(σ)
@@ -139,6 +154,35 @@ function estimate_diffusivity(filename, group=:profile; use_active_layer=true, R
     @info "Peak width σ at t_first: $(σ_v[1]), t_last: $(σ_v[n_fit])"
 
     return (D=D, R²=fit.R², n_fit=n_fit, t=t, μ=μ, σ=σ)
+end
+
+"""
+    estimate_diffusivity(filename, group=:profile; use_active_layer=true, R²_threshold=0.99)
+
+Estimate the effective diffusion coefficient from an HDF5 file.
+For pure diffusion, σ²(t) = σ₀² + 2Dt,
+so D = slope / 2 from a linear fit of σ²(t).
+
+The fit automatically trims late time steps where σ² saturates
+(e.g. due to boundary effects) by progressively removing points
+from the end until R² exceeds `R²_threshold`.
+
+Returns a named tuple with `D`, `R²`, `n_fit`, `t`, `μ`, `σ`.
+"""
+function estimate_diffusivity(filename::AbstractString, group=:profile; use_active_layer=true, R²_threshold=0.99)
+    t, μ, σ = peak_evolution(filename, group; use_active_layer)
+    _fit_diffusivity(t, μ, σ; R²_threshold)
+end
+
+"""
+    estimate_diffusivity(output::MemoryOutput, group=:profile; use_active_layer=true, R²_threshold=0.99)
+
+Estimate the effective diffusion coefficient from MemoryOutput.
+See the `AbstractString` method for details.
+"""
+function estimate_diffusivity(output::MemoryOutput, group::Symbol=:profile; use_active_layer=true, R²_threshold=0.99)
+    t, μ, σ = peak_evolution(output, group; use_active_layer)
+    _fit_diffusivity(t, μ, σ; R²_threshold)
 end
 
 end # module

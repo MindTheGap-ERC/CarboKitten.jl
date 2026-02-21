@@ -24,7 +24,7 @@ module Romberg
 
 """
     romberg(::Type{ReturnType}, max_steps)(f, a, b, acc)
-    
+
 Implementation of the Romberg integrator, following a Python implementation on
 Wikipedia. Reserves memory for refinement steps and returns a closure.
 
@@ -37,7 +37,7 @@ function romberg(::Type{RA}, max_steps) where {RA}
 
     function (f, a::RB, b::RB, acc::RA) where {RB}
         RY = Base.return_types(f, (RB,))[1]
-        
+
         Rp, Rc = R1, R2
         h::RB = (b - a) / 2
         ep::Int = 1
@@ -49,7 +49,7 @@ function romberg(::Type{RA}, max_steps) where {RA}
             for j in 1:ep
                 c += f(a + (2 * j - 1) * h)
             end
-            
+
             Rc[1] = h * c + 0.5 * Rp[1]
 
             n_k::Int = 1

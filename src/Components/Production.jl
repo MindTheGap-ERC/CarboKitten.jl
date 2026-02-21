@@ -9,7 +9,7 @@ using QuadGK
 using Interpolations
 using Logging
 
-export production_rate, capped_production, uniform_production
+export production_rate, capped_production, uniform_production, benthic_production, pelagic_production
 
 @kwdef struct Facies <: AbstractFacies
     maximum_growth_rate::Rate = 0.0u"m/Myr"
@@ -56,20 +56,28 @@ function write_header(input::AbstractInput, output::AbstractOutput)
         set_attribute(output, "facies$(i)/maximum_growth_rate", f.maximum_growth_rate |> in_units_of(u"m/Myr"))
         set_attribute(output, "facies$(i)/extinction_coefficient", f.extinction_coefficient |> in_units_of(u"m^-1"))
         set_attribute(output, "facies$(i)/saturation_intensity", f.saturation_intensity |> in_units_of(u"W/m^2"))
+        set_attribute(output, "facies$(i)/pelagic", f.pelagic)
     end
 end
 
 # ~/~ begin <<docs/src/components/production.md#component-production-rate>>[init]
-function production_rate(insolation, facies, water_depth)
+function benthic_production(insolation, facies, water_depth)
     gₘ = facies.maximum_growth_rate
     I = insolation / facies.saturation_intensity
     x = water_depth * facies.extinction_coefficient
     return x > 0.0 ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
 end
 
+production_rate(i, f, w) = benthic_production(i, f, w)
+
 function capped_production(insolation, facies, water_depth, dt)
-    p = production_rate(insolation, facies, water_depth) * dt
+    p = benthic_production(insolation, facies, water_depth) * dt
     return min(p, max(0.0u"m", water_depth))
+end
+# ~/~ end
+# ~/~ begin <<docs/src/components/production.md#pelagic-production>>[init]
+function pelagic_production(insolation, facies, water_depth)
+    return quadgk(w -> production_rate(insolation, facies, w), 0.0u"m", water_depth)[1]
 end
 # ~/~ end
 

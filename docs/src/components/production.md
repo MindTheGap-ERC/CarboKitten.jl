@@ -12,15 +12,17 @@ $$g(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right).$$
 This can be understood as a smooth transition between the maximum growth rate under saturated conditions, and exponential decay due to light intensity dropping with greater water depth.
 
 ``` {.julia #component-production-rate}
-function production_rate(insolation, facies, water_depth)
+function benthic_production(insolation, facies, water_depth)
     gₘ = facies.maximum_growth_rate
     I = insolation / facies.saturation_intensity
     x = water_depth * facies.extinction_coefficient
     return x > 0.0 ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
 end
 
+production_rate(i, f, w) = benthic_production(i, f, w)
+
 function capped_production(insolation, facies, water_depth, dt)
-    p = production_rate(insolation, facies, water_depth) * dt
+    p = benthic_production(insolation, facies, water_depth) * dt
     return min(p, max(0.0u"m", water_depth))
 end
 ```
@@ -40,11 +42,41 @@ This integral has no analytic solution, so we'll use a numeric integrator to eva
 Pelagic facies do not participate in the CA.
 
 ``` {.julia #pelagic-production}
-
-
-
 function pelagic_production(insolation, facies, water_depth)
+    return quadgk(w -> production_rate(insolation, facies, w), 0.0u"m", water_depth)[1]
+end
+```
+
+``` {.julia file=examples/production/pelagic.jl}
+module PelagicProductionPlot
+
+using CarboKitten
+using CarboKitten.Components.Production: benthic_production, pelagic_production
+using CarboKitten.ALCAP.Example: INPUT
+using CairoMakie
+
+function main()
+    water_depth = (0.01:1.0:70.0)u"m"
+    fig = Figure()
+    facies = [f for f in INPUT.facies if f.active]
     
+    ax_benthic = Axis(fig[1, 1], yreversed=true, title="benthic production", ylabel="depth [m]")
+    for f in facies
+        p = water_depth .|> (d -> benthic_production(INPUT.insolation, f, d))
+        lines!(ax_benthic, p |> in_units_of(u"m/Myr"),
+            water_depth |> in_units_of(u"m"), label = string(f.name))
+    end
+    
+    ax_pelagic = Axis(fig[1, 2], yreversed=true, title="pelagic production")
+    for f in facies
+        p = water_depth .|> (d -> pelagic_production(INPUT.insolation, f, d))
+        lines!(ax_pelagic, p |> in_units_of(u"m^2/Myr"),
+            water_depth |> in_units_of(u"m"), label = string(f.name))
+    end
+    fig[1, 3] = Legend(fig, ax_benthic, "Facies")
+    fig
+end
+
 end
 ```
 
@@ -59,7 +91,7 @@ using QuadGK
 using Interpolations
 using Logging
 
-export production_rate, capped_production, uniform_production
+export production_rate, capped_production, uniform_production, benthic_production, pelagic_production
 
 @kwdef struct Facies <: AbstractFacies
     maximum_growth_rate::Rate = 0.0u"m/Myr"
@@ -106,10 +138,12 @@ function write_header(input::AbstractInput, output::AbstractOutput)
         set_attribute(output, "facies$(i)/maximum_growth_rate", f.maximum_growth_rate |> in_units_of(u"m/Myr"))
         set_attribute(output, "facies$(i)/extinction_coefficient", f.extinction_coefficient |> in_units_of(u"m^-1"))
         set_attribute(output, "facies$(i)/saturation_intensity", f.saturation_intensity |> in_units_of(u"W/m^2"))
+        set_attribute(output, "facies$(i)/pelagic", f.pelagic)
     end
 end
 
 <<component-production-rate>>
+<<pelagic-production>>
 
 function uniform_production(input::AbstractInput)
     w = water_depth(input)

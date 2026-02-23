@@ -24,6 +24,13 @@ function initial_state(input::Input)
     return state
 end
 
+function initial_frame(input::Input)
+    dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
+    return Frame(production=zeros(Sediment,size(dep)), 
+                  disintegration=zeros(Sediment,size(dep)),
+                  deposition=dep)
+end
+
 function step!(input::Input)
     disintegrate! = ActiveLayer.disintegrator(input)
     transport! = ActiveLayer.transporter(input)
@@ -40,7 +47,7 @@ function step!(input::Input)
         d = disintegrate!(state)
 
         state.active_layer .+= p
-        state.active_layer .+= dtf(d)
+        state.active_layer .+= stack(dtf((d[i,:,:] for i in 1:size(d)[1])...), dims=1)
         transport!(state)
 
         deposit = pf .* state.active_layer

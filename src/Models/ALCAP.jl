@@ -6,7 +6,7 @@ using ..Common
 using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth: water_depth
-using ...Output: Frame
+using ...Output: Frame, frame_writer
 using ModuleMixins: @for_each
 
 export Input, Facies
@@ -29,6 +29,13 @@ function initial_state(input::AbstractInput)
 
     InitialSediment.push_initial_sediment!(input, state)
     return state
+end
+
+function initial_frame(input::Input)
+    dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
+    return Frame(production=zeros(Sediment,size(dep)), 
+                  disintegration=zeros(Sediment,size(dep)),
+                  deposition=dep)
 end
 
 function step!(input::Input)

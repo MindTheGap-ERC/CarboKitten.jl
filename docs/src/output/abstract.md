@@ -328,10 +328,7 @@ function run_model(::Type{Model{M}}, input::AbstractInput, output::AbstractOutpu
     end
     write_state(1, state)
     # also write any initial sediment to output
-    s = stack(initial_sediment(input.box, f) for f in input.facies; dims=1)
-    write_frame(1, Frame(production=zeros(Abstract.Sediment,size(s)), 
-                  disintegration=zeros(Abstract.Sediment,size(s)),
-                  deposition=s))
+    write_frame(1, M.initial_frame(input))
 
     run_model(Model{M}, input, state) do w, df
         # write_frame chooses to advance in a dataset

@@ -4,7 +4,7 @@ This is largely identical to the ALCAP model.
 
 ``` {.julia file=src/Models/WithDenudation.jl}
 @compose module WithDenudation
-@mixin Tag, Diagnostics, Output, CAProduction, ActiveLayer, Denudation
+@mixin Tag, Diagnostics, Output, CAProduction, ActiveLayer, Denudation, InitialSediment
 
 using ..Common
 using ..CAProduction: production
@@ -26,10 +26,21 @@ function initial_state(input::Input)
     sediment_height = zeros(Height, input.box.grid_size...)
     sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
 
-    return State(
+    state = State(
         step=0, sediment_height=sediment_height,
         sediment_buffer=sediment_buffer,
         ca=ca_state.ca, ca_priority=ca_state.ca_priority)
+
+    InitialSediment.push_initial_sediment!(input, state)
+
+    return state
+end
+
+function initial_frame(input::Input)
+    dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
+    return Frame(production=zeros(Sediment,size(dep)), 
+                  disintegration=zeros(Sediment,size(dep)),
+                  deposition=dep)
 end
 
 function step!(input::Input)

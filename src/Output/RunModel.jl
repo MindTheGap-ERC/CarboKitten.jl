@@ -4,6 +4,7 @@ module RunModel
 import ...CarboKitten: run_model, Model
 using ...CarboKitten: AbstractInput, AbstractOutput
 using ..Abstract
+using ...Components.InitialSediment: initial_sediment
 
 # ~/~ begin <<docs/src/output/abstract.md#run-model-output>>[init]
 """
@@ -23,6 +24,11 @@ function run_model(::Type{Model{M}}, input::AbstractInput, output::AbstractOutpu
         add_data_set(output, k, v)
     end
     write_state(1, state)
+    # also write any initial sediment to output
+    s = stack(initial_sediment(input.box, f) for f in input.facies; dims=1)
+    write_frame(1, Frame(production=zeros(Abstract.Sediment,size(s)), 
+                  disintegration=zeros(Abstract.Sediment,size(s)),
+                  deposition=s))
 
     run_model(Model{M}, input, state) do w, df
         # write_frame chooses to advance in a dataset

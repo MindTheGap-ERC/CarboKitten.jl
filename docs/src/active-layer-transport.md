@@ -59,16 +59,19 @@ By default (`ActiveLayer.jl`), `disintegration_transfer` is the identity functio
 For three autochthonous (produced *in situ*) facies and their transported equivalents, one may define:
 
 ```julia
-disintegration_transfer = x -> [0.0u"m", 0.0u"m", 0.0u"m", x[1]+x[4], x[2]+x[5], x[3]+x[6]]
+disintegration_transfer = f -> stack((0.0.*f[1,:,:], 0.0.*f[2,:,:], 0.0.*f[3,:,:],
+                                      f[1,:,:].+f[4,:,:], f[2,:,:].+f[5,:,:], f[3,:,:].+f[6,:,:]), dims=1)
 ```
 
-The transfer function takes the produced sediment vector `x`, sets facies 1-3 to zero and moves all the transported material into the "transported" facies (4-6). 
+The transfer function takes the array of produced sediment `p` for all facies across the whole grid, sets facies 1-3 to zero and moves all the transported material into the "transported" facies (4-6).  
+
+The function should be defined as shown above so that it returns the adjusted production for each facies across the domain in a tuple, which is then reshaped to match the dimensions of the input array `f` using `stack`.
 
 Transporting only 50% of disintegrated material into "transported" facies would look like this:
 
 ```julia
-disintegration_transfer = x -> [x[1]*0.5, x[2]*0.5, x[3]*0.5, 
-                                 x[1]*0.5+x[4], x[2]*0.5+x[5], x[3]*0.5+x[6]]
+disintegration_transfer = f -> stack((0.5.*f[1,:,:], 0.5.*f[2,:,:], 0.5.*f[3,:,:],
+                                      0.5.*f[1,:,:].+f[4,:,:], 0.5.*f[2,:,:].+f[5,:,:], 0.5.*f[3,:,:].+f[6,:,:]), dims=1)
 ```
 
 for the same number (3) of initial and transported facies.  When defining a transfer function, you should make sure that it conserves mass i.e. all the disintegrated sediment must be reallocated to somewhere.
@@ -89,7 +92,8 @@ using CarboKitten.Components.Common
                 box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
                 time = TimeProperties(Δt=1.0u"kyr", steps=10),
                 facies=facies,
-                disintegration_transfer = x -> [0.0u"m", 0.5*x[2], x[1]+x[3], x[4]+0.5*x[2]],
+                disintegration_transfer = f -> stack((0.0.*f[1,:,:], 0.5.*f[2,:,:], 
+                                          f[1,:,:].+f[3,:,:], f[4,:,:].+0.5.*f[2,:,:]),dims=1),
             )
 
             state = AL.State(
@@ -102,7 +106,8 @@ using CarboKitten.Components.Common
             d = ones(Amount, AL.n_facies(input), input.box.grid_size...)
 
             dtf = input.disintegration_transfer
-            state.active_layer .+= dtf(d)
+            transferred_sed = dtf(d)
+            state.active_layer .+= transferred_sed 
 
             @test all(state.active_layer[1,:] .≈ 0.0u"m")
             @test all(state.active_layer[2,:] .≈ 0.5u"m")
@@ -110,6 +115,9 @@ using CarboKitten.Components.Common
             @test all(state.active_layer[4,:] .≈ 1.5u"m")
 
             @test sum(state.active_layer[:,1,1]) ≈ sum(d[:,1,1])
+
+            @test all(size(transferred_sed) .== size(d))
+
         end
     end
 end

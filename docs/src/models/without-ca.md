@@ -47,7 +47,7 @@ function step!(input::Input)
         d = disintegrate!(state)
 
         state.active_layer .+= p
-        state.active_layer .+= stack(dtf((d[i,:,:] for i in 1:size(d)[1])...), dims=1)
+        state.active_layer .+= dtf(d)
         transport!(state)
 
         deposit = pf .* state.active_layer

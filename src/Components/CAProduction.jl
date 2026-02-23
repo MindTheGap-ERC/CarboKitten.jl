@@ -15,20 +15,24 @@
         s = insolation(input)
         n_f = n_facies(input)
         facies = input.facies
-        active_facies = [f for f in facies if f.active]
-        global_facies = [f for f in facies if f.pelagic]
+        active_facies = [i for (i, f) in pairs(facies) if f.active]
+        global_facies = [i for (i, f) in pairs(facies) if !f.active]
         dt = input.time.Δt
+        # Having this a Tuple should make things type stable?
+        production_specs = ((production_profile(input, f.production) for f in facies)...,)
 
         function p(state::AbstractState, wd::AbstractMatrix)::Array{Amount,3}
             output::Array{Amount, 3} = output_
             insolation::typeof(1.0u"W/m^2") = s(state)
             for i in eachindex(IndexCartesian(), wd)
-                for f in active_facies
-                    output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u"m" :
-                    capped_production(insolation, facies[f], wd[i], dt)
-                end
-                for f in global_facies
-                    # output[f, i[1], i[2]] = 
+                for f in eachindex(facies)
+                    if facies[f].active
+                        output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u"m" :
+                            capped_production(production_specs[f], insolation, wd[i], dt)
+                    else
+                        output[f, i[1], i[2]] =
+                            capped_production(production_specs[f], insolation, wd[i], dt)
+                    end
                 end
             end
             return output

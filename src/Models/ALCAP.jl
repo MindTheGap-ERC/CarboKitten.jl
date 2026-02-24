@@ -9,7 +9,7 @@ using ..WaterDepth: water_depth
 using ...Output: Frame
 using ModuleMixins: @for_each
 
-export Input, Facies
+export Input, Facies, BenthicProduction, PelagicProduction
 
 function initial_state(input::AbstractInput)
     ca_state = CellularAutomaton.initial_state(input)

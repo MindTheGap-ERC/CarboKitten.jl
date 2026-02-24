@@ -22,7 +22,7 @@ end
 production_rate(i, f, w) = benthic_production(i, f, w)
 
 function capped_production(f, insolation, water_depth, dt)
-    clip_positive(x::T) = max(x, zero(T))
+    clip_positive(x::T) where {T} = max(x, zero(T))
     p = clip_positive(f(insolation, water_depth))
     return min(max(0.0u"m", water_depth), p * dt)
 end
@@ -74,9 +74,10 @@ function is_benthic end
 Predicate to determine if a facies or production spec is pelagic.
 Defaults to `false`.
 """
-function is_pelagice end
+function is_pelagic end
 
-abstract type AbstractProduction end
+struct NoProduction <: AbstractProduction
+end
 
 @kwdef struct BenthicProduction <: AbstractProduction
     maximum_growth_rate::Rate = 0.0u"m/Myr"
@@ -101,16 +102,11 @@ is_benthic(::PelagicProduction) = false
 is_pelagic(::PelagicProduction) = true
 
 @kwdef struct Facies <: AbstractFacies
-    production
+    production = NoProduction()
 end
 
 is_benthic(facies::AbstractFacies) = is_benthic(facies.production)
 is_pelagic(facies::AbstractFacies) = is_pelagic(facies.production)
-
-Facies(args...; maximum_growth_rate, extinction_coefficient, saturation_intensity, kwargs...)
-    @warn "Depricated Facies construction: use `production = BenthicProduction(...)` instead."
-    Facies(args...; production = BenthicProduction(maximum_growth_rate, extinction_coefficient, saturation_intensity), kwargs...)
-end
 # ~/~ end
 # ~/~ begin <<docs/src/components/production.md#production-input>>[init]
 @kwdef struct Input <: AbstractInput
@@ -174,10 +170,19 @@ function write_header(input::AbstractInput, output::AbstractOutput)
     end
 
     for (i, f) in enumerate(input.facies)
-        set_attribute(output, "facies$(i)/maximum_growth_rate", f.maximum_growth_rate |> in_units_of(u"m/Myr"))
-        set_attribute(output, "facies$(i)/extinction_coefficient", f.extinction_coefficient |> in_units_of(u"m^-1"))
-        set_attribute(output, "facies$(i)/saturation_intensity", f.saturation_intensity |> in_units_of(u"W/m^2"))
-        set_attribute(output, "facies$(i)/pelagic", f.pelagic)
+        set_attribute(output, "facies$(i)/name", f.name == nothing ? "unnamed" : f.name)
+        p = f.production
+        if is_pelagic(p)
+            set_attribute(output, "facies$(i)/type", "pelagic")
+            set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"1/Myr"))
+            set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
+            set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
+        elseif is_benthic(p)
+            set_attribute(output, "facies$(i)/type", "benthic")
+            set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"m/Myr"))
+            set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
+            set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
+        end
     end
 end
 

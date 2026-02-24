@@ -32,7 +32,7 @@ function run()
     ]
 
     input = M.Input(
-        box=Box{Coast}(grid_size=(50, 1), phys_scale=500.0u"m"),
+        box=Box{Coast}(grid_size=(100, 1), phys_scale=250.0u"m"),
         time=TimeProperties(
             Δt=20.0u"yr",
             steps=40000),
@@ -63,7 +63,7 @@ function main()
     n_facies = res.header.n_facies
     fig = Figure()
     ax = Axis(fig[1,1])
-    profile_plot!(argmax, ax, res.header, data;colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+    profile_plot!(argmax, ax, res.header, data; alpha=1.0, colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
     save("docs/src/_fig/disintegration-transfer-example.png",fig)
 end
 

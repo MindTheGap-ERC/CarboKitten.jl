@@ -38,7 +38,7 @@ function step!(input::Input)
     transport! = ActiveLayer.transporter(input)
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
-    pf = cementation_factor(input)
+    pf = lithification_factor(input)
     dtf = input.disintegration_transfer
     debug = input.diagnostics
 

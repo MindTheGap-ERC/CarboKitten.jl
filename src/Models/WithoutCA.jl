@@ -25,7 +25,7 @@ function step!(input::Input)
     dt = input.time.Δt
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
-    pf = cementation_factor(input)
+    pf = lithification_factor(input)
     dtf = input.disintegration_transfer
 
     function (state::State)

@@ -157,7 +157,7 @@ using ..Common
 using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth: water_depth
-using ...Output: Frame, frame_writer
+using ...Output: Frame
 using ModuleMixins: @for_each
 
 export Input, Facies

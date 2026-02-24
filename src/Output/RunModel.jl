@@ -4,7 +4,6 @@ module RunModel
 import ...CarboKitten: run_model, Model
 using ...CarboKitten: AbstractInput, AbstractOutput
 using ..Abstract
-using ...Components.InitialSediment: initial_sediment
 
 # ~/~ begin <<docs/src/output/abstract.md#run-model-output>>[init]
 """

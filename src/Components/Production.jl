@@ -170,7 +170,6 @@ function write_header(input::AbstractInput, output::AbstractOutput)
     end
 
     for (i, f) in enumerate(input.facies)
-        set_attribute(output, "facies$(i)/name", f.name == nothing ? "unnamed" : f.name)
         p = f.production
         if is_pelagic(p)
             set_attribute(output, "facies$(i)/type", "pelagic")

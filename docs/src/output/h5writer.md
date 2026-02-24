@@ -153,6 +153,7 @@ end
 function set_attribute(out::H5Output, name::String, value::AbstractArray{T,Dim}) where {T,Dim}
     gid = get_group(out.fid, name)
     tag = split(name,"/")[end]
+    @info "output: setting dataset $name"
     gid[tag] = value
 end
 
@@ -160,6 +161,7 @@ function set_attribute(out::H5Output, name::String, value)
     gid = get_group(out.fid, name)
     attr = attributes(gid)
     tag = split(name,"/")[end]
+    @info "output: setting attribute $name to $value"
     attr[tag] = value
 end
 

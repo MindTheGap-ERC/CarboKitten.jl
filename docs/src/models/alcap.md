@@ -15,7 +15,7 @@ const FACIES = [
     ALCAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
-        production = ALCAP.BenthicProduction(
+        production = BenthicProduction(
             maximum_growth_rate=500u"m/Myr",
             extinction_coefficient=0.8u"m^-1",
             saturation_intensity=60u"W/m^2"),
@@ -24,7 +24,7 @@ const FACIES = [
     ALCAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
-        production = ALCAP.BenthicProduction(
+        production = BenthicProduction(
             maximum_growth_rate=400u"m/Myr",
             extinction_coefficient=0.1u"m^-1",
             saturation_intensity=60u"W/m^2"),
@@ -33,7 +33,7 @@ const FACIES = [
     ALCAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
-        production = ALCAP.BenthicProduction(
+        production = BenthicProduction(
             maximum_growth_rate=100u"m/Myr",
             extinction_coefficient=0.005u"m^-1",
             saturation_intensity=60u"W/m^2"),
@@ -131,6 +131,7 @@ module Example
 
 using Unitful
 using ..ALCAP: ALCAP
+using CarboKitten.Production: BenthicProduction
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
 using CarboKitten.Output.Abstract: OutputSpec

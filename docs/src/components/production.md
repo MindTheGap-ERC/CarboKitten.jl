@@ -44,7 +44,7 @@ Pelagic facies do not participate in the CA.
 
 ``` {.julia #pelagic-production}
 function pelagic_production(insolation, facies, water_depth)
-    return quadgk(w -> production_rate(insolation, facies, w), 0.0u"m", water_depth)[1]
+    return quadgk(w -> benthic_production(insolation, facies, w), 0.0u"m", water_depth)[1]
 end
 ```
 
@@ -130,37 +130,33 @@ Defaults to `false`.
 """
 function is_pelagic end
 
+abstract type AbstractProduction end
+
 struct NoProduction <: AbstractProduction
 end
 
 @kwdef struct BenthicProduction <: AbstractProduction
-    maximum_growth_rate::Rate = 0.0u"m/Myr"
+    maximum_growth_rate::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
     extinction_coefficient::typeof(1.0u"m^-1") = 0.0u"m^-1"
-    saturation_intensity::Intensity = 1.0u"W/m^2"
+    saturation_intensity::typeof(1.0u"W/m^2") = 1.0u"W/m^2"
 end
 
-production_profile(input::AbstractInput, p::BenthicProduction) = (I, w) -> benthic_production(I, p, w)
 is_benthic(::BenthicProduction) = true
 is_pelagic(::BenthicProduction) = false
+production_profile(input::AbstractInput, p::BenthicProduction) = (I, w) -> benthic_production(I, p, w)
 
 @kwdef struct PelagicProduction <: AbstractProduction
-    maximum_growth_rate::typeof(1.0u"m/Myr^-1") = 0.0u"Myr^-1"
+    maximum_growth_rate::typeof(1.0u"1/Myr") = 0.0u"1/Myr"
     extinction_coefficient::typeof(1.0u"m^-1") = 0.0u"m^-1"
-    saturation_intensity::Intensity = 1.0u"W/m^2"
+    saturation_intensity::typeof(1.0u"W/m^2") = 1.0u"W/m^2"
     maximum_production_depth::typeof(1.0u"m") = 200.0u"m"
     table_size::Tuple{Int, Int} = (1000, 1000)
 end
 
-production_profile(input::AbstractInput, p::PelagicProduction) = (I, w) -> pelagic_production_lookup(I, p, w)
 is_benthic(::PelagicProduction) = false
 is_pelagic(::PelagicProduction) = true
+production_profile(input::AbstractInput, p::PelagicProduction) = (I, w) -> pelagic_production_lookup(I, p, w)
 
-@kwdef struct Facies <: AbstractFacies
-    production = NoProduction()
-end
-
-is_benthic(facies::AbstractFacies) = is_benthic(facies.production)
-is_pelagic(facies::AbstractFacies) = is_pelagic(facies.production)
 ```
 
 ### Input parameters
@@ -171,6 +167,13 @@ In the case of pelagic production, the exact production rate can be quite expens
 @kwdef struct Input <: AbstractInput
     insolation
 end
+
+@kwdef struct Facies <: AbstractFacies
+    production = NoProduction()
+end
+
+is_benthic(facies::AbstractFacies) = is_benthic(facies.production)
+is_pelagic(facies::AbstractFacies) = is_pelagic(facies.production)
 ```
 
 ### Insolation
@@ -227,25 +230,44 @@ end
 
 ### Boilerplate
 
+We put the basic production equations in a separate module `CarboKitten.Production`. This will contain the dynamic API (`production_profile`) and the implementation of `BenthicProduction` and `PelagicProduction`. We isolate these from the component `CarboKitten.Components.Production` implementation to prevent these production objects from being replicated in derived components, leading to problems with dispatch on `production_profile`.
+
+This design makes sense, since we isolate production equations from the larger lego-brick design of CarboKitten.
+
+``` {.julia file=src/Production.jl}
+module Production
+
+using Unitful
+using QuadGK
+using Interpolations
+
+import ..CarboKitten: AbstractInput, time_axis
+
+<<component-production-rate>>
+<<pelagic-production>>
+<<production-profile>>
+<<production-lookup>>
+
+end
+```
+
 ``` {.julia file=src/Components/Production.jl}
 @compose module Production
 @mixin TimeIntegration, WaterDepth, FaciesBase
 using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
+import ...Production: production_profile, is_benthic, is_pelagic, capped_production, NoProduction
+
 using HDF5
 using QuadGK
 using Interpolations
 using Logging
 
-export production_rate, capped_production, uniform_production, benthic_production, pelagic_production
+export uniform_production
 
-<<component-production-rate>>
-<<pelagic-production>>
-<<production-profile>>
 <<production-input>>
 <<production-insolation>>
-<<production-lookup>>
 
 function write_header(input::AbstractInput, output::AbstractOutput)
     if input.insolation isa Quantity
@@ -307,8 +329,9 @@ The `CAProduction` component gives production that depends on the provided CA.
 @compose module CAProduction
     @mixin TimeIntegration, CellularAutomaton, Production
     using ..Common
-    using ..Production: production_rate, insolation
+    using ..Production: insolation
     using ..WaterDepth: water_depth
+    using ...Production: production_profile, capped_production
     using Logging
 
     function production(input::AbstractInput)

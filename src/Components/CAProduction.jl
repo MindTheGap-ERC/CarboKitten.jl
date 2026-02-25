@@ -2,8 +2,9 @@
 @compose module CAProduction
     @mixin TimeIntegration, CellularAutomaton, Production
     using ..Common
-    using ..Production: production_rate, insolation
+    using ..Production: insolation
     using ..WaterDepth: water_depth
+    using ...Production: production_profile, capped_production
     using Logging
 
     function production(input::AbstractInput)

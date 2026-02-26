@@ -402,6 +402,8 @@ end
 
 ### If production is higher in shallower water 
 
+And reversed with pelagic production.
+
 ```{.julia #production-spec}
 @testset "Components/Production" begin
     let prod = BenthicProduction(
@@ -420,6 +422,24 @@ end
         state = initial_state(input)
         prod = uniform_production(input)(state)
         @test all(prod[1:end-1,:] .>= prod[2:end,:])
+    end
+    
+    let prod = PelagicProduction(
+            maximum_growth_rate = 5u"1/Myr",
+            extinction_coefficient = 0.8u"m^-1",
+            saturation_intensity = 60u"W/m^2"),
+        input = Input(
+            box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
+            time = TimeProperties(Δt=1.0u"kyr", steps=10),
+            sea_level = t -> 0.0u"m",
+            initial_topography = (x, y) -> -10u"m",
+            subsidence_rate = 0.0u"m/Myr",
+            facies = [Facies(production=prod)],
+            insolation = 400.0u"W/m^2")
+
+        state = initial_state(input)
+        prod = uniform_production(input)(state)
+        @test all(prod[1:end-1,:] .<= prod[2:end,:])
     end
 end
 ```

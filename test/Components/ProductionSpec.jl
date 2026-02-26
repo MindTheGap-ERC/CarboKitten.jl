@@ -25,7 +25,7 @@ module ProductionSpec
             prod = uniform_production(input)(state)
             @test all(prod[1:end-1,:] .>= prod[2:end,:])
         end
-        
+    
         let prod = PelagicProduction(
                 maximum_growth_rate = 5u"1/Myr",
                 extinction_coefficient = 0.8u"m^-1",

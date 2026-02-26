@@ -117,7 +117,7 @@ production_profile(input::AbstractInput, p) = p
 Predicate to determine if a facies or production spec is benthic.
 Defaults to `false`.
 """
-function is_benthic end
+is_benthic(p) = false
 
 """
     is_pelagic(obj)
@@ -125,12 +125,14 @@ function is_benthic end
 Predicate to determine if a facies or production spec is pelagic.
 Defaults to `false`.
 """
-function is_pelagic end
+is_pelagic(p) = false
 
 abstract type AbstractProduction end
 
 struct NoProduction <: AbstractProduction
 end
+
+production_profile(::AbstractInput, ::NoProduction) = (_, _) -> 0.0u"m/Myr"
 
 @kwdef struct BenthicProduction <: AbstractProduction
     maximum_growth_rate::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
@@ -282,7 +284,8 @@ end
 using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
-import ...Production: production_profile, is_benthic, is_pelagic, capped_production, NoProduction
+using ...Production: NoProduction
+import ...Production: production_profile, is_benthic, is_pelagic, capped_production
 
 using HDF5
 using QuadGK
@@ -423,7 +426,7 @@ And reversed with pelagic production.
         prod = uniform_production(input)(state)
         @test all(prod[1:end-1,:] .>= prod[2:end,:])
     end
-    
+
     let prod = PelagicProduction(
             maximum_growth_rate = 5u"1/Myr",
             extinction_coefficient = 0.8u"m^-1",

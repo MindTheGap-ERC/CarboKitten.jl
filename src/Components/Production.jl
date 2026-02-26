@@ -4,7 +4,8 @@
 using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
-import ...Production: production_profile, is_benthic, is_pelagic, capped_production, NoProduction
+using ...Production: NoProduction
+import ...Production: production_profile, is_benthic, is_pelagic, capped_production
 
 using HDF5
 using QuadGK

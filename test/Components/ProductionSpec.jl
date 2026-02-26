@@ -1,13 +1,14 @@
 # ~/~ begin <<docs/src/components/production.md#test/Components/ProductionSpec.jl>>[init]
 module ProductionSpec
     using Test
+    using CarboKitten
     using CarboKitten.Components.Common
     using CarboKitten.Components.Production: Facies, Input, uniform_production
     using CarboKitten.Components.WaterDepth: initial_state
 
     # ~/~ begin <<docs/src/components/production.md#production-spec>>[init]
     @testset "Components/Production" begin
-        let facies = Facies(
+        let prod = BenthicProduction(
                 maximum_growth_rate = 500u"m/Myr",
                 extinction_coefficient = 0.8u"m^-1",
                 saturation_intensity = 60u"W/m^2"),
@@ -17,7 +18,7 @@ module ProductionSpec
                 sea_level = t -> 0.0u"m",
                 initial_topography = (x, y) -> -10u"m",
                 subsidence_rate = 0.0u"m/Myr",
-                facies = [facies],
+                facies = [Facies(production=prod)],
                 insolation = 400.0u"W/m^2")
     
             state = initial_state(input)
@@ -28,7 +29,7 @@ module ProductionSpec
     # ~/~ end
     # ~/~ begin <<docs/src/components/production.md#production-spec>>[1]
     @testset "Components/Production/variable_insolation" begin
-        let facies = Facies(
+        let prod = BenthicProduction(
                 maximum_growth_rate = 500u"m/Myr",
                 extinction_coefficient = 0.8u"m^-1",
                 saturation_intensity = 60u"W/m^2"),
@@ -38,7 +39,7 @@ module ProductionSpec
                 sea_level = t -> 0.0u"m",
                 initial_topography = (x, y) -> -10u"m",
                 subsidence_rate = 0.0u"m/Myr",
-                facies = [facies],
+                facies = [Facies(production=prod)],
                 insolation = t -> 40.0u"W/m^2/kyr" * t)
     
             state = initial_state(input)

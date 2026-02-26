@@ -12,14 +12,14 @@ $$g(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right).$$
 This can be understood as a smooth transition between the maximum growth rate under saturated conditions, and exponential decay due to light intensity dropping with greater water depth.
 
 ``` {.julia #component-production-rate}
-function benthic_production(insolation, facies, water_depth)
+function production_rate(insolation, facies, water_depth)
     gₘ = facies.maximum_growth_rate
     I = insolation / facies.saturation_intensity
     x = water_depth * facies.extinction_coefficient
-    return x > 0.0 ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
+    return x > 0.0 ? gₘ * tanh(I * exp(-x)) : zero(typeof(gₘ))
 end
 
-production_rate(i, f, w) = benthic_production(i, f, w)
+benthic_production(i, f, w) = production_rate(i, f, w)
 
 function capped_production(f, insolation, water_depth, dt)
     clip_positive(x::T) where {T} = max(x, zero(T))
@@ -44,7 +44,7 @@ Pelagic facies do not participate in the CA.
 
 ``` {.julia #pelagic-production}
 function pelagic_production(insolation, facies, water_depth)
-    return quadgk(w -> benthic_production(insolation, facies, w), 0.0u"m", water_depth)[1]
+    return quadgk(w -> production_rate(insolation, facies, w), 0.0u"m", water_depth)[1]
 end
 ```
 
@@ -52,29 +52,26 @@ end
 module PelagicProductionPlot
 
 using CarboKitten
-using CarboKitten.Components.Production: benthic_production, pelagic_production
-using CarboKitten.ALCAP.Example: INPUT
+using CarboKitten.Production
 using CairoMakie
 
+@kwdef struct Input <: CarboKitten.AbstractInput
+    insolation = 400.0u"W/m^2"
+end
+
 function main()
-    water_depth = (0.01:1.0:70.0)u"m"
-    fig = Figure()
-    facies = [f for f in INPUT.facies if f.active]
+    water_depth = (0.01:0.1:50.0)u"m"
+    fig = Figure(size=(600,600))
+    input = Input()
 
-    ax_benthic = Axis(fig[1, 1], yreversed=true, title="benthic production", ylabel="depth [m]")
-    for f in facies
-        p = water_depth .|> (d -> benthic_production(INPUT.insolation, f, d))
-        lines!(ax_benthic, p |> in_units_of(u"m/Myr"),
-            water_depth |> in_units_of(u"m"), label = string(f.name))
+    ax = Axis(fig[1, 1], yreversed=true, ylabel="depth [m]", xlabel="production [m/Myr]")
+    for (k, prod) in pairs(Production.EXAMPLE)
+        f = production_profile(input, prod)
+        p = water_depth .|> (w -> f(input.insolation, w))
+        lines!(ax, p |> in_units_of(u"m/Myr"),
+            water_depth |> in_units_of(u"m"), label = string(k))
     end
-
-    ax_pelagic = Axis(fig[1, 2], yreversed=true, title="pelagic production")
-    for f in facies
-        p = water_depth .|> (d -> pelagic_production(INPUT.insolation, f, d))
-        lines!(ax_pelagic, p |> in_units_of(u"m^2/Myr"),
-            water_depth |> in_units_of(u"m"), label = string(f.name))
-    end
-    fig[1, 3] = Legend(fig, ax_benthic, "Facies")
+    fig[1, 2] = Legend(fig, ax, "Facies")
     fig
 end
 
@@ -155,7 +152,7 @@ end
 
 is_benthic(::PelagicProduction) = false
 is_pelagic(::PelagicProduction) = true
-production_profile(input::AbstractInput, p::PelagicProduction) = (I, w) -> pelagic_production_lookup(I, p, w)
+production_profile(input::AbstractInput, p::PelagicProduction) = pelagic_production_lookup(input, p)
 
 ```
 
@@ -206,12 +203,12 @@ We use `linear_interpolation` from `Interpolations` to compute production profil
 ``` {.julia #production-lookup}
 function pelagic_production_lookup(input::AbstractInput, prod::PelagicProduction)
     insolation_param = input.insolation
-    depth_grid = LinRange(0.0, prod.maximum_production_depth, prod.table_size[2])
+    depth_grid = LinRange(0.0, prod.maximum_production_depth |> in_units_of(u"m"), prod.table_size[2])
 
     if insolation_param isa Quantity
-        production_values = [pelagic_production(insolation_param, prod, w) for w in depth_grid]
+        production_values = [pelagic_production(insolation_param, prod, w * u"m") |> in_units_of(u"m/Myr") for w in depth_grid]
         interpolated = linear_interpolation(depth_grid, production_values, extrapolation_bc = Line())
-        return (I0, w) -> interpolated(w)
+        return (I0, w) -> interpolated(w |> in_units_of(u"m")) * u"m/Myr"
     end
 
     insolation_vec = if insolation_param isa AbstractVector
@@ -222,9 +219,15 @@ function pelagic_production_lookup(input::AbstractInput, prod::PelagicProduction
     end
     I_min, I_max = extrema(insolation_vec)
 
-    insolation_grid = LinRange(I_min, I_max, prod.table_size[1])
-    production_values = [pelagic_production(I, prod, w) for I in insolation_grid, w in depth_grid]
-    return linear_interpolation((insolation_grid, depth_grid), production_values, extrapolation_bc = Line())
+    insolation_grid = LinRange(
+        I_min |> in_units_of(u"W/m^2"),
+        I_max |> in_units_of(u"W/m^2"), prod.table_size[1])
+    production_values = [
+        pelagic_production(I, prod, w * u"m") |> in_units_of(u"m/Myr")
+        for I in insolation_grid, w in depth_grid
+    ]
+    interpolated = linear_interpolation((insolation_grid, depth_grid), production_values, extrapolation_bc = Line())
+    return (I0, w) -> interpolated(I0 |> in_units_of(u"W/m^2"), w |> in_units_of(u"m")) * u"m/Myr"
 end
 ```
 
@@ -242,11 +245,33 @@ using QuadGK
 using Interpolations
 
 import ..CarboKitten: AbstractInput, time_axis
+using ..Utility: in_units_of
+
+export production_profile
 
 <<component-production-rate>>
 <<pelagic-production>>
 <<production-profile>>
 <<production-lookup>>
+
+const EXAMPLE = Dict(
+    :euphotic => BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :oligophotic => BenthicProduction(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :aphotic => BenthicProduction(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :pelagic => PelagicProduction(
+        maximum_growth_rate=7.0u"1/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2")
+)
 
 end
 ```

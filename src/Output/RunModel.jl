@@ -29,7 +29,7 @@ function run_model(::Type{Model{M}}, input::AbstractInput, output::AbstractOutpu
     run_model(Model{M}, input, state) do w, df
         # write_frame chooses to advance in a dataset
         # or just to increment on the current frame
-        write_frame(w, df)
+        write_frame(w + 1, df)
         # write_state only writes one in every write_interval
         # and does no accumulation
         write_state(w + 1, state)

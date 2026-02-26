@@ -119,13 +119,13 @@ function add_data_set(out::H5Output, name::Symbol, spec::OutputSpec)
     attrs["write_interval"] = spec.write_interval
 
     HDF5.create_dataset(grp, "production", datatype(Float64),
-        dataspace(nf, size..., nw),
+        dataspace(nf, size..., nw + 1),
         chunk=(nf, size..., 1), deflate=3)
     HDF5.create_dataset(grp, "disintegration", datatype(Float64),
-        dataspace(nf, size..., nw),
+        dataspace(nf, size..., nw + 1),
         chunk=(nf, size..., 1), deflate=3)
     HDF5.create_dataset(grp, "deposition", datatype(Float64),
-        dataspace(nf, size..., nw),
+        dataspace(nf, size..., nw + 1),
         chunk=(nf, size..., 1), deflate=3)
     HDF5.create_dataset(grp, "sediment_thickness", datatype(Float64),
         dataspace(size..., nw + 1),

@@ -9,6 +9,24 @@ time_axis
 n_steps
 ```
 
+## Production
+
+```@autodocs
+Modules = [CarboKitten.Production]
+```
+
+## Transport
+
+```@autodocs
+Modules = [CarboKitten.Transport.Advection]
+```
+
+## Export
+
+```@autodocs
+Modules = [CarboKitten.Export]
+```
+
 ## Components
 
 ```@autodocs
@@ -27,18 +45,6 @@ Modules = [CarboKitten.Output.Abstract, CarboKitten.Output.H5Writer, CarboKitten
 Modules = [CarboKitten.Utility, CarboKitten.Stencil]
 ```
 
-## Export
-
-```@autodocs
-Modules = [CarboKitten.Export]
-```
-
-## Transport
-
-```@autodocs
-Modules = [CarboKitten.Transport.Advection]
-```
-
 ## Submodules
 
 ```@autodocs
@@ -55,6 +61,7 @@ Modules = [
   CarboKitten.Algorithms.EnumerateSeq,
   CarboKitten.Algorithms.Skeleton,
   CarboKitten.Algorithms.RangeFinder,
-  CarboKitten.Algorithms.StratigraphicColumn
+  CarboKitten.Algorithms.StratigraphicColumn,
+  CarboKitten.Algorithms.Romberg
 ]
 ```

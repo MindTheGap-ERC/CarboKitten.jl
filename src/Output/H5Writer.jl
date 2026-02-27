@@ -169,13 +169,18 @@ function frame_writer(input::AbstractInput, out::H5Output)
         try_write(tgt, ::Nothing, v) = ()
         function try_write(tgt, src::AbstractArray, v)
             size = axis_size.(v.slice, grid_size)
-            tgt[:, :, :, div(idx - 1, v.write_interval)+1] +=
+            if (idx==1)
+                tgt[:, :, :, 1] +=
                 (reshape(src[:, v.slice...], (n_f, size...)) |> in_units_of(u"m"))
+            else
+                tgt[:, :, :, div(idx - 2, v.write_interval) + 2] +=
+                    (reshape(src[:, v.slice...], (n_f, size...)) |> in_units_of(u"m"))
+            end
         end
 
         for (k, v) in input.output
-            n_writes = div(input.time.steps, v.write_interval)
-            if div(idx-1, v.write_interval) + 1 <= n_writes
+            n_writes = div(input.time.steps, v.write_interval) + 1
+            if div(idx-2, v.write_interval) + 2 <= n_writes
                 grp = out.fid[string(k)]
                 try_write(grp["production"], frame.production, v)
                 try_write(grp["disintegration"], frame.disintegration, v)

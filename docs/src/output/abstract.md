@@ -287,13 +287,18 @@ function frame_writer(input::AbstractInput, out)
     return function (idx::Int, frame::Frame)
         try_write(tgt, ::Nothing, k, v) = ()
         function try_write(write::F, src, k, v) where {F}
-            write(out, k, div(idx - 1, v.write_interval) + 1,
+            if (idx==1)
+                write(out, k, 1,
                 view(src, :, v.slice...))
+            else
+                write(out, k, div(idx - 2, v.write_interval) + 2,
+                view(src, :, v.slice...))
+            end
         end
 
         for (k, v) in input.output
-            n_writes = div(input.time.steps, v.write_interval)
-            if div(idx-1, v.write_interval) + 1 <= n_writes
+            n_writes = div(input.time.steps, v.write_interval) + 1
+            if div(idx-2, v.write_interval) + 2 <= n_writes
                 try_write(write_production, frame.production, k, v)
                 try_write(write_disintegration, frame.disintegration, k, v)
                 try_write(write_deposition, frame.deposition, k, v)

@@ -61,27 +61,38 @@ const filename = "testH5.h5"
             disintegration = dummy_data
         )
 
+        write_frame(1, ALCAP.initial_frame(input))
         for t = 1:input.time.steps
-            write_frame(t, inc)
+            write_frame(t+1, inc)
         end
 
         close(output.fid)
 
         @testset "size of output array" begin
             h5open(fpath, "r") do f
-                @test size(f["wi1"]["deposition"][])[4] == 10
-                @test size(f["wi2"]["deposition"][])[4] == 5
-                @test size(f["wi3"]["deposition"][])[4] == 3
-                @test size(f["wi4"]["deposition"][])[4] == 2
+                @test size(f["wi1"]["deposition"][])[4] == 10 + 1
+                @test size(f["wi2"]["deposition"][])[4] == 5 + 1
+                @test size(f["wi3"]["deposition"][])[4] == 3 + 1
+                @test size(f["wi4"]["deposition"][])[4] == 2 + 1
             end
         end
 
         @testset "frame written only every write_interval" begin
             h5open(fpath, "r") do f
-                @test all(f["wi1"]["deposition"][] .≈ attrs(f["wi1"])["write_interval"])
-                @test all(f["wi2"]["deposition"][] .≈ attrs(f["wi2"])["write_interval"])
-                @test all(f["wi3"]["deposition"][] .≈ attrs(f["wi3"])["write_interval"])
-                @test all(f["wi4"]["deposition"][] .≈ attrs(f["wi4"])["write_interval"])
+                println(f["wi3"]["deposition"][][:,:,:,1:end])
+                @test all(f["wi1"]["deposition"][][:,:,:,2:end] .≈ attrs(f["wi1"])["write_interval"])
+                @test all(f["wi2"]["deposition"][][:,:,:,2:end] .≈ attrs(f["wi2"])["write_interval"])
+                @test all(f["wi3"]["deposition"][][:,:,:,2:end] .≈ attrs(f["wi3"])["write_interval"])
+                @test all(f["wi4"]["deposition"][][:,:,:,2:end] .≈ attrs(f["wi4"])["write_interval"])
+            end
+        end
+
+        @testset "initial sediment frame is left empty when undefined" begin
+            h5open(fpath, "r") do f
+                @test all(f["wi1"]["deposition"][][:,:,:,1] .≈ 0.0)
+                @test all(f["wi2"]["deposition"][][:,:,:,1] .≈ 0.0)
+                @test all(f["wi3"]["deposition"][][:,:,:,1] .≈ 0.0)
+                @test all(f["wi4"]["deposition"][][:,:,:,1] .≈ 0.0)
             end
         end
     end

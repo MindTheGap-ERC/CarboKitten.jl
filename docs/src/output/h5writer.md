@@ -241,7 +241,16 @@ const DummyFacies = [
         maximum_growth_rate=0.0u"m/Myr",
         extinction_coefficient=0.0u"m^-1",
         saturation_intensity=0.0u"W/m^2",
-        diffusion_coefficient=0.0u"m/yr")]
+        diffusion_coefficient=0.0u"m/yr"),    
+    ALCAP.Facies(
+        viability_range = (0, 0),
+        activation_range = (0, 0),
+        maximum_growth_rate=0.0u"m/Myr",
+        extinction_coefficient=0.0u"m^-1",
+        saturation_intensity=0.0u"W/m^2",
+        diffusion_coefficient=0.0u"m/yr",
+        initial_sediment=3.0u"m"),
+        ]
 
 const input = ALCAP.Input(
     tag="test",
@@ -280,7 +289,7 @@ const filename = "testH5.h5"
         end
 
         # create a frame of ones to be the deposition etc. each time step
-        dummy_data = ones(Float64, 1, 5, 1) * u"m"
+        dummy_data = ones(Float64, 2, 5, 1) * u"m"
         inc = Frame(
             production = dummy_data,
             deposition = dummy_data,
@@ -305,22 +314,31 @@ const filename = "testH5.h5"
 
         @testset "frame written only every write_interval" begin
             h5open(fpath, "r") do f
-                println(f["wi3"]["deposition"][][:,:,:,1:end])
-                @test all(f["wi1"]["deposition"][][:,:,:,2:end] .≈ attrs(f["wi1"])["write_interval"])
-                @test all(f["wi2"]["deposition"][][:,:,:,2:end] .≈ attrs(f["wi2"])["write_interval"])
-                @test all(f["wi3"]["deposition"][][:,:,:,2:end] .≈ attrs(f["wi3"])["write_interval"])
-                @test all(f["wi4"]["deposition"][][:,:,:,2:end] .≈ attrs(f["wi4"])["write_interval"])
+                @test all(f["wi1"]["deposition"][][1,:,:,2:end] .≈ attrs(f["wi1"])["write_interval"])
+                @test all(f["wi2"]["deposition"][][1,:,:,2:end] .≈ attrs(f["wi2"])["write_interval"])
+                @test all(f["wi3"]["deposition"][][1,:,:,2:end] .≈ attrs(f["wi3"])["write_interval"])
+                @test all(f["wi4"]["deposition"][][1,:,:,2:end] .≈ attrs(f["wi4"])["write_interval"])
             end
         end
 
         @testset "initial sediment frame is left empty when undefined" begin
             h5open(fpath, "r") do f
-                @test all(f["wi1"]["deposition"][][:,:,:,1] .≈ 0.0)
-                @test all(f["wi2"]["deposition"][][:,:,:,1] .≈ 0.0)
-                @test all(f["wi3"]["deposition"][][:,:,:,1] .≈ 0.0)
-                @test all(f["wi4"]["deposition"][][:,:,:,1] .≈ 0.0)
+                @test all(f["wi1"]["deposition"][][1,:,:,1] .≈ 0.0)
+                @test all(f["wi2"]["deposition"][][1,:,:,1] .≈ 0.0)
+                @test all(f["wi3"]["deposition"][][1,:,:,1] .≈ 0.0)
+                @test all(f["wi4"]["deposition"][][1,:,:,1] .≈ 0.0)
             end
         end
+
+        @testset "initial sediment frame is present when defined" begin
+            h5open(fpath, "r") do f
+                @test all(f["wi1"]["deposition"][][2,:,:,1] .≈ 3.0)
+                @test all(f["wi2"]["deposition"][][2,:,:,1] .≈ 3.0)
+                @test all(f["wi3"]["deposition"][][2,:,:,1] .≈ 3.0)
+                @test all(f["wi4"]["deposition"][][2,:,:,1] .≈ 3.0)
+            end
+        end
+
     end
 end
 

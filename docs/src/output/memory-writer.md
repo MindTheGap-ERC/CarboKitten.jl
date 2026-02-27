@@ -290,7 +290,16 @@ const DummyFacies = [
         maximum_growth_rate=0.0u"m/Myr",
         extinction_coefficient=0.0u"m^-1",
         saturation_intensity=0.0u"W/m^2",
-        diffusion_coefficient=0.0u"m/yr")]
+        diffusion_coefficient=0.0u"m/yr"),
+    ALCAP.Facies(
+        viability_range = (0, 0),
+        activation_range = (0, 0),
+        maximum_growth_rate=0.0u"m/Myr",
+        extinction_coefficient=0.0u"m^-1",
+        saturation_intensity=0.0u"W/m^2",
+        diffusion_coefficient=0.0u"m/yr",
+        initial_sediment=3.0u"m")    
+        ]
 
 const input = ALCAP.Input(
     tag="test",
@@ -343,18 +352,26 @@ const input = ALCAP.Input(
     end
 
     @testset "frame written only every write_interval" begin
-        @test all(out.data_volumes[:wi1].deposition[:,:,:,2:end] .≈ out.data_volumes[:wi1].write_interval*1.0u"m")
-        @test all(out.data_volumes[:wi2].deposition[:,:,:,2:end] .≈ out.data_volumes[:wi2].write_interval*1.0u"m")
-        @test all(out.data_volumes[:wi3].deposition[:,:,:,2:end] .≈ out.data_volumes[:wi3].write_interval*1.0u"m")
-        @test all(out.data_volumes[:wi4].deposition[:,:,:,2:end] .≈ out.data_volumes[:wi4].write_interval*1.0u"m")
+        @test all(out.data_volumes[:wi1].deposition[1,:,:,2:end] .≈ out.data_volumes[:wi1].write_interval*1.0u"m")
+        @test all(out.data_volumes[:wi2].deposition[1,:,:,2:end] .≈ out.data_volumes[:wi2].write_interval*1.0u"m")
+        @test all(out.data_volumes[:wi3].deposition[1,:,:,2:end] .≈ out.data_volumes[:wi3].write_interval*1.0u"m")
+        @test all(out.data_volumes[:wi4].deposition[1,:,:,2:end] .≈ out.data_volumes[:wi4].write_interval*1.0u"m")
     end
 
-    @testset "initial sediment frame is empty" begin
-        @test all(out.data_volumes[:wi1].deposition[:,:,:,1] .≈ 0.0u"m")
-        @test all(out.data_volumes[:wi2].deposition[:,:,:,1] .≈ 0.0u"m")
-        @test all(out.data_volumes[:wi3].deposition[:,:,:,1] .≈ 0.0u"m")
-        @test all(out.data_volumes[:wi4].deposition[:,:,:,1] .≈ 0.0u"m")
+    @testset "initial sediment frame is left empty when undefined" begin
+        @test all(out.data_volumes[:wi1].deposition[1,:,:,1] .≈ 0.0u"m")
+        @test all(out.data_volumes[:wi2].deposition[1,:,:,1] .≈ 0.0u"m")
+        @test all(out.data_volumes[:wi3].deposition[1,:,:,1] .≈ 0.0u"m")
+        @test all(out.data_volumes[:wi4].deposition[1,:,:,1] .≈ 0.0u"m")
     end
+
+    @testset "initial sediment frame is present when defined" begin
+        @test all(out.data_volumes[:wi1].deposition[2,:,:,1] .≈ 3.0u"m")
+        @test all(out.data_volumes[:wi2].deposition[2,:,:,1] .≈ 3.0u"m")
+        @test all(out.data_volumes[:wi3].deposition[2,:,:,1] .≈ 3.0u"m")
+        @test all(out.data_volumes[:wi4].deposition[2,:,:,1] .≈ 3.0u"m")
+    end
+
 end
 
 end

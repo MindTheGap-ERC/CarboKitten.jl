@@ -302,7 +302,7 @@ Extract Stratigraphic Column (SC) from the data. Returns a `DataFrame` with
 function extract_sc(header::Header, data::DataColumn, label)
     n_facies = size(data.production)[1]
     DataFrame(
-        "timestep" => data.write_interval:data.write_interval:header.time_steps,
+        "timestep" => 0:data.write_interval:header.time_steps,
         ("sc_$(label)_f$(f)" => stratigraphic_column(header, data, f)
          for f in 1:n_facies)...)
 end

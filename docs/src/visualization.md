@@ -66,7 +66,7 @@ function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
     blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
     wd = zeros(Float64, length(header.axes.x), length(header.axes.t[1:wi:end]))
     blur(water_depth(header, data) / u"m", wd)
-    mag = zeros(Float64, length(header.axes.x), length(header.axes.t[1:wi:end]) - 1)
+    mag = zeros(Float64, length(header.axes.x), length(header.axes.t[1:wi:end]))
     blur(magnitude / u"m/Myr", mag)
 
     ax.ylabel = "time [Myr]"

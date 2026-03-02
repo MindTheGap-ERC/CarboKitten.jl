@@ -28,22 +28,21 @@ const HEADER1 = Header(
     subsidence_rate=10u"m/Myr",
     data_sets=Dict())
 
-const PRODUCTION1 = reshape(
-    hcat(ones(Amount, 10),
-        ones(Amount, 10),
-        cumsum(ones(Amount, 10)) / 5.5)',
-    1, 3, 1, 10)
+const PRODUCTION1 = cat(
+    reshape(zeros(Amount, 3),1,3,1),
+    reshape(hcat(ones(Amount, 10),
+            ones(Amount, 10),
+            cumsum(ones(Amount, 10)) / 5.5)',
+        1, 3, 1, 10); dims=4)
 
-const DISINTEGRATION1 = reshape(
-    hcat(zeros(Amount, 10),
+const DISINTEGRATION1 = cat(
+    reshape(zeros(Amount, 3),1,3,1),
+    reshape(hcat(zeros(Amount, 10),
         1:10 .|> (x -> x < 4 || x > 6 ? 0.0u"m" : 2.0u"m"),
-        zeros(Amount, 10))',
-    1, 3, 1, 10)
+        zeros(Amount, 10))', 1, 3, 1, 10); dims=4)
 
-const ELEVATION1 = cat(
-    [0.0, 0.0, 0.0]u"m",
-    cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :];
-    dims=3)
+const ELEVATION1 = 
+    cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :]
 
 const DATA1 = DataVolume(
     slice=(:,:),
@@ -81,9 +80,9 @@ const COLUMNS1 = [DATA1[loc...] for loc in GRID_LOCATIONS1]
     # ~/~ end
     # ~/~ begin <<docs/src/data-export.md#export-test>>[2]
     @testset "SC sum equals ADM" begin
-        @test [0.0u"m"; cumsum(sc.sc_1_f1)] ≈ adm.adm_1
-        @test [0.0u"m"; cumsum(sc.sc_2_f1)] ≈ adm.adm_2
-        @test [0.0u"m"; cumsum(sc.sc_3_f1)] ≈ adm.adm_3
+        @test cumsum(sc.sc_1_f1) ≈ adm.adm_1
+        @test cumsum(sc.sc_2_f1) ≈ adm.adm_2
+        @test cumsum(sc.sc_3_f1) ≈ adm.adm_3
     end
     # ~/~ end
     @testset "Write to folder" begin

@@ -23,11 +23,13 @@ function run_model(::Type{Model{M}}, input::AbstractInput, output::AbstractOutpu
         add_data_set(output, k, v)
     end
     write_state(1, state)
+    # also write any initial sediment to output
+    write_frame(1, M.initial_frame(input))
 
     run_model(Model{M}, input, state) do w, df
         # write_frame chooses to advance in a dataset
         # or just to increment on the current frame
-        write_frame(w, df)
+        write_frame(w + 1, df)
         # write_state only writes one in every write_interval
         # and does no accumulation
         write_state(w + 1, state)

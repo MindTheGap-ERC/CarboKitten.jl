@@ -163,10 +163,11 @@ Compute the water depth function for the given data set.
 function water_depth(header::Header, data::Data{F, D}) where {F, D}
     na = [CartesianIndex()]
     delta_t = header.axes.t[1:data.write_interval:end] .- header.axes.t[1]
-    return header.sea_level[repeated(na, D-1)..., 1:data.write_interval:end] .-
-        header.initial_topography[data.slice..., na] .-
-        data.sediment_thickness .+
-        header.subsidence_rate .* delta_t[repeated(na, D-1)..., :]
+    sl = header.sea_level[1:data.write_interval:end]
+    h0 = header.initial_topography[data.slice..., na]
+    Δh = data.sediment_thickness
+    Σ = header.subsidence_rate .* delta_t[repeated(na, D-1)..., :]
+    return sl[repeated(na, D-1)...,:] .- h0 .- Δh .+ Σ
 end
 
 """
@@ -287,13 +288,18 @@ function frame_writer(input::AbstractInput, out)
     return function (idx::Int, frame::Frame)
         try_write(tgt, ::Nothing, k, v) = ()
         function try_write(write::F, src, k, v) where {F}
-            write(out, k, div(idx - 1, v.write_interval) + 1,
+            if (idx==1)
+                write(out, k, 1,
                 view(src, :, v.slice...))
+            else
+                write(out, k, div(idx - 2, v.write_interval) + 2,
+                view(src, :, v.slice...))
+            end
         end
 
         for (k, v) in input.output
-            n_writes = div(input.time.steps, v.write_interval)
-            if div(idx-1, v.write_interval) + 1 <= n_writes
+            n_writes = div(input.time.steps, v.write_interval) + 1
+            if div(idx-2, v.write_interval) + 2 <= n_writes
                 try_write(write_production, frame.production, k, v)
                 try_write(write_disintegration, frame.disintegration, k, v)
                 try_write(write_deposition, frame.deposition, k, v)
@@ -327,11 +333,13 @@ function run_model(::Type{Model{M}}, input::AbstractInput, output::AbstractOutpu
         add_data_set(output, k, v)
     end
     write_state(1, state)
+    # also write any initial sediment to output
+    write_frame(1, M.initial_frame(input))
 
     run_model(Model{M}, input, state) do w, df
         # write_frame chooses to advance in a dataset
         # or just to increment on the current frame
-        write_frame(w, df)
+        write_frame(w + 1, df)
         # write_state only writes one in every write_interval
         # and does no accumulation
         write_state(w + 1, state)

@@ -60,6 +60,8 @@ const INPUT = ALCAP.Input(
     disintegration_rate=50.0u"m/Myr",
     lithification_time=100.0u"yr",
     # disintegration_transfer=p->[0.0u"m", 0.0u"m", 0.0u"m", p[1]+p[4], p[2]+p[5], p[3]+p[6]],
+    disintegration_transfer=p->stack((0.0.*p[1,:,:], 0.0.*p[2,:,:], 0.0.*p[3,:,:],
+                               p[1,:,:].+p[4,:,:], p[2,:,:].+p[5,:,:], p[3,:,:].+p[6,:,:]), dims=1),
     insolation=400.0u"W/m^2",
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",
@@ -172,6 +174,13 @@ function initial_state(input::AbstractInput)
 
     InitialSediment.push_initial_sediment!(input, state)
     return state
+end
+
+function initial_frame(input::Input)
+    dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
+    return Frame(production=zeros(Sediment,size(dep)), 
+                  disintegration=zeros(Sediment,size(dep)),
+                  deposition=dep)
 end
 
 function step!(input::Input)

@@ -28,22 +28,21 @@ const HEADER1 = Header(
     subsidence_rate=10u&quot;m/Myr&quot;,
     data_sets=Dict())
 
-const PRODUCTION1 = reshape(
-    hcat(ones(Amount, 10),
-        ones(Amount, 10),
-        cumsum(ones(Amount, 10)) / 5.5)&#39;,
-    1, 3, 1, 10)
+const PRODUCTION1 = cat(
+    reshape(zeros(Amount, 3),1,3,1),
+    reshape(hcat(ones(Amount, 10),
+            ones(Amount, 10),
+            cumsum(ones(Amount, 10)) / 5.5)&#39;,
+        1, 3, 1, 10); dims=4)
 
-const DISINTEGRATION1 = reshape(
-    hcat(zeros(Amount, 10),
+const DISINTEGRATION1 = cat(
+    reshape(zeros(Amount, 3),1,3,1),
+    reshape(hcat(zeros(Amount, 10),
         1:10 .|&gt; (x -&gt; x &lt; 4 || x &gt; 6 ? 0.0u&quot;m&quot; : 2.0u&quot;m&quot;),
-        zeros(Amount, 10))&#39;,
-    1, 3, 1, 10)
+        zeros(Amount, 10))&#39;, 1, 3, 1, 10); dims=4)
 
-const ELEVATION1 = cat(
-    [0.0, 0.0, 0.0]u&quot;m&quot;,
-    cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :];
-    dims=3)
+const ELEVATION1 = 
+    cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :]
 
 const DATA1 = DataVolume(
     slice=(:,:),
@@ -134,9 +133,9 @@ function stratigraphic_column(header::Header, column::DataColumn, facies::Int)
 
 	return delta
 end</code></pre><p>The stratigraphic column should sum to the age-depth model.</p><div class="noweb-label">⪡export-test⪢≣</div><pre><code class="language- julia hljs">@testset &quot;SC sum equals ADM&quot; begin
-    @test [0.0u&quot;m&quot;; cumsum(sc.sc_1_f1)] ≈ adm.adm_1
-    @test [0.0u&quot;m&quot;; cumsum(sc.sc_2_f1)] ≈ adm.adm_2
-    @test [0.0u&quot;m&quot;; cumsum(sc.sc_3_f1)] ≈ adm.adm_3
+    @test cumsum(sc.sc_1_f1) ≈ adm.adm_1
+    @test cumsum(sc.sc_2_f1) ≈ adm.adm_2
+    @test cumsum(sc.sc_3_f1) ≈ adm.adm_3
 end</code></pre><h2 id="Dispatch"><a class="docs-heading-anchor" href="#Dispatch">Dispatch</a><a id="Dispatch-1"></a><a class="docs-heading-anchor-permalink" href="#Dispatch" title="Permalink"></a></h2><div class="noweb-label">⪡export-function⪢≣</div><pre><code class="language- julia hljs">struct CSVExportTrait{S} end
 
 &quot;&quot;&quot;
@@ -228,7 +227,7 @@ Extract Stratigraphic Column (SC) from the data. Returns a `DataFrame` with
 function extract_sc(header::Header, data::DataColumn, label)
     n_facies = size(data.production)[1]
     DataFrame(
-        &quot;timestep&quot; =&gt; data.write_interval:data.write_interval:header.time_steps,
+        &quot;timestep&quot; =&gt; 0:data.write_interval:header.time_steps,
         (&quot;sc_$(label)_f$(f)&quot; =&gt; stratigraphic_column(header, data, f)
          for f in 1:n_facies)...)
 end
@@ -435,4 +434,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../output/memory-writer/">« Output to Memory</a><a class="docs-footer-nextpage" href="../debugging/">Trouble shooting and diagnostics »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Wednesday 25 February 2026 11:47">Wednesday 25 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../output/memory-writer/">« Output to Memory</a><a class="docs-footer-nextpage" href="../debugging/">Trouble shooting and diagnostics »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Monday 2 March 2026 17:56">Monday 2 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

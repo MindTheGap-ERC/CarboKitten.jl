@@ -163,10 +163,11 @@ Compute the water depth function for the given data set.
 function water_depth(header::Header, data::Data{F, D}) where {F, D}
     na = [CartesianIndex()]
     delta_t = header.axes.t[1:data.write_interval:end] .- header.axes.t[1]
-    return header.sea_level[repeated(na, D-1)..., 1:data.write_interval:end] .-
-        header.initial_topography[data.slice..., na] .-
-        data.sediment_thickness .+
-        header.subsidence_rate .* delta_t[repeated(na, D-1)..., :]
+    sl = header.sea_level[1:data.write_interval:end]
+    h0 = header.initial_topography[data.slice..., na]
+    Δh = data.sediment_thickness
+    Σ = header.subsidence_rate .* delta_t[repeated(na, D-1)..., :]
+    return sl[repeated(na, D-1)...,:] .- h0 .- Δh .+ Σ
 end
 
 """

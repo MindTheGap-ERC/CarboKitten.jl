@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/models/ca-with-production.md#src/Models/CAP.jl>>[init]
 @compose module CAP
-@mixin Tag, Diagnostics, Output, CAProduction
+@mixin Tag, Diagnostics, Output, CAProduction, InitialSediment
 
 using ..Common
 using ..CAProduction: production
@@ -18,9 +18,19 @@ function initial_state(input::Input)
     end
 
     sediment_height = zeros(Height, input.box.grid_size...)
-    return State(
+    state = State(
         step=0, sediment_height=sediment_height,
         ca=ca_state.ca, ca_priority=ca_state.ca_priority)
+
+    InitialSediment.push_initial_sediment!(input, state)
+    return state
+end
+
+function initial_frame(input::Input)
+    dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
+    return Frame(production=zeros(Sediment,size(dep)), 
+                  disintegration=zeros(Sediment,size(dep)),
+                  deposition=dep)
 end
 
 function step!(input::Input)

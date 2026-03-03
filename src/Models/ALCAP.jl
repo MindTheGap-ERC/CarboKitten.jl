@@ -31,6 +31,13 @@ function initial_state(input::AbstractInput)
     return state
 end
 
+function initial_frame(input::Input)
+    dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
+    return Frame(production=zeros(Sediment,size(dep)), 
+                  disintegration=zeros(Sediment,size(dep)),
+                  deposition=dep)
+end
+
 function step!(input::Input)
     step_ca! = CellularAutomaton.step!(input)
     disintegrate! = ActiveLayer.disintegrator(input)

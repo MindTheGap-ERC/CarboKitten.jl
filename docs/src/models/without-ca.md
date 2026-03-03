@@ -4,7 +4,7 @@ The following model is similar to the ALCAP model, with the exception that produ
 
 ``` {.julia file=src/Models/WithoutCA.jl}
 @compose module WithoutCA
-@mixin Tag, Diagnostics, Output, Production, ActiveLayer
+@mixin Tag, Diagnostics, Output, Production, ActiveLayer, InitialSediment
 
 using ..Common
 using ..Production: uniform_production
@@ -19,7 +19,16 @@ function initial_state(input::Input)
     sediment_height = zeros(Height, input.box.grid_size...)
     sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
     active_layer = zeros(Amount, n_facies(input), input.box.grid_size...)
-    return State(step=0, sediment_height=sediment_height, sediment_buffer=sediment_buffer, active_layer=active_layer)
+    state = State(step=0, sediment_height=sediment_height, sediment_buffer=sediment_buffer, active_layer=active_layer)
+    InitialSediment.push_initial_sediment!(input, state)
+    return state
+end
+
+function initial_frame(input::Input)
+    dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
+    return Frame(production=zeros(Sediment,size(dep)), 
+                  disintegration=zeros(Sediment,size(dep)),
+                  deposition=dep)
 end
 
 function step!(input::Input)

@@ -32,5 +32,11 @@
         state.sediment_height .+= sum(s; dims=1)[1,:,:]
     end
     # ~/~ end
+
+    function write_header(input::AbstractInput, output::AbstractOutput)
+        for (i,f) in enumerate(input.facies)
+            set_attribute(output, "facies$(i)/initial_sediment", initial_sediment(input.box, f) |> in_units_of(u"m"))
+        end
+    end
 end
 # ~/~ end

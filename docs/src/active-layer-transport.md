@@ -118,6 +118,151 @@ end
 end
 ```
 
+### Diffusivity
+
+The diffusivity parameter used in CarboKitten is expressed in $\unit{m/Myr}$, because it is derived from the parameter $\nu_f$, transport velocity, that is expressed per unit slope. It is not the same as molecular-like diffusion coefficient, which have units $\unit{m^2/Myr}$. CarboKitten separates sediment lithification (`cementation_time`), disintegration (`disintegration_rate`) and transport on the slope. It also allows defining different wave velocity profiles by users. As a result, diffusivity set as a parameter differs from the diffusion coefficients reported in the literature. The effective diffusion coefficient of a given facies can be estimated for a given facies. In the example below, facies are assigned diffusivities that are relative to a minimum diffusivity, set to be 2.5 m/Myr, and the most mobile facies is assigned a quadruple of this value. Estimates of diffusion coefficients for these values have been obtained based on @hidding_carbokittenjl_2025.
+
+|          | Diffusivity $\unit{m/Myr}$ | Effective diffusion coefficient $\unit{m^2/Myr}$ |
+|----------|----------------------------|--------------------------------------------------|
+| Facies 1 | 10                         | 326 668                                          |
+| Facies 2 | 2.5                        | 80 461                                           |
+| Facies 3 | 5                          | 15 6904                                          |
+
+All other parameters held similar, diffusivity values below 2.5 m/Myr will result in a largely immobile facies at the timescale of $10^6$ yr. 
+
+```@raw html
+<details><summary>Example effect of diffusivity</summary>
+```
+
+``` {.julia file=examples/model/diffusivity/alcap_diffusivity.jl}
+module Diffusivity_example
+
+using Unitful
+using CarboKitten
+using CarboKitten.Export: read_slice, data_export, CSV
+
+const PATH = "data/output"
+
+const TAG = "diffusivity-example"
+
+cost min_diffusivity = 2.5u"m/yr"
+
+const FACIES = [
+    ALCAP.Facies(
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2",
+        diffusion_coefficient=4*min_diffusivity,
+        name="euphotic"),
+    ALCAP.Facies(
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2",
+        diffusion_coefficient=min_diffusivity,
+        name="oligophotic"),
+    ALCAP.Facies(
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2",
+        diffusion_coefficient=2*min_diffusivity,
+        name="aphotic"),
+
+    ALCAP.Facies(
+        active=false,
+        diffusion_coefficient=10.0u"m/yr",
+        name="euphotic transported"),
+    ALCAP.Facies(
+        active=false,
+        diffusion_coefficient=1.0u"m/yr",
+        name="oligophotic transported"),
+    ALCAP.Facies(
+        active=false,
+        diffusion_coefficient=5.0u"m/yr",
+        name="aphotic transported")
+]
+
+const PERIOD = 0.2u"Myr"
+const AMPLITUDE = 4.0u"m"
+
+const INPUT = ALCAP.Input(
+    tag="$TAG",
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    time=TimeProperties(
+        Δt=0.0002u"Myr",
+        steps=5000),
+    output=Dict(
+        :topography => OutputSpec(slice=(:,:), write_interval=10),
+        :profile => OutputSpec(slice=(:, 25), write_interval=1)),
+    ca_interval=1,
+    initial_topography=(x, y) -> -x / 300.0,
+    sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
+    subsidence_rate=50.0u"m/Myr",
+    cementation_time = 5000u"yr",
+    disintegration_rate=5.0u"m/Myr",
+    disintegration_transfer = f -> stack((0.0.*f[1,:,:], 0.0.*f[2,:,:], 0.0.*f[3,:,:],
+                                      f[1,:,:].+f[4,:,:], f[2,:,:].+f[5,:,:], f[3,:,:].+f[6,:,:]), dims=1),
+    insolation=400.0u"W/m^2",
+    sediment_buffer_size=2,
+    depositional_resolution=0.5u"m",
+    facies=FACIES)
+
+function main()
+    run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+end
+
+end
+
+Diffusivity_example.main()
+
+```
+```@raw html
+</details>
+```
+
+![Effects of differences in diffusivity on facies distribution in an example of the ALCAP model](fig/diffusivity-alternative.png)
+
+
+```@raw html
+<details><summary>Proportion of transported facies 1 to all sediment</summary>
+```
+``` {.julia file=examples/model/diffusivity/plot_transported_fraction.jl}
+module Transported_fraction
+using GLMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: profile_plot!
+
+function main()
+    (header, slice) = read_slice("data/output/diffusivity-example.h5", :profile)
+    fig = Figure()
+    ax = Axis(fig[1, 1])
+
+    x = header.axes.x
+#    t = header.axes.t
+
+    plot = profile_plot!(x -> x[4]/sum(x), ax, header, slice; colorrange=(0, 0.1))
+    Colorbar(fig[1, 2], plot; label=L"f_1transported / f_{total}")
+
+    save("docs/src/_fig/transported_fraction4.png", fig)
+    fig
+end
+end
+
+Transported_fraction.main()
+```
+```@raw html
+</details>
+```
+
+In this example, facies 1 has the highest diffusivity, but is mostly deposited on a gentle slope, so not much of it actually gets transported. This is easier to spot when presented as its proportion to all facies.
+
+![Proportion of transported facies 1 (highest diffusivity) to all facies](fig/transported_fraction4.png)
+
 ## Test 1: production transport
 
 Suppose we have an incline in one direction, as per usual on a coastal slice. Production is happening in a circular patch in our box, with constant rate. In addition, we'll release the top 1m of sediment for further transport.
@@ -1078,128 +1223,3 @@ The following tests that we see the expected behaviours both without an intertid
     @test output2[50:70] ≈ output2[90:110] atol=0.01u"m"
 end
 ```
-
-## Empirically justified diffusion coefficients
-
-Kaufman et al.'s (1991) depth-dependent diffusion algorithm incorporates wave velocity profile and sediment transport:
-
-$$D_{Kaufman}(W) = C_0 × \exp(-C_1 × W)$$
-
-where $C_0 = 0.005 m^2 / Myr$ for carbonates and $C_1$ values considered are 0.05 and 0.1 $m^{-1}$.
-
-$D_{Kaufman}$ is an effective diffusion coefficient that already accounts for the wave velocity profile and implicitly assumes uniform sediment availability.
-
-CarboKitten's transport equation:
-
-$${{\partial \eta_f(x)}\over{\partial t}} = {\bf \nabla_x} \cdot \big[ \nu_f \alpha_f\ P_f(x)\ {\bf \nabla_x} \eta_{*}(x) \big] + P_f(x),$$
-
-separates molecular-like diffusion from the production, facies-specific parameters $\alpha_f$ and wave velocity and shear as functions of water depth. In $D_{Kaufman}$ these terms are combined, therefore they cannot be directly applied here. However, these values are not well rooted in empirical observations and are mostly validated by obtaining realistic platform shapes in a different forward model.
-
-Estimation of effective diffusion coefficient in CarboKitten yields values many orders of magnitude higher than the 0.005 $m^2/Myr$ reported by Kaufman et al. (1990). For runs of the order of 1 Myr diffusivity values below 2.5 $m/Myr$ are so low that an estimation of effective $D$ is impossible for most values of cementation time and disintegration rate: the sediment simply does not move noticeably at values lower than this treshold.
-As a result, diffusivity values below 2.5 m/Myr will result in essentially immobile facies at the timescale of $10^6$ yr and we propose setting diffusivity values of each facies type relative to this minimal value. 
-
-```@raw html
-<details><summary>Example effect of diffusivity</summary>
-```
-
-``` {.julia file=examples/model/diffusivity/alcap_diffusivity.jl}
-module Diffusivity_example
-
-using Unitful
-using CarboKitten
-using CarboKitten.Export: read_slice, data_export, CSV
-
-const PATH = "data/output"
-
-const TAG = "diffusivity-example"
-
-cost min_diffusivity = 2.5u"m/yr"
-
-const FACIES = [
-    ALCAP.Facies(
-        viability_range = (4, 10),
-        activation_range = (6, 10),
-        maximum_growth_rate=500u"m/Myr",
-        extinction_coefficient=0.8u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=4*min_diffusivity,
-        name="euphotic"),
-    ALCAP.Facies(
-        viability_range = (4, 10),
-        activation_range = (6, 10),
-        maximum_growth_rate=400u"m/Myr",
-        extinction_coefficient=0.1u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=min_diffusivity,
-        name="oligophotic"),
-    ALCAP.Facies(
-        viability_range = (4, 10),
-        activation_range = (6, 10),
-        maximum_growth_rate=100u"m/Myr",
-        extinction_coefficient=0.005u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=2*min_diffusivity,
-        name="aphotic"),
-
-    ALCAP.Facies(
-        active=false,
-        diffusion_coefficient=10.0u"m/yr",
-        name="euphotic transported"),
-    ALCAP.Facies(
-        active=false,
-        diffusion_coefficient=1.0u"m/yr",
-        name="oligophotic transported"),
-    ALCAP.Facies(
-        active=false,
-        diffusion_coefficient=5.0u"m/yr",
-        name="aphotic transported")
-]
-
-const PERIOD = 0.2u"Myr"
-const AMPLITUDE = 4.0u"m"
-
-const INPUT = ALCAP.Input(
-    tag="$TAG",
-    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
-    time=TimeProperties(
-        Δt=0.0002u"Myr",
-        steps=5000),
-    output=Dict(
-        :topography => OutputSpec(slice=(:,:), write_interval=10),
-        :profile => OutputSpec(slice=(:, 25), write_interval=1)),
-    ca_interval=1,
-    initial_topography=(x, y) -> -x / 300.0,
-    sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
-    subsidence_rate=50.0u"m/Myr",
-    cementation_time = 5000u"yr",
-    disintegration_rate=5.0u"m/Myr",
-    disintegration_transfer=p->[0.0u"m", 0.0u"m", 0.0u"m", p[1]+p[4], p[2]+p[5], p[3]+p[6]],
-    insolation=400.0u"W/m^2",
-    sediment_buffer_size=2,
-    depositional_resolution=0.5u"m",
-    facies=FACIES)
-
-function main()
-    run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
-    header, profile = read_slice("$(PATH)/$(TAG).h5", :profile)
-    columns = [profile[i] for i in 10:20:70]
-    data_export(
-        CSV(:sediment_accumulation_curve => "$(PATH)/$(TAG)_sac.csv",
-            :age_depth_model => "$(PATH)/$(TAG)_adm.csv",
-            :stratigraphic_column => "$(PATH)/$(TAG)_sc.csv",
-            :water_depth => "$(PATH)/$(TAG)_wd.csv",
-            :metadata => "$(PATH)/$(TAG).toml"),
-         header,
-         columns)
-end
-
-end
-
-Diffusivity_example.main()
-
-```
-```@raw html
-</details>
-```
-
-#

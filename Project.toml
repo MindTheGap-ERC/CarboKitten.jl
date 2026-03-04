@@ -1,6 +1,6 @@
 name = "CarboKitten"
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
-version = "0.5.3"
+version = "0.6.0"
 authors = ["Johan Hidding <j.hidding@esciencecenter.nl>"]
 
 [deps]

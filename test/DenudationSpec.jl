@@ -20,9 +20,10 @@ using Unitful
     MODEL1 = [
         Facies(viability_range = (4, 10),
         activation_range = (6, 10),
-        maximum_growth_rate = 500u"m/Myr",
-        extinction_coefficient = 0.8u"m^-1",
-        saturation_intensity = 60u"W/m^2",
+        production = BenthicProduction(
+            maximum_growth_rate = 500u"m/Myr",
+            extinction_coefficient = 0.8u"m^-1",
+            saturation_intensity = 60u"W/m^2"),
         diffusion_coefficient=50u"m/yr",
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
@@ -31,9 +32,10 @@ using Unitful
 
         Facies(viability_range = (4, 10),
         activation_range = (6, 10),
-        maximum_growth_rate = 400u"m/Myr",
-        extinction_coefficient = 0.1u"m^-1",
-        saturation_intensity = 60u"W/m^2",
+        production = BenthicProduction(
+            maximum_growth_rate = 400u"m/Myr",
+            extinction_coefficient = 0.1u"m^-1",
+            saturation_intensity = 60u"W/m^2"),
         diffusion_coefficient= 50u"m/yr",
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
@@ -42,9 +44,10 @@ using Unitful
 
         Facies(viability_range = (4, 10),
         activation_range = (6, 10),
-        maximum_growth_rate = 100u"m/Myr",
-        extinction_coefficient = 0.005u"m^-1",
-        saturation_intensity = 60u"W/m^2",
+        production = BenthicProduction(
+            maximum_growth_rate = 100u"m/Myr",
+            extinction_coefficient = 0.005u"m^-1",
+            saturation_intensity = 60u"W/m^2"),
         diffusion_coefficient= 50u"m/yr",
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",

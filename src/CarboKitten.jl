@@ -81,6 +81,7 @@ Retrieve the time values for which output was/will be written. Returns a range.
 """
 time_axis(time::TimeProperties) = (0:n_writes(time)) .* time.Δt .+ time.t0
 
+
 module Algorithms
 include("./Algorithms/RangeFinder.jl")
 import .RangeFinder: find_ranges
@@ -90,6 +91,8 @@ include("./Algorithms/StratigraphicColumn.jl")
 import .StratigraphicColumn: stratigraphic_column!
 include("./Algorithms/Skeleton.jl")
 import .Skeleton: skeleton
+include("./Algorithms/Romberg.jl")
+import .Romberg: romberg
 end
 
 include("./BoundaryTrait.jl")
@@ -100,6 +103,7 @@ include("./Stencil.jl")
 include("./SedimentStack.jl")
 include("./Utility.jl")
 include("./DataSets.jl")
+include("./Production.jl")
 
 include("./RunModel.jl")
 
@@ -149,11 +153,13 @@ using .Output.Abstract: OutputSpec, new_output
 using .Output.MemoryWriter: MemoryOutput
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
+using .Production: BenthicProduction, PelagicProduction
 using GeometryBasics: Vec2
 
 export run_model, Box, box_axes, TimeProperties, time_axis,
     Model, BS92, CAP, ALCAP, in_units_of, @u_str,
     AbstractBox, Boundary, Coast, Periodic, Reflected,
-    Vec2, OutputSpec, MemoryOutput, new_output, n_steps
+    Vec2, OutputSpec, MemoryOutput, new_output, n_steps,
+    BenthicProduction, PelagicProduction
 
 end # module CarboKitten

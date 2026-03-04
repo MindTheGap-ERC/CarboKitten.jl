@@ -9,7 +9,7 @@ using ..WaterDepth: water_depth
 using ...Output: Frame
 using ModuleMixins: @for_each
 
-export Input, Facies
+export Input, Facies, BenthicProduction, PelagicProduction
 
 function initial_state(input::AbstractInput)
     ca_state = CellularAutomaton.initial_state(input)
@@ -45,7 +45,7 @@ function step!(input::Input)
     transport! = ActiveLayer.transporter(input)
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
-    pf = cementation_factor(input)
+    pf = lithification_factor(input)
     dtf = input.disintegration_transfer
     debug = input.diagnostics
 

@@ -4,21 +4,29 @@
 using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
+using ...Production: NoProduction
+import ...Production: production_profile, is_benthic, is_pelagic, capped_production
+
 using HDF5
+using QuadGK
+using Interpolations
 using Logging
 
-export production_rate, capped_production, uniform_production
+export uniform_production
 
-@kwdef struct Facies <: AbstractFacies
-    maximum_growth_rate::Rate = 0.0u"m/Myr"
-    extinction_coefficient::typeof(1.0u"m^-1") = 0.0u"m^-1"
-    saturation_intensity::Intensity = 1.0u"W/m^2"
-end
-
+# ~/~ begin <<docs/src/components/production.md#production-input>>[init]
 @kwdef struct Input <: AbstractInput
     insolation
 end
 
+@kwdef struct Facies <: AbstractFacies
+    production = NoProduction()
+end
+
+is_benthic(facies::AbstractFacies) = is_benthic(facies.production)
+is_pelagic(facies::AbstractFacies) = is_pelagic(facies.production)
+# ~/~ end
+# ~/~ begin <<docs/src/components/production.md#production-insolation>>[init]
 function insolation(input::AbstractInput)
     insolation = input.insolation
     tprop = input.time
@@ -35,6 +43,7 @@ function insolation(input::AbstractInput)
         return insolation(t)
     end
 end
+# ~/~ end
 
 function write_header(input::AbstractInput, output::AbstractOutput)
     if input.insolation isa Quantity
@@ -50,25 +59,20 @@ function write_header(input::AbstractInput, output::AbstractOutput)
     end
 
     for (i, f) in enumerate(input.facies)
-        set_attribute(output, "facies$(i)/maximum_growth_rate", f.maximum_growth_rate |> in_units_of(u"m/Myr"))
-        set_attribute(output, "facies$(i)/extinction_coefficient", f.extinction_coefficient |> in_units_of(u"m^-1"))
-        set_attribute(output, "facies$(i)/saturation_intensity", f.saturation_intensity |> in_units_of(u"W/m^2"))
+        p = f.production
+        if is_pelagic(p)
+            set_attribute(output, "facies$(i)/type", "pelagic")
+            set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"1/Myr"))
+            set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
+            set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
+        elseif is_benthic(p)
+            set_attribute(output, "facies$(i)/type", "benthic")
+            set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"m/Myr"))
+            set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
+            set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
+        end
     end
 end
-
-# ~/~ begin <<docs/src/components/production.md#component-production-rate>>[init]
-function production_rate(insolation, facies, water_depth)
-    gₘ = facies.maximum_growth_rate
-    I = insolation / facies.saturation_intensity
-    x = water_depth * facies.extinction_coefficient
-    return x > 0.0 ? gₘ * tanh(I * exp(-x)) : 0.0u"m/Myr"
-end
-
-function capped_production(insolation, facies, water_depth, dt)
-    p = production_rate(insolation, facies, water_depth) * dt
-    return min(p, max(0.0u"m", water_depth))
-end
-# ~/~ end
 
 function uniform_production(input::AbstractInput)
     w = water_depth(input)
@@ -76,13 +80,15 @@ function uniform_production(input::AbstractInput)
     insolation_func = insolation(input)
     facies = input.facies
     dt = input.time.Δt
+    production_rates = [production_profile(input, f.production) for f in facies]
 
     p(state::AbstractState, wd::AbstractMatrix) =
-        capped_production.(insolation_func(state), facies[:, na, na], wd[na, :, :], dt)
+        capped_production.(production_rates[:, na, na], insolation_func(state), wd[na, :, :], dt)
 
     p(state::AbstractState) = p(state, w(state))
 
     return p
 end
+
 end
 # ~/~ end

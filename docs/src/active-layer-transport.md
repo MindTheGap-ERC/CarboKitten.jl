@@ -553,10 +553,7 @@ transport_test_input(;
 		facies = [ALCAP.Facies(
 			initial_sediment = initial_sediment,
 			diffusion_coefficient = diffusion_coefficient,
-			wave_velocity = wave_velocity,
-			maximum_growth_rate = 0.0u"m/Myr",
-			extinction_coefficient = 0.8u"m^-1",
-			saturation_intensity = 60u"W/m^2"
+			wave_velocity = wave_velocity
 		)],
 		disintegration_rate = disintegration_rate,
 		initial_topography = initial_topography,
@@ -727,7 +724,7 @@ CarboKitten.Components.ActiveLayer
 @compose module ActiveLayer
 @mixin WaterDepth, FaciesBase, SedimentBuffer
 
-export disintegrator, transporter, cementation_factor
+export disintegrator, transporter, lithification_factor
 
 using ..Common
 using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
@@ -748,7 +745,7 @@ end
     intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
     disintegration_transfer::Function = x -> x
-    cementation_time::Union{typeof(1.0u"Myr"),Nothing} = nothing
+    lithification_time::Union{typeof(1.0u"Myr"),Nothing} = nothing
     transport_solver = Val{:forward_euler}
     transport_substeps = :adaptive
     save_active_layer::Bool = false
@@ -761,11 +758,11 @@ transport_solver(f, _) = f
 transport_solver(::Type{Val{:RK4}}, box) = runge_kutta_4(typeof(1.0u"m"), box)
 transport_solver(::Type{Val{:forward_euler}}, _) = forward_euler
 
-function cementation_factor(input::AbstractInput)
-    if input.cementation_time === nothing
+function lithification_factor(input::AbstractInput)
+    if input.lithification_time === nothing
         return 1.0
     else
-        return 1.0 - exp(input.time.Δt * log(1 / 2) / input.cementation_time)
+        return 1.0 - exp(input.time.Δt * log(1 / 2) / input.lithification_time)
     end
 end
 
@@ -907,8 +904,8 @@ end
 function write_header(input::AbstractInput, output::AbstractOutput)
     set_attribute(output, "intertidal_zone", input.intertidal_zone |> in_units_of(u"m"))
     set_attribute(output, "disintegration_rate", input.disintegration_rate |> in_units_of(u"m/Myr"))
-    if input.cementation_time !== nothing
-        set_attribute(output, "cementation_time", input.cementation_time |> in_units_of(u"Myr"))
+    if input.lithification_time !== nothing
+        set_attribute(output, "lithification_time", input.lithification_time |> in_units_of(u"Myr"))
     end
 end
 
@@ -966,7 +963,7 @@ function run()
 
         subsidence_rate=50.0u"m/Myr",
         disintegration_rate=100.0u"m/Myr",
-        cementation_time=50.0u"yr",
+        lithification_time=50.0u"yr",
 
         insolation=400.0u"W/m^2",
         sediment_buffer_size=50,
@@ -1031,9 +1028,6 @@ const DummyFacies = [
     ALCAP.Facies(
         viability_range = (0, 0),
         activation_range = (0, 0),
-        maximum_growth_rate=0.0u"m/Myr",
-        extinction_coefficient=0.0u"m^-1",
-        saturation_intensity=0.0u"W/m^2",
         diffusion_coefficient=0.0u"m/yr")]
 
 const input = ALCAP.Input(

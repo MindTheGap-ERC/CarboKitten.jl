@@ -356,10 +356,7 @@ transport_test_input(;
 		facies = [ALCAP.Facies(
 			initial_sediment = initial_sediment,
 			diffusion_coefficient = diffusion_coefficient,
-			wave_velocity = wave_velocity,
-			maximum_growth_rate = 0.0u&quot;m/Myr&quot;,
-			extinction_coefficient = 0.8u&quot;m^-1&quot;,
-			saturation_intensity = 60u&quot;W/m^2&quot;
+			wave_velocity = wave_velocity
 		)],
 		disintegration_rate = disintegration_rate,
 		initial_topography = initial_topography,
@@ -586,7 +583,7 @@ Script.main()</code></pre><h2 id="Active-Layer-Component"><a class="docs-heading
 <text text-anchor="start" x="352" y="-89.5" font-family="monospace" font-size="10.00"> </text>
 <text text-anchor="start" x="486" y="-89.5" font-family="monospace" font-size="10.00"> </text>
 <polyline fill="none" stroke="black" points="348,-63.5 348,-82.5 "/>
-<text text-anchor="start" x="205" y="-70.5" font-family="monospace" font-size="10.00">cementation_time</text>
+<text text-anchor="start" x="205" y="-70.5" font-family="monospace" font-size="10.00">lithification_time</text>
 <polyline fill="none" stroke="black" points="483,-63.5 483,-82.5 "/>
 <text text-anchor="start" x="352" y="-70.5" font-family="monospace" font-size="10.00"> </text>
 <text text-anchor="start" x="486" y="-70.5" font-family="monospace" font-size="10.00"> </text>
@@ -709,7 +706,7 @@ Script.main()</code></pre><h2 id="Active-Layer-Component"><a class="docs-heading
 </div><div class="noweb-label">file:<i>src/Components/ActiveLayer.jl</i></div><pre><code class="language- julia hljs">@compose module ActiveLayer
 @mixin WaterDepth, FaciesBase, SedimentBuffer
 
-export disintegrator, transporter, cementation_factor
+export disintegrator, transporter, lithification_factor
 
 using ..Common
 using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
@@ -730,7 +727,7 @@ end
     intertidal_zone::Height = 0.0u&quot;m&quot;
     disintegration_rate::Rate = 50.0u&quot;m/Myr&quot;
     disintegration_transfer::Function = x -&gt; x
-    cementation_time::Union{typeof(1.0u&quot;Myr&quot;),Nothing} = nothing
+    lithification_time::Union{typeof(1.0u&quot;Myr&quot;),Nothing} = nothing
     transport_solver = Val{:forward_euler}
     transport_substeps = :adaptive
     save_active_layer::Bool = false
@@ -743,11 +740,11 @@ transport_solver(f, _) = f
 transport_solver(::Type{Val{:RK4}}, box) = runge_kutta_4(typeof(1.0u&quot;m&quot;), box)
 transport_solver(::Type{Val{:forward_euler}}, _) = forward_euler
 
-function cementation_factor(input::AbstractInput)
-    if input.cementation_time === nothing
+function lithification_factor(input::AbstractInput)
+    if input.lithification_time === nothing
         return 1.0
     else
-        return 1.0 - exp(input.time.Δt * log(1 / 2) / input.cementation_time)
+        return 1.0 - exp(input.time.Δt * log(1 / 2) / input.lithification_time)
     end
 end
 
@@ -889,8 +886,8 @@ end
 function write_header(input::AbstractInput, output::AbstractOutput)
     set_attribute(output, &quot;intertidal_zone&quot;, input.intertidal_zone |&gt; in_units_of(u&quot;m&quot;))
     set_attribute(output, &quot;disintegration_rate&quot;, input.disintegration_rate |&gt; in_units_of(u&quot;m/Myr&quot;))
-    if input.cementation_time !== nothing
-        set_attribute(output, &quot;cementation_time&quot;, input.cementation_time |&gt; in_units_of(u&quot;Myr&quot;))
+    if input.lithification_time !== nothing
+        set_attribute(output, &quot;lithification_time&quot;, input.lithification_time |&gt; in_units_of(u&quot;Myr&quot;))
     end
 end
 
@@ -940,7 +937,7 @@ function run()
 
         subsidence_rate=50.0u&quot;m/Myr&quot;,
         disintegration_rate=100.0u&quot;m/Myr&quot;,
-        cementation_time=50.0u&quot;yr&quot;,
+        lithification_time=50.0u&quot;yr&quot;,
 
         insolation=400.0u&quot;W/m^2&quot;,
         sediment_buffer_size=50,
@@ -1001,9 +998,6 @@ const DummyFacies = [
     ALCAP.Facies(
         viability_range = (0, 0),
         activation_range = (0, 0),
-        maximum_growth_rate=0.0u&quot;m/Myr&quot;,
-        extinction_coefficient=0.0u&quot;m^-1&quot;,
-        saturation_intensity=0.0u&quot;W/m^2&quot;,
         diffusion_coefficient=0.0u&quot;m/yr&quot;)]
 
 const input = ALCAP.Input(
@@ -1128,4 +1122,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Literature on active (or mixing) layer transport modeling is vast. Most of which is concerned with much smaller time scales, and more complicated physics than we are mostly dealing with.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Note that in other approaches to active layer transport, like Paola 1992, there would be a factor <span>$1/C_f$</span>. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../components/sediment_buffer/">« Sediment Buffers</a><a class="docs-footer-nextpage" href="../onshore-transport/">Onshore Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Monday 2 March 2026 17:56">Monday 2 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Literature on active (or mixing) layer transport modeling is vast. Most of which is concerned with much smaller time scales, and more complicated physics than we are mostly dealing with.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Note that in other approaches to active layer transport, like Paola 1992, there would be a factor <span>$1/C_f$</span>. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../components/sediment_buffer/">« Sediment Buffers</a><a class="docs-footer-nextpage" href="../onshore-transport/">Onshore Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 4 March 2026 09:18">Wednesday 4 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -138,6 +138,7 @@ end
 function set_attribute(out::H5Output, name::String, value::AbstractArray{T,Dim}) where {T,Dim}
     gid = get_group(out.fid, name)
     tag = split(name,&quot;/&quot;)[end]
+    @info &quot;output: setting dataset $name&quot;
     gid[tag] = value
 end
 
@@ -145,6 +146,7 @@ function set_attribute(out::H5Output, name::String, value)
     gid = get_group(out.fid, name)
     attr = attributes(gid)
     tag = split(name,&quot;/&quot;)[end]
+    @info &quot;output: setting attribute $name to $value&quot;
     attr[tag] = value
 end
 
@@ -214,22 +216,8 @@ using Unitful
 using Test
 
 const DummyFacies = [
-    ALCAP.Facies(
-        viability_range = (0, 0),
-        activation_range = (0, 0),
-        maximum_growth_rate=0.0u&quot;m/Myr&quot;,
-        extinction_coefficient=0.0u&quot;m^-1&quot;,
-        saturation_intensity=0.0u&quot;W/m^2&quot;,
-        diffusion_coefficient=0.0u&quot;m/yr&quot;),    
-    ALCAP.Facies(
-        viability_range = (0, 0),
-        activation_range = (0, 0),
-        maximum_growth_rate=0.0u&quot;m/Myr&quot;,
-        extinction_coefficient=0.0u&quot;m^-1&quot;,
-        saturation_intensity=0.0u&quot;W/m^2&quot;,
-        diffusion_coefficient=0.0u&quot;m/yr&quot;,
-        initial_sediment=3.0u&quot;m&quot;),
-        ]
+    ALCAP.Facies(),
+    ALCAP.Facies(initial_sediment=3.0u&quot;m&quot;)]
 
 const input = ALCAP.Input(
     tag=&quot;test&quot;,
@@ -326,4 +314,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../abstract/">« Output</a><a class="docs-footer-nextpage" href="../memory-writer/">Output to Memory »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Monday 2 March 2026 17:56">Monday 2 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../abstract/">« Output</a><a class="docs-footer-nextpage" href="../memory-writer/">Output to Memory »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 4 March 2026 09:18">Wednesday 4 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

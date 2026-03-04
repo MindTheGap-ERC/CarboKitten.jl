@@ -11,9 +11,6 @@ const DummyFacies = [
     ALCAP.Facies(
         viability_range = (0, 0),
         activation_range = (0, 0),
-        maximum_growth_rate=0.0u"m/Myr",
-        extinction_coefficient=0.0u"m^-1",
-        saturation_intensity=0.0u"W/m^2",
         diffusion_coefficient=0.0u"m/yr")]
 
 const input = ALCAP.Input(

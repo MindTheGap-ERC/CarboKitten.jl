@@ -23,10 +23,7 @@ transport_test_input(;
 		facies = [ALCAP.Facies(
 			initial_sediment = initial_sediment,
 			diffusion_coefficient = diffusion_coefficient,
-			wave_velocity = wave_velocity,
-			maximum_growth_rate = 0.0u"m/Myr",
-			extinction_coefficient = 0.8u"m^-1",
-			saturation_intensity = 60u"W/m^2"
+			wave_velocity = wave_velocity
 		)],
 		disintegration_rate = disintegration_rate,
 		initial_topography = initial_topography,

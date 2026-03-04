@@ -66,9 +66,9 @@ function main()
         #     is removed from the buffer
         disintegration_rate = 50.0u"m/Myr",
 
-        #   - the cementation time sets how fast entrained material
+        #   - the lithification time sets how fast entrained material
         #     settles, by specifying a half-life time.
-        cementation_time = 100u"yr",
+        lithification_time = 100u"yr",
     )
 
     # The following is here for your convenience:

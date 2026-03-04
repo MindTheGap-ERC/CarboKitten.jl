@@ -2,7 +2,7 @@
 
 As with any numerical model, there are many ways to shoot yourself in the foot using CarboKitten. Changing input paramaters may lead to numerical instablities and eventually even models crashing. When this happens it can be hard to understand what parameter settings or combinations thereof are responsible. Some tactics that have helped us in the past:
 
-- Did you set a lithification or cementation time? The default cementation time is set to infinity (meaning the entire contents of the active layer is deposited on every iteration) which can lead to problems. Try a setting that is close in scale to your time step.
+- Did you set a lithification time? The default lithification time is set to zero (meaning the entire contents of the active layer is deposited on every iteration) which can lead to problems. Try a setting that is close in scale to your time step. If it is much higher, the active layer will saturate with unphysical concentrations of sediment, while low values will make your results strongly dependent on the chosen time step.
 - Try reducing your time step. If you still encounter problems, but later in the simulation, it means that something in the settings is systematically driving the platform to numerical instability.
 - If you supplied an additional (wave induced) velocity component to the transport model, this can lead to sediment build-up near the shore. In this case increasing the diffusivity will help to stabilize your model.
 

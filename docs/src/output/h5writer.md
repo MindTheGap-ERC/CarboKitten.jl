@@ -153,6 +153,7 @@ end
 function set_attribute(out::H5Output, name::String, value::AbstractArray{T,Dim}) where {T,Dim}
     gid = get_group(out.fid, name)
     tag = split(name,"/")[end]
+    @info "output: setting dataset $name"
     gid[tag] = value
 end
 
@@ -160,6 +161,7 @@ function set_attribute(out::H5Output, name::String, value)
     gid = get_group(out.fid, name)
     attr = attributes(gid)
     tag = split(name,"/")[end]
+    @info "output: setting attribute $name to $value"
     attr[tag] = value
 end
 
@@ -235,22 +237,8 @@ using Unitful
 using Test
 
 const DummyFacies = [
-    ALCAP.Facies(
-        viability_range = (0, 0),
-        activation_range = (0, 0),
-        maximum_growth_rate=0.0u"m/Myr",
-        extinction_coefficient=0.0u"m^-1",
-        saturation_intensity=0.0u"W/m^2",
-        diffusion_coefficient=0.0u"m/yr"),    
-    ALCAP.Facies(
-        viability_range = (0, 0),
-        activation_range = (0, 0),
-        maximum_growth_rate=0.0u"m/Myr",
-        extinction_coefficient=0.0u"m^-1",
-        saturation_intensity=0.0u"W/m^2",
-        diffusion_coefficient=0.0u"m/yr",
-        initial_sediment=3.0u"m"),
-        ]
+    ALCAP.Facies(),
+    ALCAP.Facies(initial_sediment=3.0u"m")]
 
 const input = ALCAP.Input(
     tag="test",

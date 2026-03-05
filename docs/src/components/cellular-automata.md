@@ -138,6 +138,33 @@ Script.main()
 
 ![CA](../fig/ca-long-term.svg)
 
+## Production feedback
+
+It can be interesting to model feedback on the CA state due to environmental factors. For example, we can kill off facies if it turns out they're not able to produce.
+
+``` {.julia file=src/Components/CAFeedback.jl}
+@compose module CAFeedback
+using ..Common
+
+@kwdef struct Facies
+    minimum_production::Union{typeof(0.0u"m/Myr"),Nothing} = nothing
+end
+
+function ca_feedback(input::AbstractInput)
+    production_limit = [f.minimum_production for f in input.facies]
+
+    function (ca, production)
+        for i in eachindex(Cartesian, ca)
+            f = ca[i]
+            if production_limit[f] !== nothing && production[f, i[1], i[2]] < production_limit[f]
+                ca[i] = 0
+            end
+        end
+    end
+end
+
+end
+```
 
 ## Tests
 

@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/models/alcap.md#src/Models/ALCAP.jl>>[init]
 @compose module ALCAP
-@mixin Tag, Output, CAProduction, ActiveLayer, InitialSediment, Diagnostics
+@mixin Tag, Output, CAProduction, CAFeedback, ActiveLayer, InitialSediment, Diagnostics
 
 using ..Common
 using ..CAProduction: production
@@ -33,7 +33,7 @@ end
 
 function initial_frame(input::Input)
     dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
-    return Frame(production=zeros(Sediment,size(dep)), 
+    return Frame(production=zeros(Sediment,size(dep)),
                   disintegration=zeros(Sediment,size(dep)),
                   deposition=dep)
 end
@@ -42,6 +42,7 @@ function step!(input::Input)
     step_ca! = CellularAutomaton.step!(input)
     disintegrate! = ActiveLayer.disintegrator(input)
     produce = production(input)
+    kill_unproductivity! = CAFeedback.ca_feedback(input)
     transport! = ActiveLayer.transporter(input)
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
@@ -61,6 +62,7 @@ function step!(input::Input)
 
         wd = local_water_depth(state)
         p = produce(state, wd)
+        kill_unproductivity!(state.ca, p)
         d = disintegrate!(state)
 
         state.active_layer .+= p

@@ -16,14 +16,14 @@ module Script
             :topography => OutputSpec(write_interval = max(1, div(steps, 50))),
             :profile    => OutputSpec(slice = (:, div(res, 2)+1)))
 
-        facies = [
+        facies(feedback) = [
             M.Facies(
                 name="euphotic",
                 activation_range=(4, 10),
                 viability_range=(1, 10),
                 production=Production.EXAMPLE[:euphotic],
                 diffusion_coefficient=10.0u"m/yr",
-                minimum_production=0.01u"m/Myr"),
+                minimum_production=feedback ? 0.01u"m/Myr" : nothing),
             M.Facies(
                 name="oligophotic",
                 production=BenthicProduction(
@@ -32,7 +32,7 @@ module Script
                     saturation_intensity=60u"W/m^2"
                 ),
                 diffusion_coefficient=5.0u"m/yr",
-                minimum_production=5.0u"m/Myr"),
+                minimum_production=feedback ? 5.0u"m/Myr" : nothing),
             M.Facies(
                 name="pelagic",
                 active=false,
@@ -54,10 +54,10 @@ module Script
             10.0u"m" * sin(2π * t / 123456.0u"yr") +
              5.0u"m" * sin(2π * t /  80456.0u"yr")
 
-        input = M.Input(
+        input(feedback) = M.Input(
             time = time_param,
             box = box,
-            facies = facies,
+            facies = facies(feedback),
             output = output,
 
             sea_level = sea_level,
@@ -75,7 +75,8 @@ module Script
             # diagnostics=true
         )
 
-        run_model(Model{M}, input, "data/output/ca-feedback.h5")
+        run_model(Model{M}, input(false), "data/output/ca-wo-feedback.h5")
+        run_model(Model{M}, input(true), "data/output/ca-feedback.h5")
     end
 end
 

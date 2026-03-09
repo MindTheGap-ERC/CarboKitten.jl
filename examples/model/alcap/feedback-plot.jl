@@ -34,9 +34,10 @@ module PlotFeedback
 
         Colorbar(fig[2, 3], sa; vertical=false, label="sediment accumulation [m/Myr]")
         Colorbar(fig[2, 4], ft; vertical=false, ticks=1:3, label="dominant facies")
-        fig
+       
+        save("docs/src/_fig/ca-feedback.png", fig)
     end
 end
 
-save("docs/src/_fig/ca-feedback.png", PlotFeedback.main())
+PlotFeedback.main()
 # ~/~ end

@@ -5,10 +5,10 @@ module Script
     using CarboKitten.Models: ALCAP as M
 
     initial_topography(x, y) =
-        - sqrt((x - 7.5u"km")^2 + (y - 7.5u"km")^2) / 100.0
+        min(0.0u"m", - sqrt((x - 7.5u"km")^2 + (y - 7.5u"km")^2) / 100.0 + 20.0u"m")
 
     function main()
-        res = 200
+        res = 100
         steps = 5000
         phys_scale = 15.0u"km" / res
 
@@ -52,7 +52,7 @@ module Script
 
         sea_level(t) =
             10.0u"m" * sin(2π * t / 123456.0u"yr") +
-             5.0u"m" * sin(2π * t /  90456.0u"yr")
+             5.0u"m" * sin(2π * t /  80456.0u"yr")
 
         input = M.Input(
             time = time_param,
@@ -62,6 +62,7 @@ module Script
 
             sea_level = sea_level,
             initial_topography = initial_topography,
+            ca_interval = 10,
 
             insolation = 400.0u"W/m^2",
             subsidence_rate = 30.0u"m/Myr",

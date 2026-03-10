@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Cellular Automata · CarboKitten</title><meta name="title" content="Cellular Automata · CarboKitten"/><meta property="og:title" content="Cellular Automata · CarboKitten"/><meta property="twitter:title" content="Cellular Automata · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><a class="tocitem" href="../../getting-started/">Getting started</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../../initial-topography/">Initial Topography</a></li></ul></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/">Components</a></li><li><a class="tocitem" href="../tag/">Tags</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../time/">Time</a></li><li><a class="tocitem" href="../output/">Output</a></li><li><a class="tocitem" href="../facies/">Facies</a></li><li class="is-active"><a class="tocitem" href>Cellular Automata</a><ul class="internal"><li><a class="tocitem" href="#Plot"><span>Plot</span></a></li><li><a class="tocitem" href="#Tests"><span>Tests</span></a></li><li><a class="tocitem" href="#Component"><span>Component</span></a></li></ul></li><li><a class="tocitem" href="../waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../production/">Production</a></li><li><a class="tocitem" href="../sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="../../visualization/overview/">Overview</a></li><li><a class="tocitem" href="../../visualization/profiles/">Profiles</a></li><li><a class="tocitem" href="../../visualization/topography/">Topography</a></li><li><a class="tocitem" href="../../visualization/">Other</a></li></ul></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../../output/abstract/">Output</a></li><li><a class="tocitem" href="../../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../../output/memory-writer/">Output to Memory</a></li><li><a class="tocitem" href="../../data-export/">CSV Export</a></li><li><a class="tocitem" href="../../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li><li><a class="tocitem" href="../../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../../algorithms/stratigraphic_column/">Stratigraphic Column</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Model Components</a></li><li class="is-active"><a href>Cellular Automata</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Cellular Automata</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/components/cellular-automata.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Cellular-Automata"><a class="docs-heading-anchor" href="#Cellular-Automata">Cellular Automata</a><a id="Cellular-Automata-1"></a><a class="docs-heading-anchor-permalink" href="#Cellular-Automata" title="Permalink"></a></h1><div class="component-dag" style="overflow: scroll"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Cellular Automata · CarboKitten</title><meta name="title" content="Cellular Automata · CarboKitten"/><meta property="og:title" content="Cellular Automata · CarboKitten"/><meta property="twitter:title" content="Cellular Automata · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><a class="tocitem" href="../../getting-started/">Getting started</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../../initial-topography/">Initial Topography</a></li></ul></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/">Components</a></li><li><a class="tocitem" href="../tag/">Tags</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../time/">Time</a></li><li><a class="tocitem" href="../output/">Output</a></li><li><a class="tocitem" href="../facies/">Facies</a></li><li class="is-active"><a class="tocitem" href>Cellular Automata</a><ul class="internal"><li><a class="tocitem" href="#Plot"><span>Plot</span></a></li><li><a class="tocitem" href="#Production-feedback"><span>Production feedback</span></a></li><li><a class="tocitem" href="#Tests"><span>Tests</span></a></li><li><a class="tocitem" href="#Component"><span>Component</span></a></li></ul></li><li><a class="tocitem" href="../waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../production/">Production</a></li><li><a class="tocitem" href="../sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="../../visualization/overview/">Overview</a></li><li><a class="tocitem" href="../../visualization/profiles/">Profiles</a></li><li><a class="tocitem" href="../../visualization/topography/">Topography</a></li><li><a class="tocitem" href="../../visualization/">Other</a></li></ul></li><li><span class="tocitem">CarboCAT</span><ul><li><a class="tocitem" href="../../carbocat/">Summary</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../../output/abstract/">Output</a></li><li><a class="tocitem" href="../../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../../output/memory-writer/">Output to Memory</a></li><li><a class="tocitem" href="../../data-export/">CSV Export</a></li><li><a class="tocitem" href="../../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li><li><a class="tocitem" href="../../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../../algorithms/stratigraphic_column/">Stratigraphic Column</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Model Components</a></li><li class="is-active"><a href>Cellular Automata</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Cellular Automata</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/components/cellular-automata.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Cellular-Automata"><a class="docs-heading-anchor" href="#Cellular-Automata">Cellular Automata</a><a id="Cellular-Automata-1"></a><a class="docs-heading-anchor-permalink" href="#Cellular-Automata" title="Permalink"></a></h1><div class="component-dag" style="overflow: scroll"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Generated by graphviz version 2.50.0 (20211204.2007)
@@ -196,7 +196,158 @@ end
 
 end
 
-Script.main()</code></pre><p><img src="../../fig/ca-long-term.svg" alt="CA"/></p><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><div class="noweb-label">file:<i>test/Components/CellularAutomatonSpec.jl</i></div><pre><code class="language- julia hljs">module CellularAutomatonSpec
+Script.main()</code></pre><p><img src="../../fig/ca-long-term.svg" alt="CA"/></p><h2 id="Production-feedback"><a class="docs-heading-anchor" href="#Production-feedback">Production feedback</a><a id="Production-feedback-1"></a><a class="docs-heading-anchor-permalink" href="#Production-feedback" title="Permalink"></a></h2><p>It can be interesting to model feedback on the CA state due to environmental factors. For example, we can kill off facies if it turns out they&#39;re not able to produce.</p><div class="noweb-label">file:<i>src/Components/CAFeedback.jl</i></div><pre><code class="language- julia hljs">@compose module CAFeedback
+using ..Common
+
+@kwdef struct Facies
+    minimum_production::Union{typeof(0.0u&quot;m/Myr&quot;),Nothing} = nothing
+end
+
+function ca_feedback(input::AbstractInput)
+    production_limit = [f.minimum_production for f in input.facies]
+    dt = input.time.Δt
+
+    function (ca, production)
+        for i in eachindex(IndexCartesian(), ca)
+            f = ca[i]
+            if f != 0 &amp;&amp; production_limit[f] !== nothing &amp;&amp;
+                production[f, i[1], i[2]] / dt &lt; production_limit[f]
+                ca[i] = 0
+            end
+        end
+    end
+end
+
+end</code></pre><h3 id="Test-run"><a class="docs-heading-anchor" href="#Test-run">Test run</a><a id="Test-run-1"></a><a class="docs-heading-anchor-permalink" href="#Test-run" title="Permalink"></a></h3><p><img src="../../fig/ca-feedback.png" alt="Example of the drastic effects CA feedback can achieve"/></p><div class="noweb-label">file:<i>examples/model/alcap/ca-feedback.jl</i></div><pre><code class="language- julia hljs">#| creates:
+#|   - data/output/ca-wo-feedback.h5
+#|   - data/output/ca-feedback.h5
+module Script
+    using CarboKitten
+    using CarboKitten.Production
+    using CarboKitten.Models: ALCAP as M
+
+    initial_topography(x, y) =
+        min(0.0u&quot;m&quot;, - sqrt((x - 7.5u&quot;km&quot;)^2 + (y - 7.5u&quot;km&quot;)^2) / 100.0 + 20.0u&quot;m&quot;)
+
+    function main()
+        res = 100
+        steps = 5000
+        phys_scale = 15.0u&quot;km&quot; / res
+
+        output = Dict(
+            :topography =&gt; OutputSpec(write_interval = max(1, div(steps, 50))),
+            :profile    =&gt; OutputSpec(slice = (:, div(res, 2)+1)))
+
+        facies(feedback) = [
+            M.Facies(
+                name=&quot;euphotic&quot;,
+                activation_range=(4, 10),
+                viability_range=(1, 10),
+                production=Production.EXAMPLE[:euphotic],
+                diffusion_coefficient=10.0u&quot;m/yr&quot;,
+                minimum_production=feedback ? 0.01u&quot;m/Myr&quot; : nothing),
+            M.Facies(
+                name=&quot;oligophotic&quot;,
+                production=BenthicProduction(
+                    maximum_growth_rate=200.0u&quot;m/Myr&quot;,
+                    extinction_coefficient=0.1u&quot;m^-1&quot;,
+                    saturation_intensity=60u&quot;W/m^2&quot;
+                ),
+                diffusion_coefficient=5.0u&quot;m/yr&quot;,
+                minimum_production=feedback ? 5.0u&quot;m/Myr&quot; : nothing),
+            M.Facies(
+                name=&quot;pelagic&quot;,
+                active=false,
+                production=PelagicProduction(
+                    maximum_growth_rate=1.0u&quot;1/Myr&quot;,
+                    extinction_coefficient=0.1u&quot;m^-1&quot;,
+                    saturation_intensity=60u&quot;W/m^2&quot;
+                ),
+                diffusion_coefficient=20.0u&quot;m/yr&quot;,
+                # minimum_production=10.0u&quot;m/Myr&quot;
+            )
+        ]
+
+        box = CarboKitten.Box{Periodic{2}}(grid_size=(res, res), phys_scale=phys_scale)
+
+        time_param = TimeProperties(Δt=1.0u&quot;Myr&quot;/steps, steps=steps)
+
+        sea_level(t) =
+            10.0u&quot;m&quot; * sin(2π * t / 123456.0u&quot;yr&quot;) +
+             5.0u&quot;m&quot; * sin(2π * t /  80456.0u&quot;yr&quot;)
+
+        input(feedback) = M.Input(
+            time = time_param,
+            box = box,
+            facies = facies(feedback),
+            output = output,
+
+            sea_level = sea_level,
+            initial_topography = initial_topography,
+            ca_interval = 10,
+
+            insolation = 400.0u&quot;W/m^2&quot;,
+            subsidence_rate = 30.0u&quot;m/Myr&quot;,
+            disintegration_rate = 20.0u&quot;m/Myr&quot;,
+            lithification_time = 100.0u&quot;yr&quot;,
+
+            sediment_buffer_size=50,
+            depositional_resolution=0.5u&quot;m&quot;,
+
+            # diagnostics=true
+        )
+
+        run_model(Model{M}, input(false), &quot;data/output/ca-wo-feedback.h5&quot;)
+        run_model(Model{M}, input(true), &quot;data/output/ca-feedback.h5&quot;)
+    end
+end
+
+Script.main()</code></pre><div class="noweb-label">file:<i>examples/model/alcap/feedback-plot.jl</i></div><pre><code class="language- julia hljs">#| requires: 
+#|   - data/output/ca-wo-feedback.h5
+#|   - data/output/ca-feedback.h5
+#| creates:
+#|   - docs/src/_fig/ca-feedback.png
+module PlotFeedback
+    using GLMakie
+    using CarboKitten.Visualization
+    using CarboKitten.Export: read_volume, read_slice
+
+    function main()
+        GLMakie.activate!()
+        fig = Figure(size=(1000, 800))
+
+        header, topography = read_volume(&quot;data/output/ca-wo-feedback.h5&quot;, :topography)
+        _, profile = read_slice(&quot;data/output/ca-wo-feedback.h5&quot;, :profile)
+
+        ax1 = Axis(fig[1, 1:2])
+        sediment_profile!(ax1, header, profile)
+        ax1.title = &quot;without feedback&quot;
+
+        ax1_wh1 = Axis(fig[3, 1])
+        ax1_wh2 = Axis(fig[3, 2])
+        sa, ft = wheeler_diagram!(ax1_wh1, ax1_wh2, header, profile)
+        Colorbar(fig[2, 1], sa; vertical=false, label=&quot;sediment accumulation [m/Myr]&quot;)
+        Colorbar(fig[2, 2], ft; vertical=false, ticks=1:3, label=&quot;dominant facies&quot;)
+
+        header, topography = read_volume(&quot;data/output/ca-feedback.h5&quot;, :topography)
+        _, profile = read_slice(&quot;data/output/ca-feedback.h5&quot;, :profile)
+
+        ax2 = Axis(fig[1, 3:4])
+        sediment_profile!(ax2, header, profile)
+        ax2.title = &quot;with feedback&quot;
+
+        ax2_wh1 = Axis(fig[3, 3])
+        ax2_wh2 = Axis(fig[3, 4])
+        sa, ft = wheeler_diagram!(ax2_wh1, ax2_wh2, header, profile)
+
+        Colorbar(fig[2, 3], sa; vertical=false, label=&quot;sediment accumulation [m/Myr]&quot;)
+        Colorbar(fig[2, 4], ft; vertical=false, ticks=1:3, label=&quot;dominant facies&quot;)
+
+        save(&quot;docs/src/_fig/ca-feedback.png&quot;, fig)
+    end
+end
+
+PlotFeedback.main()</code></pre><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><div class="noweb-label">file:<i>test/Components/CellularAutomatonSpec.jl</i></div><pre><code class="language- julia hljs">module CellularAutomatonSpec
 
 using Test
 using CarboKitten.Components.Common
@@ -278,4 +429,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../facies/">« Facies</a><a class="docs-footer-nextpage" href="../waterdepth/">Water Depth »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 4 March 2026 15:50">Wednesday 4 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../facies/">« Facies</a><a class="docs-footer-nextpage" href="../waterdepth/">Water Depth »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 10 March 2026 12:47">Tuesday 10 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

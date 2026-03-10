@@ -138,6 +138,176 @@ Script.main()
 
 ![CA](../fig/ca-long-term.svg)
 
+## Production feedback
+
+It can be interesting to model feedback on the CA state due to environmental factors. For example, we can kill off facies if it turns out they're not able to produce.
+
+``` {.julia file=src/Components/CAFeedback.jl}
+@compose module CAFeedback
+using ..Common
+
+@kwdef struct Facies
+    minimum_production::Union{typeof(0.0u"m/Myr"),Nothing} = nothing
+end
+
+function ca_feedback(input::AbstractInput)
+    production_limit = [f.minimum_production for f in input.facies]
+    dt = input.time.Δt
+
+    function (ca, production)
+        for i in eachindex(IndexCartesian(), ca)
+            f = ca[i]
+            if f != 0 && production_limit[f] !== nothing &&
+                production[f, i[1], i[2]] / dt < production_limit[f]
+                ca[i] = 0
+            end
+        end
+    end
+end
+
+end
+```
+
+### Test run
+
+![Example of the drastic effects CA feedback can achieve](../fig/ca-feedback.png)
+
+``` {.julia .task file=examples/model/alcap/ca-feedback.jl}
+#| creates:
+#|   - data/output/ca-wo-feedback.h5
+#|   - data/output/ca-feedback.h5
+module Script
+    using CarboKitten
+    using CarboKitten.Production
+    using CarboKitten.Models: ALCAP as M
+
+    initial_topography(x, y) =
+        min(0.0u"m", - sqrt((x - 7.5u"km")^2 + (y - 7.5u"km")^2) / 100.0 + 20.0u"m")
+
+    function main()
+        res = 100
+        steps = 5000
+        phys_scale = 15.0u"km" / res
+
+        output = Dict(
+            :topography => OutputSpec(write_interval = max(1, div(steps, 50))),
+            :profile    => OutputSpec(slice = (:, div(res, 2)+1)))
+
+        facies(feedback) = [
+            M.Facies(
+                name="euphotic",
+                activation_range=(4, 10),
+                viability_range=(1, 10),
+                production=Production.EXAMPLE[:euphotic],
+                diffusion_coefficient=10.0u"m/yr",
+                minimum_production=feedback ? 0.01u"m/Myr" : nothing),
+            M.Facies(
+                name="oligophotic",
+                production=BenthicProduction(
+                    maximum_growth_rate=200.0u"m/Myr",
+                    extinction_coefficient=0.1u"m^-1",
+                    saturation_intensity=60u"W/m^2"
+                ),
+                diffusion_coefficient=5.0u"m/yr",
+                minimum_production=feedback ? 5.0u"m/Myr" : nothing),
+            M.Facies(
+                name="pelagic",
+                active=false,
+                production=PelagicProduction(
+                    maximum_growth_rate=1.0u"1/Myr",
+                    extinction_coefficient=0.1u"m^-1",
+                    saturation_intensity=60u"W/m^2"
+                ),
+                diffusion_coefficient=20.0u"m/yr",
+                # minimum_production=10.0u"m/Myr"
+            )
+        ]
+
+        box = CarboKitten.Box{Periodic{2}}(grid_size=(res, res), phys_scale=phys_scale)
+
+        time_param = TimeProperties(Δt=1.0u"Myr"/steps, steps=steps)
+
+        sea_level(t) =
+            10.0u"m" * sin(2π * t / 123456.0u"yr") +
+             5.0u"m" * sin(2π * t /  80456.0u"yr")
+
+        input(feedback) = M.Input(
+            time = time_param,
+            box = box,
+            facies = facies(feedback),
+            output = output,
+
+            sea_level = sea_level,
+            initial_topography = initial_topography,
+            ca_interval = 10,
+
+            insolation = 400.0u"W/m^2",
+            subsidence_rate = 30.0u"m/Myr",
+            disintegration_rate = 20.0u"m/Myr",
+            lithification_time = 100.0u"yr",
+
+            sediment_buffer_size=50,
+            depositional_resolution=0.5u"m",
+
+            # diagnostics=true
+        )
+
+        run_model(Model{M}, input(false), "data/output/ca-wo-feedback.h5")
+        run_model(Model{M}, input(true), "data/output/ca-feedback.h5")
+    end
+end
+
+Script.main()
+```
+
+``` {.julia .task file=examples/model/alcap/feedback-plot.jl}
+#| requires: 
+#|   - data/output/ca-wo-feedback.h5
+#|   - data/output/ca-feedback.h5
+#| creates:
+#|   - docs/src/_fig/ca-feedback.png
+module PlotFeedback
+    using GLMakie
+    using CarboKitten.Visualization
+    using CarboKitten.Export: read_volume, read_slice
+
+    function main()
+        GLMakie.activate!()
+        fig = Figure(size=(1000, 800))
+
+        header, topography = read_volume("data/output/ca-wo-feedback.h5", :topography)
+        _, profile = read_slice("data/output/ca-wo-feedback.h5", :profile)
+
+        ax1 = Axis(fig[1, 1:2])
+        sediment_profile!(ax1, header, profile)
+        ax1.title = "without feedback"
+
+        ax1_wh1 = Axis(fig[3, 1])
+        ax1_wh2 = Axis(fig[3, 2])
+        sa, ft = wheeler_diagram!(ax1_wh1, ax1_wh2, header, profile)
+        Colorbar(fig[2, 1], sa; vertical=false, label="sediment accumulation [m/Myr]")
+        Colorbar(fig[2, 2], ft; vertical=false, ticks=1:3, label="dominant facies")
+
+        header, topography = read_volume("data/output/ca-feedback.h5", :topography)
+        _, profile = read_slice("data/output/ca-feedback.h5", :profile)
+
+        ax2 = Axis(fig[1, 3:4])
+        sediment_profile!(ax2, header, profile)
+        ax2.title = "with feedback"
+
+        ax2_wh1 = Axis(fig[3, 3])
+        ax2_wh2 = Axis(fig[3, 4])
+        sa, ft = wheeler_diagram!(ax2_wh1, ax2_wh2, header, profile)
+
+        Colorbar(fig[2, 3], sa; vertical=false, label="sediment accumulation [m/Myr]")
+        Colorbar(fig[2, 4], ft; vertical=false, ticks=1:3, label="dominant facies")
+
+        save("docs/src/_fig/ca-feedback.png", fig)
+    end
+end
+
+PlotFeedback.main()
+```
 
 ## Tests
 

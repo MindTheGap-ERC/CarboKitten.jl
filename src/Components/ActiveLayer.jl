@@ -2,7 +2,7 @@
 @compose module ActiveLayer
 @mixin WaterDepth, FaciesBase, SedimentBuffer
 
-export disintegrator, transporter, cementation_factor
+export disintegrator, transporter, lithification_factor
 
 using ..Common
 using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
@@ -23,9 +23,10 @@ end
     intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
     disintegration_transfer::Function = x -> x
-    cementation_time::Union{typeof(1.0u"Myr"),Nothing} = nothing
-    transport_solver = Val{:RK4}
+    lithification_time::Union{typeof(1.0u"Myr"),Nothing} = nothing
+    transport_solver = Val{:forward_euler}
     transport_substeps = :adaptive
+    save_active_layer::Bool = false
 end
 
 courant_max(::Type{Val{:RK4}}) = 2.0
@@ -35,11 +36,11 @@ transport_solver(f, _) = f
 transport_solver(::Type{Val{:RK4}}, box) = runge_kutta_4(typeof(1.0u"m"), box)
 transport_solver(::Type{Val{:forward_euler}}, _) = forward_euler
 
-function cementation_factor(input::AbstractInput)
-    if input.cementation_time === nothing
+function lithification_factor(input::AbstractInput)
+    if input.lithification_time === nothing
         return 1.0
     else
-        return 1.0 - exp(input.time.Δt * log(1 / 2) / input.cementation_time)
+        return 1.0 - exp(input.time.Δt * log(1 / 2) / input.lithification_time)
     end
 end
 
@@ -84,7 +85,7 @@ function adaptive_transporter(input)
                 x,y = box_axes(box)
                 error("""
 
-                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]), 
+                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]),
                 (physical location x = $(x[err_loc[2]]), y = $(y[err_loc[3]])).
 
                 For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/
@@ -166,10 +167,10 @@ function transporter(input)
                 x,y = box_axes(box)
                 error("""
 
-                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]), 
+                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]),
                 (physical location x = $(x[err_loc[2]]), y = $(y[err_loc[3]])).
 
-                For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/ 
+                For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/
 
                 """)
 
@@ -181,8 +182,8 @@ end
 function write_header(input::AbstractInput, output::AbstractOutput)
     set_attribute(output, "intertidal_zone", input.intertidal_zone |> in_units_of(u"m"))
     set_attribute(output, "disintegration_rate", input.disintegration_rate |> in_units_of(u"m/Myr"))
-    if input.cementation_time !== nothing
-        set_attribute(output, "cementation_time", input.cementation_time |> in_units_of(u"Myr"))
+    if input.lithification_time !== nothing
+        set_attribute(output, "lithification_time", input.lithification_time |> in_units_of(u"Myr"))
     end
 end
 

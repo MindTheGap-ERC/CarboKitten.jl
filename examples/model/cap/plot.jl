@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/ca-with-production.md#examples/model/cap/plot.jl>>[init]
+# ~/~ begin <<docs/src/models/ca-with-production.md#examples/model/cap/plot.jl>>[init]
 using GLMakie
 using CarboKitten.Visualization
 

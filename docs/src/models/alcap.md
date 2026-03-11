@@ -2,7 +2,7 @@
 
 The following **S**edimentation model includes the Burgess 2013 **C**ellular **A**utomaton, Bosscher & Schlager 1992 **P**roduction curves and an **A**ctive **L**ayer transport model, based on Paola 1992, henceforth ALCAP.
 
-![Result from alternative input](fig/alcaps-alternative.png)
+![Result from alternative input](../fig/alcaps-alternative.png)
 
 ## Example Input
 
@@ -15,24 +15,30 @@ const FACIES = [
     ALCAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
-        maximum_growth_rate=500u"m/Myr",
-        extinction_coefficient=0.8u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=50.0u"m/yr"),
+        production = BenthicProduction(
+            maximum_growth_rate=500u"m/Myr",
+            extinction_coefficient=0.8u"m^-1",
+            saturation_intensity=60u"W/m^2"),
+        diffusion_coefficient=50.0u"m/yr",
+        name="euphotic"),
     ALCAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
-        maximum_growth_rate=400u"m/Myr",
-        extinction_coefficient=0.1u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=25.0u"m/yr"),
+        production = BenthicProduction(
+            maximum_growth_rate=400u"m/Myr",
+            extinction_coefficient=0.1u"m^-1",
+            saturation_intensity=60u"W/m^2"),
+        diffusion_coefficient=25.0u"m/yr",
+        name="oligophotic"),
     ALCAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
-        maximum_growth_rate=100u"m/Myr",
-        extinction_coefficient=0.005u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=12.5u"m/yr")
+        production = BenthicProduction(
+            maximum_growth_rate=100u"m/Myr",
+            extinction_coefficient=0.005u"m^-1",
+            saturation_intensity=60u"W/m^2"),
+        diffusion_coefficient=12.5u"m/yr",
+        name="aphotic")
 ]
 
 const PERIOD = 0.2u"Myr"
@@ -52,6 +58,7 @@ const INPUT = ALCAP.Input(
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
     subsidence_rate=50.0u"m/Myr",
     disintegration_rate=50.0u"m/Myr",
+    lithification_time=100.0u"yr",
     insolation=400.0u"W/m^2",
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",
@@ -123,6 +130,7 @@ module Example
 
 using Unitful
 using ..ALCAP: ALCAP
+using CarboKitten.Production: BenthicProduction
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
 using CarboKitten.Output.Abstract: OutputSpec
@@ -143,7 +151,7 @@ using ..WaterDepth: water_depth
 using ...Output: Frame
 using ModuleMixins: @for_each
 
-export Input, Facies
+export Input, Facies, BenthicProduction, PelagicProduction
 
 function initial_state(input::AbstractInput)
     ca_state = CellularAutomaton.initial_state(input)
@@ -165,6 +173,13 @@ function initial_state(input::AbstractInput)
     return state
 end
 
+function initial_frame(input::Input)
+    dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
+    return Frame(production=zeros(Sediment,size(dep)), 
+                  disintegration=zeros(Sediment,size(dep)),
+                  deposition=dep)
+end
+
 function step!(input::Input)
     step_ca! = CellularAutomaton.step!(input)
     disintegrate! = ActiveLayer.disintegrator(input)
@@ -172,7 +187,7 @@ function step!(input::Input)
     transport! = ActiveLayer.transporter(input)
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
-    pf = cementation_factor(input)
+    pf = lithification_factor(input)
     dtf = input.disintegration_transfer
     debug = input.diagnostics
 

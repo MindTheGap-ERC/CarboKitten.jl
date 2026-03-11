@@ -1,8 +1,8 @@
 # CA with production
 
-This model combines BS92 production with the B13 cellular automaton. This production model is implemented in the [`CAProduction` component](components/production.md).
+This model combines BS92 production with the B13 cellular automaton. This production model is implemented in the [`CAProduction` component](../components/production.md).
 
-![Stratigraphy, production and subsidence under oscillating sea level.](fig/cap1-summary.png)
+![Stratigraphy, production and subsidence under oscillating sea level.](../fig/cap1-summary.png)
 
 ## Complete example
 
@@ -87,7 +87,7 @@ CarboKitten.Models.CAP
 
 ``` {.julia file=src/Models/CAP.jl}
 @compose module CAP
-@mixin Tag, Diagnostics, Output, CAProduction
+@mixin Tag, Diagnostics, Output, CAProduction, InitialSediment
 
 using ..Common
 using ..CAProduction: production
@@ -105,9 +105,19 @@ function initial_state(input::Input)
     end
 
     sediment_height = zeros(Height, input.box.grid_size...)
-    return State(
+    state = State(
         step=0, sediment_height=sediment_height,
         ca=ca_state.ca, ca_priority=ca_state.ca_priority)
+
+    InitialSediment.push_initial_sediment!(input, state)
+    return state
+end
+
+function initial_frame(input::Input)
+    dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
+    return Frame(production=zeros(Sediment,size(dep)), 
+                  disintegration=zeros(Sediment,size(dep)),
+                  deposition=dep)
 end
 
 function step!(input::Input)

@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/model-alcap.md#examples/model/alcap/run.jl>>[init]
+# ~/~ begin <<docs/src/models/alcap.md#examples/model/alcap/run.jl>>[init]
 
 module Script
 
@@ -8,31 +8,37 @@ using CarboKitten.Export: read_slice, data_export, CSV
 
 const PATH = "data/output"
 
-# ~/~ begin <<docs/src/model-alcap.md#alcap-example-input>>[init]
+# ~/~ begin <<docs/src/models/alcap.md#alcap-example-input>>[init]
 const TAG = "alcap-example"
 
 const FACIES = [
     ALCAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
-        maximum_growth_rate=500u"m/Myr",
-        extinction_coefficient=0.8u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=50.0u"m/yr"),
+        production = BenthicProduction(
+            maximum_growth_rate=500u"m/Myr",
+            extinction_coefficient=0.8u"m^-1",
+            saturation_intensity=60u"W/m^2"),
+        diffusion_coefficient=50.0u"m/yr",
+        name="euphotic"),
     ALCAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
-        maximum_growth_rate=400u"m/Myr",
-        extinction_coefficient=0.1u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=25.0u"m/yr"),
+        production = BenthicProduction(
+            maximum_growth_rate=400u"m/Myr",
+            extinction_coefficient=0.1u"m^-1",
+            saturation_intensity=60u"W/m^2"),
+        diffusion_coefficient=25.0u"m/yr",
+        name="oligophotic"),
     ALCAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
-        maximum_growth_rate=100u"m/Myr",
-        extinction_coefficient=0.005u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=12.5u"m/yr")
+        production = BenthicProduction(
+            maximum_growth_rate=100u"m/Myr",
+            extinction_coefficient=0.005u"m^-1",
+            saturation_intensity=60u"W/m^2"),
+        diffusion_coefficient=12.5u"m/yr",
+        name="aphotic")
 ]
 
 const PERIOD = 0.2u"Myr"
@@ -52,6 +58,7 @@ const INPUT = ALCAP.Input(
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
     subsidence_rate=50.0u"m/Myr",
     disintegration_rate=50.0u"m/Myr",
+    lithification_time=100.0u"yr",
     insolation=400.0u"W/m^2",
     sediment_buffer_size=50,
     depositional_resolution=0.5u"m",

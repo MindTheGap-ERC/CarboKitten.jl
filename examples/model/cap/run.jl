@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/ca-with-production.md#examples/model/cap/run.jl>>[init]
+# ~/~ begin <<docs/src/models/ca-with-production.md#examples/model/cap/run.jl>>[init]
 
 module Script
 

@@ -20,17 +20,23 @@
             @assert dimension(s) == dimension(u"m")
             return fill(s, box.grid_size...)
         end
-
+    
         # s should be callable
         x, y = box_axes(box)
         return s.(x, y')
     end
-
+    
     function push_initial_sediment!(input::AbstractInput, state::AbstractState)
         s = stack(initial_sediment(input.box, f) for f in input.facies; dims=1)
         push_sediment!(state.sediment_buffer, s ./ input.depositional_resolution .|> NoUnits)
         state.sediment_height .+= sum(s; dims=1)[1,:,:]
     end
     # ~/~ end
+
+    function write_header(input::AbstractInput, output::AbstractOutput)
+        for (i,f) in enumerate(input.facies)
+            set_attribute(output, "facies$(i)/initial_sediment", initial_sediment(input.box, f) |> in_units_of(u"m"))
+        end
+    end
 end
 # ~/~ end

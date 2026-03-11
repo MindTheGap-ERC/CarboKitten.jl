@@ -42,6 +42,7 @@ import ..Abstract: add_data_set, set_attribute, frame_writer, state_writer
 
 mutable struct H5Output <: AbstractOutput
     header::Header
+    save_active_layer::Bool
     fid::HDF5.File
 end
 
@@ -68,22 +69,26 @@ function make_header(input::AbstractInput)
 end
 
 
-function H5Output(input::AbstractInput, filename::String)
+function H5Output(input::Input, filename::String) where {Input <: AbstractInput}
     header = make_header(input)
     fid = h5open(filename, "w")
     create_group(fid, "input")
+    save_active_layer = hasfield(Input, :save_active_layer) ?
+        input.save_active_layer : false
 
-    finalizer(H5Output(header, fid)) do x
+    finalizer(H5Output(header, save_active_layer, fid)) do x
         close(x.fid)
     end
 end
 
 
-function H5Output(f, input::AbstractInput, filename::String)
+function H5Output(f, input::Input, filename::String) where {Input <: AbstractInput}
     header = make_header(input)
+    save_active_layer = hasfield(Input, :save_active_layer) ?
+        input.save_active_layer : false
     h5open(filename, "w") do fid
         create_group(fid, "input")
-        out = H5Output(header, fid)
+        out = H5Output(header, save_active_layer, fid)
         f(out)
     end
 end
@@ -114,17 +119,23 @@ function add_data_set(out::H5Output, name::Symbol, spec::OutputSpec)
     attrs["write_interval"] = spec.write_interval
 
     HDF5.create_dataset(grp, "production", datatype(Float64),
-        dataspace(nf, size..., nw),
+        dataspace(nf, size..., nw + 1),
         chunk=(nf, size..., 1), deflate=3)
     HDF5.create_dataset(grp, "disintegration", datatype(Float64),
-        dataspace(nf, size..., nw),
+        dataspace(nf, size..., nw + 1),
         chunk=(nf, size..., 1), deflate=3)
     HDF5.create_dataset(grp, "deposition", datatype(Float64),
-        dataspace(nf, size..., nw),
+        dataspace(nf, size..., nw + 1),
         chunk=(nf, size..., 1), deflate=3)
     HDF5.create_dataset(grp, "sediment_thickness", datatype(Float64),
         dataspace(size..., nw + 1),
         chunk=(size..., 1), deflate=3)
+
+    if out.save_active_layer
+        HDF5.create_dataset(grp, "active_layer", datatype(Float64),
+            dataspace(nf, size..., nw + 1),
+            chunk=(nf, size..., 1), deflate=3)
+    end
 end
 
 function get_group(fid::HDF5.File, name::String)
@@ -142,6 +153,7 @@ end
 function set_attribute(out::H5Output, name::String, value::AbstractArray{T,Dim}) where {T,Dim}
     gid = get_group(out.fid, name)
     tag = split(name,"/")[end]
+    @info "output: setting dataset $name"
     gid[tag] = value
 end
 
@@ -149,6 +161,7 @@ function set_attribute(out::H5Output, name::String, value)
     gid = get_group(out.fid, name)
     attr = attributes(gid)
     tag = split(name,"/")[end]
+    @info "output: setting attribute $name to $value"
     attr[tag] = value
 end
 
@@ -156,6 +169,7 @@ function state_writer(input::AbstractInput, out::H5Output)
     output_spec = input.output
     fid = out.fid
     grid_size = out.header.grid_size
+    n_f = out.header.n_facies
 
     function (idx::Int, state::AbstractState)
         for (k, v) in output_spec
@@ -165,6 +179,11 @@ function state_writer(input::AbstractInput, out::H5Output)
                     (is_column(v.slice...) ?
                      Float64[state.sediment_height[v.slice...] |> in_units_of(u"m");] :
                      reshape(state.sediment_height[v.slice...], size) |> in_units_of(u"m"))
+
+                if out.save_active_layer
+                    fid[string(k)]["active_layer"][:, :, :, div(idx - 1, v.write_interval) + 1] =
+                        reshape(state.active_layer[:, v.slice...], (n_f, size...)) |> in_units_of(u"m")
+                end
             end
         end
     end
@@ -179,13 +198,18 @@ function frame_writer(input::AbstractInput, out::H5Output)
         try_write(tgt, ::Nothing, v) = ()
         function try_write(tgt, src::AbstractArray, v)
             size = axis_size.(v.slice, grid_size)
-            tgt[:, :, :, div(idx - 1, v.write_interval)+1] +=
+            if (idx==1)
+                tgt[:, :, :, 1] +=
                 (reshape(src[:, v.slice...], (n_f, size...)) |> in_units_of(u"m"))
+            else
+                tgt[:, :, :, div(idx - 2, v.write_interval) + 2] +=
+                    (reshape(src[:, v.slice...], (n_f, size...)) |> in_units_of(u"m"))
+            end
         end
 
         for (k, v) in input.output
-            n_writes = div(input.time.steps, v.write_interval)
-            if div(idx-1, v.write_interval) + 1 <= n_writes
+            n_writes = div(input.time.steps, v.write_interval) + 1
+            if div(idx-2, v.write_interval) + 2 <= n_writes
                 grp = out.fid[string(k)]
                 try_write(grp["production"], frame.production, v)
                 try_write(grp["disintegration"], frame.disintegration, v)
@@ -213,13 +237,8 @@ using Unitful
 using Test
 
 const DummyFacies = [
-    ALCAP.Facies(
-        viability_range = (0, 0),
-        activation_range = (0, 0),
-        maximum_growth_rate=0.0u"m/Myr",
-        extinction_coefficient=0.0u"m^-1",
-        saturation_intensity=0.0u"W/m^2",
-        diffusion_coefficient=0.0u"m/yr")]
+    ALCAP.Facies(),
+    ALCAP.Facies(initial_sediment=3.0u"m")]
 
 const input = ALCAP.Input(
     tag="test",
@@ -258,36 +277,56 @@ const filename = "testH5.h5"
         end
 
         # create a frame of ones to be the deposition etc. each time step
-        dummy_data = ones(Float64, 1, 5, 1) * u"m"
+        dummy_data = ones(Float64, 2, 5, 1) * u"m"
         inc = Frame(
             production = dummy_data,
             deposition = dummy_data,
             disintegration = dummy_data
         )
 
+        write_frame(1, ALCAP.initial_frame(input))
         for t = 1:input.time.steps
-            write_frame(t, inc)
+            write_frame(t+1, inc)
         end
 
         close(output.fid)
 
         @testset "size of output array" begin
             h5open(fpath, "r") do f
-                @test size(f["wi1"]["deposition"][])[4] == 10
-                @test size(f["wi2"]["deposition"][])[4] == 5
-                @test size(f["wi3"]["deposition"][])[4] == 3
-                @test size(f["wi4"]["deposition"][])[4] == 2
+                @test size(f["wi1"]["deposition"][])[4] == 10 + 1
+                @test size(f["wi2"]["deposition"][])[4] == 5 + 1
+                @test size(f["wi3"]["deposition"][])[4] == 3 + 1
+                @test size(f["wi4"]["deposition"][])[4] == 2 + 1
             end
         end
 
         @testset "frame written only every write_interval" begin
             h5open(fpath, "r") do f
-                @test all(f["wi1"]["deposition"][] .≈ attrs(f["wi1"])["write_interval"])
-                @test all(f["wi2"]["deposition"][] .≈ attrs(f["wi2"])["write_interval"])
-                @test all(f["wi3"]["deposition"][] .≈ attrs(f["wi3"])["write_interval"])
-                @test all(f["wi4"]["deposition"][] .≈ attrs(f["wi4"])["write_interval"])
+                @test all(f["wi1"]["deposition"][][1,:,:,2:end] .≈ attrs(f["wi1"])["write_interval"])
+                @test all(f["wi2"]["deposition"][][1,:,:,2:end] .≈ attrs(f["wi2"])["write_interval"])
+                @test all(f["wi3"]["deposition"][][1,:,:,2:end] .≈ attrs(f["wi3"])["write_interval"])
+                @test all(f["wi4"]["deposition"][][1,:,:,2:end] .≈ attrs(f["wi4"])["write_interval"])
             end
         end
+
+        @testset "initial sediment frame is left empty when undefined" begin
+            h5open(fpath, "r") do f
+                @test all(f["wi1"]["deposition"][][1,:,:,1] .≈ 0.0)
+                @test all(f["wi2"]["deposition"][][1,:,:,1] .≈ 0.0)
+                @test all(f["wi3"]["deposition"][][1,:,:,1] .≈ 0.0)
+                @test all(f["wi4"]["deposition"][][1,:,:,1] .≈ 0.0)
+            end
+        end
+
+        @testset "initial sediment frame is present when defined" begin
+            h5open(fpath, "r") do f
+                @test all(f["wi1"]["deposition"][][2,:,:,1] .≈ 3.0)
+                @test all(f["wi2"]["deposition"][][2,:,:,1] .≈ 3.0)
+                @test all(f["wi3"]["deposition"][][2,:,:,1] .≈ 3.0)
+                @test all(f["wi4"]["deposition"][][2,:,:,1] .≈ 3.0)
+            end
+        end
+
     end
 end
 

@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/model-alcap.md#src/Models/ALCAP.jl>>[init]
+# ~/~ begin <<docs/src/models/alcap.md#src/Models/ALCAP.jl>>[init]
 @compose module ALCAP
 @mixin Tag, Output, CAProduction, ActiveLayer, InitialSediment, Diagnostics
 
@@ -9,7 +9,7 @@ using ..WaterDepth: water_depth
 using ...Output: Frame
 using ModuleMixins: @for_each
 
-export Input, Facies
+export Input, Facies, BenthicProduction, PelagicProduction
 
 function initial_state(input::AbstractInput)
     ca_state = CellularAutomaton.initial_state(input)
@@ -31,6 +31,13 @@ function initial_state(input::AbstractInput)
     return state
 end
 
+function initial_frame(input::Input)
+    dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
+    return Frame(production=zeros(Sediment,size(dep)), 
+                  disintegration=zeros(Sediment,size(dep)),
+                  deposition=dep)
+end
+
 function step!(input::Input)
     step_ca! = CellularAutomaton.step!(input)
     disintegrate! = ActiveLayer.disintegrator(input)
@@ -38,7 +45,7 @@ function step!(input::Input)
     transport! = ActiveLayer.transporter(input)
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
-    pf = cementation_factor(input)
+    pf = lithification_factor(input)
     dtf = input.disintegration_transfer
     debug = input.diagnostics
 

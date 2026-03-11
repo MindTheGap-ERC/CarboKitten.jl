@@ -7,7 +7,7 @@ using HDF5
 
 import CarboKitten.Components.Common: AbstractInput
 import CarboKitten.Visualization: production_curve!, production_curve
-using CarboKitten.Components.Production: Facies, production_rate
+using CarboKitten.Production: BenthicProduction, benthic_production, PelagicProduction, pelagic_production
 
 function production_curve!(ax, input::I) where I <: AbstractInput
     ax.title = "production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))"
@@ -48,13 +48,24 @@ function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")
 
     for i in 1:a["n_facies"][]
         fa = HDF5.attributes(g["facies$(i)"])
-        f = Facies(
-            maximum_growth_rate = fa["maximum_growth_rate"][] * u"m/Myr",
-            extinction_coefficient = fa["extinction_coefficient"][] * u"m^-1",
-            saturation_intensity = fa["saturation_intensity"][] * u"W/m^2")
-        depth = (0.1u"m":0.1u"m":-max_depth)
-        prod = [production_rate(insolation, f, d) for d in depth]
-        lines!(ax, prod / u"m/Myr", - depth / u"m")
+        if fa["type"][] == "benthic"
+            f = BenthicProduction(
+                maximum_growth_rate = fa["maximum_growth_rate"][] * u"m/Myr",
+                extinction_coefficient = fa["extinction_coefficient"][] * u"m^-1",
+                saturation_intensity = fa["saturation_intensity"][] * u"W/m^2")
+            depth = (0.1u"m":0.1u"m":-max_depth)
+            prod = [benthic_production(insolation, f, d) for d in depth]
+            lines!(ax, prod / u"m/Myr", - depth / u"m")
+        end
+        if fa["type"][] == "pelagic"
+            f = PelagicProduction(
+                maximum_growth_rate = fa["maximum_growth_rate"][] * u"1/Myr",
+                extinction_coefficient = fa["extinction_coefficient"][] * u"m^-1",
+                saturation_intensity = fa["saturation_intensity"][] * u"W/m^2")
+            depth = (0.1u"m":0.1u"m":-max_depth)
+            prod = [pelagic_production(insolation, f, d) for d in depth]
+            lines!(ax, prod / u"m/Myr", - depth / u"m")
+        end
     end
 end
 

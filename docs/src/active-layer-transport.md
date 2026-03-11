@@ -8,9 +8,9 @@ In a model without transport, we could write
 
 $$\sigma + \sum_f {{\partial \eta_f} \over {\partial t}} = \sum_f P_f,$$
 
-where $\sigma$ is the subsidence rate in $m/s$. We consider the mass balance for each facies separately.
+where $\sigma$ is the subsidence rate in $m/s$, $\eta_f$ is elevation of the sediment surface relative to a fixed level (as defined by [Paola1992](@cite)). We consider the mass balance for each facies separately.
 
-We suppose that loose sediment, either fresh production or disintegrated older sediment, is being transported in a layer on top of the sea bed. The flux in this layer is assumed to be directly proportional to the local slope of the sea bed $| \nabla_x \eta_* |$, where $\eta_* = \sum_f \eta_f$, the sum over all facies contributions, including $\eta_0$, the initial bedrock eleveation.
+We suppose that loose sediment, either fresh production or disintegrated older sediment, is being transported in a layer on top of the sea bed. The flux in this layer is assumed to be directly proportional to the local slope of the sea bed $| \nabla_x \eta_* |$, where $\eta_* = \sum_f \eta_f$, the sum over all facies contributions, including $\eta_0$, the initial bedrock elevation.
 
 ![Schematic of Active Layer approach](fig/active-layer-export.svg)
 
@@ -59,19 +59,24 @@ By default (`ActiveLayer.jl`), `disintegration_transfer` is the identity functio
 For three autochthonous (produced *in situ*) facies and their transported equivalents, one may define:
 
 ```julia
-disintegration_transfer = x -> [0.0u"m", 0.0u"m", 0.0u"m", x[1]+x[4], x[2]+x[5], x[3]+x[6]]
+disintegration_transfer = f -> stack((0.0.*f[1,:,:], 0.0.*f[2,:,:], 0.0.*f[3,:,:],
+                                      f[1,:,:].+f[4,:,:], f[2,:,:].+f[5,:,:], f[3,:,:].+f[6,:,:]), dims=1)
 ```
 
-The transfer function takes the produced sediment vector `x`, sets facies 1-3 to zero and moves all the transported material into the "transported" facies (4-6). 
+The transfer function takes the array of produced sediment `p` for all facies across the whole grid, sets facies 1-3 to zero and moves all the transported material into the "transported" facies (4-6).  
+
+The function should be defined as shown above so that it returns the adjusted production for each facies across the domain in a tuple, which is then reshaped to match the dimensions of the input array `f` using `stack`.
 
 Transporting only 50% of disintegrated material into "transported" facies would look like this:
 
 ```julia
-disintegration_transfer = x -> [x[1]*0.5, x[2]*0.5, x[3]*0.5, 
-                                 x[1]*0.5+x[4], x[2]*0.5+x[5], x[3]*0.5+x[6]]
+disintegration_transfer = f -> stack((0.5.*f[1,:,:], 0.5.*f[2,:,:], 0.5.*f[3,:,:],
+                                      0.5.*f[1,:,:].+f[4,:,:], 0.5.*f[2,:,:].+f[5,:,:], 0.5.*f[3,:,:].+f[6,:,:]), dims=1)
 ```
 
 for the same number (3) of initial and transported facies.  When defining a transfer function, you should make sure that it conserves mass i.e. all the disintegrated sediment must be reallocated to somewhere.
+
+
 
 #### Tests
 A simple unit test verifies that the sediment is redistributed across facies as expected:
@@ -89,7 +94,8 @@ using CarboKitten.Components.Common
                 box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
                 time = TimeProperties(Δt=1.0u"kyr", steps=10),
                 facies=facies,
-                disintegration_transfer = x -> [0.0u"m", 0.5*x[2], x[1]+x[3], x[4]+0.5*x[2]],
+                disintegration_transfer = f -> stack((0.0.*f[1,:,:], 0.5.*f[2,:,:], 
+                                          f[1,:,:].+f[3,:,:], f[4,:,:].+0.5.*f[2,:,:]),dims=1),
             )
 
             state = AL.State(
@@ -102,7 +108,8 @@ using CarboKitten.Components.Common
             d = ones(Amount, AL.n_facies(input), input.box.grid_size...)
 
             dtf = input.disintegration_transfer
-            state.active_layer .+= dtf(d)
+            transferred_sed = dtf(d)
+            state.active_layer .+= transferred_sed 
 
             @test all(state.active_layer[1,:] .≈ 0.0u"m")
             @test all(state.active_layer[2,:] .≈ 0.5u"m")
@@ -110,11 +117,159 @@ using CarboKitten.Components.Common
             @test all(state.active_layer[4,:] .≈ 1.5u"m")
 
             @test sum(state.active_layer[:,1,1]) ≈ sum(d[:,1,1])
+
+            @test all(size(transferred_sed) .== size(d))
+
         end
     end
 end
 end
 ```
+
+### Diffusivity
+
+The diffusivity parameter used in CarboKitten is expressed in $\unit{m/Myr}$, because it is derived from the parameter $\nu_f$, transport velocity, that is expressed per unit slope. It is not the same as molecular-like diffusion coefficient, which have units $\unit{m^2/Myr}$. CarboKitten separates sediment lithification (`cementation_time`), disintegration (`disintegration_rate`) and transport on the slope. It also allows defining different wave velocity profiles by users. As a result, diffusivity set as a parameter differs from the diffusion coefficients reported in the literature. The effective diffusion coefficient of a given facies can be estimated for a given facies. In the example below, facies are assigned diffusivities that are relative to a minimum diffusivity, set to be 2.5 m/Myr, and the most mobile facies is assigned a quadruple of this value. Estimates of diffusion coefficients for these values have been obtained based on @hidding_carbokittenjl_2025.
+
+|          | Diffusivity $\unit{m/Myr}$ | Effective diffusion coefficient $\unit{m^2/Myr}$ |
+|----------|----------------------------|--------------------------------------------------|
+| Facies 1 | 10                         | 326 668                                          |
+| Facies 2 | 2.5                        | 80 461                                           |
+| Facies 3 | 5                          | 15 6904                                          |
+
+All other parameters held similar, diffusivity values below 2.5 m/Myr will result in a largely immobile facies at the timescale of $10^6$ yr. 
+
+```@raw html
+<details><summary>Example effect of diffusivity</summary>
+```
+
+``` {.julia file=examples/model/diffusivity/alcap_diffusivity.jl}
+module Diffusivity_example
+
+using Unitful
+using CarboKitten
+using CarboKitten.Export: read_slice, data_export, CSV
+
+const PATH = "data/output"
+
+const TAG = "diffusivity-example"
+
+cost min_diffusivity = 2.5u"m/yr"
+
+const FACIES = [
+    ALCAP.Facies(
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2",
+        diffusion_coefficient=4*min_diffusivity,
+        name="euphotic"),
+    ALCAP.Facies(
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2",
+        diffusion_coefficient=min_diffusivity,
+        name="oligophotic"),
+    ALCAP.Facies(
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2",
+        diffusion_coefficient=2*min_diffusivity,
+        name="aphotic"),
+
+    ALCAP.Facies(
+        active=false,
+        diffusion_coefficient=10.0u"m/yr",
+        name="euphotic transported"),
+    ALCAP.Facies(
+        active=false,
+        diffusion_coefficient=1.0u"m/yr",
+        name="oligophotic transported"),
+    ALCAP.Facies(
+        active=false,
+        diffusion_coefficient=5.0u"m/yr",
+        name="aphotic transported")
+]
+
+const PERIOD = 0.2u"Myr"
+const AMPLITUDE = 4.0u"m"
+
+const INPUT = ALCAP.Input(
+    tag="$TAG",
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    time=TimeProperties(
+        Δt=0.0002u"Myr",
+        steps=5000),
+    output=Dict(
+        :topography => OutputSpec(slice=(:,:), write_interval=10),
+        :profile => OutputSpec(slice=(:, 25), write_interval=1)),
+    ca_interval=1,
+    initial_topography=(x, y) -> -x / 300.0,
+    sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
+    subsidence_rate=50.0u"m/Myr",
+    cementation_time = 5000u"yr",
+    disintegration_rate=5.0u"m/Myr",
+    disintegration_transfer = f -> stack((0.0.*f[1,:,:], 0.0.*f[2,:,:], 0.0.*f[3,:,:],
+                                      f[1,:,:].+f[4,:,:], f[2,:,:].+f[5,:,:], f[3,:,:].+f[6,:,:]), dims=1),
+    insolation=400.0u"W/m^2",
+    sediment_buffer_size=2,
+    depositional_resolution=0.5u"m",
+    facies=FACIES)
+
+function main()
+    run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+end
+
+end
+
+Diffusivity_example.main()
+
+```
+```@raw html
+</details>
+```
+
+![Effects of differences in diffusivity on facies distribution in an example of the ALCAP model](fig/diffusivity-alternative.png)
+
+
+```@raw html
+<details><summary>Proportion of transported facies 1 to all sediment</summary>
+```
+``` {.julia file=examples/model/diffusivity/plot_transported_fraction.jl}
+module Transported_fraction
+using GLMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: profile_plot!
+
+function main()
+    (header, slice) = read_slice("data/output/diffusivity-example.h5", :profile)
+    fig = Figure()
+    ax = Axis(fig[1, 1])
+
+    x = header.axes.x
+#    t = header.axes.t
+
+    plot = profile_plot!(x -> x[4]/sum(x), ax, header, slice; colorrange=(0, 0.1))
+    Colorbar(fig[1, 2], plot; label=L"f_1transported / f_{total}")
+
+    save("docs/src/_fig/transported_fraction4.png", fig)
+    fig
+end
+end
+
+Transported_fraction.main()
+```
+```@raw html
+</details>
+```
+
+In this example, facies 1 has the highest diffusivity, but is mostly deposited on a gentle slope, so not much of it actually gets transported. This is easier to spot when presented as its proportion to all facies.
+
+![Proportion of transported facies 1 (highest diffusivity) to all facies](fig/transported_fraction4.png)
 
 ## Test 1: production transport
 
@@ -453,10 +608,7 @@ transport_test_input(;
 		facies = [ALCAP.Facies(
 			initial_sediment = initial_sediment,
 			diffusion_coefficient = diffusion_coefficient,
-			wave_velocity = wave_velocity,
-			maximum_growth_rate = 0.0u"m/Myr",
-			extinction_coefficient = 0.8u"m^-1",
-			saturation_intensity = 60u"W/m^2"
+			wave_velocity = wave_velocity
 		)],
 		disintegration_rate = disintegration_rate,
 		initial_topography = initial_topography,
@@ -627,7 +779,7 @@ CarboKitten.Components.ActiveLayer
 @compose module ActiveLayer
 @mixin WaterDepth, FaciesBase, SedimentBuffer
 
-export disintegrator, transporter, cementation_factor
+export disintegrator, transporter, lithification_factor
 
 using ..Common
 using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
@@ -648,9 +800,10 @@ end
     intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
     disintegration_transfer::Function = x -> x
-    cementation_time::Union{typeof(1.0u"Myr"),Nothing} = nothing
-    transport_solver = Val{:RK4}
+    lithification_time::Union{typeof(1.0u"Myr"),Nothing} = nothing
+    transport_solver = Val{:forward_euler}
     transport_substeps = :adaptive
+    save_active_layer::Bool = false
 end
 
 courant_max(::Type{Val{:RK4}}) = 2.0
@@ -660,11 +813,11 @@ transport_solver(f, _) = f
 transport_solver(::Type{Val{:RK4}}, box) = runge_kutta_4(typeof(1.0u"m"), box)
 transport_solver(::Type{Val{:forward_euler}}, _) = forward_euler
 
-function cementation_factor(input::AbstractInput)
-    if input.cementation_time === nothing
+function lithification_factor(input::AbstractInput)
+    if input.lithification_time === nothing
         return 1.0
     else
-        return 1.0 - exp(input.time.Δt * log(1 / 2) / input.cementation_time)
+        return 1.0 - exp(input.time.Δt * log(1 / 2) / input.lithification_time)
     end
 end
 
@@ -709,7 +862,7 @@ function adaptive_transporter(input)
                 x,y = box_axes(box)
                 error("""
 
-                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]), 
+                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]),
                 (physical location x = $(x[err_loc[2]]), y = $(y[err_loc[3]])).
 
                 For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/
@@ -791,10 +944,10 @@ function transporter(input)
                 x,y = box_axes(box)
                 error("""
 
-                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]), 
+                $(C[i]) in the active layer after transport solve at grid cell $(err_loc[2:3]),
                 (physical location x = $(x[err_loc[2]]), y = $(y[err_loc[3]])).
 
-                For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/ 
+                For tips on troubleshooting transport solver issues see https://mindthegap-erc.github.io/CarboKitten.jl/dev/debugging/
 
                 """)
 
@@ -806,9 +959,160 @@ end
 function write_header(input::AbstractInput, output::AbstractOutput)
     set_attribute(output, "intertidal_zone", input.intertidal_zone |> in_units_of(u"m"))
     set_attribute(output, "disintegration_rate", input.disintegration_rate |> in_units_of(u"m/Myr"))
-    if input.cementation_time !== nothing
-        set_attribute(output, "cementation_time", input.cementation_time |> in_units_of(u"Myr"))
+    if input.lithification_time !== nothing
+        set_attribute(output, "lithification_time", input.lithification_time |> in_units_of(u"Myr"))
     end
+end
+
+end
+```
+
+## Saving and Inspecting the Active Layer
+
+To follow what is happening in the active layer, you can optionally save the active layer to the output. This is enabled by passing `save_active_layer = true` in your input definition.
+
+``` {.julia file=examples/transport/active-layer-inspection.jl}
+module Script
+using CarboKitten
+using CarboKitten.Models: WithoutCA as M
+using CarboKitten.Visualization: profile_plot!
+
+using CairoMakie
+using CarboKitten: Box
+
+v_const(v_max) = _ -> (Vec2(v_max, 0.0u"m/yr"), Vec2(0.0u"1/yr", 0.0u"1/yr"))
+
+function run()
+    CarboKitten.init()
+
+    facies = [
+        M.Facies(
+            maximum_growth_rate=100.0u"m/Myr",
+            extinction_coefficient=0.8u"m^-1",
+            saturation_intensity=60u"W/m^2",
+            diffusion_coefficient=100.0u"m/yr",
+            wave_velocity=v_const(-5.0u"m/yr")),
+        M.Facies(
+            maximum_growth_rate=20.0u"m/Myr",
+            extinction_coefficient=0.8u"m^-1",
+            saturation_intensity=60u"W/m^2",
+            diffusion_coefficient=10.0u"m/yr",
+            wave_velocity=v_const(0.0u"m/yr"))]
+
+
+    input = M.Input(
+        box=CarboKitten.Box{Coast}(grid_size=(500, 1), phys_scale=50.0u"m"),
+        time=TimeProperties(
+            Δt=20u"yr",
+            steps=40000),
+
+        output=Dict(
+            :profile => OutputSpec(slice = (:, 1), write_interval = 40),
+            :col1 => OutputSpec(slice = (100, 1)),
+            :col2 => OutputSpec(slice = (200, 1)),
+            :col3 => OutputSpec(slice = (300, 1)),
+            :col4 => OutputSpec(slice = (400, 1))),
+
+        initial_topography=(x, y) -> (15u"km" - x) / 300.0,
+        sea_level=t -> 0.0u"m",
+
+        subsidence_rate=50.0u"m/Myr",
+        disintegration_rate=100.0u"m/Myr",
+        lithification_time=50.0u"yr",
+
+        insolation=400.0u"W/m^2",
+        sediment_buffer_size=50,
+        depositional_resolution=0.5u"m",
+        facies=facies,
+
+        transport_solver=Val{:forward_euler},
+        intertidal_zone=0.0u"m",
+        save_active_layer=true)
+
+    result = run_model(Model{M}, input, MemoryOutput(input))
+end
+
+function plot(result::MemoryOutput)
+    header = result.header
+    slice = result.data_slices[:profile]
+    n_cols = length(result.data_columns)
+
+	fig = Figure()
+    ax1 = Axis(fig[1, 1:n_cols])
+
+	x = header.axes.x
+	t = header.axes.t
+
+	plot = profile_plot!(ax1, header, slice; colorrange=(0.2, 1.0)) do x; x[1] / sum(x) end
+    col_positions = [x[col.slice[1]] |> in_units_of(u"km") for col in values(result.data_columns)]
+    vlines!(ax1, col_positions; color=:red)
+
+    Colorbar(fig[1, n_cols+1], plot; label=L"f_1 / f_{\textrm{total}}")
+
+    col_names = sort!(collect(keys(result.data_columns)))
+    for (i, k) in enumerate(col_names)
+        f1 = result.data_columns[k].deposition[1,:]
+        f2 = result.data_columns[k].deposition[2,:]
+        f_total = f1 .+ f2
+        ax = Axis(fig[2, i], title=string(k) * " amount")
+        lines!(ax, f1 |> in_units_of(u"m"), t[1:end-1] |> in_units_of(u"Myr"); label="facies 1")
+        lines!(ax, f2 |> in_units_of(u"m"), t[1:end-1] |> in_units_of(u"Myr"); label="facies 2")
+        lines!(ax, f_total |> in_units_of(u"m"), t[1:end-1] |> in_units_of(u"Myr"); label="total", color=:black, linewidth=2)
+        axislegend(ax)
+    end
+
+	fig
+end
+
+main() = plot(run())
+end
+
+Script.main()
+```
+
+``` {.julia file=test/Output/ActiveLayerSpec.jl}
+module ActiveLayerSpec
+
+using CarboKitten
+using CarboKitten.Output.Abstract: state_writer, add_data_set, Frame
+using CarboKitten.Output.MemoryWriter: MemoryOutput
+using Unitful
+using Test
+
+const DummyFacies = [
+    ALCAP.Facies(
+        viability_range = (0, 0),
+        activation_range = (0, 0),
+        diffusion_coefficient=0.0u"m/yr")]
+
+const input = ALCAP.Input(
+    tag="test",
+    box=Box{Periodic{2}}(grid_size=(5, 1), phys_scale=5.0u"m"),
+    time=TimeProperties(
+        Δt=0.0001u"Myr",
+        steps=10),
+    output=Dict(
+        :wi1 => OutputSpec(slice=(:,:), write_interval=1)),
+    ca_interval=1,
+    initial_topography=(x, y) -> -0.0u"m",
+    sea_level = t -> 0.0u"m",
+    subsidence_rate=0.0u"m/Myr",
+    disintegration_rate=0.0u"m/Myr",
+    insolation=0.0u"W/m^2",
+    sediment_buffer_size=0,
+    depositional_resolution=0.0u"m",
+    facies=DummyFacies,
+    save_active_layer=true)
+
+@testset "ActiveLayer" begin
+    out = MemoryOutput(input)
+    write_state = state_writer(input, out)
+
+    for (k, v) in input.output
+        add_data_set(out, k, v)
+    end
+
+    @test out.data_volumes[:wi1].active_layer != nothing
 end
 
 end

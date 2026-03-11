@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/visualization.md#examples/visualization/glamour_view.jl>>[init]
+# ~/~ begin <<docs/src/visualization/topography.md#examples/visualization/glamour_view.jl>>[init]
 
 module Script
 

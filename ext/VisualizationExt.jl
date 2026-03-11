@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/visualization.md#ext/VisualizationExt.jl>>[init]
+# ~/~ begin <<docs/src/visualization/overview.md#ext/VisualizationExt.jl>>[init]
 module VisualizationExt
 
 include("WheelerDiagram.jl")

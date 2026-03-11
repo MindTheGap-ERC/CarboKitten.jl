@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/visualization.md#src/Visualization.jl>>[init]
+# ~/~ begin <<docs/src/visualization/overview.md#src/Visualization.jl>>[init]
 module Visualization
 export sediment_profile!, sediment_profile, wheeler_diagram!, wheeler_diagram, production_curve!,
        production_curve, glamour_view!, coeval_lines!, summary_plot, dominant_facies!, sediment_accumulation!

@@ -16,6 +16,12 @@ function initial_state(input::Input)
     return State(0, sediment_height)
 end
 
+function initial_frame(input::Input)
+    return Frame(production=zeros(Sediment,length(input.facies), input.box.grid_size...), 
+                  disintegration=zeros(Sediment,length(input.facies), input.box.grid_size...),
+                  deposition=zeros(Sediment,length(input.facies), input.box.grid_size...))
+end
+
 function step!(input::Input)
     τ = uniform_production(input)
     function (state::State)

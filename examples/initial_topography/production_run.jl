@@ -36,7 +36,7 @@ function run()
         transport_solver = Val{:forward_euler},
         sediment_buffer_size = 50,
         depositional_resolution = 0.5u"m",
-        cementation_time = 50.0u"yr",
+        lithification_time = 50.0u"yr",
         disintegration_rate = 100.0u"m/Myr")
 
     run_model(Model{ALCAP}, input, joinpath(PATH, "mainrun.h5"))

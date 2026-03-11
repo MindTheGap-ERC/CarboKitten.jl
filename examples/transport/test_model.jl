@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/finite-difference-transport.md#examples/transport/test_model.jl>>[init]
+# ~/~ begin <<docs/src/algorithms/finite-difference-transport.md#examples/transport/test_model.jl>>[init]
 module TestModel
 
 using CarboKitten

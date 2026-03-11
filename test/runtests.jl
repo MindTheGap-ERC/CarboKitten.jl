@@ -26,10 +26,11 @@ TEST_PATH = mktempdir()
         subsidence_rate = 0.001u"m/yr",
         insolation = 400.0u"W/m^2",
         facies = [BS92.Facies(
-          maximum_growth_rate = 0.005u"m/yr",
-          saturation_intensity = 50.0u"W/m^2",
-          extinction_coefficient = 0.05u"m^-1"
-        )])
+            production = BenthicProduction(
+                maximum_growth_rate = 0.005u"m/yr",
+                saturation_intensity = 50.0u"W/m^2",
+                extinction_coefficient = 0.05u"m^-1"))
+        ])
 
     run_model(Model{BS92}, BS92_TEST_INPUT, joinpath(TEST_PATH, "bs92_spm.h5"))
 

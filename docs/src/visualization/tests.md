@@ -1,0 +1,242 @@
+Visualization Tests
+===================
+
+Visualization routines are hard to test. There are several options here:
+
+- Perform regression tests against generated output files. Problem: The output of `GLMakie` depends on the graphics card that is used to render the images. We should expect better from `CairoMakie`, but no such luck. Perhaps this could work if we're very strict about the Makie versions that we test on. For now, we don't perform automated regression tests on visualization.
+- Test that the plotting functions don't throw exceptions.
+- Test the inner logic in those visualizations that are more involved.
+- Generate plots on a set of model runs automatically and compare manually.
+
+The rest of this page is doing that last thing.
+
+Results
+-------
+
+![](../fig/alcap-extreme-erosion.png)
+
+![](../fig/alcap-rapid-oscillation.png)
+
+Runs
+----
+
+We have the following examples for each model.
+
+- [CAP Example](../models/ca-with-production.md)
+- [ALCAP Example](../models/alcap.md)
+- [Without CA (ALP)](../models/without-ca.md)
+- TODO [With Denudation](../models/with-denudation.md)
+
+And some extras to stress test the visualization.
+
+### Standard Facies
+
+``` {.julia #standard-facies}
+const FACIES = [
+    ALCAP.Facies(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2",
+        diffusion_coefficient=50.0u"m/yr",
+        name="euphotic"),
+    ALCAP.Facies(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2",
+        diffusion_coefficient=25.0u"m/yr",
+        name="oligophotic"),
+    ALCAP.Facies(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2",
+        diffusion_coefficient=12.5u"m/yr",
+        name="aphotic"),
+
+    ALCAP.Facies(
+        active=false,
+        diffusion_coefficient=50.0u"m/yr",
+        name="euphotic transported"),
+    ALCAP.Facies(
+        active=false,
+        diffusion_coefficient=50.0u"m/yr",
+        name="oligophotic transported"),
+    ALCAP.Facies(
+        active=false,
+        diffusion_coefficient=50.0u"m/yr",
+        name="aphotic transported")
+]
+```
+
+### Extreme Submarine Erosion
+
+#### Purpose 
+
+Test plotting when significant sediment removal occurs through erosion.
+
+#### Key Parameters
+
+- Disintegration rate: **80 m/Myr** (1.6x normal)
+- Sea-level amplitude: **5.5 m** (1.4x normal)
+- Subsidence rate: **38 m/Myr** (reduced to enhance exposure)
+- Period: **0.18 Myr**
+- Sediment buffer: **150** (3x normal)
+- Depositional resolution: **1.0 m** (2x normal to handle large transport events)
+
+#### What it tests
+
+- Coeval lines when large sections of sediment are eroded
+- Unconformity tracking with major hiatus events
+- Handling of transported sediment after severe erosion
+- Edge cases where depositional sequences may be partially removed
+
+#### Expected features
+
+- Major unconformities with significant time gaps
+- Coeval lines that may have complex geometries after erosion
+- Significant lateral transport and redeposition
+This run has an extreme disintegration rate.
+
+``` {.julia #extreme-erosion-parameters}
+subsidence_rate=38.0u"m/Myr",
+disintegration_rate=80.0u"m/Myr",
+```
+
+Other parameters are unchanged from our usual settings.
+
+``` {.julia .task file=examples/extreme-erosion/run.jl}
+#| creates:
+#|   - data/output/alcap-extreme-erosion.h5
+module ScriptExtremeErosion
+
+using Unitful
+using CarboKitten
+using CarboKitten.Export: read_slice, data_export, CSV
+
+const PATH = "data/output"
+const TAG = "alcap-extreme-erosion"
+
+<<standard-facies>>
+
+const PERIOD = 0.18u"Myr"
+const AMPLITUDE = 5.5u"m"
+
+const INPUT = ALCAP.Input(
+    tag="$TAG",
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    time=TimeProperties(
+        Δt=0.0002u"Myr",
+        steps=5000),
+    output=Dict(
+        :topography => OutputSpec(slice=(:,:), write_interval=10),
+        :profile => OutputSpec(slice=(:, 25), write_interval=1)),
+    ca_interval=1,
+    initial_topography=(x, y) -> -x / 300.0,
+    sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
+    disintegration_transfer=p->stack((0.0.*p[1,:,:], 0.0.*p[2,:,:], 0.0.*p[3,:,:],
+                               p[1,:,:].+p[4,:,:], p[2,:,:].+p[5,:,:], p[3,:,:].+p[6,:,:]), dims=1),
+    insolation=400.0u"W/m^2",
+    sediment_buffer_size=150,  
+    depositional_resolution=1.0u"m",  
+    facies=FACIES,
+    <<extreme-erosion-parameters>>
+)
+
+main() = run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+end  # module ScriptExtremeErosion
+
+ScriptExtremeErosion.main()
+```
+
+### Extreme Sea Level Fluctuations
+
+#### Purpose 
+
+Test plotting with higher-frequency sea-level changes creating multiple thin layers.
+
+#### Key Parameters
+
+- Period: **0.1 Myr** (2x faster, ~100 kyr cycles)
+- Sea-level amplitude: **4.5 m** (1.1x normal)
+- Disintegration rate: **65 m/Myr** (1.3x normal)
+- Subsidence rate: **50 m/Myr** (normal)
+- Sediment buffer: **150** (3x normal)
+- Depositional resolution: **1.0 m** (2x normal to handle rapid oscillations)
+
+#### What it tests
+
+- Multiple closely-spaced coeval lines (should create ~10 cycles)
+- Multiple unconformities with moderate spacing
+- Complex stratigraphic architecture with repeated exposure/deposition
+- Rendering performance with higher-frequency features
+
+#### Expected features
+
+- Multiple thin to moderate depositional layers
+- Repeated unconformities at regular intervals
+- Tests balance between visual clarity and feature density
+
+``` {.julia file=examples/extreme-sealevel/run.jl}
+module ScriptRapidOscillation
+
+using Unitful
+using CarboKitten
+using CarboKitten.Export: read_slice, data_export, CSV
+
+const PATH = "data/output"
+const TAG = "alcap-rapid-oscillation"
+
+<<standard-facies>>
+
+const PERIOD = 0.1u"Myr"
+const AMPLITUDE = 4.5u"m"
+
+const INPUT = ALCAP.Input(
+    tag="$TAG",
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    time=TimeProperties(
+        Δt=0.0002u"Myr",
+        steps=5000),
+    output=Dict(
+        :topography => OutputSpec(slice=(:,:), write_interval=10),
+        :profile => OutputSpec(slice=(:, 25), write_interval=1)),
+    ca_interval=1,
+    initial_topography=(x, y) -> -x / 300.0,
+    sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
+    subsidence_rate=50.0u"m/Myr",
+    disintegration_rate=65.0u"m/Myr",  
+    disintegration_transfer=p->stack((0.0.*p[1,:,:], 0.0.*p[2,:,:], 0.0.*p[3,:,:],
+                               p[1,:,:].+p[4,:,:], p[2,:,:].+p[5,:,:], p[3,:,:].+p[6,:,:]), dims=1),
+    insolation=400.0u"W/m^2",
+    sediment_buffer_size=150,  
+    depositional_resolution=1.0u"m",  
+    facies=FACIES)
+
+main() = run_model(Model{ALCAP}, INPUT, "$(PATH)/$(TAG).h5")
+
+end
+
+ScriptRapidOscillation.main()
+```
+
+Plotting
+--------
+
+``` {.julia .task file=examples/visualization/stress-test.jl}
+#| requires:
+#|   - data/output/alcap-extreme-erosion.h5
+#|   - data/output/alcap-rapid-oscillation.h5
+#| creates:
+#|   - docs/src/_fig/alcap-extreme-erosion.png
+#|   - docs/src/_fig/alcap-rapid-oscillation.h5
+#| collect: figures
+using GLMakie
+using CarboKitten.Visualization
+
+GLMakie.activate!()
+
+fig_erosion = summary_plot("data/output/alcap-extreme-erosion.h5")
+save("docs/src/_fig/alcap-extreme-erosion.png", fig_erosion)
+
+fig_oscillation = summary_plot("data/output/alcap-rapid-oscillation.h5")
+save("docs/src/_fig/alcap-rapid-oscillation.png", fig_oscillation)
+```

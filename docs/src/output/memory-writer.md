@@ -86,7 +86,7 @@ function run()
 
         subsidence_rate=50.0u"m/Myr",
         disintegration_rate=100.0u"m/Myr",
-        cementation_time=50.0u"yr",
+        lithification_time=50.0u"yr",
 
         insolation=400.0u"W/m^2",
         sediment_buffer_size=50,
@@ -146,13 +146,14 @@ module MemoryWriter
 using ..Abstract
 import ..Abstract:
     new_output, add_data_set, set_attribute, write_sediment_thickness,
-    write_production, write_disintegration, write_deposition
+    write_production, write_disintegration, write_deposition, write_active_layer
 using ...Components.Common
 using ...Components.WaterDepth: initial_topography
 using ...CarboKitten: time_axis, box_axes, OutputSpec, AbstractOutput, AbstractInput, AbstractState
 
 struct MemoryOutput <: AbstractOutput
     header::Header
+    save_active_layer::Bool
     data_volumes::Dict{Symbol,DataVolume}
     data_slices::Dict{Symbol,DataSlice}
     data_columns::Dict{Symbol,DataColumn}
@@ -160,12 +161,14 @@ end
 
 MemoryOutput(input::AbstractInput) = new_output(MemoryOutput, input)
 
-function new_output(::Type{MemoryOutput}, input::AbstractInput)
+function new_output(::Type{MemoryOutput}, input::Input) where {Input <: AbstractInput}
     t_axis = time_axis(input.time)
     x_axis, y_axis = box_axes(input.box)
     axes = Axes(x=x_axis, y=y_axis, t=t_axis)
     h0 = initial_topography(input)
     sl = input.sea_level.(t_axis)
+    save_active_layer = hasfield(Input, :save_active_layer) ?
+        input.save_active_layer : false
 
     header = Header(
         tag=input.tag,
@@ -180,7 +183,7 @@ function new_output(::Type{MemoryOutput}, input::AbstractInput)
         data_sets=Dict(),
         attributes=Dict())
 
-    return MemoryOutput(header, Dict(), Dict(), Dict())
+    return MemoryOutput(header, save_active_layer, Dict(), Dict(), Dict())
 end
 
 axis_size(::Colon, a::Int) = a
@@ -202,26 +205,29 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::OutputSpec)
         size = axis_size.(slice, full_size)
         out.data_volumes[label] = DataVolume(
             slice, write_interval,
-            zeros(Amount, n_facies, size..., n_steps),
-            zeros(Amount, n_facies, size..., n_steps),
-            zeros(Amount, n_facies, size..., n_steps),
-            zeros(Amount, size..., n_steps + 1))
+            zeros(Amount, n_facies, size..., n_steps + 1),
+            zeros(Amount, n_facies, size..., n_steps + 1),
+            zeros(Amount, n_facies, size..., n_steps + 1),
+            zeros(Amount, size..., n_steps + 1),
+            out.save_active_layer ? zeros(Amount, n_facies, size..., n_steps + 1) : nothing)
     elseif h.kind == :slice
         size = axis_size.(slice, full_size)
         slice_size = size[1] == 1 ? size[2] : size[1]
         out.data_slices[label] = DataSlice(
             slice, write_interval,
-            zeros(Amount, n_facies, slice_size, n_steps),
-            zeros(Amount, n_facies, slice_size, n_steps),
-            zeros(Amount, n_facies, slice_size, n_steps),
-            zeros(Amount, slice_size, n_steps + 1))
+            zeros(Amount, n_facies, slice_size, n_steps + 1),
+            zeros(Amount, n_facies, slice_size, n_steps + 1),
+            zeros(Amount, n_facies, slice_size, n_steps + 1),
+            zeros(Amount, slice_size, n_steps + 1),
+            out.save_active_layer ? zeros(Amount, n_facies, slice_size, n_steps + 1) : nothing)
     elseif h.kind == :column
         out.data_columns[label] = DataColumn(
             slice, write_interval,
-            zeros(Amount, n_facies, n_steps),
-            zeros(Amount, n_facies, n_steps),
-            zeros(Amount, n_facies, n_steps),
-            zeros(Amount, n_steps + 1))
+            zeros(Amount, n_facies, n_steps + 1),
+            zeros(Amount, n_facies, n_steps + 1),
+            zeros(Amount, n_facies, n_steps + 1),
+            zeros(Amount, n_steps + 1),
+            out.save_active_layer ? zeros(Amount, n_facies, n_steps + 1) : nothing)
     end
 end
 
@@ -235,6 +241,13 @@ write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::Abstr
     out.data_slices[label].sediment_thickness[:, idx] .= data
 write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
     out.data_volumes[label].sediment_thickness[:, :, idx] .= data
+
+write_active_layer(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
+    out.data_columns[label].active_layer[:, idx] .= data
+write_active_layer(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
+    out.data_slices[label].active_layer[:, :, idx] .= data
+write_active_layer(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,3}) =
+    out.data_volumes[label].active_layer[:, :, :, idx] .= data
 
 write_production(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
     out.data_columns[label].production[:, idx] .+= data
@@ -271,13 +284,8 @@ using Unitful
 using Test
 
 const DummyFacies = [
-    ALCAP.Facies(
-        viability_range = (0, 0),
-        activation_range = (0, 0),
-        maximum_growth_rate=0.0u"m/Myr",
-        extinction_coefficient=0.0u"m^-1",
-        saturation_intensity=0.0u"W/m^2",
-        diffusion_coefficient=0.0u"m/yr")]
+    ALCAP.Facies(),
+    ALCAP.Facies(initial_sediment=3.0u"m")]
 
 const input = ALCAP.Input(
     tag="test",
@@ -317,22 +325,37 @@ const input = ALCAP.Input(
         disintegration = dummy_data
     )
 
+    write_frame(1, ALCAP.initial_frame(input))
     for t = 1:input.time.steps
-        write_frame(t, inc)
+        write_frame(t+1, inc)
     end
 
     @testset "size of output array" begin
-        @test size(out.data_volumes[:wi1].deposition)[4] == 10
-        @test size(out.data_volumes[:wi2].deposition)[4] == 5
-        @test size(out.data_volumes[:wi3].deposition)[4] == 3
-        @test size(out.data_volumes[:wi4].deposition)[4] == 2
+        @test size(out.data_volumes[:wi1].deposition)[4] == 10 + 1
+        @test size(out.data_volumes[:wi2].deposition)[4] == 5 + 1
+        @test size(out.data_volumes[:wi3].deposition)[4] == 3 + 1
+        @test size(out.data_volumes[:wi4].deposition)[4] == 2 + 1
     end
 
     @testset "frame written only every write_interval" begin
-        @test all(out.data_volumes[:wi1].deposition .≈ out.data_volumes[:wi1].write_interval*1.0u"m")
-        @test all(out.data_volumes[:wi2].deposition .≈ out.data_volumes[:wi2].write_interval*1.0u"m")
-        @test all(out.data_volumes[:wi3].deposition .≈ out.data_volumes[:wi3].write_interval*1.0u"m")
-        @test all(out.data_volumes[:wi4].deposition .≈ out.data_volumes[:wi4].write_interval*1.0u"m")
+        @test all(out.data_volumes[:wi1].deposition[1,:,:,2:end] .≈ out.data_volumes[:wi1].write_interval*1.0u"m")
+        @test all(out.data_volumes[:wi2].deposition[1,:,:,2:end] .≈ out.data_volumes[:wi2].write_interval*1.0u"m")
+        @test all(out.data_volumes[:wi3].deposition[1,:,:,2:end] .≈ out.data_volumes[:wi3].write_interval*1.0u"m")
+        @test all(out.data_volumes[:wi4].deposition[1,:,:,2:end] .≈ out.data_volumes[:wi4].write_interval*1.0u"m")
+    end
+
+    @testset "initial sediment frame is left empty when undefined" begin
+        @test all(out.data_volumes[:wi1].deposition[1,:,:,1] .≈ 0.0u"m")
+        @test all(out.data_volumes[:wi2].deposition[1,:,:,1] .≈ 0.0u"m")
+        @test all(out.data_volumes[:wi3].deposition[1,:,:,1] .≈ 0.0u"m")
+        @test all(out.data_volumes[:wi4].deposition[1,:,:,1] .≈ 0.0u"m")
+    end
+
+    @testset "initial sediment frame is present when defined" begin
+        @test all(out.data_volumes[:wi1].deposition[2,:,:,1] .≈ 3.0u"m")
+        @test all(out.data_volumes[:wi2].deposition[2,:,:,1] .≈ 3.0u"m")
+        @test all(out.data_volumes[:wi3].deposition[2,:,:,1] .≈ 3.0u"m")
+        @test all(out.data_volumes[:wi4].deposition[2,:,:,1] .≈ 3.0u"m")
     end
 
 end

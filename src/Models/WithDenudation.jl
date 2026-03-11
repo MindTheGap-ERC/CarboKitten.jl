@@ -11,7 +11,7 @@ using ...Stencil
 using ...BoundaryTrait
 using ...Denudation.EmpiricalDenudationMod: slope_kernel
 using ...Output: Frame
-export Input, Facies
+export Input, Facies, BenthicProduction, PelagicProduction
 
 function initial_state(input::AbstractInput)
     ca_state = CellularAutomaton.initial_state(input)
@@ -50,7 +50,7 @@ function step!(input::Input)
     redistribute = redistribution(input)
     local_water_depth = water_depth(input)
     slopefn = slope_function(input, input.box)
-    pf = cementation_factor(input)
+    pf = lithification_factor(input)
     dtf = input.disintegration_transfer
 
     slope = Array{Float64}(undef, input.box.grid_size...)

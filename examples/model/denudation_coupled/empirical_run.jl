@@ -2,6 +2,7 @@ module Script
 
 
 using Unitful
+using CarboKitten
 using CarboKitten.Components
 using CarboKitten.Components.Common
 using CarboKitten.Components.Denudation
@@ -18,37 +19,43 @@ const TAG = "empirical"
 
 const FACIES = [
     WDn.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
-        maximum_growth_rate=500u"m/Myr",
-        extinction_coefficient=0.8u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=25.0u"m/yr",
-        reactive_surface=1000u"m^2/m^3",
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        production = BenthicProduction(
+            maximum_growth_rate=500u"m/Myr",
+            extinction_coefficient=0.8u"m^-1",
+            saturation_intensity=60u"W/m^2"),
+        diffusion_coefficient=50.0u"m/yr",
+        name="euphotic",
+        reactive_surface=10u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
         erodibility = 0.23u"m/yr"
         ),
     WDn.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
-        maximum_growth_rate=400u"m/Myr",
-        extinction_coefficient=0.1u"m^-1",
-        saturation_intensity=60u"W/m^2",
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        production = BenthicProduction(
+            maximum_growth_rate=400u"m/Myr",
+            extinction_coefficient=0.1u"m^-1",
+            saturation_intensity=60u"W/m^2"),
         diffusion_coefficient=25.0u"m/yr",
-        reactive_surface=1000u"m^2/m^3",
+        name="oligophotic",
+        reactive_surface=50u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
         erodibility = 0.23u"m/yr"
         ),
     WDn.Facies(
-        viability_range=(4, 10),
-        activation_range=(6, 10),
-        maximum_growth_rate=100u"m/Myr",
-        extinction_coefficient=0.005u"m^-1",
-        saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=25.0u"m/yr",
-        reactive_surface=1000u"m^2/m^3",
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        production = BenthicProduction(
+            maximum_growth_rate=100u"m/Myr",
+            extinction_coefficient=0.005u"m^-1",
+            saturation_intensity=60u"W/m^2"),
+        diffusion_coefficient=12.5u"m/yr",
+        name="aphotic",
+        reactive_surface=100u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
         erodibility = 0.23u"m/yr"
@@ -77,6 +84,7 @@ const INPUT = WDn.Input(
     insolation=400.0u"W/m^2",
     sediment_buffer_size=50,
     depositional_resolution=0.5m,
+    lithification_time=100.0u"yr",
     facies=FACIES,
     denudation = DENUDATION)
 

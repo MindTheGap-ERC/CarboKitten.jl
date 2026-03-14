@@ -22,21 +22,9 @@ By itself, a sediment production model is enough to model a cross-section of a c
 
 where $h$ is the depth of the sea floor, $g_m$ is the maximum growth rate, $I_0$ the surface light intensity, $I_k$ the saturating light intensity, $k$ the extinction coefficient, and $s$ the (extrinsic) sea-level. In one example given by BS92, we arrived at the following profile.
 
-## Species habitation
-
-These species can be anything, just remember that they are the progenitor of some (limestone) facies type. In the original 2013 model, this stage is implemented by a celullar automaton (or CA). The CA has the nice property of giving pseudo-random output with at least some degree of coherence. There is no physical basis to the CA model, but neither is there very much data to test a physical model against.
-
-We have [implemented the CA used in Burgess 2013](components/cellular-automata.md). Using three species with identical 4-6-10-10 rules (survival between 4 to 10 neighbours, birth between 6-10 live neighbours).
-
-![](fig/b13-fig3.png)
-
-An interesting question is under what rules is this CA stable (i.e. keeps evolving)?
-
 ## Combination
 
-The minimal Carbocat model would consist of only species habitation and production.
-
-:::details
+The minimal Carbocat model would consist of only species distribution and production.
 
 ### Crowding
 

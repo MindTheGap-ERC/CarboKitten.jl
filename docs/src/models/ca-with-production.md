@@ -1,12 +1,12 @@
 # CA with production
 
-This model combines BS92 production with the B13 cellular automaton. This production model is implemented in the [`CAProduction` component](../components/production.md).
+This model combines BS92 [Bosscher1992](@cite) production with the B13 [Burgess2013](@cite) cellular automaton. This production model is implemented in the [`CAProduction` component](../components/production.md). See [Cellular Automata](../components/cellular-automata.md) for more detail on the automaton.
 
 ![Stratigraphy, production and subsidence under oscillating sea level.](../fig/cap1-summary.png)
 
 ## Complete example
 
-This example is running for 10000 steps to 1Myr on a 100 $\times$ 50 grid, starting with a sloped height down to 50m. The `sea_level`, and `initial_depth` arguments are functions. The `phys_scale` argument translate pixels on the grid into physical metres. The `write_interval` indicates to write output every 10 iterations, summing the production over that range.
+This example is running for 10000 steps to 1 Myr on a 100 $\times$ 50 grid, starting with a sloped height down to 50 m. The `sea_level`, and `initial_depth` arguments are functions. The `phys_scale` argument translate pixels on the grid into physical metres. The `write_interval` indicates to write output every 10 iterations, summing the production over that range.
 
 ``` {.julia .task file=examples/model/cap/run.jl}
 #| creates: data/output/cap1.h5

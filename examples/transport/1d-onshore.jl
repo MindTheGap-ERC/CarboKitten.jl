@@ -30,7 +30,7 @@ module Script
             initial_topography = (x, y) -> -x / 375.0 - 10u"m",
             initial_sediment = 10.0u"m",
             disintegration_rate = 50.0u"m/Myr",
-            diffusion_coefficient = 5.0u"m/yr",
+            transport_coefficient = 5.0u"m/yr",
             wave_velocity = v_const(-0.5u"m/yr")
         )
         plot_1d_evolution!(ax1, input1, 250)
@@ -40,7 +40,7 @@ module Script
             initial_topography = (x, y) -> -x / 375.0 - 10u"m",
             initial_sediment = 10.0u"m",
             disintegration_rate = 50.0u"m/Myr",
-            diffusion_coefficient = 5.0u"m/yr",
+            transport_coefficient = 5.0u"m/yr",
             wave_velocity = v_prof_par(-0.5u"m/yr", 20u"m")
         )
         plot_1d_evolution!(ax2, input2, 250)

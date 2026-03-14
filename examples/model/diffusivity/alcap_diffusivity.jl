@@ -18,7 +18,7 @@ const FACIES = [
         maximum_growth_rate=500u"m/Myr",
         extinction_coefficient=0.8u"m^-1",
         saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=4*min_diffusivity,
+        transport_coefficient=4*min_diffusivity,
         name="euphotic"),
     ALCAP.Facies(
         viability_range = (4, 10),
@@ -26,7 +26,7 @@ const FACIES = [
         maximum_growth_rate=400u"m/Myr",
         extinction_coefficient=0.1u"m^-1",
         saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=min_diffusivity,
+        transport_coefficient=min_diffusivity,
         name="oligophotic"),
     ALCAP.Facies(
         viability_range = (4, 10),
@@ -34,20 +34,20 @@ const FACIES = [
         maximum_growth_rate=100u"m/Myr",
         extinction_coefficient=0.005u"m^-1",
         saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=2*min_diffusivity,
+        transport_coefficient=2*min_diffusivity,
         name="aphotic"),
 
     ALCAP.Facies(
         active=false,
-        diffusion_coefficient=10.0u"m/yr",
+        transport_coefficient=10.0u"m/yr",
         name="euphotic transported"),
     ALCAP.Facies(
         active=false,
-        diffusion_coefficient=1.0u"m/yr",
+        transport_coefficient=1.0u"m/yr",
         name="oligophotic transported"),
     ALCAP.Facies(
         active=false,
-        diffusion_coefficient=5.0u"m/yr",
+        transport_coefficient=5.0u"m/yr",
         name="aphotic transported")
 ]
 

@@ -22,7 +22,7 @@ module Script
                 activation_range=(4, 10),
                 viability_range=(1, 10),
                 production=Production.EXAMPLE[:euphotic],
-                diffusion_coefficient=10.0u"m/yr",
+                transport_coefficient=10.0u"m/yr",
                 minimum_production=feedback ? 0.01u"m/Myr" : nothing),
             M.Facies(
                 name="oligophotic",
@@ -31,7 +31,7 @@ module Script
                     extinction_coefficient=0.1u"m^-1",
                     saturation_intensity=60u"W/m^2"
                 ),
-                diffusion_coefficient=5.0u"m/yr",
+                transport_coefficient=5.0u"m/yr",
                 minimum_production=feedback ? 5.0u"m/Myr" : nothing),
             M.Facies(
                 name="pelagic",
@@ -41,7 +41,7 @@ module Script
                     extinction_coefficient=0.1u"m^-1",
                     saturation_intensity=60u"W/m^2"
                 ),
-                diffusion_coefficient=20.0u"m/yr",
+                transport_coefficient=20.0u"m/yr",
                 # minimum_production=10.0u"m/Myr"
             )
         ]

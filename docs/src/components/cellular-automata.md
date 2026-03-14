@@ -3,8 +3,11 @@
 ```component-dag
 CarboKitten.Components.CellularAutomaton
 ```
+Following CarboCAT by [Burgess2013](@cite), we use a [cellular automaton](https://en.wikipedia.org/wiki/Cellular_automaton) to obtain complex, time-variable spatial distribution patterns of sediment producers while maintaining low computational effort and generality, i.e. not attempting to simulate specific organism groups.
 
-This component implements the cellular automaton as described by [Burgess2013](@cite). 
+In the cellular automaton, we refer to the units interacting with each other as species. These species can be a biological species or an assemblage (guild) of carbonate producers. Here it is important that they are the progenitor of some (limestone) facies type. Therefore, we map: one species $->$ one facies. In the original 2013 model, this stage is implemented with a celullar automaton (or CA).
+
+We have [reimplemented the CA used in Burgess 2013](components/cellular-automata.md), which uses three species and assesses interactions on a 5 $\times$ 5 neighborhood grid. For each facies, we assess two ranges: the **activation range** (here set to 6 ≤ n ≤ 10 ) and the **viability range** (here 4 ≤ n ≤ 10 ). If the number of live neighbours is in the viability range, the cell stays alive. If the cell is dead, but the number of live neighbours is in the activation range, the cell becomes alive. The ranges can be set for each facies separately, but the results of using different rules for each facies have not been explored. The 5 $\times$ 5 is currently not a parameter, but a hard-coded feature, but it can be modified should a use case arise.
 
 We depend on the box properties being defined. Each `Facies` should have a `viability_range` and `activation_range` defined.  The `active` property determines whether a facies is active in the cellular automaton. Two other parameters are the `ca_interval` setting how many time steps between every CA advancement, and the `ca_random_seed` setting the random seed for generating the initial noise.
 
@@ -53,7 +56,7 @@ function rules(facies, ca_priority, neighbourhood)
 end
 ```
 
-The paper talks about cycling the order of preference for occupying an empty cell at each iteration. This means that the rules change slightly every iteration. We need this extra function so that we know the boundary type `BT` at compile time.
+The initial CA grid is randomized. A dead cell may qualify to become alive for different carbonate factories at the same time. [Burgess2013](@cite) discussed cycling the order of preference for occupying an empty cell at each iteration. We resolve this priority collision by rotating the priority of each facies for occupying a dead cell in every iteration using a deterministic cyclic shift, which ensures that there is no priority given to any facies. This means that the rules change slightly every iteration. We need this extra function so that we know the boundary type `BT` at compile time.
 
 ``` {.julia #ca-step}
 """
@@ -80,7 +83,9 @@ function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
 end
 ```
 
-## Plot
+## Infinite heterogeneity in space and time
+
+A prerequisite for our CA rule was that it shows no convergence on stable patterns. The set of rules used here seems to ensure this, as verified using the script below.
 
 ``` {.julia .task file=examples/ca/burgess-2013.jl}
 #| creates: ["docs/src/_fig/ca-long-term.svg"]
@@ -138,9 +143,13 @@ Script.main()
 
 ![CA](../fig/ca-long-term.svg)
 
+## CA rules 
+
+Users are welcome to explore the permanence of spatial patterns for other sets of rules using the [interactive explorer](https://github.com/MindTheGap-ERC/CAExplorer.jl/tree/v0.1.0). A non-systematic exploration indicates that most deviations from the rules used by [Burgess2013](@cite) lead to quick stabilization of spatial distribution and thus constant patterns. The neighborhood size and the rules represent a case of Larger than Life family of two-dimensional cellula automata [evans_larger_1996](@cite), but none of the well known rules.
+
 ## Production feedback
 
-It can be interesting to model feedback on the CA state due to environmental factors. For example, we can kill off facies if it turns out they're not able to produce.
+It can be interesting to model feedback on the CA state due to environmental factors. For example, we can kill off facies if it turns out they're not able to produce. 
 
 ``` {.julia file=src/Components/CAFeedback.jl}
 @compose module CAFeedback

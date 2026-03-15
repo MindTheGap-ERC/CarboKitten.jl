@@ -126,20 +126,20 @@ end
 end
 ```
 
-### Diffusivity
+### Transport coefficient
 
-The diffusivity parameter used in CarboKitten is expressed in $\unit{m/Myr}$, because it is derived from the parameter $\nu_f$, transport velocity, that is expressed per unit slope. It is not the same as molecular-like diffusion coefficient, which have units $\unit{m^2/Myr}$. CarboKitten separates sediment lithification (`cementation_time`), disintegration (`disintegration_rate`) and transport on the slope. It also allows defining different wave velocity profiles by users. As a result, diffusivity set as a parameter differs from the diffusion coefficients reported in the literature. The effective diffusion coefficient of a given facies can be estimated for a given facies. In the example below, facies are assigned diffusivities that are relative to a minimum diffusivity, set to be 2.5 m/Myr, and the most mobile facies is assigned a quadruple of this value. Estimates of diffusion coefficients for these values have been obtained based on @hidding_carbokittenjl_2025.
+The transport coefficient used in CarboKitten is expressed in $\unit{m/Myr}$, because it is derived from the parameter $\nu_f$, transport velocity, that is expressed per unit slope. It is not the same as molecular-like diffusion coefficient, which have units $\unit{m^2/Myr}$. CarboKitten separates sediment lithification (`cementation_time`), disintegration (`disintegration_rate`) and transport on the slope. It also allows defining different wave velocity profiles by users. As a result, the transport coefficient differs from the diffusion coefficients reported in the literature. The effective diffusion coefficient of a given facies can be estimated for a given facies. In the example below, facies are assigned diffusivities that are relative to a minimum diffusivity, set to be 2.5 m/Myr, and the most mobile facies is assigned a quadruple of this value. Estimates of diffusion coefficients for these values have been obtained based on @hidding_carbokittenjl_2025.
 
-|          | Diffusivity $\unit{m/Myr}$ | Effective diffusion coefficient $\unit{m^2/Myr}$ |
+|          | Transport coefficient $\unit{m/Myr}$ | Effective diffusion coefficient $\unit{m^2/Myr}$ |
 |----------|----------------------------|--------------------------------------------------|
 | Facies 1 | 10                         | 326 668                                          |
 | Facies 2 | 2.5                        | 80 461                                           |
 | Facies 3 | 5                          | 15 6904                                          |
 
-All other parameters held similar, diffusivity values below 2.5 m/Myr will result in a largely immobile facies at the timescale of $10^6$ yr. 
+All other parameters held similar, transport coefficient values below 2.5 m/Myr will result in a largely immobile facies at the timescale of $10^6$ yr. 
 
 ```@raw html
-<details><summary>Example effect of diffusivity</summary>
+<details><summary>Example effect of transport coefficient</summary>
 ```
 
 ``` {.julia file=examples/model/diffusivity/alcap_diffusivity.jl}
@@ -297,7 +297,7 @@ end
 </details>
 ```
 
-Our input structure facilitates a single facies, specifying an initial bedrock elevation, sediment layer and a function for a location dependent constant production rate. The transport is parametrized by a disintegration rate and a diffusion coefficient.
+Our input structure facilitates a single facies, specifying an initial bedrock elevation, sediment layer and a function for a location dependent constant production rate. The transport is parametrized by a disintegration rate and a transport coefficient.
 
 ``` {.julia #example-active-layer}
 @kwdef struct Input

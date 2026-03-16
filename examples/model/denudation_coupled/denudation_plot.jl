@@ -9,7 +9,7 @@ function plot_sediment_profile(HDF5_file::String)
     save("docs/src/_fig/dissolution_sediment_profile.png", fig)
 end
 
-const HDF5_file = "data/output/dissolution.h5"
+const HDF5_file = "data/output/denudation.h5"
 
 header, data = read_slice(HDF5_file, :profile)
 

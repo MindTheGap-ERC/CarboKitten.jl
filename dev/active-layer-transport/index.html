@@ -43,7 +43,7 @@ using CarboKitten.Components.Common
         end
     end
 end
-end</code></pre><h3 id="Diffusivity"><a class="docs-heading-anchor" href="#Diffusivity">Diffusivity</a><a id="Diffusivity-1"></a><a class="docs-heading-anchor-permalink" href="#Diffusivity" title="Permalink"></a></h3><p>The diffusivity parameter used in CarboKitten is expressed in <span>$\unit{m/Myr}$</span>, because it is derived from the parameter <span>$\nu_f$</span>, transport velocity, that is expressed per unit slope. It is not the same as molecular-like diffusion coefficient, which have units <span>$\unit{m^2/Myr}$</span>. CarboKitten separates sediment lithification (<code>cementation_time</code>), disintegration (<code>disintegration_rate</code>) and transport on the slope. It also allows defining different wave velocity profiles by users. As a result, diffusivity set as a parameter differs from the diffusion coefficients reported in the literature. The effective diffusion coefficient of a given facies can be estimated for a given facies. In the example below, facies are assigned diffusivities that are relative to a minimum diffusivity, set to be 2.5 m/Myr, and the most mobile facies is assigned a quadruple of this value. Estimates of diffusion coefficients for these values have been obtained based on @hidding<em>carbokittenjl</em>2025.</p><table><tr><th style="text-align: right"></th><th style="text-align: right">Diffusivity <span>$\unit{m/Myr}$</span></th><th style="text-align: right">Effective diffusion coefficient <span>$\unit{m^2/Myr}$</span></th></tr><tr><td style="text-align: right">Facies 1</td><td style="text-align: right">10</td><td style="text-align: right">326 668</td></tr><tr><td style="text-align: right">Facies 2</td><td style="text-align: right">2.5</td><td style="text-align: right">80 461</td></tr><tr><td style="text-align: right">Facies 3</td><td style="text-align: right">5</td><td style="text-align: right">15 6904</td></tr></table><p>All other parameters held similar, diffusivity values below 2.5 m/Myr will result in a largely immobile facies at the timescale of <span>$10^6$</span> yr. </p><details><summary>Example effect of diffusivity</summary><div class="noweb-label">file:<i>examples/model/diffusivity/alcap_diffusivity.jl</i></div><pre><code class="language- julia hljs">module Diffusivity_example
+end</code></pre><h3 id="Transport-coefficient"><a class="docs-heading-anchor" href="#Transport-coefficient">Transport coefficient</a><a id="Transport-coefficient-1"></a><a class="docs-heading-anchor-permalink" href="#Transport-coefficient" title="Permalink"></a></h3><p>The transport coefficient used in CarboKitten is expressed in <span>$\unit{m/Myr}$</span>, because it is derived from the parameter <span>$\nu_f$</span>, transport velocity, that is expressed per unit slope. It is not the same as molecular-like diffusion coefficient, which have units <span>$\unit{m^2/Myr}$</span>. CarboKitten separates sediment lithification (<code>cementation_time</code>), disintegration (<code>disintegration_rate</code>) and transport on the slope. It also allows defining different wave velocity profiles by users. As a result, the transport coefficient differs from the diffusion coefficients reported in the literature. The effective diffusion coefficient of a given facies can be estimated for a given facies. In the example below, facies are assigned diffusivities that are relative to a minimum diffusivity, set to be 2.5 m/Myr, and the most mobile facies is assigned a quadruple of this value. Estimates of diffusion coefficients for these values have been obtained based on @hidding<em>carbokittenjl</em>2025.</p><table><tr><th style="text-align: right"></th><th style="text-align: right">Transport coefficient <span>$\unit{m/Myr}$</span></th><th style="text-align: right">Effective diffusion coefficient <span>$\unit{m^2/Myr}$</span></th></tr><tr><td style="text-align: right">Facies 1</td><td style="text-align: right">10</td><td style="text-align: right">326 668</td></tr><tr><td style="text-align: right">Facies 2</td><td style="text-align: right">2.5</td><td style="text-align: right">80 461</td></tr><tr><td style="text-align: right">Facies 3</td><td style="text-align: right">5</td><td style="text-align: right">15 6904</td></tr></table><p>All other parameters held similar, transport coefficient values below 2.5 m/Myr will result in a largely immobile facies at the timescale of <span>$10^6$</span> yr. </p><details><summary>Example effect of transport coefficient</summary><div class="noweb-label">file:<i>examples/model/diffusivity/alcap_diffusivity.jl</i></div><pre><code class="language- julia hljs">module Diffusivity_example
 
 using Unitful
 using CarboKitten
@@ -62,7 +62,7 @@ const FACIES = [
         maximum_growth_rate=500u&quot;m/Myr&quot;,
         extinction_coefficient=0.8u&quot;m^-1&quot;,
         saturation_intensity=60u&quot;W/m^2&quot;,
-        diffusion_coefficient=4*min_diffusivity,
+        transport_coefficient=4*min_diffusivity,
         name=&quot;euphotic&quot;),
     ALCAP.Facies(
         viability_range = (4, 10),
@@ -70,7 +70,7 @@ const FACIES = [
         maximum_growth_rate=400u&quot;m/Myr&quot;,
         extinction_coefficient=0.1u&quot;m^-1&quot;,
         saturation_intensity=60u&quot;W/m^2&quot;,
-        diffusion_coefficient=min_diffusivity,
+        transport_coefficient=min_diffusivity,
         name=&quot;oligophotic&quot;),
     ALCAP.Facies(
         viability_range = (4, 10),
@@ -78,20 +78,20 @@ const FACIES = [
         maximum_growth_rate=100u&quot;m/Myr&quot;,
         extinction_coefficient=0.005u&quot;m^-1&quot;,
         saturation_intensity=60u&quot;W/m^2&quot;,
-        diffusion_coefficient=2*min_diffusivity,
+        transport_coefficient=2*min_diffusivity,
         name=&quot;aphotic&quot;),
 
     ALCAP.Facies(
         active=false,
-        diffusion_coefficient=10.0u&quot;m/yr&quot;,
+        transport_coefficient=10.0u&quot;m/yr&quot;,
         name=&quot;euphotic transported&quot;),
     ALCAP.Facies(
         active=false,
-        diffusion_coefficient=1.0u&quot;m/yr&quot;,
+        transport_coefficient=1.0u&quot;m/yr&quot;,
         name=&quot;oligophotic transported&quot;),
     ALCAP.Facies(
         active=false,
-        diffusion_coefficient=5.0u&quot;m/yr&quot;,
+        transport_coefficient=5.0u&quot;m/yr&quot;,
         name=&quot;aphotic transported&quot;)
 ]
 
@@ -158,7 +158,7 @@ using CarboKitten.Transport.ActiveLayer: pde_stencil, Amount, Rate
 
 &lt;&lt;example-active-layer&gt;&gt;
 
-end</code></pre></details><p>Our input structure facilitates a single facies, specifying an initial bedrock elevation, sediment layer and a function for a location dependent constant production rate. The transport is parametrized by a disintegration rate and a diffusion coefficient.</p><div class="noweb-label">⪡example-active-layer⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Input
+end</code></pre></details><p>Our input structure facilitates a single facies, specifying an initial bedrock elevation, sediment layer and a function for a location dependent constant production rate. The transport is parametrized by a disintegration rate and a transport coefficient.</p><div class="noweb-label">⪡example-active-layer⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Input
     box
     Δt::typeof(1.0u&quot;Myr&quot;)
     t_end::typeof(1.0u&quot;Myr&quot;)
@@ -167,7 +167,7 @@ end</code></pre></details><p>Our input structure facilitates a single facies, sp
     production          # function (x::u&quot;m&quot;, y::u&quot;m&quot;) -&gt; u&quot;m/s&quot;
     disintegration_rate::typeof(1.0u&quot;m/Myr&quot;)
     subsidence_rate::typeof(1.0u&quot;m/Myr&quot;)
-    diffusion_coefficient::typeof(1.0u&quot;m/yr&quot;)
+    transport_coefficient::typeof(1.0u&quot;m/yr&quot;)
 end</code></pre><h3 id="Production-patch"><a class="docs-heading-anchor" href="#Production-patch">Production patch</a><a id="Production-patch-1"></a><a class="docs-heading-anchor-permalink" href="#Production-patch" title="Permalink"></a></h3><p>Establish a grid of 100x50, 15km on each side, dropping from 0 to 50m depth. Keeping the disintegration rate to a similar value as the production rate seems a sensible choice.</p><div class="noweb-label">⪡example-active-layer⪢≣</div><pre><code class="language- julia hljs">production_patch(center, radius, rate) = function(x, y)
     (pcx, pcy) = center
     (x - pcx)^2 + (y - pcy)^2 &lt; radius^2 ?
@@ -191,7 +191,7 @@ const input = Input(
     disintegration_rate = 50.0u&quot;m/Myr&quot;,
     subsidence_rate = 50.0u&quot;m/Myr&quot;,
 
-    diffusion_coefficient = 10.0u&quot;m/yr&quot;
+    transport_coefficient = 10.0u&quot;m/yr&quot;
 )</code></pre><p><img src="../fig/active-layer-production-patch.png" alt="Production patch on an inclining bedrock"/></p><details><summary>Plotting code</summary><div class="noweb-label">file:<i>examples/transport/active-layer-plot-production.jl</i></div><pre><code class="language- julia hljs">#| requires: examples/transport/active-layer.jl
 #| creates: docs/src/_fig/active-layer-production-patch.png
 #| collect: figures
@@ -266,7 +266,7 @@ function propagator(input)
     Δt = input.Δt
     disintegration_rate = input.disintegration_rate
     production = input.production
-    d = input.diffusion_coefficient
+    d = input.transport_coefficient
 
     function active_layer(state)
         max_amount = disintegration_rate * Δt
@@ -379,7 +379,7 @@ transport_test_input(;
 	initial_sediment = (x, y) -&gt; 0.0u&quot;m&quot;,
 	disintegration_rate = 50.0u&quot;m/Myr&quot;,
 	subsidence_rate = 0.0u&quot;m/Myr&quot;,
-	diffusion_coefficient = 0.0u&quot;m/yr&quot;,
+	transport_coefficient = 0.0u&quot;m/yr&quot;,
 	wave_velocity = _ -&gt; (Vec2(0.0, 0.0)u&quot;m/yr&quot;, Vec2(0.0, 0.0)u&quot;1/yr&quot;),
     intertidal_zone = 0.0u&quot;m&quot;) =
 
@@ -390,7 +390,7 @@ transport_test_input(;
 			steps = 1000),
 		facies = [ALCAP.Facies(
 			initial_sediment = initial_sediment,
-			diffusion_coefficient = diffusion_coefficient,
+			transport_coefficient = transport_coefficient,
 			wave_velocity = wave_velocity
 		)],
 		disintegration_rate = disintegration_rate,
@@ -429,7 +429,7 @@ module Script
         input = transport_test_input(
             initial_topography = (x, y) -&gt; -30.0u&quot;m&quot;,
             initial_sediment = initial_sediment,
-            diffusion_coefficient = 10.0u&quot;m/yr&quot;)
+            transport_coefficient = 10.0u&quot;m/yr&quot;)
 
         fig = plot_1d_evolution(input, 250)
         save(&quot;docs/src/_fig/1d-erosion.svg&quot;, fig)
@@ -499,7 +499,7 @@ module Script
             initial_topography = (x, y) -&gt; -x / 375.0 - 10u&quot;m&quot;,
             initial_sediment = 10.0u&quot;m&quot;,
             disintegration_rate = 50.0u&quot;m/Myr&quot;,
-            diffusion_coefficient = 5.0u&quot;m/yr&quot;,
+            transport_coefficient = 5.0u&quot;m/yr&quot;,
             wave_velocity = v_const(-0.5u&quot;m/yr&quot;)
         )
         plot_1d_evolution!(ax1, input1, 250)
@@ -509,7 +509,7 @@ module Script
             initial_topography = (x, y) -&gt; -x / 375.0 - 10u&quot;m&quot;,
             initial_sediment = 10.0u&quot;m&quot;,
             disintegration_rate = 50.0u&quot;m/Myr&quot;,
-            diffusion_coefficient = 5.0u&quot;m/yr&quot;,
+            transport_coefficient = 5.0u&quot;m/yr&quot;,
             wave_velocity = v_prof_par(-0.5u&quot;m/yr&quot;, 20u&quot;m&quot;)
         )
         plot_1d_evolution!(ax2, input2, 250)
@@ -605,7 +605,7 @@ Script.main()</code></pre><h2 id="Active-Layer-Component"><a class="docs-heading
 <polyline fill="none" stroke="black" points="348,-120.5 348,-139.5 "/>
 <text text-anchor="start" x="205" y="-127.5" font-family="monospace" font-size="10.00">intertidal_zone</text>
 <polyline fill="none" stroke="black" points="483,-120.5 483,-139.5 "/>
-<text text-anchor="start" x="352" y="-127.5" font-family="monospace" font-size="10.00">diffusion_coefficient</text>
+<text text-anchor="start" x="352" y="-127.5" font-family="monospace" font-size="10.00">transport_coefficient</text>
 <text text-anchor="start" x="486" y="-127.5" font-family="monospace" font-size="10.00">active_layer</text>
 <polyline fill="none" stroke="black" points="348,-101.5 348,-120.5 "/>
 <text text-anchor="start" x="205" y="-108.5" font-family="monospace" font-size="10.00">disintegration_rate</text>
@@ -750,7 +750,7 @@ using Unitful
 using GeometryBasics
 
 @kwdef struct Facies &lt;: AbstractFacies
-    diffusion_coefficient::typeof(1.0u&quot;m/yr&quot;) = 0.0u&quot;m/Myr&quot;
+    transport_coefficient::typeof(1.0u&quot;m/yr&quot;) = 0.0u&quot;m/Myr&quot;
     wave_velocity = _ -&gt; (Vec2(0.0u&quot;m/Myr&quot;, 0.0u&quot;m/Myr&quot;), Vec2(0.0u&quot;1/Myr&quot;, 0.0u&quot;1/Myr&quot;))
 end
 
@@ -802,7 +802,7 @@ function adaptive_transporter(input)
 
         C = state.active_layer
         for (i, f) in pairs(fs)
-            advection_coef!(box, f.diffusion_coefficient, f.wave_velocity, wd, adv, rct)
+            advection_coef!(box, f.transport_coefficient, f.wave_velocity, wd, adv, rct)
             m = max_dt(adv, box.phys_scale, cm)
             steps = ceil(Int, Δt / m)
 
@@ -891,7 +891,7 @@ function transporter(input)
             for j in 1:steps
                 solver(
                     (C, _) -&gt; transport(
-                        input.box, f.diffusion_coefficient, f.wave_velocity,
+                        input.box, f.transport_coefficient, f.wave_velocity,
                         C, wd),
                     view(C, i, :, :), TimeIntegration.time(input, state), Δt)
             end
@@ -944,13 +944,13 @@ function run()
             maximum_growth_rate=100.0u&quot;m/Myr&quot;,
             extinction_coefficient=0.8u&quot;m^-1&quot;,
             saturation_intensity=60u&quot;W/m^2&quot;,
-            diffusion_coefficient=100.0u&quot;m/yr&quot;,
+            transport_coefficient=100.0u&quot;m/yr&quot;,
             wave_velocity=v_const(-5.0u&quot;m/yr&quot;)),
         M.Facies(
             maximum_growth_rate=20.0u&quot;m/Myr&quot;,
             extinction_coefficient=0.8u&quot;m^-1&quot;,
             saturation_intensity=60u&quot;W/m^2&quot;,
-            diffusion_coefficient=10.0u&quot;m/yr&quot;,
+            transport_coefficient=10.0u&quot;m/yr&quot;,
             wave_velocity=v_const(0.0u&quot;m/yr&quot;))]
 
 
@@ -1033,7 +1033,7 @@ const DummyFacies = [
     ALCAP.Facies(
         viability_range = (0, 0),
         activation_range = (0, 0),
-        diffusion_coefficient=0.0u&quot;m/yr&quot;)]
+        transport_coefficient=0.0u&quot;m/yr&quot;)]
 
 const input = ALCAP.Input(
     tag=&quot;test&quot;,
@@ -1157,4 +1157,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Literature on active (or mixing) layer transport modeling is vast. Most of which is concerned with much smaller time scales, and more complicated physics than we are mostly dealing with.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Note that in other approaches to active layer transport, like Paola 1992, there would be a factor <span>$1/C_f$</span>. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../components/sediment_buffer/">« Sediment Buffers</a><a class="docs-footer-nextpage" href="../onshore-transport/">Onshore Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 10 March 2026 12:47">Tuesday 10 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Literature on active (or mixing) layer transport modeling is vast. Most of which is concerned with much smaller time scales, and more complicated physics than we are mostly dealing with.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Note that in other approaches to active layer transport, like Paola 1992, there would be a factor <span>$1/C_f$</span>. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../components/sediment_buffer/">« Sediment Buffers</a><a class="docs-footer-nextpage" href="../onshore-transport/">Onshore Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 18 March 2026 09:34">Wednesday 18 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

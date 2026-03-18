@@ -9,7 +9,7 @@ const FACIES = [
             maximum_growth_rate=500u&quot;m/Myr&quot;,
             extinction_coefficient=0.8u&quot;m^-1&quot;,
             saturation_intensity=60u&quot;W/m^2&quot;),
-        diffusion_coefficient=50.0u&quot;m/yr&quot;,
+        transport_coefficient=50.0u&quot;m/yr&quot;,
         name=&quot;euphotic&quot;),
     ALCAP.Facies(
         viability_range = (4, 10),
@@ -18,7 +18,7 @@ const FACIES = [
             maximum_growth_rate=400u&quot;m/Myr&quot;,
             extinction_coefficient=0.1u&quot;m^-1&quot;,
             saturation_intensity=60u&quot;W/m^2&quot;),
-        diffusion_coefficient=25.0u&quot;m/yr&quot;,
+        transport_coefficient=25.0u&quot;m/yr&quot;,
         name=&quot;oligophotic&quot;),
     ALCAP.Facies(
         viability_range = (4, 10),
@@ -27,7 +27,7 @@ const FACIES = [
             maximum_growth_rate=100u&quot;m/Myr&quot;,
             extinction_coefficient=0.005u&quot;m^-1&quot;,
             saturation_intensity=60u&quot;W/m^2&quot;),
-        diffusion_coefficient=12.5u&quot;m/yr&quot;,
+        transport_coefficient=12.5u&quot;m/yr&quot;,
         name=&quot;aphotic&quot;)
 ]
 
@@ -272,7 +272,7 @@ save(&quot;docs/src/_fig/alcaps-alternative.png&quot;, summary_plot(&quot;data/o
 <polyline fill="none" stroke="black" points="674.5,-326.5 674.5,-345.5 "/>
 <text text-anchor="start" x="531.5" y="-333.5" font-family="monospace" font-size="10.00">intertidal_zone</text>
 <polyline fill="none" stroke="black" points="809.5,-326.5 809.5,-345.5 "/>
-<text text-anchor="start" x="678.5" y="-333.5" font-family="monospace" font-size="10.00">diffusion_coefficient</text>
+<text text-anchor="start" x="678.5" y="-333.5" font-family="monospace" font-size="10.00">transport_coefficient</text>
 <text text-anchor="start" x="812.5" y="-333.5" font-family="monospace" font-size="10.00">active_layer</text>
 <polyline fill="none" stroke="black" points="674.5,-307.5 674.5,-326.5 "/>
 <text text-anchor="start" x="531.5" y="-314.5" font-family="monospace" font-size="10.00">disintegration_rate</text>
@@ -693,4 +693,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ca-with-production/">« Model with CA and Production</a><a class="docs-footer-nextpage" href="../without-ca/">Model without CA »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 10 March 2026 12:47">Tuesday 10 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ca-with-production/">« Model with CA and Production</a><a class="docs-footer-nextpage" href="../without-ca/">Model without CA »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 18 March 2026 09:34">Wednesday 18 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

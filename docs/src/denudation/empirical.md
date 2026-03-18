@@ -1,5 +1,13 @@
 # Emperical denudation
 
+## Result example
+The resultant figures of chemical dissolution is presented below:
+![CEmpirical example barrel plot](../fig/empirical_barrel_location_25.png)
+
+We can clearly see the sediments were removed as the thickness of sediments decrease at each regression cycle.
+
+## Rationale
+
 Chlorine (Cl) isotopes are an emerging tool to decipher the denudation rates (chemical dissolution + physical erosion) in carbonate-dominated areas.
 
 Research based on the karst region and carbonate platform terrace suggested that the denudation rates are mainly controlled by precipitation and slopes, although the debates about which factor is more important is still ongoing ([yang_combined_2020](@cite), [thomas_limited_2018](@cite)). In general, the precipitation mainly controls the chemical dissolution while the slope mainly controls the physical erosion. In addition, the type of carbonates may also play an important role ([krklec_long-term_2022](@cite)), but given this feature is studied poorly so we will ditch it for now. We have checked and compiled the denudation rates (mm/kyr), and along with precipitation and slopes these serve as a starting point to create a function relating denudation rates (mm/kyr) to precipitation and slopes. The compiled data can be found in OSF database. This is an empirical relationship and has a relatively large uncertainty in terms of fitting.

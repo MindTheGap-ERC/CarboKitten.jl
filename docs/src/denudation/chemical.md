@@ -1,5 +1,13 @@
 # Chemical dissolution
 
+## Result example
+The resultant figures of chemical dissolution is presented below:
+![Chemical Dissolution example barrel plot](../fig/dissolution_barrel_location_25.png)
+
+We can clearly see the sediments were removed as the thickness of sediments decrease at each regression cycle.
+
+## Rationale
+
 The details could be found in paper by [Kaufmann2001](@cite).
 
 Limestone is made of $CaCO_3$, easily dissolved. This depends mainly on precipitation (rainfall) and temperature. The paper used equation 1 to quantify this process.

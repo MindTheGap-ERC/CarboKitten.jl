@@ -14,7 +14,7 @@ include("denudation_param_config.jl")
 using .DenudationParamConfig
 
 
-const ERODIBILITY = [0.00023u"m/yr", 0.00023u"m/yr", 0.00023u"m/yr"]
+const ERODIBILITY = [0.001u"m/yr", 0.001u"m/yr", 0.001u"m/yr"]
 const PATH = "data/output"
 const TAG = "denudation"
 const DENUDATION = PhysicalErosion()

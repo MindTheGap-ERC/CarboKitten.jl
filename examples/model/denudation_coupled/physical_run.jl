@@ -10,10 +10,11 @@ using CarboKitten.Models: WithDenudation as WDn
 using CarboKitten.Export: data_export, read_slice, CSV
 using CarboKitten: Box, TimeProperties, OutputSpec, run_model, Model
 using CarboKitten.Denudation: Dissolution, EmpiricalDenudation, PhysicalErosion, NoDenudation
+include("denudation_param_config.jl")
 using .DenudationParamConfig
 
 
-const ERODIBILITY = [0.0023u"m/yr", 0.0023u"m/yr", 0.0023u"m/yr"]
+const ERODIBILITY = [0.00023u"m/yr", 0.00023u"m/yr", 0.00023u"m/yr"]
 const PATH = "data/output"
 const TAG = "denudation"
 const DENUDATION = PhysicalErosion()

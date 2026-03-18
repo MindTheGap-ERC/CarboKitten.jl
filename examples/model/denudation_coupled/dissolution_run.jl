@@ -9,6 +9,7 @@ using CarboKitten.Models: WithDenudation as WDn
 using CarboKitten.Export: data_export, CSV, read_slice
 using CarboKitten: Box, TimeProperties, OutputSpec, run_model, Model
 using CarboKitten.Denudation: Dissolution, EmpiricalDenudation, PhysicalErosion, NoDenudation
+include("denudation_param_config.jl")
 using .DenudationParamConfig
 
 const PATH = "data/output"

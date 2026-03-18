@@ -84,6 +84,7 @@ function step!(input::Input)
             denudation_mass = denudation_mass |> x -> sum(x, dims=1) |> x -> dropdims(x, dims=1) |> x -> min.(x, state.sediment_height)
 
             state.sediment_height .-= denudation_mass
+
             pop_sediment!(state.sediment_buffer, denudation_mass ./ input.depositional_resolution .|> NoUnits, denuded_sediment)
 
             d .+= denuded_sediment .* input.depositional_resolution

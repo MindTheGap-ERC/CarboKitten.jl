@@ -3,17 +3,17 @@ using CarboKitten.Visualization: sediment_profile, summary_plot, stratigraphic_c
 using CarboKitten.Export: read_slice, Header, DataSlice, read_column, DataColumn
 using Unitful
 
-function plot_sediment_profile(HDF5_file::String)
-    header, data = read_slice(HDF5_file, :profile)
-	fig = sediment_profile(header, data, show_unconformities = false)
-    save("docs/src/_fig/dissolution_sediment_profile.png", fig)
-end
-
 const HDF5_file = "data/output/denudation.h5"
 
 header, data = read_slice(HDF5_file, :profile)
 
 const location = 25
+
+function plot_sediment_profile(HDF5_file::String)
+    header, data = read_slice(HDF5_file, :profile)
+	fig = sediment_profile(header, data, show_unconformities = false)
+    save("docs/src/_fig/denudation_sediment_profile.png", fig)
+end
 
 function plot_sediment_accumulation(header::Header, data::DataSlice, location::Int; ax::Axis)
     time_interval = (header.axes.t[end] - header.axes.t[1]) /
@@ -52,7 +52,7 @@ function plot_barrel(header::Header, data::DataSlice, location::Int)
     
     column = data[location]
     stratigraphic_column!(ax2, header, column; color = Makie.wong_colors())
-    save("docs/src/_fig/dissolution_barrel_location_$(location).png", fig)
+    save("docs/src/_fig/denudation_barrel_location_$(location).png", fig)
     return fig
 end
 

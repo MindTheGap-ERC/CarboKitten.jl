@@ -48,25 +48,25 @@ facies(erodibility) = [
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
         erodibility = erodibility[1]
-        ),
-    WDn.Facies(
-        production=Production.EXAMPLE[:oligophotic],
-        name="oligophotic",
-        diffusion_coefficient=30.0u"m/yr",
-        reactive_surface=10u"m^2/m^3",
-        mass_density=2730u"kg/m^3",
-        infiltration_coefficient=0.5,
-        erodibility = erodibility[2]
-        ),
-    WDn.Facies(
-        production=Production.EXAMPLE[:aphotic],
-        name="aphotic",
-        diffusion_coefficient=10.0u"m/yr",
-        reactive_surface=10u"m^2/m^3",
-        mass_density=2730u"kg/m^3",
-        infiltration_coefficient=0.5,
-        erodibility = erodibility[3]
         )
+    # WDn.Facies(
+    #     production=Production.EXAMPLE[:oligophotic],
+    #     name="oligophotic",
+    #     diffusion_coefficient=30.0u"m/yr",
+    #     reactive_surface=10u"m^2/m^3",
+    #     mass_density=2730u"kg/m^3",
+    #     infiltration_coefficient=0.5,
+    #     erodibility = erodibility[2]
+    #     ),
+    # WDn.Facies(
+    #     production=Production.EXAMPLE[:aphotic],
+    #     name="aphotic",
+    #     diffusion_coefficient=10.0u"m/yr",
+    #     reactive_surface=10u"m^2/m^3",
+    #     mass_density=2730u"kg/m^3",
+    #     infiltration_coefficient=0.5,
+    #     erodibility = erodibility[3]
+    #     )
 ]
 
 facies() = [
@@ -111,7 +111,7 @@ input(tag, denudation, facies) = WDn.Input(
         :profile => OutputSpec(slice=(:, 25), write_interval=1)),
     ca_interval=1,
     initial_topography=(x, y) -> -x / 300.0,
-    sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
+    sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD) - 50m,
     subsidence_rate=20.0m / Myr,
     disintegration_rate=500.0m / Myr,
     insolation=400.0u"W/m^2",

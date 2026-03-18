@@ -126,20 +126,20 @@ end
 end
 ```
 
-### Diffusivity
+### Transport coefficient
 
-The diffusivity parameter used in CarboKitten is expressed in $\unit{m/Myr}$, because it is derived from the parameter $\nu_f$, transport velocity, that is expressed per unit slope. It is not the same as molecular-like diffusion coefficient, which have units $\unit{m^2/Myr}$. CarboKitten separates sediment lithification (`cementation_time`), disintegration (`disintegration_rate`) and transport on the slope. It also allows defining different wave velocity profiles by users. As a result, diffusivity set as a parameter differs from the diffusion coefficients reported in the literature. The effective diffusion coefficient of a given facies can be estimated for a given facies. In the example below, facies are assigned diffusivities that are relative to a minimum diffusivity, set to be 2.5 m/Myr, and the most mobile facies is assigned a quadruple of this value. Estimates of diffusion coefficients for these values have been obtained based on @hidding_carbokittenjl_2025.
+The transport coefficient used in CarboKitten is expressed in $\unit{m/Myr}$, because it is derived from the parameter $\nu_f$, transport velocity, that is expressed per unit slope. It is not the same as molecular-like diffusion coefficient, which have units $\unit{m^2/Myr}$. CarboKitten separates sediment lithification (`cementation_time`), disintegration (`disintegration_rate`) and transport on the slope. It also allows defining different wave velocity profiles by users. As a result, the transport coefficient differs from the diffusion coefficients reported in the literature. The effective diffusion coefficient of a given facies can be estimated for a given facies. In the example below, facies are assigned diffusivities that are relative to a minimum diffusivity, set to be 2.5 m/Myr, and the most mobile facies is assigned a quadruple of this value. Estimates of diffusion coefficients for these values have been obtained based on @hidding_carbokittenjl_2025.
 
-|          | Diffusivity $\unit{m/Myr}$ | Effective diffusion coefficient $\unit{m^2/Myr}$ |
+|          | Transport coefficient $\unit{m/Myr}$ | Effective diffusion coefficient $\unit{m^2/Myr}$ |
 |----------|----------------------------|--------------------------------------------------|
 | Facies 1 | 10                         | 326 668                                          |
 | Facies 2 | 2.5                        | 80 461                                           |
 | Facies 3 | 5                          | 15 6904                                          |
 
-All other parameters held similar, diffusivity values below 2.5 m/Myr will result in a largely immobile facies at the timescale of $10^6$ yr. 
+All other parameters held similar, transport coefficient values below 2.5 m/Myr will result in a largely immobile facies at the timescale of $10^6$ yr. 
 
 ```@raw html
-<details><summary>Example effect of diffusivity</summary>
+<details><summary>Example effect of transport coefficient</summary>
 ```
 
 ``` {.julia file=examples/model/diffusivity/alcap_diffusivity.jl}
@@ -162,7 +162,7 @@ const FACIES = [
         maximum_growth_rate=500u"m/Myr",
         extinction_coefficient=0.8u"m^-1",
         saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=4*min_diffusivity,
+        transport_coefficient=4*min_diffusivity,
         name="euphotic"),
     ALCAP.Facies(
         viability_range = (4, 10),
@@ -170,7 +170,7 @@ const FACIES = [
         maximum_growth_rate=400u"m/Myr",
         extinction_coefficient=0.1u"m^-1",
         saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=min_diffusivity,
+        transport_coefficient=min_diffusivity,
         name="oligophotic"),
     ALCAP.Facies(
         viability_range = (4, 10),
@@ -178,20 +178,20 @@ const FACIES = [
         maximum_growth_rate=100u"m/Myr",
         extinction_coefficient=0.005u"m^-1",
         saturation_intensity=60u"W/m^2",
-        diffusion_coefficient=2*min_diffusivity,
+        transport_coefficient=2*min_diffusivity,
         name="aphotic"),
 
     ALCAP.Facies(
         active=false,
-        diffusion_coefficient=10.0u"m/yr",
+        transport_coefficient=10.0u"m/yr",
         name="euphotic transported"),
     ALCAP.Facies(
         active=false,
-        diffusion_coefficient=1.0u"m/yr",
+        transport_coefficient=1.0u"m/yr",
         name="oligophotic transported"),
     ALCAP.Facies(
         active=false,
-        diffusion_coefficient=5.0u"m/yr",
+        transport_coefficient=5.0u"m/yr",
         name="aphotic transported")
 ]
 
@@ -297,7 +297,7 @@ end
 </details>
 ```
 
-Our input structure facilitates a single facies, specifying an initial bedrock elevation, sediment layer and a function for a location dependent constant production rate. The transport is parametrized by a disintegration rate and a diffusion coefficient.
+Our input structure facilitates a single facies, specifying an initial bedrock elevation, sediment layer and a function for a location dependent constant production rate. The transport is parametrized by a disintegration rate and a transport coefficient.
 
 ``` {.julia #example-active-layer}
 @kwdef struct Input
@@ -309,7 +309,7 @@ Our input structure facilitates a single facies, specifying an initial bedrock e
     production          # function (x::u"m", y::u"m") -> u"m/s"
     disintegration_rate::typeof(1.0u"m/Myr")
     subsidence_rate::typeof(1.0u"m/Myr")
-    diffusion_coefficient::typeof(1.0u"m/yr")
+    transport_coefficient::typeof(1.0u"m/yr")
 end
 ```
 
@@ -340,7 +340,7 @@ const input = Input(
     disintegration_rate = 50.0u"m/Myr",
     subsidence_rate = 50.0u"m/Myr",
 
-    diffusion_coefficient = 10.0u"m/yr"
+    transport_coefficient = 10.0u"m/yr"
 )
 ```
 
@@ -449,7 +449,7 @@ function propagator(input)
     Δt = input.Δt
     disintegration_rate = input.disintegration_rate
     production = input.production
-    d = input.diffusion_coefficient
+    d = input.transport_coefficient
 
     function active_layer(state)
         max_amount = disintegration_rate * Δt
@@ -596,7 +596,7 @@ transport_test_input(;
 	initial_sediment = (x, y) -> 0.0u"m",
 	disintegration_rate = 50.0u"m/Myr",
 	subsidence_rate = 0.0u"m/Myr",
-	diffusion_coefficient = 0.0u"m/yr",
+	transport_coefficient = 0.0u"m/yr",
 	wave_velocity = _ -> (Vec2(0.0, 0.0)u"m/yr", Vec2(0.0, 0.0)u"1/yr"),
     intertidal_zone = 0.0u"m") =
 
@@ -607,7 +607,7 @@ transport_test_input(;
 			steps = 1000),
 		facies = [ALCAP.Facies(
 			initial_sediment = initial_sediment,
-			diffusion_coefficient = diffusion_coefficient,
+			transport_coefficient = transport_coefficient,
 			wave_velocity = wave_velocity
 		)],
 		disintegration_rate = disintegration_rate,
@@ -656,7 +656,7 @@ module Script
         input = transport_test_input(
             initial_topography = (x, y) -> -30.0u"m",
             initial_sediment = initial_sediment,
-            diffusion_coefficient = 10.0u"m/yr")
+            transport_coefficient = 10.0u"m/yr")
 
         fig = plot_1d_evolution(input, 250)
         save("docs/src/_fig/1d-erosion.svg", fig)
@@ -746,7 +746,7 @@ module Script
             initial_topography = (x, y) -> -x / 375.0 - 10u"m",
             initial_sediment = 10.0u"m",
             disintegration_rate = 50.0u"m/Myr",
-            diffusion_coefficient = 5.0u"m/yr",
+            transport_coefficient = 5.0u"m/yr",
             wave_velocity = v_const(-0.5u"m/yr")
         )
         plot_1d_evolution!(ax1, input1, 250)
@@ -756,7 +756,7 @@ module Script
             initial_topography = (x, y) -> -x / 375.0 - 10u"m",
             initial_sediment = 10.0u"m",
             disintegration_rate = 50.0u"m/Myr",
-            diffusion_coefficient = 5.0u"m/yr",
+            transport_coefficient = 5.0u"m/yr",
             wave_velocity = v_prof_par(-0.5u"m/yr", 20u"m")
         )
         plot_1d_evolution!(ax2, input2, 250)
@@ -788,7 +788,7 @@ using Unitful
 using GeometryBasics
 
 @kwdef struct Facies <: AbstractFacies
-    diffusion_coefficient::typeof(1.0u"m/yr") = 0.0u"m/Myr"
+    transport_coefficient::typeof(1.0u"m/yr") = 0.0u"m/Myr"
     wave_velocity = _ -> (Vec2(0.0u"m/Myr", 0.0u"m/Myr"), Vec2(0.0u"1/Myr", 0.0u"1/Myr"))
 end
 
@@ -840,7 +840,7 @@ function adaptive_transporter(input)
 
         C = state.active_layer
         for (i, f) in pairs(fs)
-            advection_coef!(box, f.diffusion_coefficient, f.wave_velocity, wd, adv, rct)
+            advection_coef!(box, f.transport_coefficient, f.wave_velocity, wd, adv, rct)
             m = max_dt(adv, box.phys_scale, cm)
             steps = ceil(Int, Δt / m)
 
@@ -929,7 +929,7 @@ function transporter(input)
             for j in 1:steps
                 solver(
                     (C, _) -> transport(
-                        input.box, f.diffusion_coefficient, f.wave_velocity,
+                        input.box, f.transport_coefficient, f.wave_velocity,
                         C, wd),
                     view(C, i, :, :), TimeIntegration.time(input, state), Δt)
             end
@@ -990,13 +990,13 @@ function run()
             maximum_growth_rate=100.0u"m/Myr",
             extinction_coefficient=0.8u"m^-1",
             saturation_intensity=60u"W/m^2",
-            diffusion_coefficient=100.0u"m/yr",
+            transport_coefficient=100.0u"m/yr",
             wave_velocity=v_const(-5.0u"m/yr")),
         M.Facies(
             maximum_growth_rate=20.0u"m/Myr",
             extinction_coefficient=0.8u"m^-1",
             saturation_intensity=60u"W/m^2",
-            diffusion_coefficient=10.0u"m/yr",
+            transport_coefficient=10.0u"m/yr",
             wave_velocity=v_const(0.0u"m/yr"))]
 
 
@@ -1083,7 +1083,7 @@ const DummyFacies = [
     ALCAP.Facies(
         viability_range = (0, 0),
         activation_range = (0, 0),
-        diffusion_coefficient=0.0u"m/yr")]
+        transport_coefficient=0.0u"m/yr")]
 
 const input = ALCAP.Input(
     tag="test",

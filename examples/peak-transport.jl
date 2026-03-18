@@ -35,7 +35,7 @@ end
 
 # ╔═╡ 81ab5596-8f07-4573-8088-bc4940d192f5
 facies1 = M.Facies(
-	diffusion_coefficient = 10.0u"m/yr",
+	transport_coefficient = 10.0u"m/yr",
 	initial_sediment = (x, _) -> peak_height * exp(-(x - peak_centre)^2/(2 * peak_width^2)),
 	active = false,
 )

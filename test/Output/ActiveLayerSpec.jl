@@ -11,7 +11,7 @@ const DummyFacies = [
     ALCAP.Facies(
         viability_range = (0, 0),
         activation_range = (0, 0),
-        diffusion_coefficient=0.0u"m/yr")]
+        transport_coefficient=0.0u"m/yr")]
 
 const input = ALCAP.Input(
     tag="test",

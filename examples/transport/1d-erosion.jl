@@ -24,7 +24,7 @@ module Script
         input = transport_test_input(
             initial_topography = (x, y) -> -30.0u"m",
             initial_sediment = initial_sediment,
-            diffusion_coefficient = 10.0u"m/yr")
+            transport_coefficient = 10.0u"m/yr")
 
         fig = plot_1d_evolution(input, 250)
         save("docs/src/_fig/1d-erosion.svg", fig)

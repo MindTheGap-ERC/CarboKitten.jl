@@ -19,7 +19,7 @@ const FACIES = [
             maximum_growth_rate=500u"m/Myr",
             extinction_coefficient=0.8u"m^-1",
             saturation_intensity=60u"W/m^2"),
-        diffusion_coefficient=50.0u"m/yr",
+        transport_coefficient=50.0u"m/yr",
         name="euphotic"),
     ALCAP.Facies(
         viability_range = (4, 10),
@@ -28,7 +28,7 @@ const FACIES = [
             maximum_growth_rate=400u"m/Myr",
             extinction_coefficient=0.1u"m^-1",
             saturation_intensity=60u"W/m^2"),
-        diffusion_coefficient=25.0u"m/yr",
+        transport_coefficient=25.0u"m/yr",
         name="oligophotic"),
     ALCAP.Facies(
         viability_range = (4, 10),
@@ -37,7 +37,7 @@ const FACIES = [
             maximum_growth_rate=100u"m/Myr",
             extinction_coefficient=0.005u"m^-1",
             saturation_intensity=60u"W/m^2"),
-        diffusion_coefficient=12.5u"m/yr",
+        transport_coefficient=12.5u"m/yr",
         name="aphotic")
 ]
 
@@ -142,7 +142,7 @@ end
 
 ``` {.julia file=src/Models/ALCAP.jl}
 @compose module ALCAP
-@mixin Tag, Output, CAProduction, ActiveLayer, InitialSediment, Diagnostics
+@mixin Tag, Output, CAProduction, CAFeedback, ActiveLayer, InitialSediment, Diagnostics
 
 using ..Common
 using ..CAProduction: production
@@ -175,7 +175,7 @@ end
 
 function initial_frame(input::Input)
     dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
-    return Frame(production=zeros(Sediment,size(dep)), 
+    return Frame(production=zeros(Sediment,size(dep)),
                   disintegration=zeros(Sediment,size(dep)),
                   deposition=dep)
 end
@@ -184,6 +184,7 @@ function step!(input::Input)
     step_ca! = CellularAutomaton.step!(input)
     disintegrate! = ActiveLayer.disintegrator(input)
     produce = production(input)
+    kill_unproductivity! = CAFeedback.ca_feedback(input)
     transport! = ActiveLayer.transporter(input)
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
@@ -203,6 +204,7 @@ function step!(input::Input)
 
         wd = local_water_depth(state)
         p = produce(state, wd)
+        kill_unproductivity!(state.ca, p)
         d = disintegrate!(state)
 
         state.active_layer .+= p

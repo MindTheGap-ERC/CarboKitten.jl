@@ -11,7 +11,7 @@ using Unitful
 using GeometryBasics
 
 @kwdef struct Facies <: AbstractFacies
-    diffusion_coefficient::typeof(1.0u"m/yr") = 0.0u"m/Myr"
+    transport_coefficient::typeof(1.0u"m/yr") = 0.0u"m/Myr"
     wave_velocity = _ -> (Vec2(0.0u"m/Myr", 0.0u"m/Myr"), Vec2(0.0u"1/Myr", 0.0u"1/Myr"))
 end
 
@@ -63,7 +63,7 @@ function adaptive_transporter(input)
 
         C = state.active_layer
         for (i, f) in pairs(fs)
-            advection_coef!(box, f.diffusion_coefficient, f.wave_velocity, wd, adv, rct)
+            advection_coef!(box, f.transport_coefficient, f.wave_velocity, wd, adv, rct)
             m = max_dt(adv, box.phys_scale, cm)
             steps = ceil(Int, Δt / m)
 
@@ -152,7 +152,7 @@ function transporter(input)
             for j in 1:steps
                 solver(
                     (C, _) -> transport(
-                        input.box, f.diffusion_coefficient, f.wave_velocity,
+                        input.box, f.transport_coefficient, f.wave_velocity,
                         C, wd),
                     view(C, i, :, :), TimeIntegration.time(input, state), Δt)
             end

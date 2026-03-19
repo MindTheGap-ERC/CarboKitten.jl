@@ -27,7 +27,7 @@ function run()
             maximum_growth_rate=0.0u"m/Myr",
             initial_sediment=initial_sediment),
         M.Facies(
-            diffusion_coefficient=100.0u"m/yr",
+            transport_coefficient=100.0u"m/yr",
             wave_velocity=v_const(0.0u"m/yr")),
     ]
 

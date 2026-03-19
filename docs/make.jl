@@ -112,9 +112,6 @@ makedocs(
             "Topography" => "visualization/topography.md",
             "Other" => "visualization.md",
         ],
-        "CarboCAT" => [
-            "Summary" => "carbocat.md",
-        ],
         "Denudation" => [
             "Denudation" => "denudation/denudation.md",
             "Empirical Denudation" => "denudation/empirical.md",

@@ -17,7 +17,7 @@ using CarboKitten.Transport.ActiveLayer: pde_stencil, Amount, Rate
     production          # function (x::u"m", y::u"m") -> u"m/s"
     disintegration_rate::typeof(1.0u"m/Myr")
     subsidence_rate::typeof(1.0u"m/Myr")
-    diffusion_coefficient::typeof(1.0u"m/yr")
+    transport_coefficient::typeof(1.0u"m/yr")
 end
 # ~/~ end
 # ~/~ begin <<docs/src/active-layer-transport.md#example-active-layer>>[1]
@@ -44,7 +44,7 @@ const input = Input(
     disintegration_rate = 50.0u"m/Myr",
     subsidence_rate = 50.0u"m/Myr",
 
-    diffusion_coefficient = 10.0u"m/yr"
+    transport_coefficient = 10.0u"m/yr"
 )
 # ~/~ end
 # ~/~ begin <<docs/src/active-layer-transport.md#example-active-layer>>[2]
@@ -71,7 +71,7 @@ function propagator(input)
     Δt = input.Δt
     disintegration_rate = input.disintegration_rate
     production = input.production
-    d = input.diffusion_coefficient
+    d = input.transport_coefficient
 
     function active_layer(state)
         max_amount = disintegration_rate * Δt

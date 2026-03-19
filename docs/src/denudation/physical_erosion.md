@@ -1,5 +1,13 @@
 # Physical erosion and sediment redistribution
 
+## Result example
+The resultant figures of chemical dissolution is presented below:
+![Physical erosion example barrel plot](../fig/physical_barrel_location_25.png)
+
+We can clearly see the sediments were removed as the thickness of sediments decrease at each regression cycle.
+
+## Rationale
+
 This method not only considers the amount of materials that have been removed, but also how the eroded materials are being distributed to the neighboring regions depending on slopes on each direction.
 
 ## Physical erosion

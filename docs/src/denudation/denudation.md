@@ -9,12 +9,14 @@ Denudation can be applied in three ways: modelling physical erosion, modelling c
 ## How to use?
 In CarboKitten, you could choose which type of the three you would like to apply. To do this you could simply change the `erosion_type` in the input.
 
-Example: in examples, you find `caps_miller_diss.jl`, `caps_miller_emp.jl`, `caps_miller_phys.jl`, for chemical dissolution, empirical denudation or physical denudation, respectively. This file uses the [miller_phanerozoic_2005] (@cite) cure as sea level curve input. You could try different erosion types by changing the `erosion_type`:
+Example: in examples, you find `dissolution_run.jl`, `empirical_run.jl`,`physical_run.jl` for chemical dissolution, empirical denudation or physical denudation, respectively. This file uses the sin curve as sea level curve input. You could try different erosion types by changing the `erosion_type`:
 
 - `NoDenudation` means no erosion, and is used for debugging only.
 - `Dissolution` means chemical dissolution. The default input parameters are: Temperature = 273K, precipitation = 1000mm/yr, atmospheric CO2 partial pressure = 10^(-1.5)* ATM, and reaction rate = 0.002 m/yr.
 - `PhysicalErosion` means physical erosion and sediments redistribution. The default parameters is erodability = 0.001 m/yr.
 - `EmpericalDenudation` means total denudation calculated based on emperical relationship by Cl isotope observations. The default input parameter is: precipitation = 1000mm/yr.
+
+After running the examples, you are recommended using `denudation_plot.jl` to visualize sediment accumulation curve and the assoicated sediment cores to check the validity. You can change two `const` as you wish. 
 
 ## Tests for three modes of denudation
 In this module, 7 tests are implemented.

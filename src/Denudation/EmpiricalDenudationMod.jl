@@ -18,7 +18,7 @@ end
 # ~/~ end
 # ~/~ begin <<docs/src/denudation/empirical.md#empirical-denudation>>[1]
 @kwdef struct EmpiricalDenudation <: DenudationType
-    precip::typeof(1.0u"m")
+    precip::typeof(1.0u"m/y")
 end
 # ~/~ end
 # ~/~ begin <<docs/src/denudation/empirical.md#empirical-denudation>>[2]
@@ -35,7 +35,7 @@ end
 # ~/~ end
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, state)
-    precip = p.precip ./ u"m"
+    precip = p.precip ./ u"m/y"
     denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(slope)...)
 
     for idx in CartesianIndices(state.ca)

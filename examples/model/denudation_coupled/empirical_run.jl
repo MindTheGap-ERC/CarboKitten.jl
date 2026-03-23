@@ -12,7 +12,7 @@ using CarboKitten: Box, TimeProperties, OutputSpec, run_model, Model
 using CarboKitten.Denudation: Dissolution, EmpiricalDenudation, PhysicalErosion, NoDenudation
 const PATH = "data/output"
 const TAG = "denudation"
-const DENUDATION = EmpiricalDenudation(precip = 1000u"mm")
+const DENUDATION = EmpiricalDenudation(precip = 1000u"mm/y")
 include("denudation_param_config.jl")
 using .DenudationParamConfig
 

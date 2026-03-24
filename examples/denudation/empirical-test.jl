@@ -13,7 +13,7 @@ const slope = 30
 function main()
     precip = collect(0.4:0.01:2.0)
 
-    result = Vector{typeof(1.0u"m/Myr")}(undef,size(precip))
+    result = Vector{typeof(1.0u"m/yr")}(undef,size(precip))
 
     for i in eachindex(precip)
         result[i] = empirical_denudation(precip[i],slope)

@@ -95,11 +95,33 @@ function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwi
         verts = [(x[pt[1]], h[pt...] |&gt; in_units_of(u&quot;m&quot;)) for pt in hiatus[1]]
         linesegments!(ax, vec(permutedims(verts[hiatus[2]])); kwargs...)
     end
-end</code></pre><h3 id="Plotting-Co-eval-Lines"><a class="docs-heading-anchor" href="#Plotting-Co-eval-Lines">Plotting Co-eval Lines</a><a id="Plotting-Co-eval-Lines-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-Co-eval-Lines" title="Permalink"></a></h3><div class="noweb-label">⪡plot-coeval-lines⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
+end</code></pre><h3 id="Plotting-Co-eval-Lines"><a class="docs-heading-anchor" href="#Plotting-Co-eval-Lines">Plotting Co-eval Lines</a><a id="Plotting-Co-eval-Lines-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-Co-eval-Lines" title="Permalink"></a></h3><div class="noweb-label">⪡plot-coeval-lines⪢≣</div><pre><code class="language- julia hljs">function age_depth_model(header::Header, data::DataSlice)
+    x = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
+    t = header.axes.t |&gt; in_units_of(u&quot;Myr&quot;)
+
+    n_facies, n_x, n_t = size(data.production)
+    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    initial_topography = header.initial_topography[data.slice...]
+    sc = stratigraphic_column(data)
+    h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
+    @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
+    return h
+end
+
+&quot;&quot;&quot;
     coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Bool)
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, tics::Bool)
 
 Plot coeval lines using default settings. If `tics` is false, nothing is done.
+
+The `adm` argument should contain the age-depth model for the entire slice in
+units of m. This can be computed by getting the `cumsum` of the
+`stratigraphic_column` of the `data` argument. If the `adm` argument is left
+out, the stratigraphic column will be computed from `data` first.
 &quot;&quot;&quot;
+coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Bool) =
+    coeval_lines!(ax, header, data, age_depth_model(header, data), n_tics)
+
 function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, n_tics::Bool)
     if !n_tics
         return
@@ -110,10 +132,14 @@ end
 
 &quot;&quot;&quot;
     coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...)
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, tics::Vector{Time}; kwargs...)
 
 Plot coeval lines for given times. The times in `tics` are looked up in `header.axes.t`
 to find which indices to plot.
 &quot;&quot;&quot;
+coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...) =
+    coeval_lines!(ax, header, data, age_depth_model(header, data), tics; kwargs...)
+
 function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Time}; kwargs...)
     t = header.axes.t[1:data.write_interval:end]
     indices::Vector{Int} = [searchsortedfirst(t, i) for i in tics]
@@ -122,11 +148,15 @@ end
 
 &quot;&quot;&quot;
     coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int})
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, n_tics::Tuple{Int, Int})
 
 Plot coeval lines on regular intervals given by `n_tics`. The tuple gives the number of intervals
 for both minor and major tics, plotted as dotted and solid black lines respectively.
 If you need more control over the aestetics of these lines, use the other `coeval_lines!` methods.
 &quot;&quot;&quot;
+coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int}; kwargs...) =
+    coeval_lines!(ax, header, data, age_depth_model(header, data), n_tics; kwargs...)
+
 function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, n_tics::Tuple{Int, Int} = (4, 8))
     n_steps = div(header.time_steps, data.write_interval)
     n_major_tics, n_minor_tics = n_tics
@@ -142,10 +172,14 @@ end
 
 &quot;&quot;&quot;
     coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...)
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, tics::Vector{Int}; kwargs...)
 
 Plot coeval lines for the given indices. The `kwargs...` are forwarded to a call to Makie&#39;s
 `lines!` procedure.
 &quot;&quot;&quot;
+coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...) =
+    coeval_lines!(ax, header, data, age_depth_model(header, data), tics; kwargs...)
+
 function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Int}; kwargs...)
     x = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
     h = adm |&gt; in_units_of(u&quot;m&quot;)
@@ -293,4 +327,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../overview/">« Overview</a><a class="docs-footer-nextpage" href="../topography/">Topography »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 18 March 2026 09:35">Wednesday 18 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../overview/">« Overview</a><a class="docs-footer-nextpage" href="../topography/">Topography »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 26 March 2026 07:34">Thursday 26 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

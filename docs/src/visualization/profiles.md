@@ -144,11 +144,33 @@ end
 ### Plotting Co-eval Lines
 
 ``` {.julia #plot-coeval-lines}
+function age_depth_model(header::Header, data::DataSlice)
+    x = header.axes.x |> in_units_of(u"km")
+    t = header.axes.t |> in_units_of(u"Myr")
+
+    n_facies, n_x, n_t = size(data.production)
+    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    initial_topography = header.initial_topography[data.slice...]
+    sc = stratigraphic_column(data)
+    h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
+    @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
+    return h
+end
+
 """
     coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Bool)
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, tics::Bool)
 
 Plot coeval lines using default settings. If `tics` is false, nothing is done.
+
+The `adm` argument should contain the age-depth model for the entire slice in
+units of m. This can be computed by getting the `cumsum` of the
+`stratigraphic_column` of the `data` argument. If the `adm` argument is left
+out, the stratigraphic column will be computed from `data` first.
 """
+coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Bool) =
+    coeval_lines!(ax, header, data, age_depth_model(header, data), n_tics)
+
 function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, n_tics::Bool)
     if !n_tics
         return
@@ -159,10 +181,14 @@ end
 
 """
     coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...)
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, tics::Vector{Time}; kwargs...)
 
 Plot coeval lines for given times. The times in `tics` are looked up in `header.axes.t`
 to find which indices to plot.
 """
+coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...) =
+    coeval_lines!(ax, header, data, age_depth_model(header, data), tics; kwargs...)
+
 function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Time}; kwargs...)
     t = header.axes.t[1:data.write_interval:end]
     indices::Vector{Int} = [searchsortedfirst(t, i) for i in tics]
@@ -171,11 +197,15 @@ end
 
 """
     coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int})
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, n_tics::Tuple{Int, Int})
 
 Plot coeval lines on regular intervals given by `n_tics`. The tuple gives the number of intervals
 for both minor and major tics, plotted as dotted and solid black lines respectively.
 If you need more control over the aestetics of these lines, use the other `coeval_lines!` methods.
 """
+coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int}; kwargs...) =
+    coeval_lines!(ax, header, data, age_depth_model(header, data), n_tics; kwargs...)
+
 function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, n_tics::Tuple{Int, Int} = (4, 8))
     n_steps = div(header.time_steps, data.write_interval)
     n_major_tics, n_minor_tics = n_tics
@@ -191,10 +221,14 @@ end
 
 """
     coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...)
+    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, tics::Vector{Int}; kwargs...)
 
 Plot coeval lines for the given indices. The `kwargs...` are forwarded to a call to Makie's
 `lines!` procedure.
 """
+coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...) =
+    coeval_lines!(ax, header, data, age_depth_model(header, data), tics; kwargs...)
+
 function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Int}; kwargs...)
     x = header.axes.x |> in_units_of(u"km")
     h = adm |> in_units_of(u"m")

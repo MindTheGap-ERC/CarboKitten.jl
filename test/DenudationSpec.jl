@@ -14,8 +14,8 @@ using Unitful
 
     DENUDATION_HIGH_CO2 = Dissolution(temp = 293.0u"K",precip = 1.0u"m", pco2 = 10^(-1.5)*u"atm",reactionrate = 2e-3u"m/yr")
     DENUDATION_LOW_CO2 = Dissolution(temp = 293.0u"K",precip = 1.0u"m", pco2 = 10^(-2.5)*u"atm",reactionrate = 2e-3u"m/yr")
-    DENUDATION_LOW_P = EmpiricalDenudation(precip = 0.8u"m")
-    DENUDATION_HIGH_P = EmpiricalDenudation(precip = 1.0u"m")
+    DENUDATION_LOW_P = EmpiricalDenudation(precip = 0.8u"m/yr")
+    DENUDATION_HIGH_P = EmpiricalDenudation(precip = 1.0u"m/yr")
     DENUDATION_PHYS = PhysicalErosion()
     MODEL1 = [
         Facies(viability_range = (4, 10),

@@ -35,7 +35,7 @@ end
 # ~/~ end
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, state)
-    precip = p.precip ./ u"m/y"
+    precip = p.precip ./ u"m/yr"
     denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(slope)...)
 
     for idx in CartesianIndices(state.ca)

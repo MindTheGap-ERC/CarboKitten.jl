@@ -17,7 +17,7 @@ const TAG = "denudation"
 const SURF = [10u"m^2/m^3", 10u"m^2/m^3", 10u"m^2/m^3"]
 const DENS = [2730u"kg/m^3", 2730u"kg/m^3", 2730u"kg/m^3"]
 const INF = [0.5, 0.5, 0.5]
-const DENUDATION = Dissolution(temp=293.0u"K", precip=1.0u"m", pco2=10^(-2.5) * u"atm", reactionrate=2e-3u"m/yr")
+const DENUDATION = Dissolution(temp=293.0u"K", precip=1.0u"m/yr", pco2=10^(-2.5) * u"atm", reactionrate=2e-3u"m/yr")
 
 function main()
     FACIES = facies(SURF, DENS, INF)

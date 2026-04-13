@@ -1,27 +1,29 @@
 # Denudation
 
-Denudation can be applied in three ways: modelling physical erosion, modelling chemical dissolution and estimating total denudation rates based on chlorine (Cl) isotope data.
+Denudation can be applied according to three approaches: modelling physical erosion, modelling chemical dissolution and estimating total denudation rates based on chlorine (Cl) isotope data.
 
 1. [Physical Erosion](physical_erosion.md)
 2. [Chemical Dissolution](chemical.md)
 3. [Empirical Denudation](empirical.md)
 
 ## How to use?
-In CarboKitten, you could choose which type of the three you would like to apply. To do this you could simply change the `erosion_type` in the input.
 
-Example: in examples, you find `dissolution_run.jl`, `empirical_run.jl`,`physical_run.jl` for chemical dissolution, empirical denudation or physical denudation, respectively. This file uses the sin curve as sea level curve input. You could try different erosion types by changing the `erosion_type`:
+In CarboKitten, you choose which type of the three approaches you apply. To do this, change the `erosion_type` in the input.
+
+In the `examples/denudation_coupled/` folder of the repository, you find `dissolution_run.jl`, `empirical_run.jl`,`physical_run.jl` for chemical dissolution, empirical denudation or physical denudation, respectively. These files use the sine curve as sea level curve input. The following values of the `erosion_type` argument are possible:
 
 - `NoDenudation` means no erosion, and is used for debugging only.
-- `Dissolution` means chemical dissolution. The default input parameters are: Temperature = 273K, precipitation = 1000mm/yr, atmospheric CO2 partial pressure = 10^(-1.5)* ATM, and reaction rate = 0.002 m/yr.
+- `Dissolution` means chemical dissolution. The default input parameters are: Temperature = 273K, precipitation = 1000 mm/yr, atmospheric $CO_2$ partial pressure = $10^{-1.5}*$ ATM, and reaction rate = 0.002 m/yr.
 - `PhysicalErosion` means physical erosion and sediments redistribution. The default parameters is erodability = 0.001 m/yr.
-- `EmpericalDenudation` means total denudation calculated based on emperical relationship by Cl isotope observations. The default input parameter is: precipitation = 1000mm/yr.
+- `EmpiricalDenudation` means total denudation calculated based on empirical relationship by Cl isotope observations. The default input parameter is: precipitation = 1000 mm/yr.
 
-After running the examples, you are recommended using `denudation_plot.jl` to visualize sediment accumulation curve and the assoicated sediment cores to check the validity. You can change two `const` as you wish. 
+After running the examples, it is recommended to use `denudation_plot.jl` to visualize the sediment accumulation curve and the associated stratigraphic columsn to check the validity. You can change two `const` as you wish.
 
 ## Tests for three modes of denudation
+
 In this module, 7 tests are implemented.
 
-Tests 1:
+Test 1:
 
 ```julia
 @test sum(denudation_mass_LOW_T) < sum(denudation_mass_HIGH_T)
@@ -37,7 +39,7 @@ Test2:
 
 This means more humid scenario has higher denudation rates than the arid scenario. This tests emperical denudation mode.
 
-Test3:
+Test 3:
 
 ```julia
 @test sum(denudation_mass_phys) > sum(denudation_mass_phys_flat)
@@ -45,7 +47,7 @@ Test3:
 
 This means more topography has higher denudation rates than the flatter topography. This tests physical erosion.
 
-Test4:
+Test 4:
 
 ```julia
 @test sum(denudation_mass_phys) ≈ sum(redistribution_mass)
@@ -57,9 +59,9 @@ Test 5 to 7 are regression tests: the outputs from the module is similar to the 
 
 ## API
 
-The different denudation models all follow the same API.
+The denudation models all follow the same API.
 
-``` {.julia file=src/Denudation/Abstract.jl}
+```{.julia file=src/Denudation/Abstract.jl}
 module Abstract
 
 using ...BoundaryTrait: Boundary
@@ -117,7 +119,7 @@ end  # module
 
 ### No Denudation
 
-``` {.julia file=src/Denudation/NoDenudationMod.jl}
+```{.julia file=src/Denudation/NoDenudationMod.jl}
 """
     module NoDenudation
 

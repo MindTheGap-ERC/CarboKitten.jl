@@ -13,7 +13,7 @@ facies(reactive_surface,mass_density,infiltration_coefficient) = [
     WDn.Facies(
         production=Production.EXAMPLE[:euphotic],
         name="euphotic",
-        diffusion_coefficient=50.0u"m/yr",
+        transport_coefficient=50.0u"m/yr",
         reactive_surface=reactive_surface[1],
         mass_density=mass_density[1],
         infiltration_coefficient=infiltration_coefficient[1],
@@ -22,7 +22,7 @@ facies(reactive_surface,mass_density,infiltration_coefficient) = [
     WDn.Facies(
         production=Production.EXAMPLE[:oligophotic],
         name="oligophotic",
-        diffusion_coefficient=30.0u"m/yr",
+        transport_coefficient=30.0u"m/yr",
         reactive_surface=reactive_surface[2],
         mass_density=mass_density[2],
         infiltration_coefficient=infiltration_coefficient[2],
@@ -31,7 +31,7 @@ facies(reactive_surface,mass_density,infiltration_coefficient) = [
     WDn.Facies(
         production=Production.EXAMPLE[:aphotic],
         name="aphotic",
-        diffusion_coefficient=10.0u"m/yr",
+        transport_coefficient=10.0u"m/yr",
         reactive_surface=reactive_surface[3],
         mass_density=mass_density[3],
         infiltration_coefficient=infiltration_coefficient[3],
@@ -43,7 +43,7 @@ facies(erodibility) = [
     WDn.Facies(
         production=Production.EXAMPLE[:euphotic],
         name="euphotic",
-        diffusion_coefficient=50.0u"m/yr",
+        transport_coefficient=50.0u"m/yr",
         reactive_surface=10u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
@@ -52,7 +52,7 @@ facies(erodibility) = [
     WDn.Facies(
         production=Production.EXAMPLE[:oligophotic],
         name="oligophotic",
-        diffusion_coefficient=30.0u"m/yr",
+        transport_coefficient=30.0u"m/yr",
         reactive_surface=10u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
@@ -61,7 +61,7 @@ facies(erodibility) = [
     WDn.Facies(
         production=Production.EXAMPLE[:aphotic],
         name="aphotic",
-        diffusion_coefficient=10.0u"m/yr",
+        transport_coefficient=10.0u"m/yr",
         reactive_surface=10u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
@@ -73,7 +73,7 @@ facies() = [
     WDn.Facies(
         production=Production.EXAMPLE[:euphotic],
         name="euphotic",
-        diffusion_coefficient=50.0u"m/yr",
+        transport_coefficient=50.0u"m/yr",
         reactive_surface=10u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
@@ -82,7 +82,7 @@ facies() = [
     WDn.Facies(
         production=Production.EXAMPLE[:oligophotic],
         name="oligophotic",
-        diffusion_coefficient=30.0u"m/yr",
+        transport_coefficient=30.0u"m/yr",
         reactive_surface=10u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,
@@ -91,7 +91,7 @@ facies() = [
     WDn.Facies(
         production=Production.EXAMPLE[:aphotic],
         name="aphotic",
-        diffusion_coefficient=10.0u"m/yr",
+        transport_coefficient=10.0u"m/yr",
         reactive_surface=10u"m^2/m^3",
         mass_density=2730u"kg/m^3",
         infiltration_coefficient=0.5,

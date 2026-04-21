@@ -1,11 +1,5 @@
 # Chemical dissolution
 
-## Result example
-The resultant figures of chemical dissolution is presented below:
-![Chemical Dissolution example barrel plot](../fig/dissolution_barrel_location_25.png)
-
-We can clearly see the sediments were removed as the thickness of sediments decrease at each regression cycle.
-
 ## Rationale
 
 The details could be found in paper by [Kaufmann2001](@cite).
@@ -21,7 +15,7 @@ $$\frac{dh}{dt} = 0.001\ \kappa_c\  I$$
 
 Where $I$ is runoff (mm/y?). The parameter $\kappa_c$ is dimensionless and should be described by equation 3:
 
-$$\kappa_c = 40\ 1000\ \frac{[Ca^{2+}]_{eq}}{\rho}$$
+$$\kappa_c = 40\times 1000\ \frac{[Ca^{2+}]_{eq}}{\rho}$$
 
 Parameter ρ is the density of calcite, and we choose 2700 $kg/m^3$ here. $[Ca^{2+}]_{eq}$ is defined in equation 4:
 
@@ -289,3 +283,11 @@ end
 
 end
 ```
+
+
+## Result example
+The resultant figures of chemical dissolution is presented below:
+![Chemical Dissolution example barrel plot](../fig/dissolution_barrel_location_25.png)
+
+We can clearly see the sediments were removed as the thickness of sediments decrease at each regression cycle.
+

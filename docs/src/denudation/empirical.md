@@ -1,11 +1,5 @@
 # Emperical denudation
 
-## Result example
-The resultant figures of chemical dissolution is presented below:
-![CEmpirical example barrel plot](../fig/empirical_barrel_location_25.png)
-
-We can clearly see the sediments were removed as the thickness of sediments decrease at each regression cycle.
-
 ## Rationale
 
 Chlorine (Cl) isotopes are an emerging tool to decipher the denudation rates (chemical dissolution + physical erosion) in carbonate-dominated areas.
@@ -137,3 +131,9 @@ end
 
 end
 ```
+
+## Result example
+The resultant figures of chemical dissolution is presented below:
+![CEmpirical example barrel plot](../fig/empirical_barrel_location_25.png)
+
+We can clearly see the sediments were removed as the thickness of sediments decrease at each regression cycle.

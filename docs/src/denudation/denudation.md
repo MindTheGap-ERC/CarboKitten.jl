@@ -8,14 +8,16 @@ Denudation can be applied according to three approaches: modelling physical eros
 
 ## How to use?
 
-In CarboKitten, you choose which type of the three approaches you apply. To do this, change the `erosion_type` in the input.
+In CarboKitten, you choose which type of the three approaches you apply. Please see the examples to do this.
 
-In the `examples/denudation_coupled/` folder of the repository, you find `dissolution_run.jl`, `empirical_run.jl`,`physical_run.jl` for chemical dissolution, empirical denudation or physical denudation, respectively. These files use the sine curve as sea level curve input. The following values of the `erosion_type` argument are possible:
+In the `examples/denudation_coupled/` folder of the repository, you find `dissolution_run.jl`, `empirical_run.jl`,`physical_run.jl` for chemical dissolution, empirical denudation or physical denudation, respectively. These files use the sine curve as sea level curve input. The following values of the denudation approach argument are possible:
 
 - `NoDenudation` means no erosion, and is used for debugging only.
 - `Dissolution` means chemical dissolution. The default input parameters are: Temperature = 273K, precipitation = 1000 mm/yr, atmospheric $CO_2$ partial pressure = $10^{-1.5}*$ ATM, and reaction rate = 0.002 m/yr.
 - `PhysicalErosion` means physical erosion and sediments redistribution. The default parameters is erodability = 0.001 m/yr.
 - `EmpiricalDenudation` means total denudation calculated based on empirical relationship by Cl isotope observations. The default input parameter is: precipitation = 1000 mm/yr.
+
+You can change your denudation approach in `const DENUDATION`.
 
 After running the examples, it is recommended to use `denudation_plot.jl` to visualize the sediment accumulation curve and the associated stratigraphic columsn to check the validity. You can change two `const` as you wish.
 

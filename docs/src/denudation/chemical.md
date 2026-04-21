@@ -13,13 +13,13 @@ Other parameters are defined as: $q_i$ is the discharge of water at a certain ce
 
 $$\frac{dh}{dt} = 0.001\ \kappa_c\  I$$
 
-Where $I$ is runoff (mm/y?). The parameter $\kappa_c$ is dimensionless and should be described by equation 3:
+Where $I$ is runoff (mm/yr). The parameter $\kappa_c$ is dimensionless and should be described by equation 3:
 
 $$\kappa_c = 40\times 1000\ \frac{[Ca^{2+}]_{eq}}{\rho}$$
 
 Parameter ρ is the density of calcite, and we choose 2700 $kg/m^3$ here. $[Ca^{2+}]_{eq}$ is defined in equation 4:
 
-$$[Ca^{2+}]_{eq} = {{(PCO_2\ (K_1\ K_C\ K_H)} \over {(4\ K_2\times \gamma Ca\ (\gamma HCO_3)^2))^{(1/3)}}}$$
+$$[Ca^{2+}]_{eq} = {{(PCO_2\ (K_1\ K_C\ K_H)} \over {(4\ K_2\times \gamma Ca\ (\gamma HCO_3)^2)^{(1/3)}}}$$
 
 Mass balance coefficients $K_1$, $K_2$, $K_C$, $K_H$ depend on temperature. $_PCO_2$ is assumed to be between $10^{-1.5} ATM$ to $10^{-3.5} ATM$.
 
@@ -183,7 +183,7 @@ function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies)
     (concentration=eq_c, denudation=eq_d)
 end
 ```
-The value of $[Ca^{2+}]_{eq}$ calculated in ```equilibrium``` for a range of temperatures:
+The values of $[Ca^{2+}]_{eq}$ are calculated in ```equilibrium``` for a range of temperatures:
 ![KH as function of temperature](../fig/Equilibrium_Concs.png)
 
 However, the above discussion is true only if the percolated fluid is saturated (in terms of Ca) when leaving the platform. In some cases, when the fluid is not saturated, the dissolved amount is lower than the scenario described above.
@@ -202,7 +202,7 @@ $F$ is the dissolution rate, $\alpha$ is constant (kinetic co-efficient), $c_{eq
 
 $$I\ {\rm d}c = \alpha (c_{eq}-c(z)) L\ {\rm d}z$$
 
-This equation indicates that the concentration increase in the infiltrated water equals the dissolution of rocks in the thickness of $dz$. $L$ is the specific length of fractures/porosities (units: $m/m^2$, we can try 100 at the first place). I.e., this term defines the relative reactive surface of the subsurface rocks, or how much surface is actually dissolving. This term is difficult to determine. $I$ is infiltration, but slightly different as chapter 1: this $I$ is the $I$ in each rain event according to the paper. We certainly do not gonna know how this parameter works, so we just set it the same as in chapter 1?
+This equation indicates that the concentration increase in the infiltrated water equals the dissolution of rocks in the thickness of $dz$. $L$ is the specific length of fractures/porosities (units: $m/m^2$). I.e., this term defines the relative reactive surface of the subsurface rocks, or how much surface is actually undergoing dissolution. This parameter is difficult to obtain in the fields but feel free to adjust it to see how the results would change. 
 
 However, to solve this equation we still need to know $c(z)$.
 
@@ -216,7 +216,7 @@ Therefore,
 
 $$D_{\rm average} = (I\times \frac{c_{eq}}{\rho})\ (1 – (\frac{\lambda}{z_0})\ (1 – e^{(\frac{-z_0}{\lambda})}))$$
 
-α used in this article is $\alpha = 2·10^{−6}$ or $3.5·10^{−7}$ cm/s (for temp at 298K). This is indeed a controversial parameter TBH. We can try different values and see what happens.
+α used in this article is $\alpha = 2·10^{−6}$ or $3.5·10^{−7}$ cm/s (for temp at 298K). This is indeed a controversial parameter. Please feel free to try different values and see what happens.
 
 These equations are implemented as ```dissolution``` function:
 
@@ -228,7 +228,7 @@ function dissolution(temp, precip, pco2, alpha, water_depth, facies)
     eq.denudation .* (1 - (λ ./ -water_depth) .* (1 - exp.(water_depth ./ λ))) * u"m/Myr"
 end
 ```
-The dedudation rate calculated in this function for varying temperature and water depth is plotted here:
+The dedudation rates calculated from this function for varying temperature and water depth are plotted here:
 
 ![Dissolution as function of temperature and water depth](../fig/DissolutionExample.png)
 

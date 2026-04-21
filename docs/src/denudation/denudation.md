@@ -19,7 +19,7 @@ In the `examples/denudation_coupled/` folder of the repository, you find `dissol
 
 You can change your denudation approach in `const DENUDATION`.
 
-After running the examples, it is recommended to use `denudation_plot.jl` to visualize the sediment accumulation curve and the associated stratigraphic columsn to check the validity. You can change two `const` as you wish.
+After running the examples, it is recommended to use `denudation_plot.jl` to visualize the sediment accumulation curve and the associated stratigraphic columns. You can change two `const` in the `denudation_plot.jl` as you wish.
 
 ## Tests for three modes of denudation
 

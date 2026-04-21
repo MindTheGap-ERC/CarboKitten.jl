@@ -10,13 +10,13 @@ using CarboKitten.Models: WithDenudation as WDn
 using CarboKitten.Export: data_export, CSV, read_slice
 using CarboKitten: Box, TimeProperties, OutputSpec, run_model, Model
 using CarboKitten.Denudation
-
+include("denudation_param_config.jl")
+using .DenudationParamConfig
 
 const PATH = "data/output"
 const TAG = "nodenudation"
 
 const DENUDATION = NoDenudation()
-using .DenudationParamConfig
 
 function main()
     FACIES = facies()

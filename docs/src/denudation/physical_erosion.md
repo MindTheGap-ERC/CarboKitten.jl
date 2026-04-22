@@ -1,12 +1,14 @@
 # Physical erosion and sediment redistribution
 
-This method not only considers the amount of materials that have been removed, but also how the eroded materials are being distributed to the neighboring regions depending on slopes on each direction.
+## Rationale
+
+This approach not only considers the amount of materials that have been physically removed, but also how the eroded materials are being distributed to the neighboring regions depending on slopes on each direction. 
 
 ## Physical erosion
 
-The equations used to estimate how much material could one cell provide to the lower cells is described underneath. The equation is found in [tucker_channel-hillslope_2001](@cite). We choose this equation mainly because it specifically deals with bedrock substrates instead of loose sediments. In the equation, $k_v$ is erodibility, and the default value is 0.0023 according to the paper. $(1 - I_f)$ indicates run-off generated in one cell and slope is the slope calculated based on [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm). Note that the algorithms to calculate slope does not work on depressions.
+The equations used to estimate how much material could one cell provide to the neighboring topographically lower cells is described below. The equation is found in [tucker_channel-hillslope_2001](@cite). We choose this equation mainly because it specifically deals with bedrock substrates instead of loose sediments. In the equation, $k_v$ is erodibility, and the default value is 0.0023 according to the paper. $(1 - I_f)$ indicates run-off generated in one cell and slope is the slope calculated based on [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm). Note that the algorithms to calculate slope does not work on enclosed depressions.
 
-$$D_{phys} = -k_v * (1 - I_f)^{1/3} |\nabla h|^{2/3}$$
+$$D_{phys} = -k_v \times (1 - I_f)^{1/3} |\nabla h|^{2/3}$$
 
 This equation for the physical dedundation rate, $D_{phys}$ is implemented in  code as follows:
 ``` {.julia #physical-erosion}
@@ -66,9 +68,9 @@ PhysicalSpec.main()
 
 ## Redistribution of sediments
 
-The redistribution of sediments after physical erosion is based on [van_de_wiel_embedding_2007](@cite): the eroded sediments calculated from the above equation are distributed to the neighboring 8 cells according to the slopes (defined as elevation differences/horizontal differences) towards each direction. The amount of sediments of one cell received is calculated by following steps:
+The redistribution of sediments after physical erosion is based on [van_de_wiel_embedding_2007](@cite): the eroded sediments calculated using the above equation are distributed to the neighboring 8 cells according to the slopes (defined as elevation differences/horizontal differences) towards each direction. The details of calculating the amount of sediments of one cell received are presented in the following section.
 
-## Current implementation
+## Implementation
 
 ``` {.julia file=src/Denudation/PhysicalErosionMod.jl}
 module PhysicalErosionMod
@@ -165,3 +167,9 @@ end
 
 end
 ```
+
+## Result example
+The resultant figure of physical erosion is presented below:
+![Physical erosion example barrel plot](../fig/physical_barrel_location_25.png)
+
+We can clearly see the sediments were removed as their thickness decreases with each regression cycle.

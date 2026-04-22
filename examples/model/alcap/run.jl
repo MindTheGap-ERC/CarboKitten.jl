@@ -55,7 +55,7 @@ const INPUT = ALCAP.Input(
         :profile => OutputSpec(slice=(:, 25), write_interval=1)),
     ca_interval=1,
     initial_topography=(x, y) -> -x / 300.0,
-    sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
+    sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD) - 90u"m",
     subsidence_rate=50.0u"m/Myr",
     disintegration_rate=50.0u"m/Myr",
     lithification_time=100.0u"yr",

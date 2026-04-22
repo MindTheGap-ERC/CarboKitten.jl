@@ -1,23 +1,25 @@
 # Chemical dissolution
 
+## Rationale
+
 The details could be found in paper by [Kaufmann2001](@cite).
 
-Limestone is made of $CaCO_3$, easily dissolved. This depends mainly on precipitation (rainfall) and temperature. The paper used equation 1 to quantify this process.
+Limestone is made of $CaCO_3$, and it is easily dissolved. Limestone's dissolution mainly depends on precipitation (rainfall) and temperature. The paper used equation 1 to quantify this process.
 
 $$\frac{dh}{dt} = 0.001\ \kappa_c\ {{q_i} \over {A_i}}$$
 
 Herein $dh/dt$ is the chemical weathering rate and the unit is in m/s.
-Other parameters are defined as: $q_i$ is the discharge of water at a certain cell. $A_i$ is the surface area of the cell. If we assume there would be no surface water on land, $q_i$ reduces to precipitation – evaporation. Let’s set it to 400 mm/y for now. Therefore equation 1 could be reduced to Equation 2.
+Other parameters are defined as: $q_i$ is the discharge of water at a certain cell. $A_i$ is the surface area of the cell. If we assume there would be no surface water on land, $q_i$ reduces to precipitation – evaporation. For example, we can set it to 400 mm/y for demonstration purposes. Therefore equation 1 could be reduced to Equation 2.
 
 $$\frac{dh}{dt} = 0.001\ \kappa_c\  I$$
 
-Where $I$ is runoff (mm/y?). The parameter $\kappa_c$ is dimensionless and should be described by equation 3:
+Where $I$ is runoff (mm/yr). The parameter $\kappa_c$ is dimensionless and should be described by equation 3:
 
-$$\kappa_c = 40\ 1000\ \frac{[Ca^{2+}]_{eq}}{\rho}$$
+$$\kappa_c = 40\times 1000\ \frac{[Ca^{2+}]_{eq}}{\rho}$$
 
-Parameter ρ is the density of calcite, and we choose 2700 $kg/m^3$ here. $[Ca^{2+}]_{eq}$ is defined in equation 4:
+Parameter ρ is the density of calcite, and we choose 2700 $kg/m^3$ here for the default value. $[Ca^{2+}]_{eq}$ is defined in equation 4:
 
-$$[Ca^{2+}]_{eq} = {{(PCO_2\ (K_1\ K_C\ K_H)} \over {(4\ K_2\times \gamma Ca\ (\gamma HCO_3)^2))^{(1/3)}}}$$
+$$[Ca^{2+}]_{eq} = {{(PCO_2\ (K_1\ K_C\ K_H)} \over {(4\ K_2\times \gamma Ca\ (\gamma HCO_3)^2)^{(1/3)}}}$$
 
 Mass balance coefficients $K_1$, $K_2$, $K_C$, $K_H$ depend on temperature. $_PCO_2$ is assumed to be between $10^{-1.5} ATM$ to $10^{-3.5} ATM$.
 
@@ -181,14 +183,14 @@ function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies)
     (concentration=eq_c, denudation=eq_d)
 end
 ```
-The value of $[Ca^{2+}]_{eq}$ calculated in ```equilibrium``` for a range of temperatures:
+The values of $[Ca^{2+}]_{eq}$ are calculated in ```equilibrium``` for a range of temperatures:
 ![KH as function of temperature](../fig/Equilibrium_Concs.png)
 
-However, the above discussion is true only if the percolated fluid is saturated (in terms of Ca) when leaving the platform. In some cases, when the fluid is not saturated, the dissolved amount is lower than the scenario described above.
+The above discussion is true only if the percolated fluid is saturated (in terms of Ca) when leaving the platform. However, in some cases, the fluid is not saturated when they leave the platform, the dissolved amount is thus lower than the scenario described above.
 
 The following articles describe this: [gabrovsek_concepts_2009](@cite) and [kaufmann_calcite_2007](@cite)
 
-Ideally, a reactive transport model should be accurate, but that needs more computation resources. So herein, the author just suggested the dissolution rates of rocks depend on the depth. This makes sense, as the deeper the solution penetrates, the more concentrated it becomes. Also, this does not consider diffusion in this chapter.
+Ideally, a reactive transport model (RTMs) is sufficiently accurate to solve this prolem, but employing RTMs needs more computational resources. So herein, the author simplify the process and assumed the dissolution rates of rocks depend on the depth. This is a reasonable assumption, because the deeper the solution penetrates, the more concentrated it becomes. This assumption does not consider diffusion in this chapter.
 
 The dissolution rate of carbonate follows linear rate laws of:
 
@@ -200,7 +202,7 @@ $F$ is the dissolution rate, $\alpha$ is constant (kinetic co-efficient), $c_{eq
 
 $$I\ {\rm d}c = \alpha (c_{eq}-c(z)) L\ {\rm d}z$$
 
-This equation indicates that the concentration increase in the infiltrated water equals the dissolution of rocks in the thickness of $dz$. $L$ is the specific length of fractures/porosities (units: $m/m^2$, we can try 100 at the first place). I.e., this term defines the relative reactive surface of the subsurface rocks, or how much surface is actually dissolving. This term is difficult to determine. $I$ is infiltration, but slightly different as chapter 1: this $I$ is the $I$ in each rain event according to the paper. We certainly do not gonna know how this parameter works, so we just set it the same as in chapter 1?
+This equation employs mass balance and indicates that the concentration increase in the infiltrated water equals the dissolution of rocks in the thickness of $dz$. $L$ is the specific length of fractures/porosities (units: $m/m^2$). I.e., this term defines the relative reactive surface of the subsurface rocks, or how much surface is actually undergoing dissolution. This parameter is difficult to obtain in the fields but feel free to adjust it to see how the results would change. 
 
 However, to solve this equation we still need to know $c(z)$.
 
@@ -214,7 +216,7 @@ Therefore,
 
 $$D_{\rm average} = (I\times \frac{c_{eq}}{\rho})\ (1 – (\frac{\lambda}{z_0})\ (1 – e^{(\frac{-z_0}{\lambda})}))$$
 
-α used in this article is $\alpha = 2·10^{−6}$ or $3.5·10^{−7}$ cm/s (for temp at 298K). This is indeed a controversial parameter TBH. We can try different values and see what happens.
+α used in the default setting are $\alpha = 2·10^{−6}$ or $3.5·10^{−7}$ cm/s (for temp at 298K). This is indeed a controversial parameter. Please feel free to try different values and see what happens.
 
 These equations are implemented as ```dissolution``` function:
 
@@ -226,7 +228,7 @@ function dissolution(temp, precip, pco2, alpha, water_depth, facies)
     eq.denudation .* (1 - (λ ./ -water_depth) .* (1 - exp.(water_depth ./ λ))) * u"m/Myr"
 end
 ```
-The dedudation rate calculated in this function for varying temperature and water depth is plotted here:
+The dedudation rates calculated from this function for varying temperature and water depth are plotted here:
 
 ![Dissolution as function of temperature and water depth](../fig/DissolutionExample.png)
 
@@ -281,3 +283,11 @@ end
 
 end
 ```
+
+
+## Result example
+The resultant figures of chemical dissolution is presented below:
+![Chemical Dissolution example barrel plot](../fig/dissolution_barrel_location_25.png)
+
+We can clearly see the sediments were removed as the thickness of sediments decrease at each regression cycle.
+

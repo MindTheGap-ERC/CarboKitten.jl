@@ -1,8 +1,10 @@
-# Emperical denudation
+# Empirical denudation
 
-Chlorine (Cl) isotopes are an emerging tool to decipher the denudation rates (chemical dissolution + physical erosion) in carbonate-dominated areas.
+## Rationale
 
-Research based on the karst region and carbonate platform terrace suggested that the denudation rates are mainly controlled by precipitation and slopes, although the debates about which factor is more important is still ongoing ([yang_combined_2020](@cite), [thomas_limited_2018](@cite)). In general, the precipitation mainly controls the chemical dissolution while the slope mainly controls the physical erosion. In addition, the type of carbonates may also play an important role ([krklec_long-term_2022](@cite)), but given this feature is studied poorly so we will ditch it for now. We have checked and compiled the denudation rates (mm/kyr), and along with precipitation and slopes these serve as a starting point to create a function relating denudation rates (mm/kyr) to precipitation and slopes. The compiled data can be found in OSF database. This is an empirical relationship and has a relatively large uncertainty in terms of fitting.
+Chlorine (Cl) isotopes are an emerging tool to decipher the denudation rates (chemical dissolution + physical erosion) in carbonate-dominated areas. In this approach, we are not trying to determine the amount of denudation in a process-based way. Instead, we assume the denudation rates measured by Cl isotopes from modern karst regions can be trasnferred to exposed carbonate plotform, and we use regression approach to approximate the denudation rates.
+
+Research based on the karst region and carbonate platform terrace suggested that the denudation rates are mainly controlled by precipitation and slopes, although the debates about which factor is more important is still ongoing ([yang_combined_2020](@cite), [thomas_limited_2018](@cite)). In general, the precipitation mainly controls the chemical dissolution while the slope mainly controls the physical erosion. In addition, the type of carbonates may also play an important role ([krklec_long-term_2022](@cite)), but given this feature is poorly studied we will not take this into consideration it for now. We have checked and compiled the denudation rates (mm/kyr), and along with precipitation and slopes these serve as a starting point to create a function relating denudation rates (mm/kyr) to precipitation and slopes. This is an empirical relationship and has a relatively large uncertainty in terms of fitting.
 
 ![Precipitation and denudation](../fig/Precipitation-Denudation.svg)
 
@@ -12,9 +14,9 @@ Research based on the karst region and carbonate platform terrace suggested that
 
 *Fig 2. The relationship between the slope and the denudation rates (mm/ky)*
 
-We can see that both the slope and precipitation increase the denudation rates, and that it reaches a 'steady state' after a certain point.
+We can see that both the slope and precipitation increase the denudation rates (despite large uncertainty), and that it reaches a 'steady state' after a certain point.
 
-Therefore, we could use the function form of $D = P * S$, where $D$ is the denudation rate, $P$ parameterizes the effects of precipitation and $S$ the effects of slope. By doing so, we can consider both effects. Such formula structure is similar to RUSLE (Revised Universal Soil Loss Equation) model, a widely used Landscape Evolution Model (LEM) (e.g., [thapa_spatial_2020](@cite)). We use [sigmoidal function](https://en.wikipedia.org/wiki/Sigmoid_function) to approximate the influence of $P$ or $S$ on $D$, by fitting the function with the observed data and rendering parameters `a`, `b`, `c`, `d`, `e`, `f`. These are impleted as `empirical_denudation`. 
+Therefore, we could use the function form of $D = P \times  S$, where $D$ is the denudation rate, $P$ parameterizes the effects of precipitation and $S$ the effects of slope. By doing so, we can consider both effects. Such formula structure is similar to RUSLE (Revised Universal Soil Loss Equation) model, a widely used Landscape Evolution Model (LEM) (e.g., [thapa_spatial_2020](@cite)). We use [sigmoidal function](https://en.wikipedia.org/wiki/Sigmoid_function) to approximate the influence of $P$ or $S$ on $D$, by fitting the function with the observed data and rendering parameters `a`, `b`, `c`, `d`, `e`, `f`. These are impleted as `empirical_denudation`. 
 
 ``` {.julia #empirical-denudation}
 function empirical_denudation(precip::Float64, slope::Any)
@@ -81,7 +83,7 @@ This function needs two inputs: precipitation and slope. The precipitation is de
 end
 ```
 
-The slope for each cell is calculated by comparing the height (or water-depth) with the neighboring 8 cells, and is implemented in function `slope_kernel` . The slope is returned in degrees of inclination. This approach has been widely used in industry and [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm) is an example.
+The slope for each cell is calculated by comparing the height (or water-depth) with the neighboring 8 cells, and is implemented in function `slope_kernel`. The slope is returned in degrees of inclination. This approach has been widely used in industry and [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm) is an example.
 
 ``` {.julia #empirical-denudation}
 function slope_kernel(w::Any, cellsize::Float64)
@@ -96,7 +98,7 @@ function slope_kernel(w::Any, cellsize::Float64)
 end
 ```
 
-Note that this mode only considers the destruction of mass, and does not apply any redistribution of mass.
+Note that this mode only considers the destruction of mass and does not apply any redistribution of mass.
 
 ``` {.julia file=src/Denudation/EmpiricalDenudationMod.jl}
 module EmpiricalDenudationMod
@@ -129,3 +131,9 @@ end
 
 end
 ```
+
+## Result example
+The resultant figures of empirical denudation are presented below:
+![CEmpirical example barrel plot](../fig/empirical_barrel_location_25.png)
+
+We can clearly see the sediments were removed as their thickness decreases with each regression cycle.

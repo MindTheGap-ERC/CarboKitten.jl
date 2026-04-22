@@ -136,4 +136,4 @@ end
 The resultant figures of empirical denudation are presented below:
 ![CEmpirical example barrel plot](../fig/empirical_barrel_location_25.png)
 
-We can clearly see the sediments were removed as the thickness of sediments decreases at each regression cycle.
+We can clearly see the sediments were removed as their thickness decreases with each regression cycle.

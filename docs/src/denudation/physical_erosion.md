@@ -6,7 +6,7 @@ This approach not only considers the amount of materials that have been physical
 
 ## Physical erosion
 
-The equations used to estimate how much material could one cell provide to the neighboring topographically lower cells is described underneath. The equation is found in [tucker_channel-hillslope_2001](@cite). We choose this equation mainly because it specifically deals with bedrock substrates instead of loose sediments. In the equation, $k_v$ is erodibility, and the default value is 0.0023 according to the paper. $(1 - I_f)$ indicates run-off generated in one cell and slope is the slope calculated based on [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm). Note that the algorithms to calculate slope does not work on enclosed depressions.
+The equations used to estimate how much material could one cell provide to the neighboring topographically lower cells is described below. The equation is found in [tucker_channel-hillslope_2001](@cite). We choose this equation mainly because it specifically deals with bedrock substrates instead of loose sediments. In the equation, $k_v$ is erodibility, and the default value is 0.0023 according to the paper. $(1 - I_f)$ indicates run-off generated in one cell and slope is the slope calculated based on [ArcGis: how slope works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm). Note that the algorithms to calculate slope does not work on enclosed depressions.
 
 $$D_{phys} = -k_v \times (1 - I_f)^{1/3} |\nabla h|^{2/3}$$
 
@@ -68,7 +68,7 @@ PhysicalSpec.main()
 
 ## Redistribution of sediments
 
-The redistribution of sediments after physical erosion is based on [van_de_wiel_embedding_2007](@cite): the eroded sediments calculated from the above equation are distributed to the neighboring 8 cells according to the slopes (defined as elevation differences/horizontal differences) towards each direction. The details of calculating the amount of sediments of one cell received is presented in the following section.
+The redistribution of sediments after physical erosion is based on [van_de_wiel_embedding_2007](@cite): the eroded sediments calculated using the above equation are distributed to the neighboring 8 cells according to the slopes (defined as elevation differences/horizontal differences) towards each direction. The details of calculating the amount of sediments of one cell received are presented in the following section.
 
 ## Implementation
 
@@ -169,7 +169,7 @@ end
 ```
 
 ## Result example
-The resultant figures of chemical dissolution is presented below:
+The resultant figure of physical erosion is presented below:
 ![Physical erosion example barrel plot](../fig/physical_barrel_location_25.png)
 
-We can clearly see the sediments were removed as the thickness of sediments decrease at each regression cycle.
+We can clearly see the sediments were removed as their thickness decreases with each regression cycle.

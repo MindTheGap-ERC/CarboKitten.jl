@@ -1,30 +1,65 @@
-# ~/~ begin <<docs/src/visualization/profiles.md#ext/SedimentProfile.jl>>[init]
 module SedimentProfile
 
-import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!
-
-using CarboKitten.Visualization
+import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!, profile_plot_coarse!, sediment_profile_generic!, facies_colormap
 using CarboKitten.Utility: in_units_of
-using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
-using CarboKitten.Algorithms: skeleton
-using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
-
+using CarboKitten.Export: Header, DataSlice
+using CarboKitten.Skeleton: skeleton
 using Makie
 using GeometryBasics
 using Unitful
-
 using Statistics: mean
-
-const Rate = typeof(1.0u"m/Myr")
-const Amount = typeof(1.0u"m")
-const Length = typeof(1.0u"m")
+using Base: dropdims
+export sediment_profile_generic!
 const Time = typeof(1.0u"Myr")
-
 const na = [CartesianIndex()]
+const FACIES_COLORS = [:white, :dodgerblue, :hotpink, :lightyellow, :gold, :seagreen]
 
-# ~/~ begin <<docs/src/visualization/profiles.md#explode-vertices>>[init]
+
+
+thickness_field(d::DataSlice) =
+    hasproperty(d, :compacted_thickness) ? d.compacted_thickness : d.sediment_thickness
+
+# -----------------------------------------------------------
+# Safe aligned time
+# -----------------------------------------------------------
+
+aligned_time(header::Header, data::DataSlice) = begin
+    thick = thickness_field(data)
+    Nt1 = size(thick, 2)
+    @assert Nt1 + 1 == length(header.axes.t)
+    header.axes.t[1:Nt1]
+end
+
+
+
+# -----------------------------------------------------------
+# Safe elevation
+# -----------------------------------------------------------
+
+function elevation(h::Header, d::DataSlice)
+
+    thick = thickness_field(d)
+    Nt1 = size(thick, 2)
+
+    base = h.initial_topography[d.slice..., na]
+
+    # interpretation-space view: final subsidence reference frame
+    subs = d.cumulative_subsidence[:, Nt1]
+
+    el = base .+ thick .- subs
+
+    @assert size(el) == (length(h.axes.x), Nt1)
+
+    return el
+end
+
+
+
+# -----------------------------------------------------------
+# Mesh utilities
+# -----------------------------------------------------------
 """
-    explode_quad_vertices(v)
+explode_quad_vertices(v)
 
 Takes a three dimensional array representing a grid of vertices. This function duplicates these
 vertices in the vertical direction, so that an amount of sediment can be given a single color.
@@ -32,261 +67,372 @@ vertices in the vertical direction, so that an amount of sediment can be given a
 Returns a tuple of vertices and faces (triangles), suitable for plotting with Makie's `mesh`
 function.
 """
+
 function explode_quad_vertices(v::Array{Float64,3})
     w, h, d = size(v)
     points = zeros(Float64, w, h - 1, 2, d)
-    n_vertices = 2 * w * (h - 1)
-    n_quads = (w - 1) * (h - 1)
-    @views points[:, :, 1, :] = v[1:end, 1:end-1, :]
-    @views points[:, :, 2, :] = v[1:end, 2:end, :]
-    idx = reshape(1:n_vertices, w, (h - 1), 2)
-    vtx1 = reshape(idx[1:end-1, :, 1], n_quads)
-    vtx2 = reshape(idx[2:end, :, 1], n_quads)
-    vtx3 = reshape(idx[2:end, :, 2], n_quads)
-    vtx4 = reshape(idx[1:end-1, :, 2], n_quads)
-    return reshape(points, n_vertices, d),
-           vcat(hcat(vtx1, vtx2, vtx3), hcat(vtx1, vtx3, vtx4))
-end
-# ~/~ end
-# ~/~ begin <<docs/src/visualization/profiles.md#plot-unconformities>>[init]
-"""
-    plot_unconformities(ax, header, data_slice, minwidth; kwargs...)
-    plot_unconformities(ax, header, data_slice, minwidth::Bool; kwargs...)
-    plot_unconformities(ax, header, data_slice, minwidth::Int; kwargs...)
+    @views points[:,:,1,:] = v[:,1:end-1,:]
+    @views points[:,:,2,:] = v[:,2:end,:]
 
-Scans the given `data_slice` for unconformities, and plots those using
-Makie `linesegments`. The `minwidth` argument controls for how many time
-steps the platform needs to be exposed before we plot it. For `minwidth = true`
-the default width of 10 time steps is taken.
+    n_vertices = 2*w*(h-1)
+    idx = reshape(1:n_vertices, w, h-1, 2)
 
-Additional keyword arguments are forwarded to the `linesegments!` call.
-"""
-function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Nothing; kwargs...)
-    @info "Not plotting unconformities, got minwidth: $(minwidth)"
+    v1 = reshape(idx[1:end-1, :, 1], :)
+    v2 = reshape(idx[2:end, :, 1], :)
+    v3 = reshape(idx[2:end, :, 2], :)
+    v4 = reshape(idx[1:end-1, :, 2], :)
+
+    faces = vcat(hcat(v1,v2,v3), hcat(v1,v3,v4))
+
+    return reshape(points, n_vertices, d), faces
 end
 
-function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Bool; kwargs...)
-    if minwidth
-        plot_unconformities(ax, header, data, h, 10; kwargs...)
+# -----------------------------------------------------------
+# Safe unconformities
+# -----------------------------------------------------------
+
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, ::Nothing; kwargs...) end
+
+plot_unconformities(ax::Axis, header::Header, data::DataSlice, b::Bool; kwargs...) =
+    b ? plot_unconformities(ax, header, data, 10; kwargs...) : nothing
+
+function plot_unconformities(ax::Axis, header::Header, data::DataSlice, mw::Int; kwargs...)
+    x = header.axes.x |> in_units_of(u"km")
+    Nt1 = size(thickness_field(data), 2)
+
+
+    ξ   = elevation(header, data)
+
+sea  = header.sea_level[1:Nt1]
+
+wd = sea' .- ξ
+
+    @assert size(wd) == size(ξ)
+
+    hi = skeleton(wd .> 0u"m", minwidth=mw)
+    isempty(hi[1]) && return
+
+    verts = [(x[i], ξ[i,j] |> in_units_of(u"m")) for (i,j) in hi[1]]
+    segs = vec(permutedims(verts[hi[2]]))
+    linesegments!(ax, segs;
+    label = "Unconformities",
+    kwargs...
+)
+
+end
+
+# -----------------------------------------------------------
+# Safe coeval lines
+# -----------------------------------------------------------
+
+
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, flag::Bool)
+    flag && coeval_lines!(ax, header, data, (4,8))
+end
+
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, ts::Vector{Time}; kwargs...)
+    t = aligned_time(header, data)
+    idx = clamp.(searchsortedfirst.(Ref(t), ts), 1, length(t))
+    coeval_lines!(ax, header, data, idx; kwargs...)
+end
+
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, ticset::Tuple{Int,Int})
+    Nt1 = size(thickness_field(data), 2)
+    major = round.(Int, range(1, Nt1, length=ticset[1]+1))
+    minor = setdiff(round.(Int, range(1, Nt1, length=ticset[2]+1)), major)
+
+    coeval_lines!(ax, header, data, minor;  color=:black, linewidth=1, linestyle=:dot)
+    coeval_lines!(ax, header, data, major;  color=:black, linewidth=1, linestyle=:solid)
+end
+
+function coeval_lines!(ax::Axis, header::Header, data::DataSlice, idx::Vector{Int}; kwargs...)
+    x = header.axes.x |> in_units_of(u"km")
+    h = elevation(header, data) |> in_units_of(u"m")
+
+    idx = clamp.(idx, 1, size(h,2))
+    for t in idx
+        lines!(ax, x, h[:,t];
+    label = "Coeval lines",
+    kwargs...
+)
+
     end
 end
 
-function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Int; kwargs...)
+# -----------------------------------------------------------
+# Safe profile plot — no broadcast errors ever
+# -----------------------------------------------------------
+
+
+function profile_plot!(ax::Axis, header::Header, data::DataSlice; color, label = nothing, mesh_args...)
+
     x = header.axes.x |> in_units_of(u"km")
-    wi = data.write_interval
-    hiatus = skeleton(water_depth(header, data) .< 0.0u"m", minwidth=minwidth)
-
-    if !isempty(hiatus[1])
-        verts = [(x[pt[1]], h[pt...] |> in_units_of(u"m")) for pt in hiatus[1]]
-        linesegments!(ax, vec(permutedims(verts[hiatus[2]])); kwargs...)
-    end
-end
-# ~/~ end
-# ~/~ begin <<docs/src/visualization/profiles.md#plot-coeval-lines>>[init]
-function age_depth_model(header::Header, data::DataSlice)
-    x = header.axes.x |> in_units_of(u"km")
-    t = header.axes.t |> in_units_of(u"Myr")
-
-    n_facies, n_x, n_t = size(data.production)
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
-    initial_topography = header.initial_topography[data.slice...]
-    sc = stratigraphic_column(data)
-    h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
-    @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
-    return h
-end
-
-"""
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Bool)
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, tics::Bool)
-
-Plot coeval lines using default settings. If `tics` is false, nothing is done.
-
-The `adm` argument should contain the age-depth model for the entire slice in
-units of m. This can be computed by getting the `cumsum` of the
-`stratigraphic_column` of the `data` argument. If the `adm` argument is left
-out, the stratigraphic column will be computed from `data` first.
-"""
-coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Bool) =
-    coeval_lines!(ax, header, data, age_depth_model(header, data), n_tics)
-
-function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, n_tics::Bool)
-    if !n_tics
-        return
-    else
-        coeval_lines!(ax, header, data, adm)
-    end
-end
-
-"""
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...)
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, tics::Vector{Time}; kwargs...)
-
-Plot coeval lines for given times. The times in `tics` are looked up in `header.axes.t`
-to find which indices to plot.
-"""
-coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...) =
-    coeval_lines!(ax, header, data, age_depth_model(header, data), tics; kwargs...)
-
-function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Time}; kwargs...)
-    t = header.axes.t[1:data.write_interval:end]
-    indices::Vector{Int} = [searchsortedfirst(t, i) for i in tics]
-    coeval_lines!(ax, header, data, adm, indices; kwargs...)
-end
-
-"""
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int})
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, n_tics::Tuple{Int, Int})
-
-Plot coeval lines on regular intervals given by `n_tics`. The tuple gives the number of intervals
-for both minor and major tics, plotted as dotted and solid black lines respectively.
-If you need more control over the aestetics of these lines, use the other `coeval_lines!` methods.
-"""
-coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int}; kwargs...) =
-    coeval_lines!(ax, header, data, age_depth_model(header, data), n_tics; kwargs...)
-
-function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, n_tics::Tuple{Int, Int} = (4, 8))
-    n_steps = div(header.time_steps, data.write_interval)
-    n_major_tics, n_minor_tics = n_tics
-
-    major_tics = div.(n_steps:n_steps:n_steps*n_major_tics, n_major_tics) .+ 1
-    minor_tics = filter(
-        t->!(t in major_tics),
-        div.(n_steps:n_steps:n_steps*n_minor_tics, n_minor_tics) .+ 1) |> collect
-
-    coeval_lines!(ax, header, data, adm, minor_tics, color=:black, linewidth=1, linestyle=:dot)
-    coeval_lines!(ax, header, data, adm, major_tics, color=:black, linewidth=1, linestyle=:solid)
-end
-
-"""
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...)
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, tics::Vector{Int}; kwargs...)
-
-Plot coeval lines for the given indices. The `kwargs...` are forwarded to a call to Makie's
-`lines!` procedure.
-"""
-coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...) =
-    coeval_lines!(ax, header, data, age_depth_model(header, data), tics; kwargs...)
-
-function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Int}; kwargs...)
-    x = header.axes.x |> in_units_of(u"km")
-    h = adm |> in_units_of(u"m")
-    for t in tics
-        lines!(ax, x, h[:, t]; kwargs...)
-    end
-end
-
-function plot_sealevel!(ax::Axis, header::Header)
-    sea_level = header.sea_level[end] |> in_units_of(u"m")
-    hlines!(ax, sea_level, color=:lightblue, linewidth=5, label="end sea level")
-end
-# ~/~ end
-
-"""
-    profile_plot!(ax, header, data_slice; mesh_args...)
-
-Generic profile plot. This sets up a mesh for plotting with the Makie `mesh!`
-function, plots the initial topography and the mesh by passing `mesh_args...`.
-
-The `color` array should have the same size as a single facies for `data.production`.
-"""
-function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::AbstractArray, mesh_args...)
-    x = header.axes.x |> in_units_of(u"km")
-    t = header.axes.t |> in_units_of(u"Myr")
-
-    n_facies, n_x, n_t = size(data.production)
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
-    initial_topography = header.initial_topography[data.slice...]
-    sc = stratigraphic_column(data)
-    h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
-    sc_clamped = max.(sc, zero(eltype(sc)))  
-    @views h[:, 2:end] .+= cumsum(sum(sc_clamped, dims=1)[1,:,:], dims=2)
+    n_f, n_x, n_t = size(data.production)
+    ξ = elevation(header, data) |> in_units_of(u"m")
 
     verts = zeros(Float64, n_x, n_t+1, 2)
-    @views verts[:, :, 1] .= x
-    @views verts[:, :, 2] .= h |> in_units_of(u"m")
+    verts[:,:,1] .= reshape(x, n_x, 1)
+    verts[:,1:n_t,2] .= ξ
+    verts[:,n_t+1,2] .= verts[:,n_t,2]
+
     v, f = explode_quad_vertices(verts)
 
-    total_subsidence = header.subsidence_rate * (header.axes.t[end] - header.axes.t[1])
-    bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |> in_units_of(u"m")
-    lower_limit = minimum(bedrock) - 20
-    band!(ax, x, lower_limit, bedrock; color=:gray, label="initial topography")
-    lines!(ax, x, bedrock; color=:black, label="initial topography")
-    ylims!(ax, lower_limit + 10, nothing)
-    xlims!(ax, x[1], x[end])
-    ax.xlabel = "position [km]"
-    ax.ylabel = "depth [m]"
+    @assert size(color) == (n_x, n_t)
+    c = repeat(vec(color), inner=2)
 
-    c = reshape(color, n_x * n_t)
-    mesh!(ax, v, f; color=vcat(c, c), mesh_args...)
+    return mesh!(ax, v, f; color = c, label = label, mesh_args...)
+
+
 end
 
-"""
-    profile_plot!(f, ax, header, data_slice; mesh_args...)
+profile_plot!(f::F, ax::Axis, header::Header, data::DataSlice; mesh_args...) where F =
+    profile_plot!(ax, header, data; color=f.(eachslice(data.deposition, dims=(2,3))), mesh_args...)
 
-Instead of explicitely passing the color data as an array, this generates the
-colors from a function `f` over the deposition data. So `f` should have signature
-`AbstractVector -> Float` or possibly `AbstractVector -> RGB` (whatever Makie accepts).
-Here the vector input has size of the number of facies.
+# -----------------------------------------------------------
+# MAIN PROFILE
+# -----------------------------------------------------------
 """
-function profile_plot!(f::F, ax::Axis, header::Header, data::DataSlice; mesh_args...) where {F}
-    color = f.(eachslice(data.deposition, dims=(2, 3)))
-    profile_plot!(ax, header, data; color=color, mesh_args...)
-end
-
-"""
-    sediment_profile!(ax, header, data; show_unconformities)
+sediment_profile!(ax, header, data; show_unconformities)
 
 Plot the sediment profile, choosing colour by dominant facies type (argmax). Unconformaties
 are shown when the sediment is subaerially exposed (even if sediment is still deposited
 due to a set intertidal zone).
 """
 function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
-                           show_unconformities::Union{Nothing,Bool,Int} = true,
-                           show_coeval_lines::Union{Bool,Tuple{Int, Int},Vector{Int},Vector{Time}} = true,
-                           show_sealevel::Bool = true)
-    x = header.axes.x |> in_units_of(u"km")
-    t = header.axes.t |> in_units_of(u"Myr")
+    show_unconformities=true,
+    show_coeval_lines=true,
+    show_sealevel=true,
+    facies_colors=nothing
+)
+    n_f = size(data.production,1)
+    dep = data.deposition
 
-    n_facies, n_x, n_t = size(data.production)
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
-    initial_topography = header.initial_topography[data.slice...]
-    sc = stratigraphic_column(data)
-    h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
-    sc_clamped = max.(sc, zero(eltype(sc)))   
-    @views h[:, 2:end] .+= cumsum(sum(sc_clamped, dims=1)[1,:,:], dims=2)
+    dom = argmax.(eachslice(dep, dims=(2,3)))
+    tot = dropdims(sum(dep; dims=1), dims=1)
 
-    if show_sealevel
-        plot_sealevel!(ax, header)
+    domf = Float32.(dom)
+    domf[tot .<= 0u"m"] .= NaN32
+
+    cmap = facies_colormap(n_f; facies_colors=facies_colors, include_nodeposit=false)
+
+    hm = profile_plot!(ax, header, data;
+    color = domf,
+    alpha = 1.0,
+    colormap = cmap,
+    colorrange=(0.5f0, n_f+0.5f0),
+    label = "Dominant facies"
+)
+
+
+    # -------------------------------
+    # Fixed coeval-lines dispatch
+    # -------------------------------
+    if show_coeval_lines isa Bool
+        show_coeval_lines && coeval_lines!(ax, header, data, (4,8))
+
+    elseif show_coeval_lines isa Tuple{Int,Int}
+        coeval_lines!(ax, header, data, show_coeval_lines)
+
+    elseif show_coeval_lines isa Vector{Time}
+        coeval_lines!(ax, header, data, show_coeval_lines)
+
+    elseif show_coeval_lines isa Vector{Int}
+        coeval_lines!(ax, header, data, show_coeval_lines)
+
+    else
+        @warn "Unknown coeval_lines type $(typeof(show_coeval_lines)) — skipping."
     end
 
-    plot = profile_plot!(argmax, ax, header, data; alpha=1.0,
-        colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+    # -------------------------------
+    # Unconformities
+    # -------------------------------
+    show_unconformities !== false &&
+        plot_unconformities(ax, header, data, show_unconformities;
+            color=:white, linestyle=:dash)
 
-    coeval_lines!(ax, header, data, h, show_coeval_lines)
+    # -------------------------------
+    # Sea level
+    # -------------------------------
+    if show_sealevel
+        sl = header.sea_level[end] |> in_units_of(u"m")
+        hlines!(ax, sl;
+    color = :lightblue,
+    linewidth = 5,
+    label = "Sea level"
+)
 
-    minwidth = show_unconformities
-    plot_unconformities(ax, header, data, h, minwidth; label = "unconformities",
-                        color=:white, linestyle=:dash, linewidth=1)
+    end
 
     ax.title = "sediment profile"
-    return plot
+    return ax, hm
 end
 
-"""
-    sediment_profile(header, data_slice; show_unconformities=true)
-
-Plot the sediment profile from `data_slice`. This takes the deposited sediments and
-find the dominant facies at every point. By default unconformities are shown using
-dashed white lines. If this generates too much visual noise, you can increase the
-treshold (default 10).
-"""
-function sediment_profile(header::Header, data_slice::DataSlice; show_unconformities::Union{Bool,Int,Nothing} = true)
-    fig = Figure(size=(1000, 600))
-    ax = Axis(fig[1, 1])
-    sediment_profile!(ax, header, data_slice; show_unconformities = show_unconformities)
-    return fig
+function sediment_profile(header::Header, data::DataSlice; kwargs...)
+    fig = Figure(size=(1000,600))
+    ax  = Axis(fig[1,1])
+    ax, hm = sediment_profile!(ax, header, data; kwargs...)
+    return fig, ax, hm
 end
 
-end  # module
-# ~/~ end
+
+
+function profile_plot_coarse!(
+    ax::Axis,
+    header::Header,
+    data::DataSlice;
+    color,
+    Δi::Int,
+    label = nothing,
+    coarse_colors = nothing,
+    mesh_args...
+)
+
+    # coarse x axis
+    x_fine = header.axes.x |> in_units_of(u"km")
+    Nx_fine = length(x_fine)
+
+    Nx_coarse = size(color, 1)
+    n_t       = size(color, 2)
+
+    @assert Nx_coarse == ceil(Int, Nx_fine / Δi)
+
+    # block centers
+    x_coarse = [
+        mean(x_fine[(i-1)*Δi+1:min(i*Δi, Nx_fine)])
+        for i in 1:Nx_coarse
+    ]
+
+    ξ = elevation(header, data) |> in_units_of(u"m")
+    ξ_coarse = [
+        mean(ξ[(i-1)*Δi+1:min(i*Δi, Nx_fine), :]; dims=1)
+        for i in 1:Nx_coarse
+    ] |> x -> reduce(vcat, x)
+
+    verts = zeros(Float64, Nx_coarse, n_t+1, 2)
+    verts[:,:,1] .= reshape(x_coarse, Nx_coarse, 1)
+    verts[:,1:n_t,2] .= ξ_coarse
+    verts[:,n_t+1,2] .= verts[:,n_t,2]
+
+    v, f = explode_quad_vertices(verts)
+
+    c = repeat(vec(color), inner=2)
+
+    n_f = size(data.production, 1)
+
+cols = coarse_colors === nothing ?
+    Makie.wong_colors() :
+    Makie.to_color.(coarse_colors)
+
+cmap = cgrad(cols, n_f; categorical=true)
+
+mesh!(ax, v, f;
+    color = c,
+    colormap = cmap,
+    colorrange = (0.5f0, n_f + 0.5f0),
+    label = label,
+    mesh_args...
+)
+end
+
+function elevation_physical(h::Header, d::DataSlice)
+
+    thick = thickness_field(d)
+    Nt1 = size(thick, 2)
+
+    base = h.initial_topography[d.slice..., na]
+
+    # process-space view: time-dependent subsidence
+    subs = d.cumulative_subsidence[:, 1:Nt1]
+
+    el = base .+ thick .- subs
+
+    return el
+end
+
+
+function sediment_profile_generic!(
+    ax::Axis,
+    header::Header,
+    data::DataSlice;
+    selector::Function,
+    category_names::Vector{String},
+    category_colors,
+    facies_colors = nothing,
+    nondep_eps = 1e-12,
+    show_unconformities = true,
+    show_coeval_lines = true,
+    show_sealevel = true,
+    colorbar_label = ""
+)
+
+    dep = data.deposition
+    n_x = size(dep, 2)
+    n_t = size(dep, 3)
+
+    # Precompute elevation once (units preserved)
+    ξ_phys = elevation_physical(header, data)
+
+    # Use matching sea-level segment
+    sea = header.sea_level[1:n_t]
+
+    dom = zeros(Float32, n_x, n_t)
+
+    for ix in 1:n_x, it in 1:n_t
+        strength = dep[:, ix, it]
+        total = sum(ustrip.(strength))
+
+        if total ≤ nondep_eps
+            dom[ix, it] = 0.0f0
+        else
+            # water depth (positive when submerged)
+            wd = sea[it] - ξ_phys[ix, it]
+			wd_m = ustrip(wd |> in_units_of(u"m"))
+
+            e_kwpm = begin
+    if hasproperty(data, :wave_energy)
+        Float64(data.wave_energy[ix, it])
+    else
+        NaN
+    end
+end
+
+		dom[ix, it] = try
+			Float32(selector(strength, wd_m, e_kwpm))
+		catch err
+			err isa MethodError || rethrow()
+			Float32(selector(strength, wd_m))  # backward compatible
+		end
+        end
+    end
+
+    category_colors = facies_colors === nothing ? category_colors : facies_colors
+    cmap = facies_colormap(length(category_names); facies_colors=category_colors, include_nodeposit=false)
+
+    hm = profile_plot!(ax, header, data;
+        color = dom,
+        colormap = cmap,
+        colorrange = (-0.5f0, length(category_names) - 0.5f0),
+        label = colorbar_label
+    )
+
+    if show_coeval_lines isa Bool
+        show_coeval_lines && coeval_lines!(ax, header, data, (4,8))
+    elseif show_coeval_lines isa Tuple{Int,Int}
+        coeval_lines!(ax, header, data, show_coeval_lines)
+    elseif show_coeval_lines isa Vector
+        coeval_lines!(ax, header, data, show_coeval_lines)
+    end
+
+    show_unconformities !== false &&
+        plot_unconformities(ax, header, data, show_unconformities;
+            color = :white, linestyle = :dash)
+
+    if show_sealevel
+        sl = header.sea_level[end] |> in_units_of(u"m")
+        hlines!(ax, sl; color = :lightblue, linewidth = 5)
+    end
+
+    return ax, hm
+end
+
+end # module

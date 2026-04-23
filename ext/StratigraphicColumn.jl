@@ -4,38 +4,69 @@ module StratigraphicColumn
 using Makie
 using Unitful
 
-import CarboKitten.Visualization: stratigraphic_column!
+import CarboKitten                      
+import CarboKitten.Visualization: stratigraphic_column!, stratigraphic_column_layers!, facies_colormap
+
+using CarboKitten.Export: datacolumn_from_state
 using CarboKitten.Export: Header, DataColumn, stratigraphic_column, age_depth_model
 
+export stratigraphic_column_layers!
 
-function scdata(header::Header, data::DataColumn)
-    n_facies = size(data.production)[1]
-    n_times = length(header.axes.t) 
-    sc = zeros(Float64, n_facies, n_times)
-    for f = 1:n_facies
-        sc[f, :] = stratigraphic_column(header, data, f) / u"m"
+function CarboKitten.Visualization.stratigraphic_column_layers!(
+    ax::Makie.Axis,
+    state;
+    x_index::Int = 1,
+    y_index::Int = 1,
+    facies_colors = nothing
+)
+    comp = state.compaction
+
+    n = comp.n_layers[x_index, y_index]
+    n == 0 && return
+
+n_facies = length(facies_colors)         
+
+cmap = facies_colormap(
+    n_facies;
+    facies_colors = facies_colors,
+    include_nodeposit = false
+)
+
+colors = Makie.to_color.(cmap.colors)
+
+    z = 0.0
+
+    for k in reverse(1:n)
+        f = comp.layer_facies[x_index, y_index, k]
+        h = comp.layer_thickness[x_index, y_index, k]
+
+        if f != 0   # skip NoDeposit
+    hspan!(ax, [z], [z + h];
+        color = colors[f]
+    )
+end
+
+        z += h
     end
 
-    colormax(d) = getindex.(argmax(d; dims=1)[1, :], 1)
-    adm = age_depth_model(data.sediment_thickness)
-    
-    return (ys_low=adm[1:end-1] / u"m", ys_high=adm[2:end] / u"m", facies=colormax(sc)[1:end-1])
+    ax.ylabel = "Depth (m)"
+    ax.xlabel = "Facies"
+    ax.yreversed = true
 end
 
+function stratigraphic_column!(ax::Makie.Axis, header::Header, state;
+    x_index = 1,
+    y_index = 1,
+    write_interval = 1,
+    facies_colors = nothing
+)
+    col = datacolumn_from_state(
+        state;
+        x_index = x_index,
+        y_index = y_index,
+        write_interval = write_interval
+    )
 
-function stratigraphic_column!(ax::Axis, header::Header, data::DataColumn; color=Makie.wong_colors())
-    (ys_low, ys_high, facies) = scdata(header, data)
-    @show size(ys_low), size(ys_high)
-    hspan!(ax, ys_low, ys_high; color=color[facies])
+    stratigraphic_column!(ax, header, col; facies_colors = facies_colors)
 end
-
-function stratigraphic_column!(ax::Axis, header::Header, data::Observable{DataColumn}; color=Makie.wong_colors())
-    _scdata = lift(d -> scdata(header, d), data)
-    _ys_low = lift(d -> d.ys_low, _scdata)
-    _ys_high = lift(d -> d.ys_high, _scdata)
-    _color = lift(d -> color[d.facies], _scdata)
-    hspan!(ax, _ys_low, _ys_high; color=_color)
 end
-
-end
-# ~/~ end

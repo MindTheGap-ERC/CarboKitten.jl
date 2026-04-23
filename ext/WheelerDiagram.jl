@@ -1,140 +1,135 @@
-# ~/~ begin <<docs/src/visualization.md#ext/WheelerDiagram.jl>>[init]
 module WheelerDiagram
 
-import CarboKitten.Visualization: wheeler_diagram, wheeler_diagram!
-using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
+import CarboKitten.Visualization: wheeler_diagram, wheeler_diagram!, facies_colormap
+using CarboKitten.Export: Header, DataSlice
 using CarboKitten.Utility: in_units_of
-using CarboKitten.Output.Abstract: stratigraphic_column
 using Makie
 using Unitful
 using CarboKitten.BoundaryTrait
 using CarboKitten.Stencil: convolution
 
-
+const Rate = typeof(1.0u"m/Myr")
 const na = [CartesianIndex()]
 
-elevation(h::Header, d::DataSlice) =
-    let bl = h.initial_topography[d.slice..., na],
-        sr = h.axes.t[end] * h.subsidence_rate
+# -----------------------------
+# SAME SHAPES AS HDF5 EXPORT
+# -----------------------------
 
-        bl .+ d.sediment_thickness .- sr
-    end
 
 water_depth(header::Header, data::DataSlice) =
-    let h = elevation(header, data),
-        wi = data.write_interval,
-        s = header.subsidence_rate .* (header.axes.t[1:wi:end] .- header.axes.t[end]),
-        l = header.sea_level[1:wi:end]
+    let base = header.initial_topography[data.slice..., na],
+        subs = data.cumulative_subsidence,
+        sea  = header.sea_level[1:size(subs,2)]
 
-        h .- (s.+l)[na, :]
+        base .+ data.sediment_thickness .- subs .- sea'
     end
 
-const Rate = typeof(1.0u"m/Myr")
 
 function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
-    smooth_size::NTuple{2,Int}=(3, 11),
+    smooth_size=(3,11),
     colormap=Reverse(:curl),
-    range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
+    range=(-100.0u"m/Myr", 100.0u"m/Myr")
+)
     wi = data.write_interval
-    magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ (header.Δt * wi)
+
+    # Nt−1
+    dep = data.deposition
+    dis = data.disintegration
+    mag_raw = sum(dep .- dis; dims=1)[1,:,:] ./ (header.Δt * wi)
+
     blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
-    wd = zeros(Float64, length(header.axes.x), length(header.axes.t[1:wi:end]))
-    blur(water_depth(header, data) / u"m", wd)
-    mag = zeros(Float64, length(header.axes.x), length(header.axes.t[1:wi:end]))
-    blur(magnitude / u"m/Myr", mag)
 
-    ax.ylabel = "time [Myr]"
-    ax.xlabel = "position [km]"
-    xkm = header.axes.x |> in_units_of(u"km")
-    tmyr = header.axes.t[1:wi:end] |> in_units_of(u"Myr")
+    Nt1 = size(dep,3)
+    raw_wd = water_depth(header, data) / u"m"
+    raw_wd = raw_wd[:,1:Nt1]              # ensure Nt−1
 
-    sa = heatmap!(ax, xkm, tmyr, mag;
-        colormap=colormap, colorrange=range ./ u"m/Myr")
-    #contour!(ax, xkm, tmyr, wd;
-    #    levels=[0], color=:red, linewidth=2, linestyle=:dash)
-    return sa
+    wd = zeros(Float64, size(raw_wd))
+    blur(raw_wd, wd)
+
+    mag = zeros(Float64, size(dep,2), Nt1)
+    blur(mag_raw / u"m/Myr", mag)
+
+    xkm  = header.axes.x |> in_units_of(u"km")
+    tmyr = header.axes.t[1:Nt1] |> in_units_of(u"Myr")   # Nt−1 ticks
+
+    heatmap!(ax, xkm, tmyr, mag; colormap, colorrange = range ./ u"m/Myr")
 end
+
 
 function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
-    show::Symbol = :both,
-    smooth_size::NTuple{2,Int} = (3, 11),
-    colors = Makie.wong_colors())
+    smooth_size=(3,11),
+    facies_colors=nothing,
+    nondep_eps=0.0u"m"
+)
+    dep = data.deposition
+    dom = getindex.(argmax(dep; dims=1)[1,:,:], 1)
+    tot = sum(dep; dims=1)[1,:,:]
 
-    if show ∉ [:model, :preserved, :both]
-        error("expected argument `show` to be one of `:model`, `:preserved`, `:both`; got $(show)")
-    end
+    domf = Float64.(dom)
+    domf[tot .<= nondep_eps] .= NaN
 
-    n_facies = size(data.production)[1]
-    colormax(d) = getindex.(argmax(d; dims=1)[1, :, :], 1)
-
-    wi = data.write_interval
     blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
-    wd = zeros(Float64, length(header.axes.x), length(header.axes.t[1:wi:end]))
-    blur(water_depth(header, data) / u"m", wd)
 
-    ax.ylabel = "time [Myr]"
-    ax.xlabel = "position [km]"
+    Nt1 = size(dep,3)
+    out = zeros(Float64, size(dep,2), Nt1)
+    blur(domf, out)
 
-    xkm = header.axes.x |> in_units_of(u"km")
-    tmyr = header.axes.t[1:wi:end] |> in_units_of(u"Myr")
+    out[out .< 0.5] .= NaN
 
+    xkm  = header.axes.x |> in_units_of(u"km")
+    tmyr = header.axes.t[1:Nt1] |> in_units_of(u"Myr")
 
-    ft = if show == :model
-        dominant_facies = colormax(data.deposition)
-        heatmap!(ax, xkm, tmyr, dominant_facies;
-            colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5))
-    elseif show == :preserved
-        sc = stratigraphic_column(data)
-        dominant_facies = colormax(sc)
-        heatmap!(ax, xkm, tmyr, dominant_facies;
-            colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5))
-    else
-        sc = stratigraphic_column(data)
-        dominant_facies_model = colormax(data.deposition)
-        heatmap!(ax, xkm, tmyr, dominant_facies_model;
-            colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5), alpha=0.3)
-        dominant_facies_preserved = colormax(sc)
-        heatmap!(ax, xkm, tmyr, dominant_facies_preserved;
-            colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5))
-    end
+    n_f = size(dep,1)
+cmap = facies_colormap(n_f; facies_colors=facies_colors, include_nodeposit=true)
 
-    contourf!(ax, xkm, tmyr, wd;
-        levels=[0.0, 10000.0], colormap=Reverse(:grays))
-    #contour!(ax, xkm, tmyr, wd;
-    #    levels=[0], color=:black, linewidth=2)
-    return ft
+heatmap!(ax, xkm, tmyr, out;
+    colormap = cmap,
+    colorrange = (0.5f0, n_f + 0.5f0)
+)
 end
 
-function wheeler_diagram!(ax1::Axis, ax2::Axis, header::Header, data::DataSlice;
-    smooth_size::NTuple{2,Int}=(3, 11),
-    range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
+
+    function wheeler_diagram!(
+    ax1::Axis,
+    ax2::Axis,
+    header::Header,
+    data::DataSlice;
+    smooth_size=(3,11),
+    colormap=Reverse(:curl),
+    range=(-100.0u"m/Myr", 100.0u"m/Myr"),
+    facies_colors=nothing,
+    nondep_eps=0.0u"m"
+)
 
     linkyaxes!(ax1, ax2)
-    sa = sediment_accumulation!(ax1, header, data; smooth_size=smooth_size, range=range)
-    ft = dominant_facies!(ax2, header, data; smooth_size=smooth_size)
-    ax2.ylabel = ""
 
+    sa = sediment_accumulation!(
+        ax1, header, data;
+        smooth_size=smooth_size,
+        colormap=colormap,
+        range=range
+    )
+
+    ft = dominant_facies!(
+        ax2, header, data;
+        smooth_size=smooth_size,
+        facies_colors=facies_colors,
+        nondep_eps=nondep_eps
+    )
+
+    ax2.ylabel = ""
     return sa, ft
 end
 
-function wheeler_diagram(header::Header, data::DataSlice;
-    smooth_size::NTuple{2,Int}=(3, 11),
-    range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
 
-    fig = Figure(size=(1000, 600))
-    ax1 = Axis(fig[2, 1])
-    ax2 = Axis(fig[2, 2])
-
-    sa, ft = wheeler_diagram!(ax1, ax2, header, data; smooth_size=smooth_size, range=range)
-
-    Colorbar(fig[1, 1], sa; vertical=false, label="sediment accumulation [m/Myr]")
-    Colorbar(fig[1, 2], ft; vertical=false, ticks=1:3, label="dominant facies")
+function wheeler_diagram(header::Header, data::DataSlice; kwargs...)
+    fig = Figure(size=(1000,600))
+    ax1 = Axis(fig[2,1])
+    ax2 = Axis(fig[2,2])
+    sa, ft = wheeler_diagram!(ax1, ax2, header, data; kwargs...)
+    Colorbar(fig[1,1], sa; vertical=false, label="sediment accumulation [m/Myr]")
+    Colorbar(fig[1,2], ft; vertical=false, label="dominant facies")
     fig
 end
 
 end
-# ~/~ end

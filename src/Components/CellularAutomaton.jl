@@ -2,14 +2,17 @@
 @compose module CellularAutomaton
     @mixin Boxes, FaciesBase
     using ..Common
-    using ...Stencil: stencil!
-    using Random
+	using ...BoundaryTrait: get_bounded
+	using Base: IndexCartesian
+	using Random
+
 
     # ~/~ begin <<docs/src/components/cellular-automata.md#ca-input>>[init]
     @kwdef struct Facies <: AbstractFacies
         viability_range::Tuple{Int,Int} = (4, 10)
         activation_range::Tuple{Int,Int} = (6, 10)
         active::Bool = true
+		neighbour_radius::Int = 2
     end
     
     @kwdef struct Input <: AbstractInput
@@ -24,24 +27,40 @@
     end
     # ~/~ end
     # ~/~ begin <<docs/src/components/cellular-automata.md#ca-step>>[init]
-    function rules(facies, ca_priority, neighbourhood)
-        cell_facies = neighbourhood[3, 3]
-        neighbour_count(f) = sum(neighbourhood .== f)
-        if cell_facies == 0
-            for f in ca_priority
-                n = neighbour_count(f)
-                (a, b) = facies[f].activation_range
-                if a <= n && n <= b
-                    return f
-                end
-            end
-            0
-        else
-            n = neighbour_count(cell_facies) - 1
-            (a, b) = facies[cell_facies].viability_range
-            (a <= n && n <= b ? cell_facies : 0)
+
+
+
+    function rules(BT, facies, ca_priority, ca, i::CartesianIndex)
+    cell_facies = get_bounded(BT, ca, i)
+
+    function neighbour_count(f, r)
+        c = 0
+        for dx in -r:r, dy in -r:r
+            (dx == 0 && dy == 0) && continue
+            j = i + CartesianIndex(dx, dy)
+            c += (get_bounded(BT, ca, j) == f)
         end
+        return c
     end
+
+    if cell_facies == 0
+        for f in ca_priority
+            r = facies[f].neighbour_radius
+            n = neighbour_count(f, r)
+            (a, b) = facies[f].activation_range
+            if a <= n && n <= b
+                return f
+            end
+        end
+        return 0
+    else
+        r = facies[cell_facies].neighbour_radius
+        n = neighbour_count(cell_facies, r)
+        (a, b) = facies[cell_facies].viability_range
+        return (a <= n && n <= b) ? cell_facies : 0
+    end
+	end
+
     # ~/~ end
     # ~/~ begin <<docs/src/components/cellular-automata.md#ca-step>>[1]
     """
@@ -51,21 +70,23 @@
     
     Contract: the `state` should have `ca::Matrix{Int}` and `ca_priority::Vector{Int}`
     members.
+
     """
-    function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
-        tmp = Matrix{Int}(undef, box.grid_size)
-        facies_ = facies
-    
-        function (state)
-            p = state.ca_priority
-            stencil!(BT, Size(5, 5), tmp, state.ca) do nb
-                rules(facies_, p, nb)
-            end
-            state.ca, tmp = tmp, state.ca
-            state.ca_priority = circshift(state.ca_priority, 1)
-            return state
+function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
+    tmp = Matrix{Int}(undef, box.grid_size)
+    facies_ = facies
+
+    function (state)
+        p = state.ca_priority
+        for i in eachindex(IndexCartesian(), state.ca)
+            tmp[i] = rules(BT, facies_, p, state.ca, i)
         end
+        state.ca, tmp = tmp, state.ca
+        state.ca_priority = circshift(state.ca_priority, 1)
+        return state
     end
+end
+
     # ~/~ end
 
     function initial_state(input::AbstractInput)

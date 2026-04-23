@@ -560,48 +560,83 @@ end
 # RUN MODEL
 # --------------------------------------------------
 
-function run_model(::Type{Model{M}}, input, filename; env_names=String[]) where {M}
+function run_model(::Type{Model{M}}, input, filename; env_names = String[]) where {M}
     final_state = nothing
 
     H5Output(input, filename) do output
         final_state = CarboKitten.run_model(Model{M}, input, output)
 
+        # ------------------------------------------
+        # Rebuild derived compacted layer products
+        # from the true burial / compaction history
+        # ------------------------------------------
+        if hasproperty(final_state, :compaction) &&
+           hasproperty(final_state, :wdepth_hist) &&
+           hasproperty(final_state, :energy_hist) &&
+           hasproperty(final_state, :block_cube) &&
+           hasproperty(final_state, :block_wdepth) &&
+           hasproperty(final_state, :block_energy) &&
+           hasproperty(final_state, :block_topk)
+
+            Production.extract_compacted_layer_maps!(
+                final_state,
+                final_state.wdepth_hist,
+                final_state.energy_hist
+            )
+
+            final_state.block_cube,
+            final_state.block_wdepth,
+            final_state.block_energy,
+            final_state.block_topk =
+                Production.project_compacted_layers_to_cube!(
+                    final_state,
+                    input.depositional_resolution,
+                    final_state.wdepth_hist,
+                    final_state.energy_hist,
+                    final_state.block_cube,
+                    final_state.block_wdepth,
+                    final_state.block_energy,
+                    final_state.block_topk,
+                )
+        end
+
         # ------------------------------
         # PRIMARY LAYER ARCHIVE
         # ------------------------------
         if hasproperty(final_state, :layer_facies_hist) &&
-   hasproperty(final_state, :layer_thickness_hist) &&
-   hasproperty(final_state, :layer_wdepth_hist) &&
-   hasproperty(final_state, :layer_energy_hist)
+           hasproperty(final_state, :layer_thickness_hist) &&
+           hasproperty(final_state, :layer_wdepth_hist) &&
+           hasproperty(final_state, :layer_energy_hist) &&
+           !isempty(final_state.layer_facies_hist)
 
-    write_layer_archive!(output.fid, final_state)
+            write_layer_archive!(output.fid, final_state)
 
-    env_grid = build_environment_grid(
-        final_state.layer_facies_hist,
-        final_state.layer_thickness_hist,
-        final_state.layer_wdepth_hist,
-        final_state.layer_energy_hist;
-    Δi = 10,
-    Δj = 10,
-    Δk = 5,
-    env_rules = env_rules,
-    n_facies = length(input.facies)
-)
+            env_grid = build_environment_grid(
+                final_state.layer_facies_hist,
+                final_state.layer_thickness_hist,
+                final_state.layer_wdepth_hist,
+                final_state.layer_energy_hist;
+                Δi = 10,
+                Δj = 10,
+                Δk = 5,
+                env_rules = env_rules,
+                n_facies = length(input.facies),
+            )
 
-encoded = encode_environments(env_grid, env_names)
+            encoded = encode_environments(env_grid, env_names)
 
-write_environment_block!(
-    output.fid,
-    encoded,
-    env_names;
-    Δi = 10,
-    Δj = 10,
-    Δk = 5
-)
+            write_environment_block!(
+                output.fid,
+                encoded,
+                env_names;
+                Δi = 10,
+                Δj = 10,
+                Δk = 5,
+            )
+        end
     end
 
     return final_state
-end
 end
 end
 

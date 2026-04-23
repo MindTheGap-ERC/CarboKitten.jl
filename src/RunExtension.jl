@@ -159,6 +159,23 @@ function run_single_to_csv(input;
         return (; cols...)
     end
 
+function flatten_depthbins(props::AbstractMatrix{<:Real})
+    cols = Pair{Symbol, Any}[]
+    nbin_avail = size(props, 1)
+    nfac_avail = size(props, 2)
+
+    for b in 1:nbins
+        for fid in 1:n_facies
+            val = (b <= nbin_avail && fid <= nfac_avail) ? Float64(props[b, fid]) : 0.0
+            push!(cols,
+                Symbol("depthbin_", b, "_facies_", fid) => val
+            )
+        end
+    end
+
+    return (; cols...)
+end
+
     try
         r = run_once(
     input;

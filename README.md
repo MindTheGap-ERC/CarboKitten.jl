@@ -1,258 +1,124 @@
-# CarboKitten
-**Modeling Carbonate Platforms in Julia**
+```markdown
+# CarboKitten Extension
 
-[![Documentation Badge](https://img.shields.io/badge/Documentation-CarboKitten.jl-blue)](https://mindthegap-erc.github.io/CarboKitten.jl)
-[![Entangled badge](https://img.shields.io/badge/entangled-Use%20the%20source!-%2300aeff)](https://entangled.github.io/)
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
+[![Julia](https://img.shields.io/badge/julia-1.10+-9558B2.svg)](https://julialang.org)
+[![Docs](https://img.shields.io/badge/docs-stable-blue.svg)](docs/)
+[![DOI](https://shields.io)](https://doi.org/10.xxxx/joss.xxxxx)
 
-![CarboKitten logo](docs/src/fig/logo.svg)
+## Overview
+**CarboKitten** is an open-source, Julia-based Stratigraphic Forward Model (SFM) derived from **CarboCAT (Burgess, 2012)**. It simulates carbonate platform evolution through sediment diffusion and ecological competition.
 
-CarboKitten is a reimplementation of Peter Burgess' CarboCAT, a model for generating carbonate platform stratigraphies. CarboKitten is a three-dimensional model, having two spatial dimensions and one for stored stediment.
+This repository provides an **extended implementation** specifically enhanced for reservoir-oriented modeling workflows, introducing physics-based forcing and high-resolution stratigraphic tracking.
 
-Features:
+![Model overview](docs/images/model_ext_overview.png)
 
-- Cellular Automata to regulate facies type
-- Advection-diffusion based sediment transport
-- Designed with performance in mind
-- Written with Open Science practices in mind
+---
 
-CarboKitten should be easy to get into and extend. All our code is extensively documented.
+## Key Features
 
-![Sample output stratigraphy](docs/src/fig/alcaps-alternative.png)
+The extension introduces several critical modifications to the core CarboKitten engine:
 
-CarboKitten is written in Julia for performance and extensibility.
+*   **Dynamic Carbonate Production:** Production rates vary through user-defined depth-dependent and time-dependent curves.
+*   **Spatially Variable Subsidence:** Prescription of spatially distributed subsidence fields with optional temporal scaling.
+*   **Layer-Based Stratigraphy & Compaction:** Stores stratigraphy as a discrete stack of layers. A factory-dependent engine calculates porosity reduction at every timestep, ensuring preserved thickness reflects cumulative burial history.
+*   **Physics-Based Wave Model:** Multi-component hydrodynamic forcing that derives orbital velocity from wave amplitude, period, and direction.
+*   **Automated Facies Classification:** Deposits are classified based on sediment proportions, wave energy, and water depth.
+*   **Enhanced Visualization:** Integrated routines for fence diagrams, map views, and chronostratigraphic (Wheeler) plots.
+*   **Quantitative Metrics Export:** Automated export of platform statistics, patch size analysis, and factory proportions to CSV for sensitivity analysis.
 
-## Running
+---
 
-CarboKitten requires Julia &ge; 1.10. Please follow the [download and install instructions at the Julia homepage](https://julialang.org/downloads/) if you've never used Julia before.
+## Installation
 
-It is advised to run CarboKitten in a dedicated environment under version control. This way, your model runs can be made fully reproducible. Create a directory for you project:
+This version is tested with **Julia 1.10+**.
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/username/CarboKitten.jl
+   cd CarboKitten.jl
+   ```
+
+2. **Instantiate environment:**
+
+   ```bash
+   julia --project -e 'using Pkg; Pkg.instantiate()'
+   ```
+---
+
+# Quick Start : Running the Example
+
+We provide a fully reproducible workflow that generates all figures and metrics presented in the associated JOSS paper.
+Run the example from the root directory:
+
 
 ```bash
-mkdir MyCarboKittenProject
-cd MyCarboKittenProject
-git init
-julia
+julia --project run_extension_example.jl
 ```
 
-Start Julia, get into `Pkg` mode by pressing `]` and generate a new project file:
+Outputs will be saved to `examples/extension/output/` and include:
+* Fence diagrams and map-view visualizations.
+* CSV files containing thickness statistics and factory distribution metrics.
 
-```juliarepl
-(@v1.11) pkg> activate .
-(MyCarboKittenProject) pkg> add CarboKitten
-```
+---
 
-You can run the example model as follows:
+# Outputs
 
-```julia
-using CarboKitten
-run_model(Model{ALCAP}, ALCAP.Example.INPUT, "example.h5")
-```
+The model produces several outputs including:
 
-If you wish to visualize the generated output, you'll need to install `GLMakie` first (in package mode):
+* stratigraphic grids
+* facies classifications
+* platform thickness statistics
+* chronostratigraphic visualizations
+* CSV files for quantitative analysis
 
-```juliarepl
-(MyCarboKittenProject) pkg> add GLMakie
-```
+---
 
-Depending on your system, this may take a few minutes to build. After that, you should be able to run the following:
-
-```julia
-using GLMakie
-using CarboKitten.Visualization
-summary_plot("example.h5")
-```
-
-This should show a plot very similar to the one above. Don't worry if it takes a while to render. Subsequent runs in the same REPL should be a lot faster!
-
-For more information on running CarboKitten, please read our extensive [documentation](https://mindthegap-erc.github.io/CarboKitten.jl), including the [full tutorial](https://mindthegap-erc.github.io/CarboKitten.jl/dev/first_tutorial/).
-
-## Development
-
-> [!NOTE]
-> The following instructions are only relevant if you want to develop on CarboKitten itself.
-
-Start the Julia REPL, and get into Pkg mode by pressing `]`. You may activate the package environment using `activate .` and then install the dependencies using `instantiate`. These steps only need to be run once.
-
-```julia
-pkg> activate .
-pkg> instantiate
-```
-
-If you want to start a REPL with the correct environment already activated, use the `--project=.` flag. Use the `-t` flag to enable processing in multiple threads (Currently CarboKitten is still single threaded, but that will change).
-
-```shell
-julia --project=. -t 4
-```
-
-### Examples
-
-You'll get the best experience by running examples from the Julia REPL. There are however also some example scripts that should work stand-alone.
-
-```shell
-julia --project=workenv examples/ca-with-prod.jl
-```
-
-This command will write the output in the HDF5 format into the `data` folder. You can check that output is written there after executing this command.
-
-However, it is more efficient to run them from the REPL. Either run,
-
-```shell
-julia --project=workenv
-```
-
-or start the REPL from VS Code. In the REPL you can run
-
-```julia
-include("examples/ca-with-prod.jl")
-```
-
-After that, you may edit an example and rerun.
-
-### Project layout
+# Repository structure
 
 ```
-.
-├── data                # data files
-├── docs                # documentation
-│   ├── make.jl         # docs build script
-│   ├── Manifest.toml   #
-│   ├── Project.toml    # dependencies for building docs
-│   └── src             # markdown source for docs
-├── entangled.toml      # entangled config
-├── examples            # example scripts
-├── ext                 # visualization extension
-├── Makefile            # command-line short hands
-├── Manifest.toml       #
-├── Project.toml        # project dependencies
-├── pyproject.toml      # dependencies for running Entangled
-├── README.md           #
-├── src                 # tangled library source
-└── test                # unit tests
+CarboKitten.jl
+├── src/                # Core model implementation
+├── examples/           # Workflow examples
+│   └── extension/      # Extension-specific simulation
+├── data/               # Input datasets
+├── docs/               # Original model documentation
+├── docs_extension/     # Extension-specific documentation
+├── test/               # Unit tests
+├── ext/                # Visualization tools & optional extensions
+└── Project.toml        # Julia dependencies
 ```
 
-### Global dependencies
-CarboKitten has some dependencies that are only needed for developing and running examples, but not for using the library on its own. Those are specified in the `workenv` package. So make sure `workenv` is activated (`Pkg.activate("./workenv")`) or
+---
+# Documentation
+Comprehensive guides on model inputs and workflows are located in the `/docs_extension` directory. For the base engine logic, refer to the original `/docs`.
 
-```julia
-pkg> activate workenv
-pkg> instantiate
+---
+
+# Citation
+
+If you use this software, please cite:
+
+Salmon et al. (2025)
+*CarboKitten: An open-source stratigraphic forward model for carbonate platform evolution.*
+Journal of Open Source Software.
+
+---
+
+# License
+
+This project is distributed under the terms of the **GNU General Public License v3.0**.
+See `LICENSE` for details.
+
+---
+
+# Acknowledgements
+
+This work was supported by the Swiss State Secretariat for Education, Research and Innovation (SERI) and the European Union Horizon Europe programme (Grant No. 101147618).
+
+---
 ```
 
-We have experimented with using `DaemonMode.jl` to run Julia scripts from the command line, but found too many issues with unreproducible errors. So for the moment `DaemonMode` is not used.
-
-### Entangled
-While developing, you'll need to run the [Entangled](https://entangled.github.io/) watch daemon to keep documentation in Markdown and Julia code synchronized. You may install Entangled using `pip install entangled-cli`, or use the provided UV environment in `pyproject.toml` ([install instructions for UV](https://docs.astral.sh/uv/)).
-
-The first time running, from the project root folder:
-
-```shell
-uv sync
-```
-
-Then,
-
-```shell
-uv run entangled watch
-```
-
-To generate the more expensive figures (actually resulting from simulation etc.), you may run,
-
-```shell
-uv run brei figures
-```
-
-## Documentation
-To generate the documentation, run `julia`.
-
-```
-pkg> activate docs
-pkg> instantiate
-julia> include("docs/make.jl")
-```
-
-The example figures are generated seperately (see previous section), and are included in version control.
-
-The most efficient way to serve this documentation and have it update upon changes, is to run `LiveServer` from the Julia REPL or
-
-```shell
-julia --project=docs -e 'using LiveServer; servedocs()'
-```
-
-The "Documenter could not auto-detect the building environment Skipping deployment." warning is expected; local changes should not trigger the building of new GitHub pages.
-
-### Citations
-Bibliography is generated from citations in `docs/src/ref.bib` using `DocumenterCitations.jl`. Citing a paper from there is done like `[Bosscher1992](@cite)`.
-
-## References
-
-Code in this repository is based on
-
-- Burgess, P. M. (2013). [CarboCAT: A cellular automata model of heterogeneous carbonate strata](https://www.sciencedirect.com/science/article/pii/S0098300411002949). Computers & geosciences, 53, 129-140.
-- Bosscher, H., & Schlager, W. (1992). [Computer simulation of reef growth](https://doi.org/10.1111/j.1365-3091.1992.tb02130.x). Sedimentology, 39(3), 503-512.
-
-## Authors
-
-Lead engineer: __Johan Hidding__
-The Netherlands eScience Center
-email: j.hidding [at] esciencecenter.nl
-Web page: [www.esciencecenter.nl/team/johan-hidding-msc/](https://www.esciencecenter.nl/team/johan-hidding-msc/)
-ORCID: [0000-0002-7550-1796](https://orcid.org/0000-0002-7550-1796)
-
-Original author: __Peter Burgess__
-University of Liverpool
-Web page: [www.liverpool.ac.uk/environmental-sciences/staff/peter-burgess](https://www.liverpool.ac.uk/environmental-sciences/staff/peter-burgess/)
-
-Project lead: __Emilia Jarochowska__
-Utrecht University
-email: e.b.jarochowska [at] uu.nl
-Web page: [www.uu.nl/staff/EBJarochowska](https://www.uu.nl/staff/EBJarochowska)
-ORCID: [0000-0001-8937-9405](https://orcid.org/0000-0001-8937-9405)
-
-**Other team members:**
-
-__Niklas Hohmann__
-Utrecht University
-email: n.h.hohmann [at] uu.nl
-Web page: [www.uu.nl/staff/NHohmann](https://www.uu.nl/staff/NHHohmann)
-ORCID: [0000-0003-1559-1838](https://orcid.org/0000-0003-1559-1838)
-
-__Xianyi Liu__
-Utrecht University
-email: x.liu6 [at] uu.nl
-Web page: [www.uu.nl/staff/XLiu6](https://www.uu.nl/staff/XLiu6)
-ORCID:
-
-__Hanno Spreeuw__
-The Netherlands eScience Center
-email: h.spreeuw [at] esciencecenter.nl
-Web page: [www.esciencecenter.nl/team/dr-hanno-spreeuw/](https://www.esciencecenter.nl/team/dr-hanno-spreeuw)
-ORCID: [0000-0002-5057-0322](https://orcid.org/0000-0002-5057-0322)
-
-__David De Vleeschouwer__
-Westfälische Wilhelms-Universität Münster
-Web page: [www.uni-muenster.de/GeoPalaeontologie/erdsystemforschung/staff/DeVleeschouwer](https://www.uni-muenster.de/GeoPalaeontologie/erdsystemforschung/staff/DeVleeschouwer.html)
-ORCID: [0000-0002-3323-807X](https://orcid.org/0000-0002-3323-807X)
-
-## Copyright
-
-Copyright 2023-2024 The Netherlands eScience Center and Utrecht University
-
-## License
-
-> This program is free software: you can redistribute it and/or modify
-> it under the terms of the GNU General Public License as published by
-> the Free Software Foundation, either version 3 of the License, or
-> (at your option) any later version.
->
-> This program is distributed in the hope that it will be useful,
-> but WITHOUT ANY WARRANTY; without even the implied warranty of
-> MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> GNU General Public License for more details.
->
-> You should have received a copy of the GNU General Public License
-> along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-## Funding information
-
-Funded by the European Union (ERC, MindTheGap, StG project no 101041077). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Council. Neither the European Union nor the granting authority can be held responsible for them.

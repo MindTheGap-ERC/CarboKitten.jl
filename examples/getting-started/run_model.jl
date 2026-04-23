@@ -11,17 +11,17 @@ function main()
             maximum_growth_rate=500u"m/Myr",
             extinction_coefficient=0.8u"m^-1",
             saturation_intensity=60u"W/m^2",
-            transport_coefficient=50.0u"m/yr"),
+            diffusion_coefficient=50.0u"m/yr"),
         ALCAP.Facies(
             maximum_growth_rate=400u"m/Myr",
             extinction_coefficient=0.1u"m^-1",
             saturation_intensity=60u"W/m^2",
-            transport_coefficient=25.0u"m/yr"),
+            diffusion_coefficient=25.0u"m/yr"),
         ALCAP.Facies(
             maximum_growth_rate=100u"m/Myr",
             extinction_coefficient=0.005u"m^-1",
             saturation_intensity=60u"W/m^2",
-            transport_coefficient=12.5u"m/yr")
+            diffusion_coefficient=12.5u"m/yr")
     ]
 
     input = ALCAP.Input(
@@ -66,9 +66,9 @@ function main()
         #     is removed from the buffer
         disintegration_rate = 50.0u"m/Myr",
 
-        #   - the lithification time sets how fast entrained material
+        #   - the cementation time sets how fast entrained material
         #     settles, by specifying a half-life time.
-        lithification_time = 100u"yr",
+        cementation_time = 100u"yr",
     )
 
     # The following is here for your convenience:

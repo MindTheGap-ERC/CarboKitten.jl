@@ -18,13 +18,13 @@ function run()
             maximum_growth_rate=100.0u"m/Myr",
             extinction_coefficient=0.8u"m^-1",
             saturation_intensity=60u"W/m^2",
-            transport_coefficient=100.0u"m/yr",
+            diffusion_coefficient=100.0u"m/yr",
             wave_velocity=v_const(-5.0u"m/yr")),
         M.Facies(
             maximum_growth_rate=20.0u"m/Myr",
             extinction_coefficient=0.8u"m^-1",
             saturation_intensity=60u"W/m^2",
-            transport_coefficient=10.0u"m/yr",
+            diffusion_coefficient=10.0u"m/yr",
             wave_velocity=v_const(0.0u"m/yr"))]
 
 
@@ -46,7 +46,7 @@ function run()
 
         subsidence_rate=50.0u"m/Myr",
         disintegration_rate=100.0u"m/Myr",
-        lithification_time=50.0u"yr",
+        cementation_time=50.0u"yr",
 
         insolation=400.0u"W/m^2",
         sediment_buffer_size=50,

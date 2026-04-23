@@ -12,19 +12,18 @@ using Unitful
     using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpiricalDenudation
 
 
-    DENUDATION_HIGH_CO2 = Dissolution(temp = 293.0u"K",precip = 1.0u"m/yr", pco2 = 10^(-1.5)*u"atm",reactionrate = 2e-3u"m/yr")
-    DENUDATION_LOW_CO2 = Dissolution(temp = 293.0u"K",precip = 1.0u"m/yr", pco2 = 10^(-2.5)*u"atm",reactionrate = 2e-3u"m/yr")
-    DENUDATION_LOW_P = EmpiricalDenudation(precip = 0.8u"m/yr")
-    DENUDATION_HIGH_P = EmpiricalDenudation(precip = 1.0u"m/yr")
+    DENUDATION_HIGH_CO2 = Dissolution(temp = 293.0u"K",precip = 1.0u"m", pco2 = 10^(-1.5)*u"atm",reactionrate = 2e-3u"m/yr")
+    DENUDATION_LOW_CO2 = Dissolution(temp = 293.0u"K",precip = 1.0u"m", pco2 = 10^(-2.5)*u"atm",reactionrate = 2e-3u"m/yr")
+    DENUDATION_LOW_P = EmpiricalDenudation(precip = 0.8u"m")
+    DENUDATION_HIGH_P = EmpiricalDenudation(precip = 1.0u"m")
     DENUDATION_PHYS = PhysicalErosion()
     MODEL1 = [
         Facies(viability_range = (4, 10),
         activation_range = (6, 10),
-        production = BenthicProduction(
-            maximum_growth_rate = 500u"m/Myr",
-            extinction_coefficient = 0.8u"m^-1",
-            saturation_intensity = 60u"W/m^2"),
-        transport_coefficient=50u"m/yr",
+        maximum_growth_rate = 500u"m/Myr",
+        extinction_coefficient = 0.8u"m^-1",
+        saturation_intensity = 60u"W/m^2",
+        diffusion_coefficient=50u"m/yr",
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5,
@@ -32,11 +31,10 @@ using Unitful
 
         Facies(viability_range = (4, 10),
         activation_range = (6, 10),
-        production = BenthicProduction(
-            maximum_growth_rate = 400u"m/Myr",
-            extinction_coefficient = 0.1u"m^-1",
-            saturation_intensity = 60u"W/m^2"),
-        transport_coefficient= 50u"m/yr",
+        maximum_growth_rate = 400u"m/Myr",
+        extinction_coefficient = 0.1u"m^-1",
+        saturation_intensity = 60u"W/m^2",
+        diffusion_coefficient= 50u"m/yr",
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5,
@@ -44,11 +42,10 @@ using Unitful
 
         Facies(viability_range = (4, 10),
         activation_range = (6, 10),
-        production = BenthicProduction(
-            maximum_growth_rate = 100u"m/Myr",
-            extinction_coefficient = 0.005u"m^-1",
-            saturation_intensity = 60u"W/m^2"),
-        transport_coefficient= 50u"m/yr",
+        maximum_growth_rate = 100u"m/Myr",
+        extinction_coefficient = 0.005u"m^-1",
+        saturation_intensity = 60u"W/m^2",
+        diffusion_coefficient= 50u"m/yr",
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5,

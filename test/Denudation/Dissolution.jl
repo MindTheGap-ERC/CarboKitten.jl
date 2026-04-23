@@ -21,7 +21,7 @@ end
 end
 
 const DIS = Dissolution(temp = 285u"K",
-precip  = 1.0u"m/yr",
+precip  = 1.0u"m",
 pco2 = 10^(-1.5)*1.0u"atm",
 reactionrate = 0.1u"m/yr")
 

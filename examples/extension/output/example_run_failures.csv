@@ -1,0 +1,9 @@
+run,error
+1,BoundsError: attempt to access 0-element Vector{Matrix{Int16}} at index [1]
+1,"MethodError: no method matching (::CarboKitten.RunExtension.var""#flatten_depthbins#15""{Int64, Int64})(::Matrix{Float64})
+The function `flatten_depthbins` exists, but no method is defined for this combination of argument types.
+
+Closest candidates are:
+  (::CarboKitten.RunExtension.var""#flatten_depthbins#15"")(!Matched::Dict{Int64, Dict{Int64, Float64}})
+   @ CarboKitten J:\SGE\00_Tech\14-GO-Forward\Scientific\Reports\SFM\JOSS\CarboKitten.jl\src\RunExtension.jl:148
+"

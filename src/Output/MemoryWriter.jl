@@ -4,14 +4,13 @@ module MemoryWriter
 using ..Abstract
 import ..Abstract:
     new_output, add_data_set, set_attribute, write_sediment_thickness,
-    write_production, write_disintegration, write_deposition, write_active_layer
+    write_production, write_disintegration, write_deposition
 using ...Components.Common
-using ...Components.WaterDepth: initial_topography
+using ...Components.WaterDepth: initial_topography, subsidence_rate_matrix
 using ...CarboKitten: time_axis, box_axes, OutputSpec, AbstractOutput, AbstractInput, AbstractState
 
 struct MemoryOutput <: AbstractOutput
     header::Header
-    save_active_layer::Bool
     data_volumes::Dict{Symbol,DataVolume}
     data_slices::Dict{Symbol,DataSlice}
     data_columns::Dict{Symbol,DataColumn}
@@ -19,14 +18,12 @@ end
 
 MemoryOutput(input::AbstractInput) = new_output(MemoryOutput, input)
 
-function new_output(::Type{MemoryOutput}, input::Input) where {Input <: AbstractInput}
+function new_output(::Type{MemoryOutput}, input::AbstractInput)
     t_axis = time_axis(input.time)
     x_axis, y_axis = box_axes(input.box)
     axes = Axes(x=x_axis, y=y_axis, t=t_axis)
     h0 = initial_topography(input)
     sl = input.sea_level.(t_axis)
-    save_active_layer = hasfield(Input, :save_active_layer) ?
-        input.save_active_layer : false
 
     header = Header(
         tag=input.tag,
@@ -37,11 +34,11 @@ function new_output(::Type{MemoryOutput}, input::Input) where {Input <: Abstract
         n_facies=length(input.facies),
         initial_topography=h0,
         sea_level=sl,
-        subsidence_rate=input.subsidence_rate,
+        subsidence_rate = subsidence_rate_matrix(input),
         data_sets=Dict(),
         attributes=Dict())
 
-    return MemoryOutput(header, save_active_layer, Dict(), Dict(), Dict())
+    return MemoryOutput(header, Dict(), Dict(), Dict())
 end
 
 axis_size(::Colon, a::Int) = a
@@ -63,29 +60,26 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::OutputSpec)
         size = axis_size.(slice, full_size)
         out.data_volumes[label] = DataVolume(
             slice, write_interval,
-            zeros(Amount, n_facies, size..., n_steps + 1),
-            zeros(Amount, n_facies, size..., n_steps + 1),
-            zeros(Amount, n_facies, size..., n_steps + 1),
-            zeros(Amount, size..., n_steps + 1),
-            out.save_active_layer ? zeros(Amount, n_facies, size..., n_steps + 1) : nothing)
+            zeros(Amount, n_facies, size..., n_steps),
+            zeros(Amount, n_facies, size..., n_steps),
+            zeros(Amount, n_facies, size..., n_steps),
+            zeros(Amount, size..., n_steps + 1))
     elseif h.kind == :slice
         size = axis_size.(slice, full_size)
         slice_size = size[1] == 1 ? size[2] : size[1]
         out.data_slices[label] = DataSlice(
             slice, write_interval,
-            zeros(Amount, n_facies, slice_size, n_steps + 1),
-            zeros(Amount, n_facies, slice_size, n_steps + 1),
-            zeros(Amount, n_facies, slice_size, n_steps + 1),
-            zeros(Amount, slice_size, n_steps + 1),
-            out.save_active_layer ? zeros(Amount, n_facies, slice_size, n_steps + 1) : nothing)
+            zeros(Amount, n_facies, slice_size, n_steps),
+            zeros(Amount, n_facies, slice_size, n_steps),
+            zeros(Amount, n_facies, slice_size, n_steps),
+            zeros(Amount, slice_size, n_steps + 1))
     elseif h.kind == :column
         out.data_columns[label] = DataColumn(
             slice, write_interval,
-            zeros(Amount, n_facies, n_steps + 1),
-            zeros(Amount, n_facies, n_steps + 1),
-            zeros(Amount, n_facies, n_steps + 1),
-            zeros(Amount, n_steps + 1),
-            out.save_active_layer ? zeros(Amount, n_facies, n_steps + 1) : nothing)
+            zeros(Amount, n_facies, n_steps),
+            zeros(Amount, n_facies, n_steps),
+            zeros(Amount, n_facies, n_steps),
+            zeros(Amount, n_steps + 1))
     end
 end
 
@@ -99,13 +93,6 @@ write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::Abstr
     out.data_slices[label].sediment_thickness[:, idx] .= data
 write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
     out.data_volumes[label].sediment_thickness[:, :, idx] .= data
-
-write_active_layer(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
-    out.data_columns[label].active_layer[:, idx] .= data
-write_active_layer(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
-    out.data_slices[label].active_layer[:, :, idx] .= data
-write_active_layer(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,3}) =
-    out.data_volumes[label].active_layer[:, :, :, idx] .= data
 
 write_production(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
     out.data_columns[label].production[:, idx] .+= data

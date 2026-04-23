@@ -2,14 +2,11 @@
 module Abstract
 
 import ...CarboKitten: set_attribute
-import ...Algorithms: stratigraphic_column!
-
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
-export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer
+export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer, write_header
 
 using Unitful
 using ...CarboKitten: OutputSpec, AbstractInput, AbstractState
-using .Iterators: repeated
 
 const Length = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
@@ -41,7 +38,7 @@ end
 
     initial_topography::Matrix{Amount}
     sea_level::Vector{Length}
-    subsidence_rate::Rate
+    subsidence_rate::AbstractMatrix{<:Quantity}
     data_sets::Dict{Symbol,DataHeader}
     attributes::Dict{String,Any} = Dict()
 end
@@ -54,7 +51,6 @@ end
     production::Array{Amount,F}
     deposition::Array{Amount,F}
     sediment_thickness::Array{Amount,D}
-    active_layer::Union{Array{Amount,F}, Nothing} = nothing
 end
 
 const DataVolume = Data{4,3}
@@ -83,8 +79,7 @@ Base.getindex(v::Data{F,D}, args...) where {F,D} =
             v.disintegration[:, args..., :],
             v.production[:, args..., :],
             v.deposition[:, args..., :],
-            v.sediment_thickness[args..., :],
-            v.active_layer == nothing ? nothing : v.active_layer[:, args..., :])
+            v.sediment_thickness[args..., :])
     end
 
 function parse_slice(s::AbstractString)
@@ -110,34 +105,6 @@ data_kind(_, _) = :volume
 data_kind(spec::OutputSpec) = data_kind(spec.slice...)
 
 """
-    stratigraphic_column(data)
-
-Given a data set, compute the stratigrahpic column.
-"""
-function stratigraphic_column(data::Data{F, D}) where {F, D}
-    net_deposition = data.deposition .- data.disintegration
-    for c in eachslice(net_deposition, dims=(1:D...,))
-        stratigraphic_column!(c)
-    end
-    return net_deposition
-end
-
-"""
-    water_depth(header, data)
-
-Compute the water depth function for the given data set.
-"""
-function water_depth(header::Header, data::Data{F, D}) where {F, D}
-    na = [CartesianIndex()]
-    delta_t = header.axes.t[1:data.write_interval:end] .- header.axes.t[1]
-    sl = header.sea_level[1:data.write_interval:end]
-    h0 = header.initial_topography[data.slice..., na]
-    Δh = data.sediment_thickness
-    Σ = header.subsidence_rate .* delta_t[repeated(na, D-1)..., :]
-    return sl[repeated(na, D-1)...,:] .- h0 .- Δh .+ Σ
-end
-
-"""
     new_output(::Type{T}, input)
 
 Create a new output object of type `T`, given `input`.
@@ -150,7 +117,7 @@ function new_output end
 Add a data set to the output object.
 """
 function add_data_set end
-
+function write_header end
 """
     set_attribute(out::T, name::String, value::Any)
 
@@ -171,13 +138,6 @@ choose to not implement this function and implement `state_writer` and `frame_wr
 The same goes for `write_production`, `write_disintegration` and `write_deposition`.
 """
 function write_sediment_thickness end
-
-"""
-    write_active_layer(out::T, name::Symbol, idx::Int, data::AbstractArray{Amount, dim}) where {T, dim}
-
-Write the contents of the active layer to the output object.
-"""
-function write_active_layer end
 
 """
     write_production(out::T, name::Symbol, idx::Int, data::AbstractArray{Amount, dim}) where {T, dim}
@@ -203,22 +163,10 @@ writing column, slice or volume data. (first axis is facies, then x and y)
 """
 function write_deposition end
 
-"""
-    state_writer(input::AbstractInput, out::T)
 
-Returns a `function (idx::Int, state::AbstractState)`.
-
-Write the state of the simulation to the output object. It is the responsibility
-of the implementation to choose to write or not based on the set write interval.
-
-The default implementation writes the state for all output data sets, and calls
-`write_sediment_thickness`.
-"""
-function state_writer(input::Input, out) where {Input <: AbstractInput}
+function state_writer(input::AbstractInput, out)
     output_sets = input.output
     grid_size = input.box.grid_size
-    save_active_layer = hasfield(Input, :save_active_layer) ?
-        input.save_active_layer : false
 
     return function (idx::Int, state::AbstractState)
         for (k, v) in output_sets
@@ -226,16 +174,11 @@ function state_writer(input::Input, out) where {Input <: AbstractInput}
                 write_sediment_thickness(
                     out, k, div(idx - 1, v.write_interval) + 1,
                     view(state.sediment_height, v.slice...))
-
-                if save_active_layer
-                    write_active_layer(
-                        out, k, div(idx - 1, v.write_interval) + 1,
-                        view(state.active_layer, :, v.slice...))
-                end
             end
         end
     end
 end
+
 
 """
     frame_writer(input::AbstractInput, out::T)
@@ -255,18 +198,13 @@ function frame_writer(input::AbstractInput, out)
     return function (idx::Int, frame::Frame)
         try_write(tgt, ::Nothing, k, v) = ()
         function try_write(write::F, src, k, v) where {F}
-            if (idx==1)
-                write(out, k, 1,
+            write(out, k, div(idx - 1, v.write_interval) + 1,
                 view(src, :, v.slice...))
-            else
-                write(out, k, div(idx - 2, v.write_interval) + 2,
-                view(src, :, v.slice...))
-            end
         end
 
         for (k, v) in input.output
-            n_writes = div(input.time.steps, v.write_interval) + 1
-            if div(idx-2, v.write_interval) + 2 <= n_writes
+            n_writes = div(input.time.steps, v.write_interval)
+            if div(idx-1, v.write_interval) + 1 <= n_writes
                 try_write(write_production, frame.production, k, v)
                 try_write(write_disintegration, frame.disintegration, k, v)
                 try_write(write_deposition, frame.deposition, k, v)

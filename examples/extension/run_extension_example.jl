@@ -23,7 +23,7 @@ using ImageMorphology: label_components
 using StatsBase: countmap, mean
 
 function main()
-println("Running CarboKitten wave-energy example...")
+println("Running CarboKitten extension example...")
 
 # --------------------------------------------------
 # Paths

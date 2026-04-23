@@ -4,6 +4,11 @@ module Utility
 export select, in_units_of
 using Unitful
 
+
+function in_units_of(x, u)
+    return ustrip.(uconvert.(u, x))
+end
+
 struct Select
     iter
     selection
@@ -64,6 +69,30 @@ function in_units_of(unit)
 end
 # ~/~ end
 # ~/~ begin <<docs/src/utility.md#utility>>[0]
+struct RangeFinder
+	v::AbstractVector{Bool}
+end
+
+Base.iterate(r::RangeFinder) = iterate(r, 1)
+
+function Base.iterate(r::RangeFinder, i::Union{Int, Nothing})
+	isnothing(i) && return nothing
+	a = findnext(r.v, i)
+	isnothing(a) && return nothing
+	b = findnext(!, r.v, a)
+	isnothing(b) && return (a:length(r.v)), nothing
+	return (a:b-1), b
+end
+
+Base.eltype(r::RangeFinder) = UnitRange{Int}
+Base.IteratorSize(::Type{RangeFinder}) = Base.SizeUnknown()
+
+
+find_ranges(v::AbstractVector{Bool}) = RangeFinder(v)
+
+export find_ranges
+# ~/~ end
+# ~/~ begin <<docs/src/utility.md#utility>>[1]
 struct TagVectors{T}
 	vectors::T
 end

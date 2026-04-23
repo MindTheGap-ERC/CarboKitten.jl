@@ -11,7 +11,7 @@ transport_test_input(;
 	initial_sediment = (x, y) -> 0.0u"m",
 	disintegration_rate = 50.0u"m/Myr",
 	subsidence_rate = 0.0u"m/Myr",
-	transport_coefficient = 0.0u"m/yr",
+	diffusion_coefficient = 0.0u"m/yr",
 	wave_velocity = _ -> (Vec2(0.0, 0.0)u"m/yr", Vec2(0.0, 0.0)u"1/yr"),
     intertidal_zone = 0.0u"m") =
 
@@ -22,8 +22,11 @@ transport_test_input(;
 			steps = 1000),
 		facies = [ALCAP.Facies(
 			initial_sediment = initial_sediment,
-			transport_coefficient = transport_coefficient,
-			wave_velocity = wave_velocity
+			diffusion_coefficient = diffusion_coefficient,
+			wave_velocity = wave_velocity,
+			maximum_growth_rate = 0.0u"m/Myr",
+			extinction_coefficient = 0.8u"m^-1",
+			saturation_intensity = 60u"W/m^2"
 		)],
 		disintegration_rate = disintegration_rate,
 		initial_topography = initial_topography,

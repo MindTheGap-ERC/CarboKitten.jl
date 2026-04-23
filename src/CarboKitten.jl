@@ -11,6 +11,7 @@ function init()
     """
 end
 
+
 struct Model{M} end
 function run_model end
 function get_logger end
@@ -81,19 +82,7 @@ Retrieve the time values for which output was/will be written. Returns a range.
 """
 time_axis(time::TimeProperties) = (0:n_writes(time)) .* time.Δt .+ time.t0
 
-
-module Algorithms
-include("./Algorithms/RangeFinder.jl")
-import .RangeFinder: find_ranges
-include("./Algorithms/EnumerateSeq.jl")
-import .EnumerateSeq: enumerate_seq
-include("./Algorithms/StratigraphicColumn.jl")
-import .StratigraphicColumn: stratigraphic_column!
-include("./Algorithms/Skeleton.jl")
-import .Skeleton: skeleton
-include("./Algorithms/Romberg.jl")
-import .Romberg: romberg
-end
+function write_header end
 
 include("./BoundaryTrait.jl")
 include("./Vectors.jl")
@@ -103,11 +92,12 @@ include("./Stencil.jl")
 include("./SedimentStack.jl")
 include("./Utility.jl")
 include("./DataSets.jl")
-include("./Production.jl")
+include("./Skeleton.jl")
 
 include("./RunModel.jl")
 
 include("./Denudation.jl")
+include("./ext_docs_clean.jl")
 
 module Transport
 include("./Transport/ActiveLayer.jl")
@@ -117,7 +107,9 @@ include("./Transport/Advection.jl")
 end
 
 function set_attribute end
-
+include("./WaveField.jl")
+include("./PatchStats.jl")
+include("./DepthStats.jl")
 include("./Components.jl")
 
 module Output
@@ -147,19 +139,20 @@ end
 include("./Export.jl")
 include("./Visualization.jl")
 include("./Testing.jl")
+include("./RunExtension.jl")
+
+
 
 using .Components.Common: in_units_of, @u_str
 using .Output.Abstract: OutputSpec, new_output
 using .Output.MemoryWriter: MemoryOutput
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
-using .Production: BenthicProduction, PelagicProduction
 using GeometryBasics: Vec2
 
 export run_model, Box, box_axes, TimeProperties, time_axis,
     Model, BS92, CAP, ALCAP, in_units_of, @u_str,
     AbstractBox, Boundary, Coast, Periodic, Reflected,
-    Vec2, OutputSpec, MemoryOutput, new_output, n_steps,
-    BenthicProduction, PelagicProduction
+    Vec2, OutputSpec, MemoryOutput, new_output, n_steps
 
 end # module CarboKitten

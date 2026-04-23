@@ -15,7 +15,7 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
     if mass > size(col)[1]
         @warn "pushing a very large parcel of sediment: $mass times depositional resolution"
         frac = parcel ./ mass
-        col .= frac
+        col .= reshape(frac, 1, :)
         return
     end
     # ~/~ end
@@ -52,7 +52,7 @@ end
         return zeros(F, size(col)[2])
     end
 
-    @assert mass < bucket "pop_fraction can only pop from the top cell: $(col), $(mass)"
+    @assert mass < bucket "pop_fraction can only pop from the top cell: $(col), $(Δ)"
     parcel = (mass / bucket) .* col[1,:]
     col[1,:] .-= parcel
     return parcel

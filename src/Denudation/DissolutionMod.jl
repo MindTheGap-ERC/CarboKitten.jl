@@ -9,7 +9,7 @@ using Unitful
 
 @kwdef struct Dissolution <: DenudationType
     temp::typeof(1.0u"K")
-    precip::typeof(1.0u"m/yr")
+    precip::typeof(1.0u"m")
     pco2::typeof(1.0u"atm")
     reactionrate::typeof(1.0u"m/yr")
 end
@@ -52,7 +52,7 @@ end
 
 function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state) where {BT<:Boundary}
     temp = p.temp ./ u"K"
-    precip = p.precip ./ u"m/yr"
+    precip = p.precip ./u"m"
     pco2 = p.pco2 ./1.0u"atm"
     reactionrate = p.reactionrate ./u"m/yr"
     denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(state.ca)...)

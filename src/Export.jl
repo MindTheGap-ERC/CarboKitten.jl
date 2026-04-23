@@ -1,8 +1,15 @@
 # ~/~ begin <<docs/src/data-export.md#src/Export.jl>>[init]
 module Export
 
-export Data, DataSlice, DataColumn, Header, CSV, read_data, read_slice, read_column, data_export
+export Data, DataSlice, DataColumn, Header, CSV, read_data, read_slice,
+       read_column, data_export, 
+       header_from_input, dataslice_from_state,
+       header_from_input_exact, dataslice_from_state_exact, datavolume_from_state, datacolumn_from_state
 
+
+
+using ..CarboKitten
+using ..CarboKitten.Output.Abstract: Header as AbstractHeader, DataSlice as AbstractDataSlice, Axes, DataColumn 
 using HDF5
 import CSV: write as write_csv
 using TOML
@@ -12,6 +19,10 @@ using DataFrames
 using .Iterators: flatten
 
 using ..Output.Abstract
+using CarboKitten: box_axes
+using CarboKitten: time_axis
+using CarboKitten.Output.Abstract: Axes
+
 import ..Output.Abstract: data_kind
 
 const Rate = typeof(1.0u"m/Myr")
@@ -19,7 +30,9 @@ const Amount = typeof(1.0u"m")
 const Length = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
 
+
 const na = [CartesianIndex()]
+
 
 # ~/~ begin <<docs/src/data-export.md#export-specification>>[init]
 abstract type ExportSpecification end
@@ -30,6 +43,132 @@ end
 
 CSV(kwargs...) = CSV(IdDict(kwargs...))
 # ~/~ end
+
+
+
+
+struct DataSlice 
+    slice
+    write_interval::Int
+    disintegration
+    production
+    deposition
+    sediment_thickness
+	cumulative_subsidence
+	energy_hist
+end
+
+
+
+Base.@kwdef struct Header
+    tag::String
+    axes::Axes
+    Δt
+    time_steps::Int
+    grid_size::Tuple{Int, Int}
+    n_facies::Int
+    initial_topography
+    sea_level
+    subsidence_rate
+    data_sets::Dict
+end
+
+
+function header_from_input_exact(input)
+    t_axis = time_axis(input.time)       # Nt points
+    x_axis, y_axis = box_axes(input.box)
+
+    return Header(
+        input.tag,
+        Axes(x_axis, y_axis, t_axis),    # EXACT : Nt
+        input.time.Δt,
+        input.time.steps,                # EXACT : Nt−1
+        input.box.grid_size,
+        length(input.facies),
+        input.initial_topography,
+        input.sea_level.(t_axis),        # EXACT : Nt
+        input.subsidence_rate,
+        Dict()
+    )
+end
+
+
+function datacolumn_from_state(state;
+    x_index = 1,
+    y_index = 1,
+    write_interval = 1
+)
+    prod = cat(state.production_hist...;     dims=4) .* u"m"
+    dis  = cat(state.disintegration_hist...; dims=4) .* u"m"
+    dep  = cat(state.deposition_hist...;     dims=4) .* u"m"
+    sed  = cat(state.sediment_thickness_hist...; dims=3) .* u"m"
+
+    Nt1 = size(dep, 4)
+
+    return DataColumn(
+        (x_index, y_index),
+        write_interval,
+        dis[:, x_index, y_index, 1:Nt1],
+        prod[:, x_index, y_index, 1:Nt1],
+        dep[:, x_index, y_index, 1:Nt1],
+        sed[x_index, y_index, 1:Nt1]
+    )
+end
+
+
+
+
+function dataslice_from_state_exact(state; y_index=1, write_interval=1)
+
+    prod = cat(state.production_hist...;      dims=4)
+    dis  = cat(state.disintegration_hist...;  dims=4)
+    dep  = cat(state.deposition_hist...;      dims=4)
+    sed  = cat(state.sediment_thickness_hist...; dims=3)
+	subs = cat(state.cumulative_subsidence_hist...; dims=3)
+	wave = cat(state.energy_hist...; dims=3)
+    Nt1 = size(dep, 4)
+
+    return DataSlice(
+        (Colon(), y_index),
+        write_interval,
+        dis[:, :, y_index, 1:Nt1] .* u"m",
+        prod[:, :, y_index, 1:Nt1] .* u"m",
+        dep[:, :, y_index, 1:Nt1] .* u"m",
+        sed[:, y_index, 1:Nt1] .* u"m",
+        subs[:, y_index, 1:Nt1],    # ← NEW
+		wave[:, y_index, 1:Nt1] .* u"kW/m"
+    )
+end
+
+
+
+function datavolume_from_state(state; write_interval = 1)
+
+    prod = cat(state.production_hist...;     dims=4) .* u"m"
+    dis  = cat(state.disintegration_hist...; dims=4) .* u"m"
+    dep  = cat(state.deposition_hist...;     dims=4) .* u"m"
+    sed  = cat(state.sediment_thickness_hist...; dims=3) .* u"m"
+
+    Nt1 = size(dep, 4)
+
+    prod = prod[:,:,:,1:Nt1]
+    dis  = dis[:,:,:,1:Nt1]
+    dep  = dep[:,:,:,1:Nt1]
+    sed  = sed[:,:,1:Nt1]
+
+    return DataVolume(
+        (Colon(), Colon()),      # full XY slice
+        write_interval,
+        dis,
+        prod,
+        dep,
+        sed
+    )
+end
+
+
+
+
 
 function data_kind(gid::HDF5.Group)
 	slice = parse_multi_slice(attrs(gid)["slice"])
@@ -110,10 +249,7 @@ function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {d
 		gid["disintegration"][:, reduce.(slice)..., :] * u"m",
 		gid["production"][:, reduce.(slice)..., :] * u"m",
 		gid["deposition"][:, reduce.(slice)..., :] * u"m",
-		gid["sediment_thickness"][reduce.(slice)..., :] * u"m",
-		"active_layer" in keys(gid) ?
-		    gid["active_layer"][:, reduce.(slice)..., :] * u"m" :
-			nothing)
+		gid["sediment_thickness"][reduce.(slice)..., :] * u"m")
 end
 
 function read_data(D::Type{Val{dim}}, filename::AbstractString, group) where {dim}
@@ -181,6 +317,9 @@ age_depth_model(sac_df::DataFrame) =
                (sac => age_depth_model => adm
                 for (sac, adm) in zip(sac_cols, adm_cols))...)
     end
+	
+
+
 # ~/~ end
 # ~/~ begin <<docs/src/data-export.md#export-function>>[2]
 """
@@ -190,7 +329,7 @@ Compute the Stratigraphic Column for a given grid position `loc` and `facies` in
 Returns an `Array{Quantity, 2}` where the `Quantity` is in units of meters.
 """
 function stratigraphic_column(header::Header, column::DataColumn, facies::Int)
-	n_steps = size(column.production, 2)
+	n_steps = size(column.production, 2)	
     delta = column.deposition[facies,:] .- column.disintegration[facies,:]
 
 	for step in 1:n_steps
@@ -211,12 +350,7 @@ end
 # ~/~ begin <<docs/src/data-export.md#export-function>>[3]
 struct CSVExportTrait{S} end
 
-"""
-	data_export(spec::CSV, header::Header, data)
 
-Exports `data` to CSV. Here, `data` should be a collection or iterable
-of `DataColumn`.
-"""
 function data_export(spec::CSV, header::Header, data)
     for (key, filename) in spec.output_files
         if key == :metadata
@@ -258,6 +392,12 @@ function data_export(spec::CSV, header::Header, data)
     end
 end
 
+"""
+data_export(::Type{CSVExportTrait{S}}, header::Header, data::DataColumn, label) where {S}
+
+Retained as the column-joining export entry point while the surrounding export
+workflow was extended with state-based helpers.
+"""
 function data_export(::Type{CSVExportTrait{S}}, header::Header, data::DataColumn, label) where {S}
     error("Unknown CSV data export: `$(S)`")
 end
@@ -287,7 +427,7 @@ copied from `data.sediment_thickness`. Returns a `DataFrame` with `time` and
 """
 function extract_sac(header::Header, data::DataColumn, label)
     DataFrame(
-        "timestep" => 0:data.write_interval:header.time_steps,
+        "timestep" => 0:data.write_interval:header.time_steps, 
         "sac_$(label)" => data.sediment_thickness)
 end
 
@@ -300,7 +440,7 @@ Extract Stratigraphic Column (SC) from the data. Returns a `DataFrame` with
 function extract_sc(header::Header, data::DataColumn, label)
     n_facies = size(data.production)[1]
     DataFrame(
-        "timestep" => 0:data.write_interval:header.time_steps,
+        "timestep" => data.write_interval:data.write_interval:header.time_steps, 
         ("sc_$(label)_f$(f)" => stratigraphic_column(header, data, f)
          for f in 1:n_facies)...)
 end
@@ -315,12 +455,12 @@ function extract_wd(header::Header, data::DataColumn, label)
     na = [CartesianIndex()]
     t = header.axes.t[1:data.write_interval:end]
     sea_level = header.sea_level[1:data.write_interval:end]
-    wd = header.subsidence_rate .* t .-
-        header.initial_topography[data.slice...] .-
+    wd = header.subsidence_rate .* t .- 
+        header.initial_topography[data.slice...] .- 
         data.sediment_thickness .+
         sea_level
     return DataFrame(
-        "timestep" => 0:data.write_interval:header.time_steps,
+        "timestep" => 0:data.write_interval:header.time_steps, 
         "wd_$(label)" => wd)
 end
 # ~/~ end

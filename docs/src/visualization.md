@@ -91,6 +91,8 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
         error("expected argument `show` to be one of `:model`, `:preserved`, `:both`; got $(show)")
     end
 
+    prec = 10^-8 # prec. in m - below acc. is considered 0
+
     n_facies = size(data.production)[1]
     colormax(d) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 
@@ -101,36 +103,46 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
 
     ax.ylabel = "time [Myr]"
     ax.xlabel = "position [km]"
-
+    
     xkm = header.axes.x |> in_units_of(u"km")
     tmyr = header.axes.t[1:wi:end] |> in_units_of(u"Myr")
 
 
     ft = if show == :model
         dominant_facies = colormax(data.deposition)
+        dominant_facies = Matrix{Union{Missing, Int}}(dominant_facies)
+        dominant_facies[ wd .> 0] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies;
             colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
             colorrange=(0.5, n_facies + 0.5))
     elseif show == :preserved
         sc = stratigraphic_column(data)
         dominant_facies = colormax(sc)
+        dominant_facies = Matrix{Union{Missing, Int}}(dominant_facies)
+        combined_acc = dropdims(sum(sc, dims = 1), dims = 1) |> in_units_of(u"m")
+        dominant_facies[ combined_acc .< prec] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies;
             colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
             colorrange=(0.5, n_facies + 0.5))
     else
         sc = stratigraphic_column(data)
         dominant_facies_model = colormax(data.deposition)
+        dominant_facies_model = Matrix{Union{Missing, Int}}(dominant_facies_model)
+        dominant_facies_model[ wd .> 0] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies_model;
             colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
             colorrange=(0.5, n_facies + 0.5), alpha=0.3)
         dominant_facies_preserved = colormax(sc)
+        dominant_facies_preserved = Matrix{Union{Missing, Int}}(dominant_facies_preserved)
+        combined_acc = dropdims(sum(sc, dims = 1), dims = 1) |> in_units_of(u"m")
+        dominant_facies_preserved[ combined_acc .< prec] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies_preserved;
             colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
             colorrange=(0.5, n_facies + 0.5))
     end
 
-    contourf!(ax, xkm, tmyr, wd;
-        levels=[0.0, 10000.0], colormap=Reverse(:grays))
+    #contourf!(ax, xkm, tmyr, wd;
+    #    levels=[0.0, 10000.0], colormap=Reverse(:grays))
     #contour!(ax, xkm, tmyr, wd;
     #    levels=[0], color=:black, linewidth=2)
     return ft

@@ -9,7 +9,7 @@ const PATH = "data/output"
 
 const TAG = "diffusivity-example"
 
-cost min_diffusivity = 2.5u"m/yr"
+const min_diffusivity = 2.5u"m/yr"
 
 const FACIES = [
     ALCAP.Facies(

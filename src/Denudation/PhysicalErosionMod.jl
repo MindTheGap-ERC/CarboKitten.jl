@@ -5,6 +5,7 @@ import ..Abstract: DenudationType, denudation, redistribution
 using ...Stencil: Boundary, Periodic, offset_value, offset_index, stencil
 using ...BoundaryTrait
 using ...Boxes: Box
+using CarboKitten.SedimentStack: peek_sediment
 
 using Unitful
 
@@ -13,8 +14,8 @@ using Unitful
 const Amount = typeof(1.0u"m")
 
 # ~/~ begin <<docs/src/denudation/physical_erosion.md#physical-erosion>>[init]
-function physical_erosion(slope::Float64, inf::Float64, erodibility::Any)
-    -1 * -erodibility .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3)
+function physical_erosion(slope::Float64, inf::Float64, erodibility::typeof(1.0u"m/yr"))
+    -1 * erodibility .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3)
 end
 # ~/~ end
 
@@ -75,16 +76,26 @@ function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth) w
 
 end
 
-function denudation(::Box, p::PhysicalErosion, water_depth::Any, slope, facies, state)
-    denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(slope)...)
+function denudation(::Box, p::PhysicalErosion, water_depth::Array{Float64}, slope, facies, state)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(slope)...)
 
-    for idx in CartesianIndices(state.ca)
-        f = state.ca[idx]
-        if f == 0
+    for idx in CartesianIndices(state.active_layer[1,:,:])
+
+        # for now, look at the top 1m of sediment (if there is some)
+        buffer_facies = peek_sediment(state.sediment_buffer[:,:,idx], 1.0)
+
+        # get the av. facies composition or the max?
+
+        # try max to begin with
+        max_f = findmax(buffer_facies)
+        f = max_f[2]
+
+        # if there's no sediment to denudate
+        if max_f[1] == 0.0
             continue
         end
         if water_depth[idx] <= 0
-            denudation_rate[f, idx[1], idx[2]] = physical_erosion.(slope[idx], facies[f].infiltration_coefficient, facies[f].erodibility)
+            denudation_rate[idx[1], idx[2]] = physical_erosion.(slope[idx], facies[f].infiltration_coefficient, facies[f].erodibility)
         end
     end
 

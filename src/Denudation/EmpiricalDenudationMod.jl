@@ -3,6 +3,8 @@ module EmpiricalDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
 using ...Boxes: Box
+using CarboKitten.SedimentStack: peek_sediment
+
 using Unitful
 export slope_kernel
 # ~/~ begin <<docs/src/denudation/empirical.md#empirical-denudation>>[init]
@@ -36,15 +38,24 @@ end
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, state)
     precip = p.precip ./ u"m/yr"
-    denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(slope)...)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(slope)...)
 
-    for idx in CartesianIndices(state.ca)
-        f = state.ca[idx]
-        if f == 0
+    # look at top of the sediment buffer
+    buffer_facies = peek_sediment(state.sediment_buffer, 1.0)
+
+    for idx in CartesianIndices(state.active_layer[1,:,:])
+        # get the av. facies composition or the max?
+        # try max to begin with
+        max_f = findmax(buffer_facies[:,idx])
+        
+        f = max_f[2]
+
+        # if there's no sediment to denudate, don't do denudation
+        if max_f[1] == 0.0 || isnan(max_f[1])
             continue
         end
         if water_depth[idx] <= 0
-            denudation_rate[f,idx] = empirical_denudation.(precip, slope[idx])
+            denudation_rate[idx] = empirical_denudation.(precip, slope[idx])
         end
     end
     return denudation_rate

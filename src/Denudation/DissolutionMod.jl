@@ -4,6 +4,8 @@ module DissolutionMod
 import ..Abstract: DenudationType, denudation, redistribution
 using ...BoundaryTrait: Boundary
 using ...Boxes: Box
+using CarboKitten.SedimentStack: peek_sediment
+
 export Dissolution
 using Unitful
 
@@ -55,15 +57,24 @@ function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state
     precip = p.precip ./ u"m/yr"
     pco2 = p.pco2 ./1.0u"atm"
     reactionrate = p.reactionrate ./u"m/yr"
-    denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(state.ca)...)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(state.active_layer[1,:,:])...)
+    
+    # look at top of the sediment buffer
+    buffer_facies = peek_sediment(state.sediment_buffer, 1.0)
 
-    for idx in CartesianIndices(state.ca)
-        f = state.ca[idx]
-        if f == 0
+    for idx in CartesianIndices(state.active_layer[1,:,:])
+        # get the av. facies composition or the max?
+        # try max to begin with
+        max_f = findmax(buffer_facies[:,idx])
+        
+        f = max_f[2]
+
+        # if there's no sediment to denudate, don't do denudation
+        if max_f[1] == 0.0 || isnan(max_f[1])
             continue
         end
         if water_depth[idx] <= 0
-            denudation_rate[f, idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[f])
+            denudation_rate[idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[f])
         end
     end
     return denudation_rate

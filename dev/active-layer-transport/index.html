@@ -53,31 +53,28 @@ const PATH = &quot;data/output&quot;
 
 const TAG = &quot;diffusivity-example&quot;
 
-cost min_diffusivity = 2.5u&quot;m/yr&quot;
+const min_diffusivity = 2.5u&quot;m/yr&quot;
 
 const FACIES = [
     ALCAP.Facies(
-        viability_range = (4, 10),
-        activation_range = (6, 10),
-        maximum_growth_rate=500u&quot;m/Myr&quot;,
-        extinction_coefficient=0.8u&quot;m^-1&quot;,
-        saturation_intensity=60u&quot;W/m^2&quot;,
+        production = BenthicProduction(
+            maximum_growth_rate=500u&quot;m/Myr&quot;,
+            extinction_coefficient=0.8u&quot;m^-1&quot;,
+            saturation_intensity=60u&quot;W/m^2&quot;),
         transport_coefficient=4*min_diffusivity,
         name=&quot;euphotic&quot;),
     ALCAP.Facies(
-        viability_range = (4, 10),
-        activation_range = (6, 10),
-        maximum_growth_rate=400u&quot;m/Myr&quot;,
-        extinction_coefficient=0.1u&quot;m^-1&quot;,
-        saturation_intensity=60u&quot;W/m^2&quot;,
+        production = BenthicProduction(
+            maximum_growth_rate=400u&quot;m/Myr&quot;,
+            extinction_coefficient=0.1u&quot;m^-1&quot;,
+            saturation_intensity=60u&quot;W/m^2&quot;),
         transport_coefficient=min_diffusivity,
         name=&quot;oligophotic&quot;),
     ALCAP.Facies(
-        viability_range = (4, 10),
-        activation_range = (6, 10),
-        maximum_growth_rate=100u&quot;m/Myr&quot;,
-        extinction_coefficient=0.005u&quot;m^-1&quot;,
-        saturation_intensity=60u&quot;W/m^2&quot;,
+        production = BenthicProduction(
+            maximum_growth_rate=100u&quot;m/Myr&quot;,
+            extinction_coefficient=0.005u&quot;m^-1&quot;,
+            saturation_intensity=60u&quot;W/m^2&quot;),
         transport_coefficient=2*min_diffusivity,
         name=&quot;aphotic&quot;),
 
@@ -126,8 +123,7 @@ end
 
 end
 
-Diffusivity_example.main()
-</code></pre></details><p><img src="../fig/diffusivity-alternative.png" alt="Effects of differences in diffusivity on facies distribution in an example of the ALCAP model"/></p><details><summary>Proportion of transported facies 1 to all sediment</summary><div class="noweb-label">file:<i>examples/model/diffusivity/plot_transported_fraction.jl</i></div><pre><code class="language- julia hljs">module Transported_fraction
+Diffusivity_example.main()</code></pre></details><p><img src="../fig/diffusivity-alternative.png" alt="Effects of differences in diffusivity on facies distribution in an example of the ALCAP model"/></p><details><summary>Proportion of transported facies 1 to all sediment</summary><div class="noweb-label">file:<i>examples/model/diffusivity/plot_transported_fraction.jl</i></div><pre><code class="language- julia hljs">module Transported_fraction
 using GLMakie
 using CarboKitten.Export: read_slice
 using CarboKitten.Visualization: profile_plot!
@@ -1157,4 +1153,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Literature on active (or mixing) layer transport modeling is vast. Most of which is concerned with much smaller time scales, and more complicated physics than we are mostly dealing with.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Note that in other approaches to active layer transport, like Paola 1992, there would be a factor <span>$1/C_f$</span>. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../components/sediment_buffer/">« Sediment Buffers</a><a class="docs-footer-nextpage" href="../onshore-transport/">Onshore Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 4 May 2026 12:06">Monday 4 May 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Literature on active (or mixing) layer transport modeling is vast. Most of which is concerned with much smaller time scales, and more complicated physics than we are mostly dealing with.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Note that in other approaches to active layer transport, like Paola 1992, there would be a factor <span>$1/C_f$</span>. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../components/sediment_buffer/">« Sediment Buffers</a><a class="docs-footer-nextpage" href="../onshore-transport/">Onshore Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 4 May 2026 12:12">Monday 4 May 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

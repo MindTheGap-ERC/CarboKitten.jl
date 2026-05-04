@@ -24,7 +24,7 @@ const slope = 30
 function main()
     precip = collect(0.4:0.01:2.0)
 
-    result = Vector{typeof(1.0u&quot;m/Myr&quot;)}(undef,size(precip))
+    result = Vector{typeof(1.0u&quot;m/yr&quot;)}(undef,size(precip))
 
     for i in eachindex(precip)
         result[i] = empirical_denudation(precip[i],slope)
@@ -39,7 +39,7 @@ end
 end
 
 EmpiricalSpec.main()</code></pre></details><p>This function needs two inputs: precipitation and slope. The precipitation is defined as an input parameter in <code>EmpiricalDenudation</code>.</p><div class="noweb-label">⪡empirical-denudation⪢≣</div><pre><code class="language- julia hljs">@kwdef struct EmpiricalDenudation &lt;: DenudationType
-    precip::typeof(1.0u&quot;m&quot;)
+    precip::typeof(1.0u&quot;m/yr&quot;)
 end</code></pre><p>The slope for each cell is calculated by comparing the height (or water-depth) with the neighboring 8 cells, and is implemented in function <code>slope_kernel</code>. The slope is returned in degrees of inclination. This approach has been widely used in industry and <a href="https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-slope-works.htm">ArcGis: how slope works</a> is an example.</p><div class="noweb-label">⪡empirical-denudation⪢≣</div><pre><code class="language- julia hljs">function slope_kernel(w::Any, cellsize::Float64)
     dzdx = (-w[1, 1] - 2 * w[2, 1] - w[3, 1] + w[1, 3] + 2 * w[2, 3] + w[3, 3]) / (8 * cellsize)
     dzdy = (-w[1, 1] - 2 * w[1, 2] - w[1, 3] + w[3, 1] + 2 * w[3, 2] + w[1, 1]) / (8 * cellsize)
@@ -58,7 +58,7 @@ export slope_kernel
 &lt;&lt;empirical-denudation&gt;&gt;
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, state)
-    precip = p.precip ./ u&quot;m&quot;
+    precip = p.precip ./ u&quot;m/yr&quot;
     denudation_rate = zeros(typeof(1.0u&quot;m/Myr&quot;), length(facies), size(slope)...)
 
     for idx in CartesianIndices(state.ca)
@@ -82,4 +82,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../denudation/">« Denudation</a><a class="docs-footer-nextpage" href="../chemical/">Chemical Dissolution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 22 April 2026 20:41">Wednesday 22 April 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../denudation/">« Denudation</a><a class="docs-footer-nextpage" href="../chemical/">Chemical Dissolution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 4 May 2026 11:55">Monday 4 May 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

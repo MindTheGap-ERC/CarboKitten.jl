@@ -42,7 +42,7 @@ const na = [CartesianIndex()]
 
 elevation(h::Header, d::DataSlice) =
     let bl = h.initial_topography[d.slice..., na],
-        sr = h.axes.t[end] * h.subsidence_rate
+        sr = (h.axes.t[end] - h.axes.t[1]) * h.subsidence_rate
 
         bl .+ d.sediment_thickness .- sr
     end

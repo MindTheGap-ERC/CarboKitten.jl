@@ -125,7 +125,7 @@ Similar to `push_sediment!` we have `pop_sediment!`. We give `pop_sediment!` the
         return zeros(F, size(col)[2])
     end
 
-    @assert mass < bucket "pop_fraction can only pop from the top cell: $(col), $(Δ)"
+    @assert mass < bucket "pop_fraction can only pop from the top cell: $(col), $(mass)"
     parcel = (mass / bucket) .* col[1,:]
     col[1,:] .-= parcel
     return parcel

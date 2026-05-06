@@ -55,7 +55,7 @@ const slope = 30
 function main()
     precip = collect(0.4:0.01:2.0)
 
-    result = Vector{typeof(1.0u"m/Myr")}(undef,size(precip))
+    result = Vector{typeof(1.0u"m/yr")}(undef,size(precip))
 
     for i in eachindex(precip)
         result[i] = empirical_denudation(precip[i],slope)
@@ -79,7 +79,7 @@ This function needs two inputs: precipitation and slope. The precipitation is de
 
 ``` {.julia #empirical-denudation}
 @kwdef struct EmpiricalDenudation <: DenudationType
-    precip::typeof(1.0u"m")
+    precip::typeof(1.0u"m/yr")
 end
 ```
 
@@ -110,7 +110,7 @@ export slope_kernel
 <<empirical-denudation>>
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, state)
-    precip = p.precip ./ u"m"
+    precip = p.precip ./ u"m/yr"
     denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(slope)...)
 
     for idx in CartesianIndices(state.ca)

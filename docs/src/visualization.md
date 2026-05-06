@@ -103,7 +103,7 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
 
     ax.ylabel = "time [Myr]"
     ax.xlabel = "position [km]"
-    
+
     xkm = header.axes.x |> in_units_of(u"km")
     tmyr = header.axes.t[1:wi:end] |> in_units_of(u"Myr")
 
@@ -114,7 +114,8 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
         dominant_facies[ wd .> 0] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies;
             colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5))
+            colorrange=(0.5, n_facies + 0.5),
+            nan_color=:white)
     elseif show == :preserved
         sc = stratigraphic_column(data)
         dominant_facies = colormax(sc)
@@ -123,7 +124,8 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
         dominant_facies[ combined_acc .< prec] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies;
             colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5))
+            colorrange=(0.5, n_facies + 0.5),
+            nan_color=:white)
     else
         sc = stratigraphic_column(data)
         dominant_facies_model = colormax(data.deposition)
@@ -131,14 +133,16 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
         dominant_facies_model[ wd .> 0] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies_model;
             colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5), alpha=0.3)
+            colorrange=(0.5, n_facies + 0.5), alpha=0.3,
+            nan_color=:white)
         dominant_facies_preserved = colormax(sc)
         dominant_facies_preserved = Matrix{Union{Missing, Int}}(dominant_facies_preserved)
         combined_acc = dropdims(sum(sc, dims = 1), dims = 1) |> in_units_of(u"m")
         dominant_facies_preserved[ combined_acc .< prec] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies_preserved;
             colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5))
+            colorrange=(0.5, n_facies + 0.5),
+            nan_color=:transparent)
     end
 
     #contourf!(ax, xkm, tmyr, wd;

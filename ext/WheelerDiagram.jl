@@ -76,7 +76,7 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
 
     ax.ylabel = "time [Myr]"
     ax.xlabel = "position [km]"
-    
+
     xkm = header.axes.x |> in_units_of(u"km")
     tmyr = header.axes.t[1:wi:end] |> in_units_of(u"Myr")
 

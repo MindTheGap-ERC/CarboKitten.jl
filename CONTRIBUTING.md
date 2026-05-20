@@ -19,11 +19,21 @@ If you think you found a mistake in the documentation, or are unsure whether you
 
 ### Contributing code and features
 
-Would you like to contribute a new feature to the code base, or improve existing code? Then fork the repository, add your features, and submit a pull request using the "enhancement" label. We will decide on a case-by-case basis if the pull request is accepted or not. This will be discussed with all active authors and contributers to the code base. Criteria for inclusion of new code are code quality, clarity and utility of the features, and whether the new feature enhances the original idea of the code base. If you are unsure if your feature would fit into the codebase, please use GitHub issues to discuss your idea (using the "enhancement" label) so we can give you feedback.
+Would you like to contribute a new feature to the code base, or improve existing code? Then fork the repository, add your features, and submit a pull request using the "enhancement" label. We will decide on a case-by-case basis if the pull request is accepted or not. Criteria for inclusion of new code are:
+
+1. code quality, 
+
+2. adequate documentation (ideally using the existing system, entangled, but if you need help in using it, please submit a draft PR without it), 
+
+3. the new code should follow CarboKitten's architecture,
+
+4. passing already existing tests. 
+
+If you are unsure if your feature would fit into the codebase, please use GitHub issues to discuss your idea (using the "enhancement" label) so we can give you feedback.
 
 While this is not a criterion for code inclusion, we strongly encourage that each new feature includes tests that ensure that the feature works as intended and integrates with the existing codebase seamlessly.
 
-To summarize:
+#### The ideal workflow: 
 
 1. **issue first** Before contributing a new feature, it is best to always open an issue before opening a PR. This way we can discuss viability, API choices and even implementation details before you put in too much work up front. Don't be afraid to contact us early in the process.
 2. **be consistent** While we don't have strict rules on code formatting, it is important to be consistent with the existing style and architecture of CarboKitten. Please read the architecture documentation to learn about some of the choices we made in making CarboKitten modular. This also applies if your contribution involves new data sets. If you are uncertain about coding style and formatting, it may be helpful to use an automatic code formatter like [`JuliaFormatter.jl`](https://juliaeditorsupport.github.io/JuliaFormatter.jl/stable/). Be careful though not to reformat unrelated code, as that would infringe on the next point.

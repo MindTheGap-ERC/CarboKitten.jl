@@ -69,6 +69,7 @@ Entangled.transpile_file.(joinpath(@__DIR__, "src"), sources, path)
 run(`touch $(joinpath(path, "first_tutorial.md"))`)
 copydir(joinpath(@__DIR__, "src/fig"), joinpath(path, "fig"))
 mkpath(joinpath(path, "assets"))
+cp(joinpath(@__DIR__, "..", "CONTRIBUTING.md"), joinpath(path, "CONTRIBUTING.md"))
 cp(joinpath(@__DIR__, "src", "fig", "logo.svg"), joinpath(path, "assets", "logo.svg"))
 
 makedocs(
@@ -91,7 +92,10 @@ makedocs(
             "Tabular Sea Levels" => "cases/tabular-sea-level.md",
             "Initial Topography" => "initial-topography.md",
         ],
-        "Architecture" => "architecture.md",
+        "Developer" => [
+            "CONTRIBUTING.md",
+            "architecture.md",
+        ],
         "Model Components" => [
             "Components" => "components/components.md",
             "Tags" => "components/tag.md",

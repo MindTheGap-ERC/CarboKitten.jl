@@ -30,54 +30,7 @@ end
 
 Here `disintegration` is the amount of sediment that was disintegrated, `production` the amount of sediment produced in situ, and `deposition` the amount of sediment deposited from the active layer. The only reason why this `Frame` is passed on, is for later storage. So the only routine that needs to understand the `Frame` structure is the `write_frame` method belonging to your output writer (currently `H5Writer` or `MemoryOutput`).
 
-## Components
-
-A model in CarboKitten is composed of components. Each component extends the `Input` and/or `State` data structures with members and can also provide functions that work on those elements. Components can inherit from each other. For instance, the `WaterDepth` component inherits from `Boxes` component to have a notion of the grid size, and the `TimeIntegration` component to obtain a time coordinate from the state.
-
-A component has the following syntax:
-
-```julia
-@compose module MyComponent
-    @mixin DependencyA, DependencyB
-    using ..Common
-
-    @kwdef struct Input <: AbstractInput
-        ...
-    end
-
-    @kwdef struct State <: AbstractState
-        ...
-    end
-
-    ...
-end
-```
-
-Here the `Common` module is a normal Julia module living in the same scope as the component. This `Common` module contains common definitions used throughout the CarboKitten code base.
-
-### Module Mixins
-
-CarboKitten uses a non-idiomatic method of abstraction to structure the components. The `@compose` macro is rather special. It takes care of a form of inheritance that is normally absent in the Julia language. All the modules that are mentioned in a `@mixin` clause will be merged into a single module, where all the structs that were defined in those modules are combined. This allows us to layer our code, separating concerns.
-
-The problem is that this abstraction is neither idiomatic for those used to Julia nor those used to traditional object oriented languages. These layers together build two major important structures: `Input` and `State`. This includes any nested data structures (mainly `Facies` for the input data).
-
-| Component  | Input                | Facies            | State             |
-| ---------- | -------------------- | ----------------- | ----------------- |
-| Boxes      | `box`                |                   |                   |
-| FaciesBase | `facies`             | `label = Nothing` |                   |
-| Time       | `time`               |                   | `step`            |
-| WaterDepth | `sea_level`          |                   | `sediment_height` |
-|            | `initial_topography` |                   |                   |
-|            | `subsidence_rate`    |                   |                   |
-| etc.       |                      |                   |                   |
-
-The Julia language allows us to work with abstract interfaces by using dispatch, but it has no built-in method to compose fully formed concrete structures like this. Note that the `WaterDepth` component defines `subsidence_rate`, but to compute water depth from that, we need to know the time. This is why the `WaterDepth` component depends/inherits/mixins the `Time` component.
-
-Each component is automatically documented with a graph that shows the components it inherits from and which members it adds to the structs.
-
-Because this mechanism is highly idiosyncratic, we're still exploring other ways to modularize CarboKitten.
-
-## Model run
+### Model run
 A model run is nothing but a loop running the `step!` function `n` times. The `run_model` method is overloaded to provide multiple levels of abstraction. In its most basic form, the `for` loop is abstracted into a `do` block, so we can run:
 
 ```julia
@@ -129,3 +82,66 @@ using Logging: with_logger
 
 end
 ```
+
+## Components
+
+A model in CarboKitten is composed of components. Each component extends the `Input` and/or `State` data structures with members and can also provide functions that work on those elements. Components can inherit from each other. For instance, the `WaterDepth` component inherits from `Boxes` component to have a notion of the grid size, and the `TimeIntegration` component to obtain a time coordinate from the state.
+
+A component has the following syntax:
+
+```julia
+@compose module MyComponent
+    @mixin DependencyA, DependencyB
+    using ..Common
+
+    @kwdef struct Input <: AbstractInput
+        ...
+    end
+
+    @kwdef struct State <: AbstractState
+        ...
+    end
+
+    ...
+end
+```
+
+Here the `Common` module is a normal Julia module living in the same scope as the component. This `Common` module contains common definitions used throughout the CarboKitten code base.
+
+### Module Mixins
+
+CarboKitten uses a non-idiomatic method of abstraction to structure the components. The `@compose` macro is rather special. It takes care of a form of inheritance that is normally absent in the Julia language. All the modules that are mentioned in a `@mixin` clause will be merged into a single module, where all the structs that were defined in those modules are combined. This allows us to layer our code, separating concerns.
+
+The problem is that this abstraction is neither idiomatic for those used to Julia nor those used to traditional object oriented languages. These layers together build two major important structures: `Input` and `State`. This includes any nested data structures (mainly `Facies` for the input data).
+
+| Component  | Input                | Facies            | State             |
+| ---------- | -------------------- | ----------------- | ----------------- |
+| Boxes      | `box`                |                   |                   |
+| FaciesBase | `facies`             | `label = Nothing` |                   |
+| Time       | `time`               |                   | `step`            |
+| WaterDepth | `sea_level`          |                   | `sediment_height` |
+|            | `initial_topography` |                   |                   |
+|            | `subsidence_rate`    |                   |                   |
+| etc.       |                      |                   |                   |
+
+The Julia language allows us to work with abstract interfaces by using dispatch, but it has no built-in method to compose fully formed concrete structures like this. Note that the `WaterDepth` component defines `subsidence_rate`, but to compute water depth from that, we need to know the time. This is why the `WaterDepth` component depends/inherits/mixins the `Time` component.
+
+Each component is automatically documented with a graph that shows the components it inherits from and which members it adds to the structs.
+
+## External Data
+
+CarboKitten includes some datasets for convenience and to reproduce examples in the documentation. This data resides in a separate repository [MindTheGap-ERC/CarboKittenData](https://github.com/MindTheGap-ERC/CarboKittenData), and is managed through the [Artifacts subsystem](https://pkgdocs.julialang.org/v1/artifacts/) of Julia's package manager. If you want to add a dataset to CarboKitten these are the steps:
+
+1. Check with us if the addition is justified (through an issue on Github).
+2. Check that the data is available under a permissive license.
+2. Add the data to [MindTheGap-ERC/CarboKittenData](https://github.com/MindTheGap-ERC/CarboKittenData) by opening a PR.
+3. After the PR is merged, we make a new release of CarboKittenData.
+4. Open a PR on CarboKitten.jl where you:
+    - Update the `Artifacts.toml` file to match the new release and digest key in a separate PR on CarboKitten.jl.
+    - Add a function to `src/DataSets.jl` for ease of use.
+
+These steps are a little more involved than contributing only code, but the help making results obtained from CarboKitten more reproducible.
+
+## Visualisation
+
+All visualisation in CarboKitten is provided through the use of [Makie.jl](https://docs.makie.org/stable/). Since Makie is a large dependency and is not strictly needed for the operation of CarboKitten, Makie is made a weak dependency through [Julia's extension mechanism](https://pkgdocs.julialang.org/v1/creating-packages/). This works as follows: the `CarboKitten.Visualization` module exports a number of functions that are left unimplemented. Only if CarboKitten and Makie are both imported is the extension loaded. Then the method stubs in `CarboKitten.Visualization` are extended through multiple dispatch.

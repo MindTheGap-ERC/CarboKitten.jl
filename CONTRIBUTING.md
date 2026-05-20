@@ -33,20 +33,20 @@ If you are unsure if your feature would fit into the codebase, please use GitHub
 
 While this is not a criterion for code inclusion, we strongly encourage that each new feature includes tests that ensure that the feature works as intended and integrates with the existing codebase seamlessly.
 
-#### The ideal workflow: 
+#### Wishlist for The Perfect Contributor (be it you or me) 
 
-1. **issue first** Before contributing a new feature, it is best to always open an issue before opening a PR. This way we can discuss viability, API choices and even implementation details before you put in too much work up front. Don't be afraid to contact us early in the process.
+1. **issue first** Before contributing a new feature, it is best to always open an issue before opening a PR. This way we can discuss viability, API choices and even implementation details before you put in too much work up front. Don't be afraid to contact us early in the process. Public discussion of features is part of the Open Source process and helps avoid duplicate requests.
 2. **be consistent** While we don't have strict rules on code formatting, it is important to be consistent with the existing style and architecture of CarboKitten. Please read the architecture documentation to learn about some of the choices we made in making CarboKitten modular. This also applies if your contribution involves new data sets. If you are uncertain about coding style and formatting, it may be helpful to use an automatic code formatter like [`JuliaFormatter.jl`](https://juliaeditorsupport.github.io/JuliaFormatter.jl/stable/). Be careful though not to reformat unrelated code, as that would infringe on the next point.
 3. **be atomic** CarboKitten is designed to be modular to its core. Make sure that both the issue and the related PR describe and implement a single feature. If your work can be split up in multiple features, please do. You can create sub-issues to indicate that a feature is related to a larger goal. There is no lower limit to the amount of code that can change in a PR.
-4. **be clean** In the process of development you may leave pieces of code that are no longer useful, especially when the code has been modified by coding agents. When you submit code for review, take care that the code is readable and free of unwanted distractions.
-5. **document** Make sure your new feature is documented including working examples.
+4. **be clean** In the process of development you may leave pieces of code that are no longer useful, especially when the code has been modified by coding agents. When you submit code for review, take care that the code is readable and free of unwanted distractions, such as commented out lines or unused objects.
+5. **document** Make sure your new feature is documented, including working examples.
 6. **test** Include automated tests to check for code correctness (CarboKitten does not have 100% test coverage, but this is something we want to improve, gardening style).
 
-We understand that most of our users and contributors are scientists and not software engineers. We are always willing to guide you in adhering to these criteria.
+We understand that most of our users and contributors are scientists and not software engineers. We are always willing to guide you in adhering to these criteria. Use draft pull requests freely to discuss half-finished contributions if you get stuck.
 
 ## Code quality checklist
 
-Though many of these things are checked in CI, please pay attention to the following guide lines:
+Though many of these things are checked in CI, please pay attention to the following guidelines:
 
 - Unit tests should pass: run `make test` before pushing to an active PR.
 - Documentation should build: run `make docs` before pushing to an active PR.

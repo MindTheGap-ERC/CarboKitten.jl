@@ -81,6 +81,11 @@ Retrieve the time values for which output was/will be written. Returns a range.
 """
 time_axis(time::TimeProperties) = (0:n_writes(time)) .* time.Δt .+ time.t0
 
+module Interfaces
+include("./Interfaces/Chunks.jl")
+include("./Interfaces/SedimentBuffers.jl")
+import .SedimentBuffers: push_sediment!, pop_sediment!, peek_sediment
+end
 
 module Algorithms
 include("./Algorithms/RangeFinder.jl")
@@ -93,6 +98,8 @@ include("./Algorithms/Skeleton.jl")
 import .Skeleton: skeleton
 include("./Algorithms/Romberg.jl")
 import .Romberg: romberg
+include("./Algorithms/CopyBuffers.jl")
+include("./Algorithms/CircularBuffers.jl")
 end
 
 include("./BoundaryTrait.jl")
@@ -100,7 +107,6 @@ include("./Vectors.jl")
 include("./Boxes.jl")
 include("./Config.jl")
 include("./Stencil.jl")
-include("./SedimentStack.jl")
 include("./Utility.jl")
 include("./DataSets.jl")
 include("./Production.jl")

@@ -1,12 +1,12 @@
-# ~/~ begin <<docs/src/components/sediment_buffer.md#src/SedimentStack.jl>>[init]
-module SedimentStack
+# ~/~ begin <<docs/src/algorithms/copying_stack.md#src/Algorithms/CopyBuffers.jl>>[init]
+module CopyBuffers
 
-export push_sediment!, pop_sediment!, peek_sediment
+module Internal
 
-# ~/~ begin <<docs/src/components/sediment_buffer.md#sediment-stack-impl>>[init]
+# ~/~ begin <<docs/src/algorithms/copying_stack.md#sediment-stack-impl>>[init]
 function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F <: Real
     @assert size(col, 2) == length(parcel) "column $(size(col)) doesn't match parcel $(size(parcel))"
-    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[init]
+    # ~/~ begin <<docs/src/algorithms/copying_stack.md#push-sediment>>[init]
     mass = sum(parcel)
     if mass == 0.0
         return
@@ -19,17 +19,17 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
         return
     end
     # ~/~ end
-    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[1]
+    # ~/~ begin <<docs/src/algorithms/copying_stack.md#push-sediment>>[1]
     bucket = sum(col[1, :])
     @assert bucket >= 0.0 && bucket <= 1.0
     # ~/~ end
-    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[2]
+    # ~/~ begin <<docs/src/algorithms/copying_stack.md#push-sediment>>[2]
     if bucket + mass < 1.0
         col[1,:] .+= parcel
         return
     end
     # ~/~ end
-    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[3]
+    # ~/~ begin <<docs/src/algorithms/copying_stack.md#push-sediment>>[3]
     frac = parcel ./ mass
     col[1,:] .+= frac .* (1.0 - bucket)
     mass -= (1.0 - bucket)
@@ -37,7 +37,7 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
     
     col[n+2:end,:] .= col[1:end-n-1,:]
     # ~/~ end
-    # ~/~ begin <<docs/src/components/sediment_buffer.md#push-sediment>>[4]
+    # ~/~ begin <<docs/src/algorithms/copying_stack.md#push-sediment>>[4]
     na = [CartesianIndex()]
     col[2:n+1,:] .= frac[na,:]
     mass -= n
@@ -45,7 +45,7 @@ function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where
     # ~/~ end
 end
 # ~/~ end
-# ~/~ begin <<docs/src/components/sediment_buffer.md#sediment-stack-impl>>[1]
+# ~/~ begin <<docs/src/algorithms/copying_stack.md#sediment-stack-impl>>[1]
 @inline function pop_fraction(col::AbstractMatrix{F}, mass::F) where F <: Real
     bucket = sum(col[1,:])
     if mass == 0 || bucket == 0
@@ -59,7 +59,7 @@ end
 end
 
 function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
-    # ~/~ begin <<docs/src/components/sediment_buffer.md#pop-sediment>>[init]
+    # ~/~ begin <<docs/src/algorithms/copying_stack.md#pop-sediment>>[init]
     bucket = sum(col[1,:])
     @assert bucket >= 0.0
     
@@ -67,7 +67,7 @@ function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vect
       return pop_fraction(col, Δ)
     end
     # ~/~ end
-    # ~/~ begin <<docs/src/components/sediment_buffer.md#pop-sediment>>[1]
+    # ~/~ begin <<docs/src/algorithms/copying_stack.md#pop-sediment>>[1]
     parcel = copy(col[1,:])
     Δ -= bucket
     n = floor(Int64, Δ)
@@ -89,14 +89,6 @@ function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vect
     # ~/~ end
 end
 # ~/~ end
-
-function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) where F <: Real
-  _, x, y = size(p)
-  @assert size(sediment, 2) == size(p, 1) "shapes for sediment $(size(sediment)) doesn't match p $(size(p))"
-  @views for i in CartesianIndices((x, y))
-    push_sediment!(sediment[:, :, i[1], i[2]], p[:, i[1], i[2]])
-  end
-end
 
 function peek_sediment(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
   if Δ == 0
@@ -137,5 +129,32 @@ function pop_sediment!(cols::AbstractArray{F, 4}, amount::AbstractArray{F, 2}, o
   end
 end
 
-end # module
+end  # module Internal
+
+import ...Interfaces.SedimentBuffers: push_sediment!, pop_sediment!, peek_sediment
+using ...Interfaces.Chunks
+
+struct CopyBuffer{F}
+    data::Array{Float64, 4}
+end
+
+function push_sediment!(buffer::CopyBuffer{F}, sediment::AbstractArray{F, 3}, chunk::Serial) where F
+    @views for i in CartesianIndices(normalize(chunk.slice, buffer.data)...)
+        Internal.push_sediment!(buffer.data[:, :, i[1], i[2]], p[:, i[1], i[2]])
+    end
+end
+
+function pop_sediment!(buffer::CopyBuffer, amount::AbstractArray{F, 2}, out::AbstractArray{F, 3}, chunk::Serial) where F
+    @views for i in CartesianIndices(normalize(chunk.slice, buffer.data)...)
+        out[:, i[1], i[2]] = Internal.pop_sediment!(buffer.data[:, :, i[1], i[2]], amount[i])
+    end
+end
+
+function peek_sediment(buffer::CopyBuffer, amount::AbstractArray{F, 2}, out::AbstractArray{F, 3}, chunk::Serial) where F
+    @views for i in CartesianIndices(normalize(chunk.slice, buffer.data)...)
+        out[:, i[1], i[2]] = Internal.peek_sediment(buffer.data[:, :, i[1], i[2]], amount[i])
+    end
+end
+
+end  # module CopyBuffers
 # ~/~ end

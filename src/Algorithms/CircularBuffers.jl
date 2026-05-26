@@ -1,42 +1,4 @@
-# Circular Stack
-
-We push sediment to a buffer for storage. This buffer can be implemented in two ways: a copying stack or a circular buffer. The copying stack has the advantage of predictable memory access patterns, but needs to copy the entire column when a cell overflows.
-
-``` {.julia #circular-buffer}
-import ...Interfaces.SedimentBuffers: push_sediment!, pop_sediment!
-
-using ...Interfaces.Chunks
-using Adapt: @adapt_structure
-
-# Here D is the buffer depth and N is the number of facies.
-# SB should have shape [D, N, box.grid_size...] and BH should have shape = box.grid_size
-# By encoding these numbers into the type, we can store facies vectors statically
-struct CircularBuffer{D,N,SB,BH}
-    data::SB
-    heads::BH
-end
-
-const CircularBufferHost{D, N} = CircularBuffer{D, N, Array{Float32, 4}, Array{Int32, 2}}
-
-@adapt_structure CircularBuffer
-
-function initial_state(input)
-    n_f = length(input.facies)
-    n_b = input.sediment_buffer_size
-    n_g = input.box.grid_size
-    CircularBufferHost{n_b, n_f}(
-        zeros(Float32, n_b, n_f, n_g...),
-        zeros(Int32, n_g...))
-end
-```
-
-The sediment buffer is encoded as a buffer with (for each column in the buffer) a pointer pointing to the current top cell. The index of this pointer wraps around, so we have something of a [circular buffer](https://en.wikipedia.org/wiki/Circular_buffer). We have an element-wise implementation that can be broadcasted to work on the full buffer, but the broadcasting mechanism with array views seemingly doesn't work well on the current GPU compiler stack, so instead we implement the same algorithm directly for the GPU kernel versions.
-
-The algorithms are written to minimize branching. This means that sometimes computations are superfluous in some branches, but on a GPU it is better to leave them in. For example, there are cases where we can know that we need to *just copy* numbers from `fractions` to `stack` in case of pushing sediment, or from `stack` to `exported` when popping sediment. However, these will happen simultaneous with branches that need to take out or add in a fraction of those amounts. On a GPU (per work group) a single instruction is executed over all data, so we don't gain performance by branching out on these cases.
-
-The Julia/LLVM/Cuda compiler chain is quite sensitive to the exact implementation of these functions. The current versions took careful tweaking and experimenting with commenting out lines to find statements that were offending to the compiler.
-
-``` {.julia file=src/Algorithms/CircularBuffers.jl}
+# ~/~ begin <<docs/src/algorithms/circular_stack.md#src/Algorithms/CircularBuffers.jl>>[init]
 module CircularBuffers
 
 module Internal
@@ -196,7 +158,33 @@ module Internal
     end
 end  # module Internal
 
-<<circular-buffer>>
+# ~/~ begin <<docs/src/algorithms/circular_stack.md#circular-buffer>>[init]
+import ...Interfaces.SedimentBuffers: push_sediment!, pop_sediment!
+
+using ...Interfaces.Chunks
+using Adapt: @adapt_structure
+
+# Here D is the buffer depth and N is the number of facies.
+# SB should have shape [D, N, box.grid_size...] and BH should have shape = box.grid_size
+# By encoding these numbers into the type, we can store facies vectors statically
+struct CircularBuffer{D,N,SB,BH}
+    data::SB
+    heads::BH
+end
+
+const CircularBufferHost{D, N} = CircularBuffer{D, N, Array{Float32, 4}, Array{Int32, 2}}
+
+@adapt_structure CircularBuffer
+
+function initial_state(input)
+    n_f = length(input.facies)
+    n_b = input.sediment_buffer_size
+    n_g = input.box.grid_size
+    CircularBufferHost{n_b, n_f}(
+        zeros(Float32, n_b, n_f, n_g...),
+        zeros(Int32, n_g...))
+end
+# ~/~ end
 
 function push_sediment!(buffer::CircularBufferHost{D, N}, sediment::AbstractArray{F, 3}, chunk::Serial{Chunk}) where {D, N, F}
     @views for i in CartesianIndices(normalize(chunk.slice, buffer))
@@ -211,4 +199,4 @@ function pop_sediment!(buffer::CircularBuffer, amount::AbstractArray{F, 2}, sedi
 end
 
 end  # module CircularBuffers
-```
+# ~/~ end

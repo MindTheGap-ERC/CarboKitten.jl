@@ -39,6 +39,7 @@ TEST_PATH = mktempdir()
     include("DenudationSpec.jl")
     include("SedimentStackSpec.jl")
 
+    include("Interface/ChunksSpec.jl")
     include("Components/CellularAutomatonSpec.jl")
     include("Components/FaciesBaseSpec.jl")
     include("Components/TimeIntegrationSpec.jl")

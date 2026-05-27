@@ -66,6 +66,8 @@ production_curve!(args...) = print_instructions("production_curve!", args)
 stratigraphic_column!(args...) = print_instructions("production_curve!", args)
 glamour_view!(args...) = print_instructions("glamour_view!", args)
 summary_plot(args...) = print_instructions("summary_plot", args)
+fence_diagrams(args...) = print_instructions("fence_diagrams", args)
+fence_diagrams!(ax, args...) = print_instructions("fence_diagrams!", ax, args)
 
 end  # module
 ```

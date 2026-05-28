@@ -8,8 +8,7 @@ using CarboKitten.Export: read_volume
 using CarboKitten.Visualization: map_view, map_view!
 
 # -----------------------------------------------------------------------------
-# Example 1 — one-call form, straight from an HDF5 file. Mirrors how
-# `sediment_profile` / `wheeler_diagram` are typically invoked from scripts.
+# Example 1 —  from an HDF5 file. 
 # -----------------------------------------------------------------------------
 function from_file()
     fig = map_view(
@@ -40,8 +39,7 @@ function from_file_inplace()
 end
 
 # -----------------------------------------------------------------------------
-# Example 2 — from MemoryOutput. Pass `header` + a `DataVolume` directly;
-# no temp files involved.
+# Example 2 — from MemoryOutput. 
 # -----------------------------------------------------------------------------
 function from_memory(result)
     # `result` is whatever was returned by `run_model(..., MemoryOutput(input))`.

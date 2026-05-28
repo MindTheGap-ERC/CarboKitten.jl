@@ -11,7 +11,7 @@ using Unitful
 
 const Time = typeof(1.0u"Myr")
 
-# Pulled verbatim from WheelerDiagram.dominant_facies! — the same trick works on
+# Pulled verbatim from WheelerDiagram.dominant_facies! — works on
 # any array whose first axis is facies. For a DataVolume snapshot the input is
 # (n_facies, n_x, n_y) and the output is (n_x, n_y) Int.
 _colormax(d::AbstractArray) = getindex.(argmax(d; dims=1)[1, :, :], 1)
@@ -112,7 +112,6 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
     end
 
     # Merge defaults with user kwargs so caller's keys cleanly override ours
-    # (a bare splat would raise `duplicate keyword argument`).
     base   = (colormap = colormap, colorrange = colorrange, nan_color = :white)
     user   = (; kwargs...)
     hm_kw  = merge(base, user)

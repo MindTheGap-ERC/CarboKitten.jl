@@ -8,6 +8,9 @@ The user can select the stratigraphic position or depth to visualize, and the ro
 
 ### Test
 
+Run Example 1 to reproduce the figure above from the alcap-example.h5 file. 
+Example 2 shows how to plot the map views from memory. Run it straight after the model. 
+
 ```{.julia .task file=examples/visualization/map_view.jl}
 module Script
 
@@ -18,8 +21,7 @@ using CarboKitten.Export: read_volume
 using CarboKitten.Visualization: map_view, map_view!
 
 # -----------------------------------------------------------------------------
-# Example 1 — one-call form, straight from an HDF5 file. Mirrors how
-# `sediment_profile` / `wheeler_diagram` are typically invoked from scripts.
+# Example 1 —  from an HDF5 file. 
 # -----------------------------------------------------------------------------
 function from_file()
     fig = map_view(
@@ -50,8 +52,7 @@ function from_file_inplace()
 end
 
 # -----------------------------------------------------------------------------
-# Example 2 — from MemoryOutput. Pass `header` + a `DataVolume` directly;
-# no temp files involved.
+# Example 2 — from MemoryOutput. 
 # -----------------------------------------------------------------------------
 function from_memory(result)
     # `result` is whatever was returned by `run_model(..., MemoryOutput(input))`.
@@ -88,7 +89,7 @@ using Unitful
 
 const Time = typeof(1.0u"Myr")
 
-# Pulled verbatim from WheelerDiagram.dominant_facies! — the same trick works on
+# Pulled verbatim from WheelerDiagram.dominant_facies! — works on
 # any array whose first axis is facies. For a DataVolume snapshot the input is
 # (n_facies, n_x, n_y) and the output is (n_x, n_y) Int.
 _colormax(d::AbstractArray) = getindex.(argmax(d; dims=1)[1, :, :], 1)
@@ -189,7 +190,6 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
     end
 
     # Merge defaults with user kwargs so caller's keys cleanly override ours
-    # (a bare splat would raise `duplicate keyword argument`).
     base   = (colormap = colormap, colorrange = colorrange, nan_color = :white)
     user   = (; kwargs...)
     hm_kw  = merge(base, user)

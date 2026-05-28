@@ -1,5 +1,4 @@
 # Map View
-=========
 
 The map-view visualization routine allows users to plot model output at selected stratigraphic positions or depths. This makes it possible to inspect 2D facies patterns, sediment distribution, and lateral organization across the platform at different stratigraphic levels.
 The user can select the stratigraphic position or depth to visualize, and the routine returns a horizontal map-view of the facies distribution.

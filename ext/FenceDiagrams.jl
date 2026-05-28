@@ -9,8 +9,8 @@ using CarboKitten.Export: Header, Data, DataSlice, DataVolume, read_volume
 using CarboKitten.Algorithms: skeleton
 using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
 
-# Re-use the existing mesh helper from SedimentProfile rather than duplicating it.
-# Both submodules are siblings under VisualizationExt, so a relative import works
+# Re-use the existing mesh helper from SedimentProfile.
+# Warning : Both submodules are siblings under VisualizationExt, so a relative import works
 # as long as FenceDiagram.jl is `include`d AFTER SedimentProfile.jl.
 import ..SedimentProfile: explode_quad_vertices
 
@@ -28,7 +28,7 @@ const Time = typeof(1.0u"Myr")
 # -----------------------------------------------------------------------------
 
 # Convert a user-supplied slice position (grid index or physical length) into
-# a grid index. This lets callers say either `x_slices=[10, 30]` or
+# a grid index. This lets callers be either `x_slices=[10, 30]` or
 # `x_slices=[5.0u"km", 15.0u"km"]`.
 _to_index(axis::AbstractVector, idx::Integer) = Int(idx)
 _to_index(axis::AbstractVector{<:Quantity}, pos::Quantity) =
@@ -49,8 +49,8 @@ function _slice_geometry(header::Header, data::DataSlice)
 end
 
 # Compute the sediment surface heights for every (position, time) cell of a
-# slice. This is exactly the calculation `profile_plot!` does internally to
-# build its mesh, factored out so we can lift it into 3D.
+# slice. Mimics the calculation `profile_plot!` does internally to
+# build its mesh, factored out so it can be lifted it into 3D.
 function _surface_heights(header::Header, data::DataSlice)
     _, _, n_t = size(data.production)
     total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
@@ -74,7 +74,7 @@ end
 into 3D space at the slice's actual `(x, y)` position. `color` must be an
 `(n_pos, n_t)` array (same convention as `profile_plot!`). The `f` variant
 generates colours by applying `f` to each `n_facies`-element deposition
-column, exactly as `profile_plot!` does.
+column.
 """
 function fence_plot!(ax::Axis3, header::Header, data::DataSlice;
                      color::AbstractArray, mesh_args...)

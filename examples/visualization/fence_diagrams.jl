@@ -19,7 +19,7 @@ function from_file()
     fig = fence_diagram(
         "data/output/alcap-example.h5", :topography;
         x_slices = [10, 30, 50],     # grid indices
-        y_slices = [5.0u"km"],       # physical positions work too
+        y_slices = [2.0u"km", 4.0u"km", 6.0u"km"],       # physical positions work too
         show_unconformities = 10,
         show_coeval_lines   = true,
         show_sealevel       = true)
@@ -53,7 +53,7 @@ end
 #| collect: figures
 
 function from_memory(result)
-    # `result` here is whatever was returned by `run_model(..., MemoryOutput(input))`.
+    # `result` : object returned by `run_model(..., MemoryOutput(input))`.
     # Pick whichever volume output was registered in `input.output`.
     header = result.header
     volume = result.data_volumes[:topography]

@@ -1,5 +1,3 @@
-Manifest.toml
-
 docs/build
 *.h5
 data/*.csv

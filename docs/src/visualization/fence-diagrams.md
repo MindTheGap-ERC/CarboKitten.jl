@@ -121,6 +121,13 @@ const Time = typeof(1.0u"Myr")
 _to_index(axis::AbstractVector, idx::Integer) = Int(idx)
 _to_index(axis::AbstractVector{<:Quantity}, pos::Quantity) =
     argmin(abs.(axis .- pos))
+    
+#Calculates a given facies proportion at each plotted location 
+function _facies_fraction(column, facies::Integer)
+    total = sum(column)
+    iszero(total) && return NaN
+    return column[facies] / total
+end
 
 # A fence slice must be either (Int, :) (vertical plane perpendicular to x,
 # fence extending along y) or (:, Int) (perpendicular to y, fence along x).
@@ -326,6 +333,11 @@ Keyword arguments mirror those of `sediment_profile!` where applicable:
 - `show_bedrock::Bool=true` — overlay the (subsided) initial topography
   as a translucent gray surface.
 - `show_sealevel::Bool=false` — overlay the final sea-level plane.
+- `color_by::Symbol=:facies` — controls how each fence cell is coloured.
+  Use `:facies` to colour by the dominant facies, or `:facies_fraction`
+  to colour by the proportion of one selected facies.
+- `facies::Union{Nothing,Integer}=nothing` — facies index used when
+  `color_by = :facies_fraction`.
 - `colormap`, `alpha`, and any other keyword arguments are forwarded to
   the per-fence `mesh!` call (default colormap is a discrete Wong palette
   matching `sediment_profile!`).
@@ -337,6 +349,8 @@ function fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
                         show_coeval_lines::Union{Bool,Tuple{Int,Int},Vector{Int},Vector{<:Time}}=false,
                         show_bedrock::Bool=true,
                         show_sealevel::Bool=false,
+                        color_by::Symbol=:facies,
+                        facies::Union{Nothing,Integer}=nothing,
                         colormap=nothing,
                         alpha::Real=1.0,
                         mesh_args...)
@@ -346,9 +360,30 @@ function fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
         error("fence_diagram!: specify at least one slice via `x_slices` or `y_slices`.")
     end
 
-    cmap = colormap === nothing ?
-        cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true) :
-        colormap
+   if color_by == :facies
+       color_function = argmax
+       cmap = colormap === nothing ?
+           cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true) :
+           colormap
+       colorrange = (1, n_facies)
+   
+   elseif color_by == :facies_fraction
+       facies === nothing &&
+           error("fence_diagram!: `facies` must be specified when `color_by = :facies_fraction`.")
+   
+       facies_idx = Int(facies)
+   
+       if facies_idx < 1 || facies_idx > n_facies
+           error("fence_diagram!: `facies` must be between 1 and $(n_facies).")
+       end
+   
+       color_function = column -> _facies_fraction(column, facies_idx)
+       cmap = colormap === nothing ? :viridis : colormap
+       colorrange = (0.0, 1.0)
+   
+   else
+       error("fence_diagram!: `color_by` must be either :facies or :facies_fraction.")
+   end
 
     x_idx = Int[_to_index(header.axes.x, p) for p in x_slices]
     y_idx = Int[_to_index(header.axes.y, p) for p in y_slices]
@@ -366,8 +401,8 @@ function fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
     for (kind, idx) in slices_to_draw
         slice = kind == :x ? data[idx, :] : data[:, idx]
 
-        p = fence_plot!(argmax, ax, header, slice;
-                        colormap=cmap, colorrange=(1, n_facies),
+        p = fence_plot!(color_function, ax, header, slice;
+                        colormap=cmap, colorrange=colorrange,
                         alpha=alpha, mesh_args...)
         plot_ref = something(plot_ref, p)
 

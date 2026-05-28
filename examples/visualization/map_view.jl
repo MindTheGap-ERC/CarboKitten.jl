@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/visualization/map-view.md#examples/visualization/map_view.jl>>[init]
 module Script
 
-using GLMakie
+using WGLMakie
 using Unitful
 using CarboKitten
 using CarboKitten.Export: read_volume

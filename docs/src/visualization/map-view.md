@@ -4,12 +4,14 @@
 The map-view visualization routine allows users to plot model output at selected stratigraphic positions or depths. This makes it possible to inspect 2D facies patterns, sediment distribution, and lateral organization across the platform at different stratigraphic levels.
 The user can select the stratigraphic position or depth to visualize, and the routine returns a horizontal map-view of the facies distribution.
 
+![Glamour view](../fig/map_view_file.png)
+
 ### Test
 
 ```{.julia .task file=examples/visualization/map_view.jl}
 module Script
 
-using GLMakie
+using WGLMakie
 using Unitful
 using CarboKitten
 using CarboKitten.Export: read_volume
@@ -247,24 +249,6 @@ Build a figure with one map-view panel per stratigraphic position in `times`.
   layout.
 - All other `kwargs` are forwarded to `map_view!`. Notably: `show`,
   `mask_emerged`, `show_shoreline`, `colors`.
-
-# Examples
-
-```julia
-using GLMakie, Unitful
-using CarboKitten.Export: read_volume
-using CarboKitten.Visualization: map_view, map_view!
-
-# 1. From an HDF5 file, one panel per chosen time
-fig = map_view("data/output/alcap-example.h5", :topography;
-               times = [0.2u"Myr", 0.5u"Myr", 1.0u"Myr"],
-               show = :preserved,
-               show_shoreline = true)
-
-# 2. From in-memory data (e.g. a MemoryOutput result)
-fig = map_view(result.header, result.data_volumes[:topography];
-               times = [10, 50, 100])
-```
 """
 function map_view(header::Header, data::DataVolume;
                   times::AbstractVector = [length(header.axes.t[1:data.write_interval:end])],

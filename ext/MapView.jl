@@ -172,21 +172,58 @@ Build a figure with one map-view panel per stratigraphic position in `times`.
   layout.
 - All other `kwargs` are forwarded to `map_view!`. Notably: `show`,
   `mask_emerged`, `show_shoreline`, `colors`.
+"""
+function map_view(header::Header, data::DataVolume;
+                  times::AbstractVector = [length(header.axes.t[1:data.write_interval:end])],
+                  layout::Symbol = :auto,
+                  colorbar::Bool = true,
+                  size = nothing,
+                  kwargs...)
 
-# Examples
+    n = length(times)
+    if n == 0
+        error("`times` must contain at least one stratigraphic position")
+    end
 
-```julia
-using GLMakie, Unitful
-using CarboKitten.Export: read_volume
-using CarboKitten.Visualization: map_view, map_view!
+    nrows, ncols = if layout == :row
+        (1, n)
+    elseif layout == :col
+        (n, 1)
+    elseif layout == :auto
+        ncols = ceil(Int, sqrt(n))
+        nrows = ceil(Int, n / ncols)
+        (nrows, ncols)
+    else
+        error("`layout` must be :row, :col, or :auto — got $(layout)")
+    end
 
-# 1. From an HDF5 file, one panel per chosen time
-fig = map_view("data/output/alcap-example.h5", :topography;
-               times = [0.2u"Myr", 0.5u"Myr", 1.0u"Myr"],
-               show = :preserved,
-               show_shoreline = true)
+    fig_size = something(size, (320 * ncols + (colorbar ? 120 : 40), 320 * nrows + 60))
+    fig = Figure(size = fig_size)
 
-# 2. From in-memory data (e.g. a MemoryOutput result)
-fig = map_view(result.header, result.data_volumes[:topography];
-               times = [10, 50, 100])
+    hm_ref = nothing
+    for (i, t) in enumerate(times)
+        r = div(i - 1, ncols) + 1
+        c = mod(i - 1, ncols) + 1
+        ax = Axis(fig[r, c])
+        hm = map_view!(ax, header, data; time = t, kwargs...)
+        hm_ref = something(hm_ref, hm)
+    end
+
+    if colorbar && hm_ref !== nothing
+        n_facies = Base.size(data.production, 1)
+        Colorbar(fig[1:nrows, ncols + 1], hm_ref;
+                 ticks = 1:n_facies, label = "dominant facies")
+    end
+
+    return fig
+end
+
+function map_view(filename::AbstractString,
+                  group::Union{Symbol,AbstractString};
+                  kwargs...)
+    header, data = read_volume(filename, group)
+    return map_view(header, data; kwargs...)
+end
+
+end  # module MapView
 # ~/~ end

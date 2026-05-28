@@ -16,8 +16,7 @@ using CarboKitten.Export: read_volume
 using CarboKitten.Visualization: fence_diagram, fence_diagram!
  
 # -----------------------------------------------------------------------------
-# Example 1 — straight from an HDF5 file, the one-call form mirrors
-# `sediment_profile` and `wheeler_diagram`.
+# Example 1 — straight from an HDF5 file.
 # -----------------------------------------------------------------------------
 #| creates: docs/src/_fig/fence_diagram_file.png or docs/src/_fig/fence_diagram_file_inplace.png
 #| requires: data/output/alcap-example.h5
@@ -56,8 +55,7 @@ function from_file_inplace()
 end
  
 # -----------------------------------------------------------------------------
-# Example 2 — from MemoryOutput. Just hand the header + a DataVolume directly
-# to `fence_diagram` / `fence_diagram!`; no temp files involved.
+# Example 2 — from MemoryOutput.
 # -----------------------------------------------------------------------------
 #| collect: figures
 

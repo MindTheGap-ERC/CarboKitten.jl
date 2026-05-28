@@ -23,6 +23,8 @@ production_curve!(args...) = print_instructions("production_curve!", args)
 stratigraphic_column!(args...) = print_instructions("production_curve!", args)
 glamour_view!(args...) = print_instructions("glamour_view!", args)
 summary_plot(args...) = print_instructions("summary_plot", args)
+map_view(args...) = print_instructions("map_view", args)
+map_view!(args...) = print_instructions("map_view!", args)
 
 end  # module
 # ~/~ end

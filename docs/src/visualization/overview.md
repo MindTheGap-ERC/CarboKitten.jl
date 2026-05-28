@@ -79,6 +79,7 @@ include("StratigraphicColumn.jl")
 include("SedimentProfile.jl")
 include("GlamourView.jl")
 include("SummaryPlot.jl")
+include("MapView.jl")
 
 end
 ```

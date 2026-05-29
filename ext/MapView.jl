@@ -45,14 +45,19 @@ _to_time_index(t_axis::AbstractVector{<:Quantity}, t::Quantity) =
     map_view!(ax, header, data;
               time             = end,
               show             = :preserved,
+              color_by         = :facies,
+              facies           = nothing,
               colors           = Makie.wong_colors(),
+              colormap         = nothing,
               mask_emerged     = true,
               show_shoreline   = false,
               shoreline_kwargs = (color = :black, linewidth = 1.5),
               kwargs...)
 
-Plot a single map view of the platform onto `ax`, colored by dominant facies at
-the chosen stratigraphic position.
+Plot a single map view of the platform onto `ax`.
+
+The map can be coloured either by dominant facies using categorical colours, or
+by the proportion of a selected facies using a continuous colour scale..
 
 # Arguments
 - `ax::Makie.Axis` — target axis.
@@ -60,25 +65,34 @@ the chosen stratigraphic position.
 - `data::DataVolume` — volume output (3-D dataset in x, y, t).
 
 # Keyword arguments
-- `time` — stratigraphic position. Either an integer write-frame index (1-based;
-  defaults to the final frame) or a `Unitful.Quantity` time value such as
-  `0.5u"Myr"`, in which case the nearest available frame is used.
-- `show::Symbol` — `:model` shows what is being deposited in the chosen frame;
-  `:preserved` (default) shows what is preserved in the stratigraphic column for
-  that frame; `:both` overlays a translucent `:model` layer underneath the
-  `:preserved` one. Same semantics as `WheelerDiagram.dominant_facies!`.
-- `colors` — vector of facies colors, defaults to `Makie.wong_colors()`.
-- `mask_emerged::Bool` — if `true` (default), cells that are emerged at the
-  chosen frame (water_depth > 0 in CarboKitten's convention, i.e. elevation
-  above sea level) are masked white.
+- `time` — stratigraphic position. Either an integer write-frame index
+  (1-based; defaults to the final frame) or a `Unitful.Quantity` time value
+  such as `0.5u"Myr"`, in which case the nearest available frame is used.
+- `show::Symbol` — controls which stratigraphic quantity is plotted.
+  `:model` shows what is being deposited in the chosen frame; `:preserved`
+  shows what is preserved in the stratigraphic column for that frame; `:both`
+  overlays a translucent `:model` layer underneath the `:preserved` layer.
+- `color_by::Symbol` — controls how cells are coloured. Use `:facies` for
+  categorical dominant-facies colouring, or `:facies_fraction` to colour by
+  the proportion of one selected facies.
+- `facies::Union{Nothing,Integer}` — facies index used when
+  `color_by = :facies_fraction`.
+- `colors` — vector of categorical facies colours used when
+  `color_by = :facies`. Defaults to `Makie.wong_colors()`.
+- `colormap` — colormap used for plotting. If `color_by = :facies`, this
+  overrides the categorical facies colormap. If `color_by = :facies_fraction`,
+  this controls the continuous colour scale and defaults to `:viridis`.
+- `mask_emerged::Bool` — if `true`, cells that are emerged at the chosen frame
+  are masked white.
 - `show_shoreline::Bool` — if `true`, overlays a contour of the sea-level
-  intersection (water_depth = 0) at the chosen frame.
+  intersection (`water_depth = 0`) at the chosen frame.
 - `shoreline_kwargs` — named tuple forwarded to `contour!` for the shoreline.
 - `kwargs...` — forwarded to `heatmap!`.
 
 # Returns
-The `Heatmap` object (use it for attaching a `Colorbar`).
+The `Heatmap` object. This can be used to attach a `Colorbar`.
 """
+
 function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
                    time::Union{Integer,Quantity} = length(header.axes.t[1:data.write_interval:end]),
                    show::Symbol = :preserved,
@@ -203,6 +217,9 @@ end
              layout    = :auto,
              colorbar  = true,
              size      = nothing,
+             color_by::Symbol = :facies,
+             facies::Union{Nothing,Integer} = nothing,
+             colormap = nothing,
              kwargs...) -> Makie.Figure
 
     map_view(filename, group; kwargs...) -> Makie.Figure
@@ -220,13 +237,23 @@ Build a figure with one map-view panel per stratigraphic position in `times`.
 - `times` — vector of stratigraphic positions. Each element may be an integer
   write-frame index or a `Unitful.Quantity` time value. Defaults to a single
   panel at the final frame.
-- `layout::Symbol` — `:row`, `:col`, or `:auto` (default; chooses a near-square
-  grid).
-- `colorbar::Bool` — add a shared colorbar for facies (default `true`).
-- `size` — Makie figure size tuple; if `nothing`, a size is chosen from the
+- `layout::Symbol` — `:row`, `:col`, or `:auto`. The default chooses a
+  near-square grid.
+- `colorbar::Bool` — add a shared colourbar or legend-like colour scale
+  for the plotted maps. For `color_by = :facies`, the colourbar is categorical
+  and labelled by facies index. For `color_by = :facies_fraction`, the colourbar
+  is continuous from 0 to 1.
+- `size` — Makie figure size tuple. If `nothing`, a size is chosen from the
   layout.
+- `color_by::Symbol` — controls how cells are coloured. Use `:facies` for
+  categorical dominant-facies colouring, or `:facies_fraction` to colour by
+  the proportion of one selected facies.
+- `facies::Union{Nothing,Integer}` — facies index used when
+  `color_by = :facies_fraction`.
+- `colormap` — optional colormap override. Defaults to categorical Wong colours
+  for `color_by = :facies` and to `:viridis` for `color_by = :facies_fraction`.
 - All other `kwargs` are forwarded to `map_view!`. Notably: `show`,
-  `mask_emerged`, `show_shoreline`, `colors`.
+  `mask_emerged`, `show_shoreline`, `shoreline_kwargs`, and `colors`.
 """
 function map_view(header::Header, data::DataVolume;
                   times::AbstractVector = [length(header.axes.t[1:data.write_interval:end])],

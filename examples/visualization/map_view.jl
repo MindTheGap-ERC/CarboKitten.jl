@@ -24,7 +24,7 @@ function from_file_categorical()
 end
 
 # Same data, in-place form so you can drop a single map into your own figure.
-function from_file_inplace()
+function from_file_inplace_categorical()
     header, volume = read_volume("data/output/alcap-example.h5", :topography)
 
     fig = Figure(size = (900, 700))
@@ -44,7 +44,7 @@ end
 # -----------------------------------------------------------------------------
 # Example 1 —  from an HDF5 file. Continuous proportional colouring.
 # -----------------------------------------------------------------------------
-function _fraction()
+function from_file_fraction()
     fig = map_view(
         "data/output/alcap-example.h5", :topography;
         times = [0.2u"Myr", 0.5u"Myr", 1.0u"Myr"],
@@ -60,7 +60,7 @@ function _fraction()
 end
 
 # Same data, in-place form so you can drop a single map into your own figure.
-function from_file_inplace()
+function from_file_inplace_fraction()
     header, volume = read_volume("data/output/alcap-example.h5", :topography)
 
     fig = Figure(size = (900, 700))

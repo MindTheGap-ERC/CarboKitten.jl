@@ -2,12 +2,16 @@
 
 The fence-diagram style visualization allows users to generate multiple cross-sections through the model domain by defining the number of fences to display, along with their x and y positions. This provides an intuitive way to inspect the 3D stratigraphic architecture and examine both lateral and vertical variations in facies, sediment accumulation, or other stratigraphic properties across the platform.
 
-![Fence diagram example](../fig/fence_diagram_file.png)
+![Fence diagram example1](../fig/fence_diagram_file_cat.png)
+![Fence diagram example2](../fig/fence_diagram_file_fraction.png)
 
 ### Test 
 
-Run Example 1 to regenerate the figure above from alcap-example.h5. 
-Example 2 allows to plot the fence diagrams from memory, without involving any temporary file. Run it straigth after you run the model. 
+Example 1 reproduces the fence diagram above from `alcap-example.h5`, with categorical colouring for all facies. Each colour corresponds to one facies.
+
+Example 2 reproduces the same fence diagram as example 1, but colours the fences by the proportion of a single selected facies relative to the total sediment in each cell. This makes it easier to visualize the spatial distribution and relative abundance of that facies.
+
+Example 3 plots fence diagrams directly from memory, without creating or reading any temporary output file. Run this example immediately after running the model.
 
 ``` {.julia .task file=examples/visualization/fence_diagrams.jl}
 
@@ -20,9 +24,9 @@ using CarboKitten.Export: read_volume
 using CarboKitten.Visualization: fence_diagram, fence_diagram!
  
 # -----------------------------------------------------------------------------
-# Example 1 — straight from an HDF5 file.
+# Example 1 — straight from an HDF5 file. Categorical colouring. 
 # -----------------------------------------------------------------------------
-#| creates: docs/src/_fig/fence_diagram_file.png or docs/src/_fig/fence_diagram_file_inplace.png
+#| creates: docs/src/_fig/fence_diagram_file_cat.png or docs/src/_fig/fence_diagram_file_inplace_cat.png
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
@@ -33,8 +37,9 @@ function from_file()
         y_slices = [2.0u"km", 4.0u"km", 6.0u"km"],       # physical positions work too
         show_unconformities = 10,
         show_coeval_lines   = true,
-        show_sealevel       = true)
-    save("docs/src/_fig/fence_diagram_file.png", fig)
+        show_sealevel       = true,
+        color_by = :facies)
+    save("docs/src/fig/fence_diagram_file_cat.png", fig)
     return fig
 end
  
@@ -53,11 +58,56 @@ function from_file_inplace()
         y_slices = [5.0u"km"],
         show_unconformities = 10,
         show_coeval_lines   = true,
-        show_bedrock        = true)
-    save("docs/src/_fig/fence_diagram_file_inplace.png", fig)
+        show_bedrock        = true,
+        color_by = :facies)
+    save("docs/src/fig/fence_diagram_file_inplace_cat.png", fig)
+    return fig
+end
+
+# -----------------------------------------------------------------------------
+# Example 2 — straight from an HDF5 file. Continuous proportional colouring. 
+# -----------------------------------------------------------------------------
+ #| creates: docs/src/_fig/fence_diagram_file_fraction.png or docs/src/_fig/fence_diagram_file_inplace_fraction.png
+#| requires: data/output/alcap-example.h5
+#| collect: figures
+
+function from_file()
+    fig = fence_diagram(
+        "data/output/alcap-example.h5", :topography;
+        x_slices = [10, 30, 50],     # grid indices
+        y_slices = [2.0u"km", 4.0u"km", 6.0u"km"],       # physical positions work too
+        show_unconformities = 10,
+        show_coeval_lines   = true,
+        show_sealevel       = true,
+        color_by = :facies_fraction,
+        facies = 2,
+        colormap = :viridis)
+    save("docs/src/fig/fence_diagram_file_fraction.png", fig)
     return fig
 end
  
+# Same data, but using the in-place / lower-level form so you can compose with
+# other axes in your own figure.
+function from_file_inplace()
+    header, volume = read_volume("data/output/alcap-example.h5", :topography)
+ 
+    fig = Figure(size = (1400, 900))
+    ax  = Axis3(fig[1, 1])
+    ax.azimuth   = -π/3
+    ax.elevation = π/8
+ 
+    fence_diagram!(ax, header, volume;
+        x_slices = [10, 30, 50],
+        y_slices = [5.0u"km"],
+        show_unconformities = 10,
+        show_coeval_lines   = true,
+        show_bedrock        = true,
+        color_by = :facies_fraction,
+        facies = 2,
+        colormap = :viridis)
+    save("docs/src/fig/fence_diagram_file_inplace_fraction.png", fig)
+    return fig
+end
 # -----------------------------------------------------------------------------
 # Example 2 — from MemoryOutput.
 # -----------------------------------------------------------------------------
@@ -76,7 +126,8 @@ function from_memory(result)
         y_slices = [div(header.grid_size[2], 2)],
         show_unconformities = true,
         show_coeval_lines   = true,
-        show_bedrock        = true)
+        show_bedrock        = true,
+        color_by = :facies)
     return fig
 end
  
@@ -434,15 +485,38 @@ All keyword arguments are forwarded to `fence_diagram!`. Additionally,
 default camera angles.
 """
 function fence_diagram(header::Header, data::DataVolume;
-                       size::Tuple{Int,Int}=(1200, 800),
+                       size::Tuple{Int,Int}=(1400, 800),
                        azimuth::Real=-π/3,
                        elevation::Real=π/8,
+                       color_by::Symbol=:facies,
+                       facies::Union{Nothing,Integer}=nothing,
+                       colormap=nothing,
                        kwargs...)
+    n_facies = Base.size(data.production, 1)
+
     fig = Figure(size=size)
     ax  = Axis3(fig[1, 1])
     ax.azimuth   = azimuth
     ax.elevation = elevation
-    fence_diagram!(ax, header, data; kwargs...)
+
+    fence_diagram!(ax, header, data;
+        color_by=color_by,
+        facies=facies,
+        colormap=colormap,
+        kwargs...)
+
+    if color_by == :facies
+        colors = Makie.wong_colors()[1:n_facies]
+        elements = [PolyElement(color=colors[i]) for i in 1:n_facies]
+        labels = ["Facies $(i)" for i in 1:n_facies]
+        Legend(fig[1, 2], elements, labels, "Facies")
+    elseif color_by == :facies_fraction
+        Colorbar(fig[1, 2];
+            colormap=colormap === nothing ? :viridis : colormap,
+            limits=(0, 1),
+            label="Proportion of facies $(facies)")
+    end
+
     return fig
 end
 

@@ -346,15 +346,38 @@ All keyword arguments are forwarded to `fence_diagram!`. Additionally,
 default camera angles.
 """
 function fence_diagram(header::Header, data::DataVolume;
-                       size::Tuple{Int,Int}=(1200, 800),
+                       size::Tuple{Int,Int}=(1400, 800),
                        azimuth::Real=-π/3,
                        elevation::Real=π/8,
+                       color_by::Symbol=:facies,
+                       facies::Union{Nothing,Integer}=nothing,
+                       colormap=nothing,
                        kwargs...)
+    n_facies = Base.size(data.production, 1)
+
     fig = Figure(size=size)
     ax  = Axis3(fig[1, 1])
     ax.azimuth   = azimuth
     ax.elevation = elevation
-    fence_diagram!(ax, header, data; kwargs...)
+
+    fence_diagram!(ax, header, data;
+        color_by=color_by,
+        facies=facies,
+        colormap=colormap,
+        kwargs...)
+
+    if color_by == :facies
+        colors = Makie.wong_colors()[1:n_facies]
+        elements = [PolyElement(color=colors[i]) for i in 1:n_facies]
+        labels = ["Facies $(i)" for i in 1:n_facies]
+        Legend(fig[1, 2], elements, labels, "Facies")
+    elseif color_by == :facies_fraction
+        Colorbar(fig[1, 2];
+            colormap=colormap === nothing ? :viridis : colormap,
+            limits=(0, 1),
+            label="Proportion of facies $(facies)")
+    end
+
     return fig
 end
 

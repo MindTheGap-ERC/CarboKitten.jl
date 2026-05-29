@@ -175,7 +175,7 @@ function glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; colorm
     # modifiers it integrates them faithfully.
     total_subsidence = cumulative_subsidence(header, header.axes.t[end])
 
-    bedrock = header.initial_topography .- total_subsidencebedrock = header.initial_topography .- total_subsidence
+    bedrock = header.initial_topography .- total_subsidence
     result = Array{Float64, 3}(undef, grid_size..., length(selected_steps))
     for (i, j) in enumerate(selected_steps)
         result[:, :, i] = (data.sediment_thickness[:,:,j] .+ bedrock) |> in_units_of(u"m")

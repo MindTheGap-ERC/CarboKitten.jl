@@ -33,7 +33,7 @@ end
 
 function water_depth(header::Header, data::DataSlice)
     h = elevation(header, data)                            # (n_pos, n_writes)
-    wi = data.write_interval,
+    wi = data.write_interval
     Σ = cumulative_subsidence(header, data)                # (n_pos, n_writes)
     s = Σ .- Σ[:, end:end]                                 # subsidence offset from end-time
     l = header.sea_level[1:wi:end]

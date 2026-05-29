@@ -85,6 +85,32 @@ function read_header(fid)
     grid_size = (length(axes.x), length(axes.y))
     n_facies = attrs["n_facies"][]
 
+    # Optional per-cell rate map (written only when subsidence is non-uniform).
+    # Absent in legacy files, so default to `nothing`.
+    subsidence_rate_map = if "subsidence_rate_map" in keys(fid["input"])
+        fid["input/subsidence_rate_map"][] * u"m/Myr"
+    else
+        nothing
+    end
+
+    # Optional modifier descriptors, one group per modifier under
+    # input/subsidence_modifiers/mN. We surface them as Dicts; the actual
+    # reconstruction into typed modifiers happens lazily inside
+    # `cumulative_subsidence(header)`.
+    subsidence_modifiers = Any[]
+    if "subsidence_modifiers" in keys(fid["input"])
+        mgrp = fid["input/subsidence_modifiers"]
+        for k in sort(collect(keys(mgrp)))
+            sub = mgrp[k]
+            sub_attrs = HDF5.attributes(sub)
+            d = Dict{String,Any}()
+            for an in keys(sub_attrs)
+                d[an] = sub_attrs[an][]
+            end
+            push!(subsidence_modifiers, d)
+        end
+    end
+
     return Header(
         tag = attrs["tag"][],
         axes = axes,
@@ -95,6 +121,8 @@ function read_header(fid)
         initial_topography = fid["input/initial_topography"][] * u"m",
         sea_level = fid["input/sea_level"][] * u"m",
         subsidence_rate = attrs["subsidence_rate"][] * u"m/Myr",
+        subsidence_rate_map = subsidence_rate_map,
+        subsidence_modifiers = subsidence_modifiers,
         data_sets = data_sets)
 end
 
@@ -315,7 +343,9 @@ function extract_wd(header::Header, data::DataColumn, label)
     na = [CartesianIndex()]
     t = header.axes.t[1:data.write_interval:end]
     sea_level = header.sea_level[1:data.write_interval:end]
-    wd = header.subsidence_rate .* t .-
+    # Per-cell cumulative subsidence at each write step (shape: (n_writes,) for a column)
+    Σ = cumulative_subsidence(header, data)
+    wd = Σ .-
         header.initial_topography[data.slice...] .-
         data.sediment_thickness .+
         sea_level

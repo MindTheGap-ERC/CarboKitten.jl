@@ -30,13 +30,19 @@ Modules = [CarboKitten.Export]
 ## Components
 
 ```@autodocs
-Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer]
+Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer, CarboKitten.Components.WaterDepth]
 ```
 
 ## Output
 
 ```@autodocs
 Modules = [CarboKitten.Output.Abstract, CarboKitten.Output.H5Writer, CarboKitten.Output.MemoryWriter]
+```
+
+## Subsidence
+
+```@autodocs
+Modules = [CarboKitten.Subsidence]
 ```
 
 ## Utility

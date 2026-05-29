@@ -37,8 +37,13 @@ module Abstract
 import ...CarboKitten: set_attribute
 import ...Algorithms: stratigraphic_column!
 
+# Pull `cumulative_subsidence` from the Subsidence module so the methods we
+# add here for `Header` extend the same generic function.
+import ...Subsidence: cumulative_subsidence, deserialize_modifier, AbstractSubsidenceModifier
+
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
 export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer
+export cumulative_subsidence
 
 using Unitful
 using ...CarboKitten: OutputSpec, AbstractInput, AbstractState
@@ -75,6 +80,12 @@ end
     initial_topography::Matrix{Amount}
     sea_level::Vector{Length}
     subsidence_rate::Rate
+    subsidence_rate_map::Union{Matrix{Rate},Nothing} = nothing #(optional, back-compatible): full per-cell rate map.
+    #`nothing` means subsidence was uniform — use the scalar `subsidence_rate` instead.
+    subsidence_modifiers::Vector{Any} = Any[] # modifier descriptions. Entries may be either live
+        # `AbstractSubsidenceModifier` objects (when the header was built in memory)
+        # or dict descriptors (when read from HDF5); `cumulative_subsidence` handles
+        # both via `deserialize_modifier`.
     data_sets::Dict{Symbol,DataHeader}
     attributes::Dict{String,Any} = Dict()
 end
@@ -155,18 +166,75 @@ function stratigraphic_column(data::Data{F, D}) where {F, D}
     return net_deposition
 end
 
+# =============================================================================
+# Cumulative-subsidence helpers for post-hoc analysis
+# =============================================================================
+
+"""
+    cumulative_subsidence(header::Header) -> (t -> Matrix{Length})
+
+Closure form: returns a function that, given an absolute time `t`, returns the
+per-cell cumulative subsidence (from `header.axes.t[1]`) as a `Matrix{Length}`
+of shape `header.grid_size`.
+
+Handles three cases:
+  * Uniform rate, no modifiers — closed form `rate * (t - t0)`.
+  * Per-cell map, no modifiers — `rate_map .* (t - t0)`.
+  * With modifiers — piecewise integration via `CarboKitten.Subsidence`.
+
+Modifiers in `header.subsidence_modifiers` may be either live modifier objects
+or dict descriptors (as read from HDF5); both are accepted.
+"""
+function cumulative_subsidence(header::Header)
+    t0 = header.axes.t[1]
+    base = something(header.subsidence_rate_map,
+                     fill(header.subsidence_rate, header.grid_size...))
+    mods = AbstractSubsidenceModifier[deserialize_modifier(m) for m in header.subsidence_modifiers]
+    # Delegate to the pure (base, modifiers, axes, t0) method
+    return cumulative_subsidence(base, mods, header.axes.x, header.axes.y, t0)
+end
+
+"""
+    cumulative_subsidence(header::Header, t::Time) -> Matrix{Length}
+
+Direct evaluation: per-cell cumulative subsidence at time `t`, full grid.
+"""
+cumulative_subsidence(header::Header, t::Time) = cumulative_subsidence(header)(t)
+
+"""
+    cumulative_subsidence(header::Header, data::Data) -> Array{Length, D}
+
+Per-cell cumulative subsidence at every write step of `data`, sliced to match
+`data.slice`. The returned array has the same shape as `data.sediment_thickness`:
+`(n_writes,)` for a column, `(n_pos, n_writes)` for a slice, `(n_x, n_y, n_writes)`
+for a volume. Useful for plotters that need to broadcast subsidence against
+other per-write quantities.
+"""
+function cumulative_subsidence(header::Header, data::Data{F, D}) where {F, D}
+    cum = cumulative_subsidence(header)
+    t_writes = header.axes.t[1:data.write_interval:end]
+    out = similar(data.sediment_thickness, Length)
+    for (k, t) in enumerate(t_writes)
+        m = cum(t)                       # (nx, ny)
+        selectdim(out, D, k) .= m[data.slice...]
+    end
+    return out
+end
+
 """
     water_depth(header, data)
 
 Compute the water depth function for the given data set.
+
+The subsidence contribution is computed via `cumulative_subsidence(header, data)`,
+which honours per-cell rate maps and modifiers when present.
 """
 function water_depth(header::Header, data::Data{F, D}) where {F, D}
     na = [CartesianIndex()]
-    delta_t = header.axes.t[1:data.write_interval:end] .- header.axes.t[1]
     sl = header.sea_level[1:data.write_interval:end]
     h0 = header.initial_topography[data.slice..., na]
     Δh = data.sediment_thickness
-    Σ = header.subsidence_rate .* delta_t[repeated(na, D-1)..., :]
+    Σ = cumulative_subsidence(header, data)
     return sl[repeated(na, D-1)...,:] .- h0 .- Δh .+ Σ
 end
 

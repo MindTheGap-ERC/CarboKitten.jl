@@ -16,6 +16,24 @@ const Time = typeof(1.0u"Myr")
 # (n_facies, n_x, n_y) and the output is (n_x, n_y) Int.
 _colormax(d::AbstractArray) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 
+#Calculate a given facies' proportion relative to the others in a specific location.
+function _facies_fraction(d::AbstractArray, facies::Integer)
+    total = dropdims(sum(d; dims = 1); dims = 1)
+    selected = d[facies, :, :]
+
+    fraction = Matrix{Union{Missing,Float64}}(undef, Base.size(total))
+
+    for I in eachindex(total)
+        if iszero(total[I])
+            fraction[I] = missing
+        else
+            fraction[I] = Float64(ustrip(selected[I] / total[I]))
+        end
+    end
+
+    return fraction
+end
+
 # Resolve a stratigraphic position into an index along the (write-interval
 # corrected) time axis. Integer indices are passed through; Unitful time
 # quantities are matched by nearest neighbour.
@@ -64,7 +82,10 @@ The `Heatmap` object (use it for attaching a `Colorbar`).
 function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
                    time::Union{Integer,Quantity} = length(header.axes.t[1:data.write_interval:end]),
                    show::Symbol = :preserved,
+                   color_by::Symbol = :facies,
+                   facies::Union{Nothing,Integer} = nothing,
                    colors = Makie.wong_colors(),
+                   colormap = nothing,
                    mask_emerged::Bool = true,
                    show_shoreline::Bool = false,
                    shoreline_kwargs = (color = :black, linewidth = 1.5),
@@ -86,45 +107,80 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
 
     xkm = header.axes.x |> in_units_of(u"km")
     ykm = header.axes.y |> in_units_of(u"km")
-    colormap = cgrad(colors[1:n_facies], n_facies, categorical = true)
-    colorrange = (0.5, n_facies + 0.5)
+
+    if color_by == :facies
+        cmap = colormap === nothing ?
+            cgrad(colors[1:n_facies], n_facies, categorical = true) :
+            colormap
+        colorrange = (0.5, n_facies + 0.5)
+    
+    elseif color_by == :facies_fraction
+        facies === nothing &&
+            error("map_view!: `facies` must be specified when `color_by = :facies_fraction`.")
+    
+        facies_idx = Int(facies)
+    
+        if facies_idx < 1 || facies_idx > n_facies
+            error("map_view!: `facies` must be between 1 and $(n_facies).")
+        end
+    
+        cmap = colormap === nothing ? :viridis : colormap
+        colorrange = (0.0, 1.0)
+    
+    else
+        error("map_view!: `color_by` must be either :facies or :facies_fraction.")
+    end
 
     # Mask of emerged cells at this frame, computed once and reused for both
     # the model-mode mask and the optional shoreline contour.
     wd = water_depth(header, data)[:, :, t_idx]
 
-    function model_facies()
-        m = Matrix{Union{Missing,Int}}(_colormax(data.deposition[:, :, :, t_idx]))
+    function model_values()
+        d = data.deposition[:, :, :, t_idx]
+    
+        m = if color_by == :facies
+            Matrix{Union{Missing,Int}}(_colormax(d))
+        else
+            _facies_fraction(d, facies_idx)
+        end
+    
         if mask_emerged
             m[wd .> 0u"m"] .= missing
         end
+    
         return m
     end
-
-    function preserved_facies()
+    
+    function preserved_values()
         sc_full = stratigraphic_column(data)
         sc = sc_full[:, :, :, t_idx]
-        m = Matrix{Union{Missing,Int}}(_colormax(sc))
-        # blank out cells with effectively no preserved accumulation at this frame
+    
+        m = if color_by == :facies
+            Matrix{Union{Missing,Int}}(_colormax(sc))
+        else
+            _facies_fraction(sc, facies_idx)
+        end
+    
         acc = dropdims(sum(sc; dims = 1); dims = 1)
         m[acc .< prec] .= missing
+    
         return m
     end
 
     # Merge defaults with user kwargs so caller's keys cleanly override ours
-    base   = (colormap = colormap, colorrange = colorrange, nan_color = :white)
+    base   = (colormap = cmap, colorrange = colorrange, nan_color = :white)
     user   = (; kwargs...)
     hm_kw  = merge(base, user)
 
     hm = if show == :model
-        heatmap!(ax, xkm, ykm, model_facies(); hm_kw...)
+        heatmap!(ax, xkm, ykm, model_values(); hm_kw...)
     elseif show == :preserved
-        heatmap!(ax, xkm, ykm, preserved_facies(); hm_kw...)
+        heatmap!(ax, xkm, ykm, preserved_values(); hm_kw...)
     else  # :both — translucent model under preserved
         model_kw = merge((alpha = 0.3,), hm_kw)
         pres_kw  = merge(hm_kw, (nan_color = :transparent,))
-        heatmap!(ax, xkm, ykm, model_facies();     model_kw...)
-        heatmap!(ax, xkm, ykm, preserved_facies(); pres_kw...)
+        heatmap!(ax, xkm, ykm, model_values();     model_kw...)
+        heatmap!(ax, xkm, ykm, preserved_values(); pres_kw...)
     end
 
     if show_shoreline
@@ -177,6 +233,9 @@ function map_view(header::Header, data::DataVolume;
                   layout::Symbol = :auto,
                   colorbar::Bool = true,
                   size = nothing,
+                  color_by::Symbol = :facies,
+                  facies::Union{Nothing,Integer} = nothing,
+                  colormap = nothing,
                   kwargs...)
 
     n = length(times)
@@ -204,14 +263,26 @@ function map_view(header::Header, data::DataVolume;
         r = div(i - 1, ncols) + 1
         c = mod(i - 1, ncols) + 1
         ax = Axis(fig[r, c])
-        hm = map_view!(ax, header, data; time = t, kwargs...)
+        hm = map_view!(ax, header, data;
+            time = t,
+            color_by = color_by,
+            facies = facies,
+            colormap = colormap,
+            kwargs...)
         hm_ref = something(hm_ref, hm)
     end
 
     if colorbar && hm_ref !== nothing
-        n_facies = Base.size(data.production, 1)
-        Colorbar(fig[1:nrows, ncols + 1], hm_ref;
-                 ticks = 1:n_facies, label = "dominant facies")
+        if color_by == :facies
+            n_facies = Base.size(data.production, 1)
+            Colorbar(fig[1:nrows, ncols + 1], hm_ref;
+                     ticks = 1:n_facies,
+                     label = "dominant facies")
+        elseif color_by == :facies_fraction
+            Colorbar(fig[1:nrows, ncols + 1], hm_ref;
+                     ticks = 0:0.25:1,
+                     label = "proportion of facies $(facies)")
+        end
     end
 
     return fig

@@ -13,11 +13,28 @@ using CarboKitten.Visualization: map_view, map_view!
 function from_file()
     fig = map_view(
         "data/output/alcap-example.h5", :topography;
-        times = [0.2u"Myr", 0.5u"Myr", 1.0u"Myr"],   # mix of physical times…
+        times = [0.2u"Myr", 0.5u"Myr", 1.0u"Myr"],
         show = :preserved,
         show_shoreline = true,
-        layout = :row)
-    save("docs/src/_fig/map_view_file.png", fig)
+        layout = :row,
+        color_by = :facies,
+    )
+    save("docs/src/_fig/map_view_file_cat.png", fig)
+    return fig
+end
+
+function from_file()
+    fig = map_view(
+        "data/output/alcap-example.h5", :topography;
+        times = [0.2u"Myr", 0.5u"Myr", 1.0u"Myr"],
+        show = :preserved,
+        show_shoreline = true,
+        layout = :row,
+        color_by = :facies_fraction,
+        facies=2,
+        colormap= :viridis
+    )
+    save("docs/src/fig/map_view_file_fraction.png", fig)
     return fig
 end
 

@@ -1,17 +1,4 @@
 # ~/~ begin <<docs/src/subsidence.md#examples/subsidence.jl>>[init]
-# =============================================================================
-# Subsidence-modification examples
-# =============================================================================
-#
-# Three runs of the ALCAP example, each varying only the subsidence inputs.
-# All three should work side-by-side and produce comparable H5 outputs.
-#
-# 1. Legacy: uniform scalar subsidence rate (50 m/Myr everywhere).
-# 2. Per-cell rate: ramped subsidence increasing along x.
-# 3. With modifiers: uniform base rate, but a region is halved over a
-#    specific time window and another receives an additive bump.
-# =============================================================================
-
 module Script
 
 using Unitful

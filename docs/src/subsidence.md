@@ -34,21 +34,20 @@ where `r_eff` is `base_rate` sequentially transformed by every modifier whose
 (x, y, t)-box contains the point. Modifiers apply in declaration order, each
 operating on the rate produced by the previous one.
 
-### Test
-```{.julia .task file=examples/subsidence.jl}
-# =============================================================================
-# Subsidence-modification examples
-# =============================================================================
-#
-# Three runs of the ALCAP example, each varying only the subsidence inputs.
-# All three should work side-by-side and produce comparable H5 outputs.
-#
-# 1. Legacy: uniform scalar subsidence rate (50 m/Myr everywhere).
-# 2. Per-cell rate: ramped subsidence increasing along x.
-# 3. With modifiers: uniform base rate, but a region is halved over a
-#    specific time window and another receives an additive bump.
-# =============================================================================
+## Compatibility
 
+ To ensure compatibility with the plotting routines, these have been updated to receive cumulative subsidence. This allows the plots to account for time- and space-dependent subsidence when calculating the water depth and stratigraphic height.
+
+### Tests - Subsidence-modification examples
+
+The following examples consist of three runs of the ALCAP example, each varying only the subsidence inputs.
+All three should work side-by-side and produce H5 outputs.
+
+1. Legacy: runs with a uniform scalar subsidence rate (50 m/Myr everywhere).
+2. Per-cell rate: runs with a ramped subsidence increasing along x.
+3. With modifiers: runs with a uniform base rate, which is halved for a specific region over a specific time window while another region receives an additive bump.
+
+```{.julia .task file=examples/subsidence.jl}
 module Script
 
 using Unitful
@@ -123,6 +122,8 @@ end
 
 Script.main()
 ```
+
+### Implementation
 
 ```{.julia file=src/Subsidence.jl}
 module Subsidence

@@ -5,7 +5,8 @@
     using ..Production: insolation
     using ..TimeIntegration: time
     using ..WaterDepth: water_depth
-    using ...Production: production_profile, capped_production, AbstractProductionModifier, production_factor
+    using ...Production: production_profile, capped_production,
+        AbstractProductionModifier, production_factor
     using Logging
 
     function production(input::AbstractInput)
@@ -41,10 +42,10 @@
                 for f in eachindex(facies)
                     if facies[f].active
                         output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u"m" :
-                            capped_production(production_specs[f], insolation, wd[i], dt)
+                            capped_production(production_specs[f], insolation, wd[i], dt, factors[f])
                     else
                         output[f, i[1], i[2]] =
-                            capped_production(production_specs[f], insolation, wd[i], dt)
+                            capped_production(production_specs[f], insolation, wd[i], dt, factors[f])
                     end
                 end
             end

@@ -21,9 +21,9 @@ end
 
 benthic_production(i, f, w) = production_rate(i, f, w)
 
-function capped_production(f, insolation, water_depth, dt)
+function capped_production(f, insolation, water_depth, dt, factor::Real=1.0)
     clip_positive(x::T) where {T} = max(x, zero(T))
-    p = clip_positive(f(insolation, water_depth))
+    p = clip_positive(f(insolation, water_depth)) * factor
     return min(max(0.0u"m", water_depth), p * dt)
 end
 ```
@@ -165,7 +165,7 @@ In the case of pelagic production, the exact production rate can be quite expens
 ``` {.julia #production-input}
 @kwdef struct Input <: AbstractInput
     insolation
-    production_modifiers::Vector{AbstractProductionModifier} = AbstractProductionModifier[]
+    production_modifiers = []
 end
 
 @kwdef struct Facies <: AbstractFacies
@@ -1181,6 +1181,923 @@ const EXAMPLE = Dict(
 
 end
 ```
+"""
+end
+```
+"""
+end
+```
+"""
+end
+```
+"""
+end
+```
+"""
+```
+"""
+```
+"""
+```
+```
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction) = true
+is_pelagic(::InterpolatedProduction) = false
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"
+    @assert length(p.depth_knots) >= 2 "InterpolatedProduction: need at least 2 knots"
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+
+# =============================================================================
+# Time-window production modifiers
+# =============================================================================
+
+const _ProdTime      = typeof(1.0u"Myr")
+const _ProdTimeSpec  = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+const _FaciesSpec    = Union{Colon, Int, AbstractVector{Int}}
+
+abstract type AbstractProductionModifier end
+
+"""
+    MultiplyProduction(factor; t_range=:, facies=:)
+
+Multiply the production rate by `factor` during `t_range` for `facies`.
+`t_range` is `:` (always) or a `(t_lo, t_hi)` tuple. `facies` is `:`
+(all), a single `Int`, or a `Vector{Int}`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProductionModifier
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+    facies::_FaciesSpec    = (:)
+end
+MultiplyProduction(factor::Real; kwargs...) = MultiplyProduction(; factor=Float64(factor), kwargs...)
+
+"""Net multiplicative factor from all active modifiers at time `t` for facies index `fi`."""
+function production_factor(mods, t, fi::Int)
+    f = 1.0
+    for m in mods
+        active_t = m.t_range isa Colon || (m.t_range[1] <= t <= m.t_range[2])
+        active_f = m.facies isa Colon || (m.facies isa Int ? m.facies == fi : fi in m.facies)
+        if active_t && active_f
+            f *= m.factor
+        end
+    end
+    return f
+end
+
+const EXAMPLE = Dict(
+    :euphotic => BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :oligophotic => BenthicProduction(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :aphotic => BenthicProduction(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :pelagic => PelagicProduction(
+        maximum_growth_rate=7.0u"1/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :interpolated => InterpolatedProduction(
+        maximum_production=500u"m/Myr",
+        depth_knots=[0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
+        multipliers=[0.0, 1.0, 1.0, 0.4, 0.0])
+)
+
+end
+```
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction) = true
+is_pelagic(::InterpolatedProduction) = false
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"
+    @assert length(p.depth_knots) >= 2 "InterpolatedProduction: need at least 2 knots"
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+
+# =============================================================================
+# Time-window production modifiers
+# =============================================================================
+
+const _ProdTime      = typeof(1.0u"Myr")
+const _ProdTimeSpec  = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+const _FaciesSpec    = Union{Colon, Int, AbstractVector{Int}}
+
+abstract type AbstractProductionModifier end
+
+"""
+    MultiplyProduction(factor; t_range=:, facies=:)
+
+Multiply the production rate by `factor` during `t_range` for `facies`.
+`t_range` is `:` (always) or a `(t_lo, t_hi)` tuple. `facies` is `:`
+(all), a single `Int`, or a `Vector{Int}`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProductionModifier
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+    facies::_FaciesSpec    = (:)
+end
+MultiplyProduction(factor::Real; kwargs...) = MultiplyProduction(; factor=Float64(factor), kwargs...)
+
+"""Net multiplicative factor from all active modifiers at time `t` for facies index `fi`."""
+function production_factor(mods, t, fi::Int)
+    f = 1.0
+    for m in mods
+        active_t = m.t_range isa Colon || (m.t_range[1] <= t <= m.t_range[2])
+        active_f = m.facies isa Colon || (m.facies isa Int ? m.facies == fi : fi in m.facies)
+        if active_t && active_f
+            f *= m.factor
+        end
+    end
+    return f
+end
+
+const EXAMPLE = Dict(
+    :euphotic => BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :oligophotic => BenthicProduction(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :aphotic => BenthicProduction(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :pelagic => PelagicProduction(
+        maximum_growth_rate=7.0u"1/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :interpolated => InterpolatedProduction(
+        maximum_production=500u"m/Myr",
+        depth_knots=[0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
+        multipliers=[0.0, 1.0, 1.0, 0.4, 0.0])
+)
+
+end
+```
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction) = true
+is_pelagic(::InterpolatedProduction) = false
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"
+    @assert length(p.depth_knots) >= 2 "InterpolatedProduction: need at least 2 knots"
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+
+# =============================================================================
+# Time-window production modifiers
+# =============================================================================
+
+const _ProdTime      = typeof(1.0u"Myr")
+const _ProdTimeSpec  = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+const _FaciesSpec    = Union{Colon, Int, AbstractVector{Int}}
+
+abstract type AbstractProductionModifier end
+
+"""
+    MultiplyProduction(factor; t_range=:, facies=:)
+
+Multiply the production rate by `factor` during `t_range` for `facies`.
+`t_range` is `:` (always) or a `(t_lo, t_hi)` tuple. `facies` is `:`
+(all), a single `Int`, or a `Vector{Int}`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProductionModifier
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+    facies::_FaciesSpec    = (:)
+end
+MultiplyProduction(factor::Real; kwargs...) = MultiplyProduction(; factor=Float64(factor), kwargs...)
+
+"""Net multiplicative factor from all active modifiers at time `t` for facies index `fi`."""
+function production_factor(mods, t, fi::Int)
+    f = 1.0
+    for m in mods
+        active_t = m.t_range isa Colon || (m.t_range[1] <= t <= m.t_range[2])
+        active_f = m.facies isa Colon || (m.facies isa Int ? m.facies == fi : fi in m.facies)
+        if active_t && active_f
+            f *= m.factor
+        end
+    end
+    return f
+end
+
+const EXAMPLE = Dict(
+    :euphotic => BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :oligophotic => BenthicProduction(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :aphotic => BenthicProduction(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :pelagic => PelagicProduction(
+        maximum_growth_rate=7.0u"1/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :interpolated => InterpolatedProduction(
+        maximum_production=500u"m/Myr",
+        depth_knots=[0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
+        multipliers=[0.0, 1.0, 1.0, 0.4, 0.0])
+)
+
+end
+```
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction) = true
+is_pelagic(::InterpolatedProduction) = false
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"
+    @assert length(p.depth_knots) >= 2 "InterpolatedProduction: need at least 2 knots"
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+
+# =============================================================================
+# Time-window production modifiers
+# =============================================================================
+
+const _ProdTime      = typeof(1.0u"Myr")
+const _ProdTimeSpec  = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+const _FaciesSpec    = Union{Colon, Int, AbstractVector{Int}}
+
+abstract type AbstractProductionModifier end
+
+"""
+    MultiplyProduction(factor; t_range=:, facies=:)
+
+Multiply the production rate by `factor` during `t_range` for `facies`.
+`t_range` is `:` (always) or a `(t_lo, t_hi)` tuple. `facies` is `:`
+(all), a single `Int`, or a `Vector{Int}`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProductionModifier
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+    facies::_FaciesSpec    = (:)
+end
+MultiplyProduction(factor::Real; kwargs...) = MultiplyProduction(; factor=Float64(factor), kwargs...)
+
+"""Net multiplicative factor from all active modifiers at time `t` for facies index `fi`."""
+function production_factor(mods, t, fi::Int)
+    f = 1.0
+    for m in mods
+        active_t = m.t_range isa Colon || (m.t_range[1] <= t <= m.t_range[2])
+        active_f = m.facies isa Colon || (m.facies isa Int ? m.facies == fi : fi in m.facies)
+        if active_t && active_f
+            f *= m.factor
+        end
+    end
+    return f
+end
+
+const EXAMPLE = Dict(
+    :euphotic => BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :oligophotic => BenthicProduction(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :aphotic => BenthicProduction(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :pelagic => PelagicProduction(
+        maximum_growth_rate=7.0u"1/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :interpolated => InterpolatedProduction(
+        maximum_production=500u"m/Myr",
+        depth_knots=[0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
+        multipliers=[0.0, 1.0, 1.0, 0.4, 0.0])
+)
+
+end
+```
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction) = true
+is_pelagic(::InterpolatedProduction) = false
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"
+    @assert length(p.depth_knots) >= 2 "InterpolatedProduction: need at least 2 knots"
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+
+# =============================================================================
+# Time-window production modifiers
+# =============================================================================
+
+const _ProdTime      = typeof(1.0u"Myr")
+const _ProdTimeSpec  = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+const _FaciesSpec    = Union{Colon, Int, AbstractVector{Int}}
+
+abstract type AbstractProductionModifier end
+
+"""
+    MultiplyProduction(factor; t_range=:, facies=:)
+
+Multiply the production rate by `factor` during `t_range` for `facies`.
+`t_range` is `:` (always) or a `(t_lo, t_hi)` tuple. `facies` is `:`
+(all), a single `Int`, or a `Vector{Int}`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProductionModifier
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+    facies::_FaciesSpec    = (:)
+end
+MultiplyProduction(factor::Real; kwargs...) = MultiplyProduction(; factor=Float64(factor), kwargs...)
+
+"""Net multiplicative factor from all active modifiers at time `t` for facies index `fi`."""
+function production_factor(mods, t, fi::Int)
+    f = 1.0
+    for m in mods
+        active_t = m.t_range isa Colon || (m.t_range[1] <= t <= m.t_range[2])
+        active_f = m.facies isa Colon || (m.facies isa Int ? m.facies == fi : fi in m.facies)
+        if active_t && active_f
+            f *= m.factor
+        end
+    end
+    return f
+end
+
+const EXAMPLE = Dict(
+    :euphotic => BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :oligophotic => BenthicProduction(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :aphotic => BenthicProduction(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :pelagic => PelagicProduction(
+        maximum_growth_rate=7.0u"1/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :interpolated => InterpolatedProduction(
+        maximum_production=500u"m/Myr",
+        depth_knots=[0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
+        multipliers=[0.0, 1.0, 1.0, 0.4, 0.0])
+)
+
+end
+```
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction) = true
+is_pelagic(::InterpolatedProduction) = false
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"
+    @assert length(p.depth_knots) >= 2 "InterpolatedProduction: need at least 2 knots"
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+
+# =============================================================================
+# Time-window production modifiers
+# =============================================================================
+
+const _ProdTime      = typeof(1.0u"Myr")
+const _ProdTimeSpec  = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+const _FaciesSpec    = Union{Colon, Int, AbstractVector{Int}}
+
+abstract type AbstractProductionModifier end
+
+"""
+    MultiplyProduction(factor; t_range=:, facies=:)
+
+Multiply the production rate by `factor` during `t_range` for `facies`.
+`t_range` is `:` (always) or a `(t_lo, t_hi)` tuple. `facies` is `:`
+(all), a single `Int`, or a `Vector{Int}`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProductionModifier
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+    facies::_FaciesSpec    = (:)
+end
+MultiplyProduction(factor::Real; kwargs...) = MultiplyProduction(; factor=Float64(factor), kwargs...)
+
+"""Net multiplicative factor from all active modifiers at time `t` for facies index `fi`."""
+function production_factor(mods, t, fi::Int)
+    f = 1.0
+    for m in mods
+        active_t = m.t_range isa Colon || (m.t_range[1] <= t <= m.t_range[2])
+        active_f = m.facies isa Colon || (m.facies isa Int ? m.facies == fi : fi in m.facies)
+        if active_t && active_f
+            f *= m.factor
+        end
+    end
+    return f
+end
+
+const EXAMPLE = Dict(
+    :euphotic => BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :oligophotic => BenthicProduction(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :aphotic => BenthicProduction(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :pelagic => PelagicProduction(
+        maximum_growth_rate=7.0u"1/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :interpolated => InterpolatedProduction(
+        maximum_production=500u"m/Myr",
+        depth_knots=[0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
+        multipliers=[0.0, 1.0, 1.0, 0.4, 0.0])
+)
+
+end
+```
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction) = true
+is_pelagic(::InterpolatedProduction) = false
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"
+    @assert length(p.depth_knots) >= 2 "InterpolatedProduction: need at least 2 knots"
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+
+# =============================================================================
+# Time-window production modifiers
+# =============================================================================
+
+const _ProdTime      = typeof(1.0u"Myr")
+const _ProdTimeSpec  = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+const _FaciesSpec    = Union{Colon, Int, AbstractVector{Int}}
+
+abstract type AbstractProductionModifier end
+
+"""
+    MultiplyProduction(factor; t_range=:, facies=:)
+
+Multiply the production rate by `factor` during `t_range` for `facies`.
+`t_range` is `:` (always) or a `(t_lo, t_hi)` tuple. `facies` is `:`
+(all), a single `Int`, or a `Vector{Int}`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProductionModifier
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+    facies::_FaciesSpec    = (:)
+end
+MultiplyProduction(factor::Real; kwargs...) = MultiplyProduction(; factor=Float64(factor), kwargs...)
+
+"""Net multiplicative factor from all active modifiers at time `t` for facies index `fi`."""
+function production_factor(mods, t, fi::Int)
+    f = 1.0
+    for m in mods
+        active_t = m.t_range isa Colon || (m.t_range[1] <= t <= m.t_range[2])
+        active_f = m.facies isa Colon || (m.facies isa Int ? m.facies == fi : fi in m.facies)
+        if active_t && active_f
+            f *= m.factor
+        end
+    end
+    return f
+end
+
+const EXAMPLE = Dict(
+    :euphotic => BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :oligophotic => BenthicProduction(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :aphotic => BenthicProduction(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :pelagic => PelagicProduction(
+        maximum_growth_rate=7.0u"1/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :interpolated => InterpolatedProduction(
+        maximum_production=500u"m/Myr",
+        depth_knots=[0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
+        multipliers=[0.0, 1.0, 1.0, 0.4, 0.0])
+)
+
+end
+```
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction) = true
+is_pelagic(::InterpolatedProduction) = false
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"
+    @assert length(p.depth_knots) >= 2 "InterpolatedProduction: need at least 2 knots"
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+
+# =============================================================================
+# Time-window production modifiers
+# =============================================================================
+
+const _ProdTime      = typeof(1.0u"Myr")
+const _ProdTimeSpec  = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+const _FaciesSpec    = Union{Colon, Int, AbstractVector{Int}}
+
+abstract type AbstractProductionModifier end
+
+"""
+    MultiplyProduction(factor; t_range=:, facies=:)
+
+Multiply the production rate by `factor` during `t_range` for `facies`.
+`t_range` is `:` (always) or a `(t_lo, t_hi)` tuple. `facies` is `:`
+(all), a single `Int`, or a `Vector{Int}`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProductionModifier
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+    facies::_FaciesSpec    = (:)
+end
+MultiplyProduction(factor::Real; kwargs...) = MultiplyProduction(; factor=Float64(factor), kwargs...)
+
+"""Net multiplicative factor from all active modifiers at time `t` for facies index `fi`."""
+function production_factor(mods, t, fi::Int)
+    f = 1.0
+    for m in mods
+        active_t = m.t_range isa Colon || (m.t_range[1] <= t <= m.t_range[2])
+        active_f = m.facies isa Colon || (m.facies isa Int ? m.facies == fi : fi in m.facies)
+        if active_t && active_f
+            f *= m.factor
+        end
+    end
+    return f
+end
+
+const EXAMPLE = Dict(
+    :euphotic => BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :oligophotic => BenthicProduction(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :aphotic => BenthicProduction(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :pelagic => PelagicProduction(
+        maximum_growth_rate=7.0u"1/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :interpolated => InterpolatedProduction(
+        maximum_production=500u"m/Myr",
+        depth_knots=[0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
+        multipliers=[0.0, 1.0, 1.0, 0.4, 0.0])
+)
+
+end
+```
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction) = true
+is_pelagic(::InterpolatedProduction) = false
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"
+    @assert length(p.depth_knots) >= 2 "InterpolatedProduction: need at least 2 knots"
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+
+# =============================================================================
+# Time-window production modifiers
+# =============================================================================
+
+const _ProdTime      = typeof(1.0u"Myr")
+const _ProdTimeSpec  = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+const _FaciesSpec    = Union{Colon, Int, AbstractVector{Int}}
+
+abstract type AbstractProductionModifier end
+
+"""
+    MultiplyProduction(factor; t_range=:, facies=:)
+
+Multiply the production rate by `factor` during `t_range` for `facies`.
+`t_range` is `:` (always) or a `(t_lo, t_hi)` tuple. `facies` is `:`
+(all), a single `Int`, or a `Vector{Int}`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProductionModifier
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+    facies::_FaciesSpec    = (:)
+end
+MultiplyProduction(factor::Real; kwargs...) = MultiplyProduction(; factor=Float64(factor), kwargs...)
+
+"""Net multiplicative factor from all active modifiers at time `t` for facies index `fi`."""
+function production_factor(mods, t, fi::Int)
+    f = 1.0
+    for m in mods
+        active_t = m.t_range isa Colon || (m.t_range[1] <= t <= m.t_range[2])
+        active_f = m.facies isa Colon || (m.facies isa Int ? m.facies == fi : fi in m.facies)
+        if active_t && active_f
+            f *= m.factor
+        end
+    end
+    return f
+end
+
+const EXAMPLE = Dict(
+    :euphotic => BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :oligophotic => BenthicProduction(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :aphotic => BenthicProduction(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :pelagic => PelagicProduction(
+        maximum_growth_rate=7.0u"1/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :interpolated => InterpolatedProduction(
+        maximum_production=500u"m/Myr",
+        depth_knots=[0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
+        multipliers=[0.0, 1.0, 1.0, 0.4, 0.0])
+)
+
+end
+```
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction) = true
+is_pelagic(::InterpolatedProduction) = false
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"
+    @assert length(p.depth_knots) >= 2 "InterpolatedProduction: need at least 2 knots"
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+
+# =============================================================================
+# Time-window production modifiers
+# =============================================================================
+
+const _ProdTime      = typeof(1.0u"Myr")
+const _ProdTimeSpec  = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+const _FaciesSpec    = Union{Colon, Int, AbstractVector{Int}}
+
+abstract type AbstractProductionModifier end
+
+"""
+    MultiplyProduction(factor; t_range=:, facies=:)
+
+Multiply the production rate by `factor` during `t_range` for `facies`.
+`t_range` is `:` (always) or a `(t_lo, t_hi)` tuple. `facies` is `:`
+(all), a single `Int`, or a `Vector{Int}`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProductionModifier
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+    facies::_FaciesSpec    = (:)
+end
+MultiplyProduction(factor::Real; kwargs...) = MultiplyProduction(; factor=Float64(factor), kwargs...)
+
+"""Net multiplicative factor from all active modifiers at time `t` for facies index `fi`."""
+function production_factor(mods, t, fi::Int)
+    f = 1.0
+    for m in mods
+        active_t = m.t_range isa Colon || (m.t_range[1] <= t <= m.t_range[2])
+        active_f = m.facies isa Colon || (m.facies isa Int ? m.facies == fi : fi in m.facies)
+        if active_t && active_f
+            f *= m.factor
+        end
+    end
+    return f
+end
+
+const EXAMPLE = Dict(
+    :euphotic => BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :oligophotic => BenthicProduction(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :aphotic => BenthicProduction(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :pelagic => PelagicProduction(
+        maximum_growth_rate=7.0u"1/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :interpolated => InterpolatedProduction(
+        maximum_production=500u"m/Myr",
+        depth_knots=[0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
+        multipliers=[0.0, 1.0, 1.0, 0.4, 0.0])
+)
+
+end
+```
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction) = true
+is_pelagic(::InterpolatedProduction) = false
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"
+    @assert length(p.depth_knots) >= 2 "InterpolatedProduction: need at least 2 knots"
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+
+# =============================================================================
+# Time-window production modifiers
+# =============================================================================
+
+const _ProdTime      = typeof(1.0u"Myr")
+const _ProdTimeSpec  = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+const _FaciesSpec    = Union{Colon, Int, AbstractVector{Int}}
+
+abstract type AbstractProductionModifier end
+
+"""
+    MultiplyProduction(factor; t_range=:, facies=:)
+
+Multiply the production rate by `factor` during `t_range` for `facies`.
+`t_range` is `:` (always) or a `(t_lo, t_hi)` tuple. `facies` is `:`
+(all), a single `Int`, or a `Vector{Int}`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProductionModifier
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+    facies::_FaciesSpec    = (:)
+end
+MultiplyProduction(factor::Real; kwargs...) = MultiplyProduction(; factor=Float64(factor), kwargs...)
+
+"""Net multiplicative factor from all active modifiers at time `t` for facies index `fi`."""
+function production_factor(mods, t, fi::Int)
+    f = 1.0
+    for m in mods
+        active_t = m.t_range isa Colon || (m.t_range[1] <= t <= m.t_range[2])
+        active_f = m.facies isa Colon || (m.facies isa Int ? m.facies == fi : fi in m.facies)
+        if active_t && active_f
+            f *= m.factor
+        end
+    end
+    return f
+end
+
+const EXAMPLE = Dict(
+    :euphotic => BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :oligophotic => BenthicProduction(
+        maximum_growth_rate=400u"m/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :aphotic => BenthicProduction(
+        maximum_growth_rate=100u"m/Myr",
+        extinction_coefficient=0.005u"m^-1",
+        saturation_intensity=60u"W/m^2"),
+    :pelagic => PelagicProduction(
+        maximum_growth_rate=7.0u"1/Myr",
+        extinction_coefficient=0.1u"m^-1",
+        saturation_intensity=60u"W/m^2")
+)
+
+end
+```
 
 ``` {.julia file=src/Components/Production.jl}
 @compose module Production
@@ -1188,9 +2105,9 @@ end
 using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
-using ...Production: NoProduction
-import ...Production: production_profile, is_benthic, is_pelagic, capped_production,
-    InterpolatedProduction, AbstractProductionModifier, MultiplyProduction, production_factor
+using ...Production: NoProduction, InterpolatedProduction,
+    AbstractProductionModifier, MultiplyProduction, production_factor
+import ...Production: production_profile, is_benthic, is_pelagic, capped_production
 
 using HDF5
 using QuadGK
@@ -1228,7 +2145,7 @@ function write_header(input::AbstractInput, output::AbstractOutput)
             set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"m/Myr"))
             set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
             set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
-        elseif is_InterpolatedProduction(p)
+        elseif p isa InterpolatedProduction
             set_attribute(output, "facies$(i)/type", "interpolated")
             set_attribute(output, "facies$(i)/maximum_production", p.maximum_production |> in_units_of(u"m/Myr"))
             set_attribute(output, "facies$(i)/depth_knots", p.depth_knots .|> in_units_of(u"m"))
@@ -1296,7 +2213,8 @@ The `CAProduction` component gives production that depends on the provided CA.
     using ..Production: insolation
     using ..TimeIntegration: time
     using ..WaterDepth: water_depth
-    using ...Production: production_profile, capped_production, AbstractProductionModifier, production_factor
+    using ...Production: production_profile, capped_production,
+        AbstractProductionModifier, production_factor
     using Logging
 
     function production(input::AbstractInput)
@@ -1332,10 +2250,10 @@ The `CAProduction` component gives production that depends on the provided CA.
                 for f in eachindex(facies)
                     if facies[f].active
                         output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u"m" :
-                            capped_production(production_specs[f], insolation, wd[i], dt)
+                            capped_production(production_specs[f], insolation, wd[i], dt, factors[f])
                     else
                         output[f, i[1], i[2]] =
-                            capped_production(production_specs[f], insolation, wd[i], dt)
+                            capped_production(production_specs[f], insolation, wd[i], dt, factors[f])
                     end
                 end
             end

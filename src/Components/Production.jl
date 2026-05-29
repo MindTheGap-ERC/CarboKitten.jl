@@ -4,9 +4,9 @@
 using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
-using ...Production: NoProduction
-import ...Production: production_profile, is_benthic, is_pelagic, capped_production,
-    InterpolatedProduction, AbstractProductionModifier, MultiplyProduction, production_factor
+using ...Production: NoProduction, InterpolatedProduction,
+    AbstractProductionModifier, MultiplyProduction, production_factor
+import ...Production: production_profile, is_benthic, is_pelagic, capped_production
 
 using HDF5
 using QuadGK
@@ -19,7 +19,7 @@ export AbstractProductionModifier, MultiplyProduction, InterpolatedProduction
 # ~/~ begin <<docs/src/components/production.md#production-input>>[init]
 @kwdef struct Input <: AbstractInput
     insolation
-    production_modifiers::Vector{AbstractProductionModifier} = AbstractProductionModifier[]
+    production_modifiers = []
 end
 
 @kwdef struct Facies <: AbstractFacies
@@ -73,7 +73,7 @@ function write_header(input::AbstractInput, output::AbstractOutput)
             set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"m/Myr"))
             set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
             set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
-        elseif is_InterpolatedProduction(p)
+        elseif p isa InterpolatedProduction
             set_attribute(output, "facies$(i)/type", "interpolated")
             set_attribute(output, "facies$(i)/maximum_production", p.maximum_production |> in_units_of(u"m/Myr"))
             set_attribute(output, "facies$(i)/depth_knots", p.depth_knots .|> in_units_of(u"m"))

@@ -102,6 +102,7 @@ include("./Config.jl")
 include("./Stencil.jl")
 include("./SedimentStack.jl")
 include("./Utility.jl")
+include("./Subsidence.jl")
 include("./DataSets.jl")
 include("./Production.jl")
 

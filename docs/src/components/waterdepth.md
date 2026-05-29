@@ -23,6 +23,8 @@ saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation p
 @mixin TimeIntegration, Boxes
 using ..Common
 using HDF5
+using Unitful
+using Unitful: ustrip
 using ..TimeIntegration: time, time_axis
 using CarboKitten.Subsidence
 import CarboKitten.Subsidence: cumulative_subsidence

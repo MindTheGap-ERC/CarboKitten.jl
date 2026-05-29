@@ -65,11 +65,11 @@ function run_modifiers()
               t_range=(0.0u"Myr", 0.5u"Myr")),
         # Add 20 m/Myr to a central patch, applied for the full run
         AddRate(20.0u"m/Myr";
-                x_range=(3.0u"km", 6.0u"km"),
-                y_range=(2.0u"km", 5.0u"km")),
+                x_range=(3000.0u"m", 6000.0u"m"),
+                y_range=(2000.0u"m", 5000.0u"m")),
         # Pin the rate to 0 over the rightmost strip for the last quarter
         SetRate(0.0u"m/Myr";
-                x_range=(12.0u"km", 15.0u"km"),
+                x_range=(12000.0u"m", 15000.0u"m"),
                 t_range=(0.75u"Myr", 1.0u"Myr")),
     ]
     input = base_input("subs-modifiers", 50.0u"m/Myr"; modifiers=modifiers)

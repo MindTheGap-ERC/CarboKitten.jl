@@ -206,18 +206,30 @@ using HDF5
 
 import CarboKitten.Components.Common: AbstractInput
 import CarboKitten.Visualization: production_curve!, production_curve
-using CarboKitten.Production: BenthicProduction, benthic_production, PelagicProduction, pelagic_production
+using CarboKitten.Production: BenthicProduction, benthic_production, PelagicProduction, pelagic_production, InterpolatedProduction, production_profile
+using Interpolations
 
 function production_curve!(ax, input::I) where I <: AbstractInput
-    ax.title = "production at $(sprint(show, input.insolation; context=:fancy_exponent=>true))"
     ax.xlabel = "production [m/Myr]"
     ax.ylabel = "depth [m]"
     ax.yreversed = true
 
+    insolation_repr = input.insolation isa Quantity ? input.insolation :
+        input.insolation isa AbstractVector ? first(input.insolation) :
+        input.insolation(input.time.t0)
+
+    max_d = 50.0u"m"
     for f in input.facies
-        depth = (0.1:0.1:50.0)u"m"
-        prod = [production_rate(input.insolation, f, d) for d in depth]
-        lines!(ax, prod / u"m/Myr", depth / u"m")
+        if f.production isa InterpolatedProduction && !isempty(f.production.depth_knots)
+            max_d = max(max_d, maximum(f.production.depth_knots))
+        end
+    end
+    depth = (0.1u"m":0.1u"m":max_d)
+
+    for (i, f) in enumerate(input.facies)
+        profile = production_profile(input, f.production)
+        prod = [profile(insolation_repr, d) for d in depth]
+        lines!(ax, prod ./ u"m/Myr", depth ./ u"m"; label="facies $(i)")
     end
 end
 
@@ -241,7 +253,6 @@ function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")
     a = HDF5.attributes(g)
     insolation = 400.0u"W/m^2"  # a["insolation"][] * u"W/m^2"
 
-    ax.title = "production at $(sprint(show, insolation; context=:fancy_exponent=>true))"
     ax.xlabel = "production [m/Myr]"
     ax.ylabel = "depth [m]"
 
@@ -263,6 +274,17 @@ function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")
                 saturation_intensity = fa["saturation_intensity"][] * u"W/m^2")
             depth = (0.1u"m":0.1u"m":-max_depth)
             prod = [pelagic_production(insolation, f, d) for d in depth]
+            lines!(ax, prod / u"m/Myr", - depth / u"m")
+        end
+        if fa["type"][] == "interpolated"
+            max_rate = fa["maximum_production"][] * u"m/Myr"
+            knots = fa["depth_knots"][]
+            mults = Float64.(fa["multipliers"][])
+            order = sortperm(knots)
+            itp = linear_interpolation(knots[order], mults[order], extrapolation_bc=Flat())
+            plot_depth = max(-max_depth, maximum(knots) * u"m")
+            depth = (0.1u"m":0.1u"m":plot_depth)
+            prod = [max_rate * itp(Unitful.ustrip(u"m", d)) for d in depth]
             lines!(ax, prod / u"m/Myr", - depth / u"m")
         end
     end

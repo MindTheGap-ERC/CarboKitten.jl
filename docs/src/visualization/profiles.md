@@ -149,7 +149,7 @@ function age_depth_model(header::Header, data::DataSlice)
     t = header.axes.t |> in_units_of(u"Myr")
 
     n_facies, n_x, n_t = size(data.production)
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    total_subsidence = cumulative_subsidence(header, header.axes.t[end])[data.slice...]
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
     h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
@@ -252,7 +252,7 @@ using CarboKitten.Visualization
 using CarboKitten.Utility: in_units_of
 using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
 using CarboKitten.Algorithms: skeleton
-using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
+using CarboKitten.Output.Abstract: stratigraphic_column, water_depth, cumulative_subsidence
 
 using Makie
 using GeometryBasics
@@ -284,11 +284,11 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
     t = header.axes.t |> in_units_of(u"Myr")
 
     n_facies, n_x, n_t = size(data.production)
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    total_subsidence = cumulative_subsidence(header, header.axes.t[end])[data.slice...]
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
     h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
-    sc_clamped = max.(sc, zero(eltype(sc)))  
+    sc_clamped = max.(sc, zero(eltype(sc)))
     @views h[:, 2:end] .+= cumsum(sum(sc_clamped, dims=1)[1,:,:], dims=2)
 
     verts = zeros(Float64, n_x, n_t+1, 2)
@@ -342,7 +342,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
     h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
-    sc_clamped = max.(sc, zero(eltype(sc)))   
+    sc_clamped = max.(sc, zero(eltype(sc)))
     @views h[:, 2:end] .+= cumsum(sum(sc_clamped, dims=1)[1,:,:], dims=2)
 
     if show_sealevel

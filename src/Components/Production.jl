@@ -14,7 +14,7 @@ using Interpolations
 using Logging
 
 export uniform_production
-export AbstractProductionModifier, MultiplyProduction, InterpolatedProduction
+export AbstractProductionModifier, MultiplyProduction, InterpolatedProduction, NoProduction
 
 # ~/~ begin <<docs/src/components/production.md#production-input>>[init]
 @kwdef struct Input <: AbstractInput

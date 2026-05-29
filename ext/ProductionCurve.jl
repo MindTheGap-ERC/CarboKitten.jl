@@ -79,8 +79,9 @@ function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u"m")
         end
         if fa["type"][] == "interpolated"
             max_rate = fa["maximum_production"][] * u"m/Myr"
-            knots = fa["depth_knots"][]
-            mults = Float64.(fa["multipliers"][])
+            fg = g["facies$(i)"]
+            knots = fg["depth_knots"][]
+            mults = Float64.(fg["multipliers"][])
             order = sortperm(knots)
             itp = linear_interpolation(knots[order], mults[order], extrapolation_bc=Flat())
             plot_depth = max(-max_depth, maximum(knots) * u"m")

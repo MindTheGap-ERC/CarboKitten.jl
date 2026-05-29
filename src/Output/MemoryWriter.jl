@@ -33,7 +33,7 @@ function new_output(::Type{MemoryOutput}, input::Input) where {Input <: Abstract
     #   - matrix / function input → derive a Matrix{Rate} *and* keep a scalar
     #     summary so old code reading header.subsidence_rate still works.
     rate_input = input.subsidence_rate
-    if rate_input isa Rate
+    if rate_input isa Quantity
         sr_scalar = rate_input
         sr_map = nothing
     else

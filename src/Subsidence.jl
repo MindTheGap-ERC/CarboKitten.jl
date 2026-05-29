@@ -11,6 +11,23 @@ const Time     = typeof(1.0u"Myr")
 const Length   = typeof(1.0u"m")
 const Location = typeof(1.0u"m")
 
+#Normalize  constants to expected units.
+_rate(r::Quantity) = uconvert(u"m/Myr", r)
+_length(x::Quantity) = uconvert(u"m", x)
+_time(t::Quantity) = uconvert(u"Myr", t)
+
+_normalize_axis(::Colon) = (:)
+_normalize_axis(r::Tuple{<:Quantity,<:Quantity}) =
+    (_length(r[1]), _length(r[2]))
+_normalize_axis(r::AbstractRange{<:Quantity}) =
+    _length.(r)
+
+_normalize_time(::Colon) = (:)
+_normalize_time(r::Tuple{<:Quantity,<:Quantity}) =
+    (_time(r[1]), _time(r[2]))
+_normalize_time(r::AbstractRange{<:Quantity}) =
+    _time.(r)
+
 # Specs for the (x, y) and t axes of a modifier's box.
 const AxisSpec = Union{Colon,Tuple{Location,Location},AbstractRange{<:Location}}
 const TimeSpec = Union{Colon,Tuple{Time,Time},AbstractRange{<:Time}}
@@ -28,7 +45,7 @@ Multiply the subsidence rate by `factor` inside the given box.
     y_range::AxisSpec = (:)
     t_range::TimeSpec = (:)
 end
-MultiplyRate(factor::Real; kwargs...) = MultiplyRate(; factor=Float64(factor), kwargs...)
+MultiplyRate(factor::Real; x_range = (:), y_range = (:), t_range = (:)) = MultiplyRate(factor = Float64(factor), x_range = _normalize_axis(x_range), y_range = _normalize_axis(y_range), t_range = _normalize_time(t_range))
 
 Halve(;  kwargs...) = MultiplyRate(0.5; kwargs...)
 Double(; kwargs...) = MultiplyRate(2.0; kwargs...)
@@ -45,7 +62,7 @@ negative `delta` for subtraction.
     y_range::AxisSpec = (:)
     t_range::TimeSpec = (:)
 end
-AddRate(delta::Rate; kwargs...) = AddRate(; delta=delta, kwargs...)
+AddRate(delta::Quantity; x_range = (:), y_range = (:), t_range = (:)) = AddRate(delta = _rate(delta), x_range = _normalize_axis(x_range), y_range = _normalize_axis(y_range), t_range = _normalize_time(t_range))
 
 """
     SetRate(rate; x_range=:, y_range=:, t_range=:)
@@ -58,7 +75,7 @@ Override the subsidence rate to `rate` (a `Rate`) inside the given box.
     y_range::AxisSpec = (:)
     t_range::TimeSpec = (:)
 end
-SetRate(rate::Rate; kwargs...) = SetRate(; rate=rate, kwargs...)
+SetRate(rate::Quantity; x_range = (:), y_range = (:), t_range = (:)) = SetRate( rate = _rate(rate),  x_range = _normalize_axis(x_range), y_range = _normalize_axis(y_range), t_range = _normalize_time(t_range))
 
 apply_rate(m::MultiplyRate, r::Rate) = m.factor * r
 apply_rate(m::AddRate,      r::Rate) = r + m.delta

@@ -58,7 +58,7 @@ function make_header(input::AbstractInput)
     # Same resolution logic as MemoryWriter — scalar fast path, otherwise
     # store the full map plus a representative scalar.
     rate_input = input.subsidence_rate
-    if rate_input isa Rate
+    if rate_input isa Quantity
         sr_scalar = rate_input
         sr_map = nothing
     else

@@ -18,7 +18,8 @@ export cumulative_subsidence
     initial_topography = (x, y) -> 0.0u"m"
     # Either a scalar `Rate` (legacy) or a `Matrix{Rate}` matching `box.grid_size`,
     # or a `(x, y) -> Rate` function evaluated on the grid at construction time.
-    subsidence_rate::Union{Rate,AbstractMatrix{<:Rate},Function} = 0.0u"m/Myr"
+    # Any rate-dimensioned Quantity is accepted (m/yr, m/Myr, etc.).
+    subsidence_rate = 0.0u"m/Myr"
     subsidence_modifiers::Vector{AbstractSubsidenceModifier} = AbstractSubsidenceModifier[]
     end
 
@@ -63,7 +64,7 @@ end
 # Scalar shortcut: if subsidence is uniform and there are no modifiers, the
 # legacy formula is bit-identical and avoids a temporary matrix per timestep.
 _is_scalar_subsidence(input::AbstractInput) =
-    input.subsidence_rate isa Rate && isempty(input.subsidence_modifiers)
+    input.subsidence_rate isa Quantity && isempty(input.subsidence_modifiers)
 
 """
     cumulative_subsidence(input::AbstractInput) -> (t -> Matrix{Length})
@@ -112,7 +113,7 @@ function write_header(input::AbstractInput, output::AbstractOutput)
     # Backward-compatible scalar summary so old consumers reading
     # `header.subsidence_rate` keep working.
     rate_map = subsidence_rate_map(input)
-    scalar_rep = if input.subsidence_rate isa Rate
+    scalar_rep = if input.subsidence_rate isa Quantity
         input.subsidence_rate
     else
         sum(rate_map) / length(rate_map)
@@ -121,7 +122,7 @@ function write_header(input::AbstractInput, output::AbstractOutput)
 
     # Per-cell rate map (only when non-uniform). The AbstractArray dispatch of
     # `set_attribute` writes a dataset, so this lands under `input/subsidence_rate_map`.
-    if !(input.subsidence_rate isa Rate)
+    if !(input.subsidence_rate isa Quantity)
         set_attribute(output, "subsidence_rate_map",
                       rate_map .|> in_units_of(u"m/Myr"))
     end

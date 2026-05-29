@@ -15,7 +15,7 @@ using CarboKitten.Visualization: fence_diagram, fence_diagram!
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
-function from_file()
+function from_file_categorical()
     fig = fence_diagram(
         "data/output/alcap-example.h5", :topography;
         x_slices = [10, 30, 50],     # grid indices
@@ -30,7 +30,7 @@ end
  
 # Same data, but using the in-place / lower-level form so you can compose with
 # other axes in your own figure.
-function from_file_inplace()
+function from_file_inplace_categorical()
     header, volume = read_volume("data/output/alcap-example.h5", :topography)
  
     fig = Figure(size = (1400, 900))
@@ -56,7 +56,7 @@ end
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
-function from_file()
+function from_file_fraction()
     fig = fence_diagram(
         "data/output/alcap-example.h5", :topography;
         x_slices = [10, 30, 50],     # grid indices
@@ -73,7 +73,7 @@ end
  
 # Same data, but using the in-place / lower-level form so you can compose with
 # other axes in your own figure.
-function from_file_inplace()
+function from_file_inplace_fraction()
     header, volume = read_volume("data/output/alcap-example.h5", :topography)
  
     fig = Figure(size = (1400, 900))
@@ -118,5 +118,5 @@ end
  
 end  # module Script
  
-Script.from_file()
+Script.from_file_categorical()
 # ~/~ end

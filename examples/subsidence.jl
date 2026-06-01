@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/subsidence.md#examples/subsidence.jl>>[init]
+# ~/~ begin <<docs/src/components/subsidence.md#examples/subsidence.jl>>[init]
 module Script
 
 using Unitful

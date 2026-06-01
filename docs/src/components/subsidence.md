@@ -20,25 +20,74 @@ Double(t_range=(0u"Myr", 0.2u"Myr"))    # MultiplyRate(2.0)
  
 `x_range`, `y_range`, `t_range` accept `:` for "no restriction", or a 2-tuple
 of `Quantity` interpreted as an inclusive `[lo, hi]` interval.
- 
+
+### Available modifier types
+
+| Type               | Effect                                     | Key parameter       |
+|--------------------|--------------------------------------------|----------------------|
+| `MultiplyRate`     | Multiply the rate by a factor              | `factor::Float64`    |
+| `AddRate`          | Add a constant to the rate                 | `delta::Rate`        |
+| `SetRate`          | Override the rate to a fixed value         | `rate::Rate`         |
+| `Halve`            | Shorthand for `MultiplyRate(0.5, ...)`     | —                    |
+| `Double`           | Shorthand for `MultiplyRate(2.0, ...)`     | —                    |
+
+Modifiers compose in declaration order: each operates on the rate produced by the previous one.
+
 ## Cumulative-subsidence integral
  
 For a base rate map (Matrix{Rate}) and a list of modifiers, the cumulative
 subsidence at time `t` is the piecewise integral
  
 ```math
-S(x, y, t) = ∫_{t_0}^{t} r_eff(x, y, τ) dτ
+S(x, y, t) = \int_{t_0}^{t} r_{\mathrm{eff}}(x, y, \tau) \, \mathrm{d}\tau
 ```
  
 where `r_eff` is `base_rate` sequentially transformed by every modifier whose
 (x, y, t)-box contains the point. Modifiers apply in declaration order, each
 operating on the rate produced by the previous one.
 
-## Compatibility
+Because modifiers are piecewise-constant in time, the integral is computed analytically by walking the union of modifier event boundaries (start/end times intersected with $[t_0, t]$). On each sub-interval, the effective rate matrix is evaluated once, multiplied by the interval duration, and accumulated. Spatial masks for each modifier are precomputed when the closure is built, so repeated evaluation at different times (e.g. once per write step in a plotter) is efficient.
 
- To ensure compatibility with the plotting routines, these have been updated to receive cumulative subsidence. This allows the plots to account for time- and space-dependent subsidence when calculating the water depth and stratigraphic height.
+## Method dispatch
 
-### Tests - Subsidence-modification examples
+The `cumulative_subsidence` function is generic, with methods in different modules:
+
+| Signature | Returns | Module |
+|-----------|---------|--------|
+| `(base_map, modifiers, x_axis, y_axis, t0)` | closure `t -> Matrix{Length}` | `Subsidence` |
+| `(input::AbstractInput)` | closure `t -> Matrix{Length}` | `Components.WaterDepth` |
+| `(header::Header)` | closure `t -> Matrix{Length}` | `Output.Abstract` |
+| `(header::Header, t::Time)` | `Matrix{Length}` | `Output.Abstract` |
+| `(header::Header, data::Data)` | array matching `data.sediment_thickness` shape | `Output.Abstract` |
+
+All methods ultimately delegate to the first (pure) method in `Subsidence`.
+
+## Usage in plot routines
+
+To ensure compatibility with the plotting routines, these have been updated to receive cumulative subsidence. This allows the plots to account for time- and space-dependent subsidence when calculating the water depth and stratigraphic height.
+
+Every plot routine that previously used `header.subsidence_rate * Δt` (a scalar approximation) now calls `cumulative_subsidence(header, ...)`:
+
+- **`SedimentProfile`**: `total_subsidence = cumulative_subsidence(header, header.axes.t[end])[data.slice...]`
+- **`WheelerDiagram`**: `Σ = cumulative_subsidence(header, data)` with offset-from-end-time convention preserved.
+- **`GlamourView`**: `bedrock = header.initial_topography .- cumulative_subsidence(header, header.axes.t[end])`
+- **`Export.extract_wd`**: `Σ = cumulative_subsidence(header, data)` — also fixes a pre-existing bug where `t0` was not subtracted.
+
+## HDF5 serialization
+
+Subsidence data is serialized as follows:
+
+- `input/subsidence_rate` — scalar attribute (always present). For non-uniform subsidence, this is the mean of the rate map, ensuring backward compatibility with readers that expect a scalar.
+- `input/subsidence_rate_map` — dataset, present only when the rate is non-uniform. Shape `(nx, ny)`, in `m/Myr`.
+- `input/subsidence_modifiers/m1/`, `.../m2/`, etc. — one group per modifier, each containing:
+  - `kind` — string attribute (`"MultiplyRate"`, `"AddRate"`, `"SetRate"`).
+  - Type-specific parameter (`factor`, `delta`, or `rate`).
+  - `x_range`, `y_range` — 2-element `Float64` arrays in meters; `[NaN, NaN]` encodes `:`.
+  - `t_range` — 2-element `Float64` array in Myr; `[NaN, NaN]` encodes `:`.
+
+Old HDF5 files (without these optional fields) load with the new `Header` fields defaulting to `nothing` / `[]`, so the scalar code path is taken — fully backward compatible.
+
+## Tests - Subsidence-modification examples
 
 The following examples consist of three runs of the ALCAP example, each varying only the subsidence inputs.
 All three should work side-by-side and produce H5 outputs.

@@ -256,4 +256,4 @@ end
 
 ## Subsidence module
 
-The modifier types and cumulative-subsidence algorithm are defined in the [Subsidence](@ref) module. See that page for the full source and API.
+The modifier types and cumulative-subsidence algorithm are defined in the [Subsidence](subsidence.md) module. See that page for the full source and API.

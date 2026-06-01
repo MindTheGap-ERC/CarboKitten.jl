@@ -63,7 +63,7 @@ function write_header(input::AbstractInput, output::AbstractOutput)
 
     for (i, f) in enumerate(input.facies)
         p = f.production
-        if is_pelagic(p)
+        if p isa PelagicProduction
             set_attribute(output, "facies$(i)/type", "pelagic")
             set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"1/Myr"))
             set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
@@ -120,7 +120,6 @@ function uniform_production(input::AbstractInput)
     end
     p_mod(state::AbstractState) = p_mod(state, w(state))
     return p_mod
-
 end
 
 end

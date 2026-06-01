@@ -379,12 +379,12 @@ must equal `length(multipliers)` and be ≥ 2.
 
 # Example
 
-```julia
+
 InterpolatedProduction(
     maximum_production = 500.0u"m/Myr",
     depth_knots        = [0.0u"m", 5.0u"m", 20.0u"m", 50.0u"m"],
     multipliers        = [0.0,     1.0,     0.6,      0.0])
-```
+
 """
 @kwdef struct InterpolatedProduction <: AbstractProduction
     maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"

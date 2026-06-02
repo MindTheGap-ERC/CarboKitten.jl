@@ -199,7 +199,7 @@ function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwi
 end
 
 function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Int; kwargs...)
-    x = header.axes.x |> in_units_of(u"km")
+    x = _section_positions(header, data)
     wi = data.write_interval
     hiatus = skeleton(water_depth(header, data) .< 0.0u"m", minwidth=minwidth)
 
@@ -299,7 +299,7 @@ coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwar
     coeval_lines!(ax, header, data, age_depth_model(header, data), tics; kwargs...)
 
 function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Int}; kwargs...)
-    x = header.axes.x |> in_units_of(u"km")
+    x = _section_positions(header, data)
     h = adm |> in_units_of(u"m")
     for t in tics
         lines!(ax, x, h[:, t]; kwargs...)
@@ -351,7 +351,7 @@ function, plots the initial topography and the mesh by passing `mesh_args...`.
 The `color` array should have the same size as a single facies for `data.production`.
 """
 function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::AbstractArray, mesh_args...)
-    x = header.axes.x |> in_units_of(u"km")
+    x = _section_positions(header, data)
     t = header.axes.t |> in_units_of(u"Myr")
 
     n_facies, n_x, n_t = size(data.production)
@@ -359,7 +359,7 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
     h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
-    sc_clamped = max.(sc, zero(eltype(sc)))  
+    sc_clamped = max.(sc, zero(eltype(sc)))
     @views h[:, 2:end] .+= cumsum(sum(sc_clamped, dims=1)[1,:,:], dims=2)
 
     verts = zeros(Float64, n_x, n_t+1, 2)
@@ -374,7 +374,7 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
     lines!(ax, x, bedrock; color=:black, label="initial topography")
     ylims!(ax, lower_limit + 10, nothing)
     xlims!(ax, x[1], x[end])
-    ax.xlabel = "position [km]"
+    ax.xlabel = data.slice[1] isa Int ? "position along strike [km]" : "position along dip [km]"
     ax.ylabel = "depth [m]"
 
     c = reshape(color, n_x * n_t)
@@ -395,7 +395,7 @@ function profile_plot!(f::F, ax::Axis, header::Header, data::DataSlice; mesh_arg
 end
 
 """
-    sediment_profile!(ax, header, data; show_unconformities)
+    sediment_profile!(ax, header, data; show_unconformities, mode=:deposited)
 
 Plot the sediment profile, choosing colour by dominant facies type (argmax).
 
@@ -418,7 +418,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
     h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
-    sc_clamped = max.(sc, zero(eltype(sc)))   
+    sc_clamped = max.(sc, zero(eltype(sc)))
     @views h[:, 2:end] .+= cumsum(sum(sc_clamped, dims=1)[1,:,:], dims=2)
 
     if show_sealevel
@@ -447,12 +447,11 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
 end
 
 """
-sediment_profile(header, data_slice; mode=:deposited, show_unconformities=true)
+    sediment_profile(header, data_slice; mode=:deposited, show_unconformities=true)
 
-Plot the sediment profile from `data_slice`. Dominant facies colour is chosen by
-`argmax`. `mode` selects `:deposited` (default, backward compatible) or
-`:preserved` sediment. By default unconformities are shown using dashed white
-lines.
+Plot the sediment profile from `data_slice`. Dominant facies colour is chosen
+by `argmax`. `mode` selects `:deposited` (default) or `:preserved` sediment.
+By default unconformities are shown using dashed white lines.
 """
 function sediment_profile(header::Header, data_slice::DataSlice;
                            mode::Symbol = :deposited,
@@ -467,8 +466,9 @@ end
     sediment_proportion!(ax, header, data, facies_index;
                          mode=:deposited, colorrange=(0,1), colormap=:viridis)
 
-Plot the proportion of `facies_index` relative to total sediment using the same
-stratigraphic mesh as `sediment_profile!`.
+Plot the proportion of `facies_index` relative to total sediment at each
+location and time step, using the same stratigraphic mesh as `sediment_profile!`.
+
 
 `mode` selects the sediment record:
 

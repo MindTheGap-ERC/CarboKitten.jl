@@ -702,14 +702,15 @@ end
             box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=5.0u"m"),
             time = TimeProperties(Δt=1.0u"kyr", steps=10),
             sea_level = t -> 0.0u"m",
-            initial_topography = (x, y) -> -50u"m",
+            initial_topography = (x, y) -> -x * 1.0,
             subsidence_rate = 0.0u"m/Myr",
             facies = [Facies(production=prod)],
             insolation = 400.0u"W/m^2")
 
         state = initial_state(input)
         p = uniform_production(input)(state)
-        # production at 10 m depth (mid-plateau) should be > production at 0 m (multiplier=0)
+        # x=10m (position 3) has depth 10m, multiplier=1.0
+        # x=0m (position 1) has depth 0m, multiplier=0.0
         @test p[1, 3, 1] > p[1, 1, 1]
         # production should be non-negative everywhere
         @test all(p .>= 0.0u"m")

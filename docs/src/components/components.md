@@ -100,7 +100,7 @@ module Components
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
     CAProduction, CAFeedback, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
-    ActiveLayerOnshore, Denudation, InitialSediment, Output, Diagnostics
+    ActiveLayerOnshore, Denudation, InitialSediment, Output, Diagnostics, Subsidence
 
 using ModuleMixins: @compose
 
@@ -109,6 +109,7 @@ include("Components/Tag.jl")
 include("Components/Diagnostics.jl")
 include("Components/TimeIntegration.jl")
 include("Components/Boxes.jl")
+include("Components/Subsidence.jl")
 include("Components/WaterDepth.jl")
 include("Components/FaciesBase.jl")
 include("Components/Production.jl")

@@ -96,8 +96,8 @@ using HDF5
 using Unitful
 using Unitful: ustrip
 using ..TimeIntegration: time, time_axis
-using CarboKitten.Subsidence
-import CarboKitten.Subsidence: cumulative_subsidence
+using CarboKitten.Components.Subsidence
+import CarboKitten.Components.Subsidence: cumulative_subsidence
 
 export water_depth, subsidence_rate_map
 export AbstractSubsidenceModifier, MultiplyRate, AddRate, SetRate, Halve, Double, apply_rate

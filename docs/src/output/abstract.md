@@ -39,7 +39,7 @@ import ...Algorithms: stratigraphic_column!
 
 # Pull `cumulative_subsidence` from the Subsidence module so the methods we
 # add here for `Header` extend the same generic function.
-import ...Subsidence: cumulative_subsidence, deserialize_modifier, AbstractSubsidenceModifier
+import CarboKitten.Components.Subsidence: cumulative_subsidence, deserialize_modifier, AbstractSubsidenceModifier
 
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
 export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer

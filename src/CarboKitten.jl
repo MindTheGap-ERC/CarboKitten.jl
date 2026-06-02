@@ -104,6 +104,7 @@ include("./SedimentStack.jl")
 include("./Utility.jl")
 include("./DataSets.jl")
 include("./Production.jl")
+include("./WaveField.jl")
 
 include("./RunModel.jl")
 

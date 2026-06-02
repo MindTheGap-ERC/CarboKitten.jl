@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/components/wavefield.md#src/WaveField.jl>>[init]
+# ~/~ begin <<docs/src/components/wavefield.md#src/Components/WaveField.jl>>[init]
 module WaveField
 
 using Unitful

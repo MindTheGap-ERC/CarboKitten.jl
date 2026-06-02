@@ -207,6 +207,14 @@ Defaults to `false`.
 """
 is_pelagic(p) = false
 
+"""
+    is_interpolated(obj)
+
+Predicate to determine if a facies or production spec is interpolation-based.
+Defaults to `false`.
+"""
+is_interpolated(p) = false
+
 abstract type AbstractProduction end
 
 struct NoProduction <: AbstractProduction
@@ -392,8 +400,9 @@ InterpolatedProduction(
     multipliers::Vector{Float64}            = Float64[]
 end
 
-is_benthic(::InterpolatedProduction) = true
+is_benthic(::InterpolatedProduction) = false
 is_pelagic(::InterpolatedProduction) = false
+is_interpolated(::InterpolatedProduction) = true
 
 function production_profile(::AbstractInput, p::InterpolatedProduction)
     @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"
@@ -476,7 +485,7 @@ using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
 using ...Production: NoProduction, InterpolatedProduction,
     AbstractProductionModifier, MultiplyProduction, production_factor
-import ...Production: production_profile, is_benthic, is_pelagic, capped_production
+import ...Production: production_profile, is_benthic, is_pelagic, is_interpolated, capped_production
 
 using HDF5
 using QuadGK
@@ -504,12 +513,12 @@ function write_header(input::AbstractInput, output::AbstractOutput)
 
     for (i, f) in enumerate(input.facies)
         p = f.production
-        if p isa PelagicProduction
+        if is_pelagic(p)
             set_attribute(output, "facies$(i)/type", "pelagic")
             set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"1/Myr"))
             set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
             set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
-        elseif p isa InterpolatedProduction
+        elseif is_interpolated(p)
             set_attribute(output, "facies$(i)/type", "interpolated")
             set_attribute(output, "facies$(i)/maximum_production", p.maximum_production |> in_units_of(u"m/Myr"))
             set_attribute(output, "facies$(i)/depth_knots", p.depth_knots .|> in_units_of(u"m"))

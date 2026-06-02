@@ -75,6 +75,14 @@ Defaults to `false`.
 """
 is_pelagic(p) = false
 
+"""
+    is_interpolated(obj)
+
+Predicate to determine if a facies or production spec is interpolation-based.
+Defaults to `false`.
+"""
+is_interpolated(p) = false
+
 abstract type AbstractProduction end
 
 struct NoProduction <: AbstractProduction
@@ -169,8 +177,9 @@ InterpolatedProduction(
     multipliers::Vector{Float64}            = Float64[]
 end
 
-is_benthic(::InterpolatedProduction) = true
+is_benthic(::InterpolatedProduction) = false
 is_pelagic(::InterpolatedProduction) = false
+is_interpolated(::InterpolatedProduction) = true
 
 function production_profile(::AbstractInput, p::InterpolatedProduction)
     @assert length(p.depth_knots) == length(p.multipliers) "InterpolatedProduction: depth_knots and multipliers must have equal length"

@@ -21,6 +21,12 @@ Modules = [CarboKitten.Production]
 Modules = [CarboKitten.Transport.Advection]
 ```
 
+## Wave Field
+
+```@autodocs
+Modules = [CarboKitten.WaveField]
+```
+
 ## Export
 
 ```@autodocs

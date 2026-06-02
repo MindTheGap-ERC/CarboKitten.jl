@@ -174,7 +174,7 @@ Script.main()
 
 ### Implementation
 
-```{.julia file=src/Subsidence.jl}
+```{.julia file=src/Components/Subsidence.jl}
 module Subsidence
 
 using Unitful

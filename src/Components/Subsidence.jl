@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/components/subsidence.md#src/Subsidence.jl>>[init]
+# ~/~ begin <<docs/src/components/subsidence.md#src/Components/Subsidence.jl>>[init]
 module Subsidence
 
 using Unitful

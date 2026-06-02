@@ -506,7 +506,11 @@ end
 """
     sediment_proportion(header, data, facies_index; mode=:deposited, kwargs...)
 
-Standalone proportion figure. See `sediment_proportion!` for keyword arguments.
+Standalone proportion figure. Shows the fraction of `facies_index` relative to
+total sediment using the same mesh geometry as `sediment_profile`. A `Colorbar`
+is added automatically.
+
+See `sediment_proportion!` for keyword arguments.
 """
 function sediment_proportion(header::Header, data::DataSlice, facies_index::Int;
                               mode::Symbol = :deposited,

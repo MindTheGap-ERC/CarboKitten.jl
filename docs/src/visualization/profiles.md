@@ -98,7 +98,7 @@ end
 
 Beyond the dominant-facies categorical view, it is useful to see the proportion of a specific facies relative to total sediment at each location and time step. The `sediment_proportion!` function provides this using the same mesh geometry as `sediment_profile!`.
 
-![Proportion plot](../fig/profile_proportion.png)
+![Proportion plot](../fig/profile_fraction.png)
 
 ``` {.julia .task file=examples/visualization/profile_proportion.jl}
 #| creates: docs/src/fig/profile_proportion.png

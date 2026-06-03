@@ -2,7 +2,7 @@
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "5febd3f7d2e1d87caec491b70bf21ed702f35b48"
+project_hash = "74a292da9f72c3fa3147129ac6a80921a4e9a6a0"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -176,6 +176,12 @@ git-tree-sha1 = "f21cfd4950cb9f0587d5067e69405ad2acd27b87"
 uuid = "62783981-4cbd-42fc-bca8-16325de8dc4b"
 version = "0.1.6"
 
+[[deps.Bonito]]
+deps = ["Base64", "CodecZlib", "Colors", "Dates", "Deno_jll", "HTTP", "Hyperscript", "JSON", "LinearAlgebra", "Markdown", "MbedTLS", "MsgPack", "Observables", "OrderedCollections", "Random", "RelocatableFolders", "SHA", "Sockets", "Tables", "ThreadPools", "URIs", "UUIDs", "WidgetsBase"]
+git-tree-sha1 = "bb43f72801f703ad3c66833bd02b8f54c7328238"
+uuid = "824d6782-a2ef-11e9-3a09-e5662e0c26f8"
+version = "4.2.0"
+
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "1b96ea4a01afe0ea4090c5c8039690672dd13f2e"
@@ -237,7 +243,7 @@ version = "1.18.7+0"
 deps = ["CSV", "CategoricalArrays", "DataFrames", "DelimitedFiles", "GeometryBasics", "HDF5", "Interpolations", "LinearAlgebra", "Logging", "LoggingExtras", "ModuleMixins", "Pkg", "ProgressLogging", "QuadGK", "Random", "StaticArrays", "TOML", "TerminalLoggers", "Unitful"]
 path = "."
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
-version = "0.6.0"
+version = "0.7.0"
 weakdeps = ["Makie", "Statistics"]
 
     [deps.CarboKitten.extensions]
@@ -502,6 +508,12 @@ deps = ["Mmap"]
 git-tree-sha1 = "9e2f36d3c96a820c678f2f1f1782582fcf685bae"
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 version = "1.9.1"
+
+[[deps.Deno_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "cd6756e833c377e0ce9cd63fb97689a255f12323"
+uuid = "04572ae6-984a-583e-9378-9577a1c2574d"
+version = "1.33.4+0"
 
 [[deps.Dierckx]]
 deps = ["Dierckx_jll"]
@@ -951,6 +963,12 @@ git-tree-sha1 = "68c173f4f449de5b438ee67ed0c9c748dc31a2ec"
 uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
 version = "0.3.28"
 
+[[deps.Hyperscript]]
+deps = ["Test"]
+git-tree-sha1 = "179267cfa5e712760cd43dcae385d7ea90cc25a4"
+uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
+version = "0.0.5"
+
 [[deps.IOCapture]]
 deps = ["Logging", "Random"]
 git-tree-sha1 = "0ee181ec08df7d7c911901ea38baf16f755114dc"
@@ -1165,16 +1183,12 @@ version = "1.0.9"
 git-tree-sha1 = "79d6bd28c8d9bccc2229784f1bd637689b256377"
 uuid = "8197267c-284f-5f27-9208-e0e47529a953"
 version = "0.7.14"
+weakdeps = ["Random", "RecipesBase", "Statistics"]
 
     [deps.IntervalSets.extensions]
     IntervalSetsRandomExt = "Random"
     IntervalSetsRecipesBaseExt = "RecipesBase"
     IntervalSetsStatisticsExt = "Statistics"
-
-    [deps.IntervalSets.weakdeps]
-    Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-    Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [[deps.InverseFunctions]]
 git-tree-sha1 = "a779299d77cd080bf77b97535acecd73e1c5e5cb"
@@ -1635,6 +1649,12 @@ version = "0.3.4"
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2025.11.4"
 
+[[deps.MsgPack]]
+deps = ["Serialization"]
+git-tree-sha1 = "f5db02ae992c260e4826fe78c942954b48e1d9c2"
+uuid = "99f44e22-a591-53d1-9472-aa23ef4bd671"
+version = "1.2.1"
+
 [[deps.MuladdMacro]]
 git-tree-sha1 = "cac9cc5499c25554cba55cd3c30543cff5ca4fab"
 uuid = "46d2c3a1-f734-5fdb-9937-b9b9aeba4221"
@@ -2007,6 +2027,12 @@ git-tree-sha1 = "9f0a1b71baaf7650f4fa8a1d168c7fb6ee41f0c9"
 uuid = "c1ae055f-0cd5-4b69-90a6-9a35b1a98df9"
 version = "0.1.0"
 
+[[deps.RecipesBase]]
+deps = ["PrecompileTools"]
+git-tree-sha1 = "5c3d09cc4f31f5fc6af001c250bf1278733100ff"
+uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+version = "1.3.4"
+
 [[deps.Reexport]]
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
@@ -2063,12 +2089,10 @@ deps = ["LinearAlgebra", "Quaternions", "Random", "StaticArrays"]
 git-tree-sha1 = "5680a9276685d392c87407df00d57c9924d9f11e"
 uuid = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 version = "1.7.1"
+weakdeps = ["RecipesBase"]
 
     [deps.Rotations.extensions]
     RotationsRecipesBaseExt = "RecipesBase"
-
-    [deps.Rotations.weakdeps]
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
 [[deps.RoundingEmulator]]
 git-tree-sha1 = "40b9edad2e5287e05bd413a38f61a8ff55b9557b"
@@ -2395,6 +2419,12 @@ git-tree-sha1 = "42fd9023fef18b9b78c8343a4e2f3813ffbcefcb"
 uuid = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 version = "1.0.0"
 
+[[deps.ThreadPools]]
+deps = ["Printf", "RecipesBase", "Statistics"]
+git-tree-sha1 = "50cb5f85d5646bc1422aa0238aa5bfca99ca9ae7"
+uuid = "b189fb0b-2eb5-4ed4-bc0c-d34c51242431"
+version = "2.1.1"
+
 [[deps.ThreadingUtilities]]
 deps = ["ManualMemory"]
 git-tree-sha1 = "d969183d3d244b6c33796b5ed01ab97328f2db85"
@@ -2477,6 +2507,12 @@ git-tree-sha1 = "d1d9a935a26c475ebffd54e9c7ad11627c43ea85"
 uuid = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
 version = "0.21.72"
 
+[[deps.WGLMakie]]
+deps = ["Bonito", "Colors", "FileIO", "FreeTypeAbstraction", "GeometryBasics", "Hyperscript", "LinearAlgebra", "Makie", "Observables", "PNGFiles", "PrecompileTools", "RelocatableFolders", "ShaderAbstractions", "StaticArrays"]
+git-tree-sha1 = "dcf36e49ebbfe068cec38d413eca7c4839a1918f"
+uuid = "276b4fcb-3e11-5398-bf8b-a0c2d153d008"
+version = "0.13.9"
+
 [[deps.Wayland_jll]]
 deps = ["Artifacts", "EpollShim_jll", "Expat_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
 git-tree-sha1 = "96478df35bbc2f3e1e791bc7a3d0eeee559e60e9"
@@ -2500,6 +2536,12 @@ deps = ["CEnum", "ColorTypes", "FileIO", "FixedPointNumbers", "ImageCore", "libw
 git-tree-sha1 = "aa1ca3c47f119fbdae8770c29820e5e6119b83f2"
 uuid = "e3aaa7dc-3e4b-44e0-be63-ffb868ccd7c1"
 version = "0.1.3"
+
+[[deps.WidgetsBase]]
+deps = ["Observables"]
+git-tree-sha1 = "30a1d631eb06e8c868c559599f915a62d55c2601"
+uuid = "eead4739-05f7-45a1-878c-cee36b57321c"
+version = "0.1.4"
 
 [[deps.WoodburyMatrices]]
 deps = ["LinearAlgebra", "SparseArrays"]

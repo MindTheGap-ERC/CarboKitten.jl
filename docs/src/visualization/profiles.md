@@ -55,6 +55,7 @@ end
 
 Script.main()
 ```
+
 By default, `sediment_profile` shows the **deposited** record — raw deposition at each time step, including material that may later be eroded. To show only the **preserved** record (what survives after erosion, as computed by the stratigraphic column algorithm), pass `mode=:preserved`:
 
 ```julia
@@ -124,6 +125,67 @@ The `mode` keyword selects the sediment record:
 - `:deposited` — proportion of raw deposition at each time step (default, consistent with the categorical `sediment_profile!`).
 - `:preserved` — proportion of net preserved sediment after applying the stratigraphic column algorithm.
 
+## Cross-section examples
+
+The following script uses the existing `alcap-example.h5` volume output (the
+`:topography` group, which carries full 2D spatial data at every 10 write steps).
+It takes one dip section and one strike section from the mid-grid position, then
+plots all four combinations of section direction × proportion mode.
+
+``` {.julia .task file=examples/visualization/cross_sections.jl}
+#| creates: docs/src/_fig/xsec_dip.png
+#|          docs/src/_fig/xsec_strike.png
+#|          docs/src/_fig/xsec_proportion_deposited.png
+#|          docs/src/_fig/xsec_proportion_preserved.png
+#| requires: data/output/alcap-example.h5
+#| collect: figures
+
+module Script
+
+using CairoMakie
+using CarboKitten.Export: read_volume
+using CarboKitten.Visualization: sediment_profile, sediment_proportion
+
+function main()
+    header, vol = read_volume("data/output/alcap-example.h5", :topography)
+
+    nx, ny = size(vol.sediment_thickness)[1:2]
+    dip    = vol[:, div(ny, 2) + 1]   # dip section at mid-y
+    strike = vol[div(nx, 2) + 1, :]   # strike section at mid-x
+
+    save("docs/src/fig/xsec_dip.png",
+         sediment_profile(header, dip))
+
+    save("docs/src/fig/xsec_strike.png",
+         sediment_profile(header, strike))
+
+    save("docs/src/fig/xsec_proportion_deposited.png",
+         sediment_proportion(header, dip, 1; mode=:deposited))
+
+    save("docs/src/fig/xsec_proportion_preserved.png",
+         sediment_proportion(header, dip, 1; mode=:preserved))
+end
+
+end
+
+Script.main()
+```
+
+Dip section (perpendicular to strike), dominant deposited facies:
+
+![Dip cross section](../_fig/xsec_dip.png)
+
+Strike section (parallel to platform margin), dominant deposited facies:
+
+![Strike cross section](../_fig/xsec_strike.png)
+
+Proportion of facies 1 — deposited record:
+
+![Proportion deposited](../_fig/xsec_proportion_deposited.png)
+
+Proportion of facies 1 — preserved record only:
+
+![Proportion preserved](../_fig/xsec_proportion_preserved.png)
 
 ## Implementation
 

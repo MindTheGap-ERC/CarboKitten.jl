@@ -43,7 +43,7 @@ The Project Extension requires a front-end where the available methods are expos
 
 ``` {.julia file=src/Visualization.jl}
 module Visualization
-export sediment_profile!, sediment_profile, wheeler_diagram!, wheeler_diagram, production_curve!,
+export sediment_profile!, sediment_profile, sediment_proportion!, sediment_proportion, wheeler_diagram!, wheeler_diagram, production_curve!,
        production_curve, glamour_view!, coeval_lines!, summary_plot, dominant_facies!, sediment_accumulation!
 
 function print_instructions(func_name, args)
@@ -66,6 +66,8 @@ production_curve!(args...) = print_instructions("production_curve!", args)
 stratigraphic_column!(args...) = print_instructions("production_curve!", args)
 glamour_view!(args...) = print_instructions("glamour_view!", args)
 summary_plot(args...) = print_instructions("summary_plot", args)
+sediment_proportion!(args...) = print_instructions("sediment_proportion!", args)
+sediment_proportion(args...) = print_instructions("sediment_proportion", args)
 
 end  # module
 ```

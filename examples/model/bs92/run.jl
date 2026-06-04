@@ -27,9 +27,10 @@ const INPUT = BS92.Input(
     subsidence_rate = 0.0u"m/yr",
     insolation = 400.0u"W/m^2",
     facies = [BS92.Facies(
-      maximum_growth_rate = 0.005u"m/yr",
-      saturation_intensity = 50.0u"W/m^2",
-      extinction_coefficient = 0.05u"m^-1"
+      production=BenthicProduction(
+        maximum_growth_rate = 0.005u"m/yr",
+        saturation_intensity = 50.0u"W/m^2",
+        extinction_coefficient = 0.05u"m^-1")
     )])
 
 function main()

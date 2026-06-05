@@ -1,13 +1,13 @@
 # ~/~ begin <<docs/src/visualization/fence-diagrams.md#examples/visualization/fence_diagrams.jl>>[init]
 
 module Script
- 
+
 using WGLMakie
 using Unitful
 using CarboKitten
 using CarboKitten.Export: read_volume
 using CarboKitten.Visualization: fence_diagram, fence_diagram!
- 
+
 # -----------------------------------------------------------------------------
 # Example 1 — straight from an HDF5 file. Categorical colouring. 
 # -----------------------------------------------------------------------------
@@ -27,17 +27,17 @@ function from_file_categorical()
     save("docs/src/fig/fence_diagram_file_cat.png", fig)
     return fig
 end
- 
+
 # Same data, but using the in-place / lower-level form so you can compose with
 # other axes in your own figure.
 function from_file_inplace_categorical()
     header, volume = read_volume("data/output/alcap-example.h5", :topography)
- 
+
     fig = Figure(size = (1400, 900))
     ax  = Axis3(fig[1, 1])
     ax.azimuth   = -π/3
     ax.elevation = π/8
- 
+
     fence_diagram!(ax, header, volume;
         x_slices = [10, 30, 50],
         y_slices = [5.0u"km"],
@@ -70,17 +70,17 @@ function from_file_fraction()
     save("docs/src/fig/fence_diagram_file_fraction.png", fig)
     return fig
 end
- 
+
 # Same data, but using the in-place / lower-level form so you can compose with
 # other axes in your own figure.
 function from_file_inplace_fraction()
     header, volume = read_volume("data/output/alcap-example.h5", :topography)
- 
+
     fig = Figure(size = (1400, 900))
     ax  = Axis3(fig[1, 1])
     ax.azimuth   = -π/3
     ax.elevation = π/8
- 
+
     fence_diagram!(ax, header, volume;
         x_slices = [10, 30, 50],
         y_slices = [5.0u"km"],
@@ -103,7 +103,7 @@ function from_memory(result)
     # Pick whichever volume output was registered in `input.output`.
     header = result.header
     volume = result.data_volumes[:topography]
- 
+
     fig = fence_diagram(header, volume;
         x_slices = [div(header.grid_size[1], 4),
                     div(header.grid_size[1], 2),
@@ -115,8 +115,8 @@ function from_memory(result)
         color_by = :facies)
     return fig
 end
- 
+
 end  # module Script
- 
+
 Script.from_file_categorical()
 # ~/~ end

@@ -33,7 +33,7 @@ const Time = typeof(1.0u"Myr")
 _to_index(axis::AbstractVector, idx::Integer) = Int(idx)
 _to_index(axis::AbstractVector{<:Quantity}, pos::Quantity) =
     argmin(abs.(axis .- pos))
-    
+
 #Calculates a given facies proportion at each plotted location 
 function _facies_fraction(column, facies::Integer)
     total = sum(column)
@@ -278,21 +278,21 @@ function fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
            cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true) :
            colormap
        colorrange = (1, n_facies)
-   
+
    elseif color_by == :facies_fraction
        facies === nothing &&
            error("fence_diagram!: `facies` must be specified when `color_by = :facies_fraction`.")
-   
+
        facies_idx = Int(facies)
-   
+
        if facies_idx < 1 || facies_idx > n_facies
            error("fence_diagram!: `facies` must be between 1 and $(n_facies).")
        end
-   
+
        color_function = column -> _facies_fraction(column, facies_idx)
        cmap = colormap === nothing ? :viridis : colormap
        colorrange = (0.0, 1.0)
-   
+
    else
        error("fence_diagram!: `color_by` must be either :facies or :facies_fraction.")
    end

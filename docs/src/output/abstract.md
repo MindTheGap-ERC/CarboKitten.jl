@@ -38,7 +38,7 @@ import ...CarboKitten: set_attribute
 import ...Algorithms: stratigraphic_column!
 
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
-export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer
+export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer, surface_heights
 
 using Unitful
 using ...CarboKitten: OutputSpec, AbstractInput, AbstractState
@@ -168,6 +168,36 @@ function water_depth(header::Header, data::Data{F, D}) where {F, D}
     Δh = data.sediment_thickness
     Σ = header.subsidence_rate .* delta_t[repeated(na, D-1)..., :]
     return sl[repeated(na, D-1)...,:] .- h0 .- Δh .+ Σ
+end
+
+"""
+    surface_heights(header, data)
+
+Compute the sediment surface height at every `(spatial..., time)` cell,
+accounting for subsidence and net deposition. Returns an array of shape
+`(spatial..., n_t+1)` where the first time entry is the initial topography
+minus total subsidence and subsequent entries accumulate the preserved
+sediment column.
+
+Works with `DataColumn`, `DataSlice`, and `DataVolume`.
+"""
+function surface_heights(header::Header, data::Data{F, D}) where {F, D}
+    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    initial_topography = header.initial_topography[data.slice...]
+    sc = stratigraphic_column(data)
+    sc_clamped = max.(sc, zero(eltype(sc)))
+    # Sum over the facies dimension (dim 1), yielding (spatial..., n_t)
+    sc_sum = dropdims(sum(sc_clamped, dims=1), dims=1)
+    # Cumulative sediment accumulation along the time axis (last dim)
+    accumulated = cumsum(sc_sum, dims=ndims(sc_sum))
+    n_t = size(sc_sum, ndims(sc_sum))
+    h0 = initial_topography .- total_subsidence
+    # Build result array: shape (spatial..., n_t+1)
+    sz = (size(sc_sum)[1:end-1]..., n_t + 1)
+    h = Array{eltype(h0)}(undef, sz...)
+    selectdim(h, ndims(h), 1) .= h0
+    selectdim(h, ndims(h), 2:n_t+1) .= h0 .+ accumulated
+    return h
 end
 
 """

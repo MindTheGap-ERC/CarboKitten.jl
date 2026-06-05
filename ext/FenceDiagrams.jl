@@ -1,49 +1,48 @@
-# ~/~ begin <<docs/src/visualization/fence-diagrams.md#ext/FenceDiagrams.jl>>[init]
+# ~/~ begin <<docs/src/visualization/fence_diagrams.md#ext/FenceDiagrams.jl>>[init]
 module FenceDiagram
 
 import CarboKitten.Visualization: fence_diagram, fence_diagram!
 
 using CarboKitten.Visualization
 using CarboKitten.Utility: in_units_of
-using CarboKitten.Export: Header, Data, DataSlice, DataVolume, read_volume
+using CarboKitten.Export: Header, Data, DataSlice, DataVolume, read_volume,
+    read_data, group_datasets, read_header
+using CarboKitten.Output.MemoryWriter: MemoryOutput
 using CarboKitten.Algorithms: skeleton
-using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
+using CarboKitten.Output.Abstract: stratigraphic_column, water_depth, surface_heights
 
 # Re-use the existing mesh helper from SedimentProfile.
-# Warning : Both submodules are siblings under VisualizationExt, so a relative import works
-# as long as FenceDiagram.jl is `include`d AFTER SedimentProfile.jl.
+# Warning: both submodules are siblings under VisualizationExt, so a relative
+# import works as long as FenceDiagram.jl is `include`d AFTER SedimentProfile.jl.
 import ..SedimentProfile: explode_quad_vertices
 
 using Makie
 using GeometryBasics
 using Unitful
+using HDF5
 
-const Rate = typeof(1.0u"m/Myr")
+const Rate   = typeof(1.0u"m/Myr")
 const Amount = typeof(1.0u"m")
 const Length = typeof(1.0u"m")
-const Time = typeof(1.0u"Myr")
+const Time   = typeof(1.0u"Myr")
 
 # -----------------------------------------------------------------------------
 # Helpers
 # -----------------------------------------------------------------------------
 
 # Convert a user-supplied slice position (grid index or physical length) into
-# a grid index. This lets callers be either `x_slices=[10, 30]` or
-# `x_slices=[5.0u"km", 15.0u"km"]`.
+# a grid index.
 _to_index(axis::AbstractVector, idx::Integer) = Int(idx)
 _to_index(axis::AbstractVector{<:Quantity}, pos::Quantity) =
     argmin(abs.(axis .- pos))
 
-#Calculates a given facies proportion at each plotted location 
 function _facies_fraction(column, facies::Integer)
     total = sum(column)
     iszero(total) && return NaN
     return column[facies] / total
 end
 
-# A fence slice must be either (Int, :) (vertical plane perpendicular to x,
-# fence extending along y) or (:, Int) (perpendicular to y, fence along x).
-# Returns (orientation, position_axis_values, orthogonal_coordinate).
+# Infer orientation and fixed coordinate of a DataSlice from data.slice.
 function _slice_geometry(header::Header, data::DataSlice)
     s = data.slice
     if s[1] isa Colon && s[2] isa Integer
@@ -55,33 +54,17 @@ function _slice_geometry(header::Header, data::DataSlice)
     end
 end
 
-# Compute the sediment surface heights for every (position, time) cell of a
-# slice. Mimics the calculation `profile_plot!` does internally to
-# build its mesh, factored out so it can be lifted it into 3D.
-function _surface_heights(header::Header, data::DataSlice)
-    _, _, n_t = size(data.production)
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
-    initial_topography = header.initial_topography[data.slice...]
-    sc = stratigraphic_column(data)
-    sc_clamped = max.(sc, zero(eltype(sc)))
-    h = repeat(initial_topography .- total_subsidence, 1, n_t + 1)
-    @views h[:, 2:end] .+= cumsum(sum(sc_clamped, dims=1)[1, :, :], dims=2)
-    return h
-end
-
 # -----------------------------------------------------------------------------
-# Single-fence mesh (3D analogue of profile_plot!)
+# Single-fence mesh
 # -----------------------------------------------------------------------------
 
 """
-    fence_plot!(ax::Axis3, header, data::DataSlice; color, mesh_args...)
-    fence_plot!(f, ax::Axis3, header, data::DataSlice; mesh_args...)
+    fence_plot!(ax, header, data; color, mesh_args...)
+    fence_plot!(f, ax, header, data; mesh_args...)
 
-3D analogue of `profile_plot!`: render the sediment mesh of a single slice
-into 3D space at the slice's actual `(x, y)` position. `color` must be an
-`(n_pos, n_t)` array (same convention as `profile_plot!`). The `f` variant
-generates colours by applying `f` to each `n_facies`-element deposition
-column.
+3D analogue of `profile_plot!`: render the sediment mesh of a single
+`DataSlice` into 3D space at its actual `(x, y)` position. The `f` variant
+generates colours by applying `f` to each deposition column.
 """
 function fence_plot!(ax::Axis3, header::Header, data::DataSlice;
                      color::AbstractArray, mesh_args...)
@@ -90,14 +73,14 @@ function fence_plot!(ax::Axis3, header::Header, data::DataSlice;
 
     pos_km   = pos_axis    |> in_units_of(u"km")
     fixed_km = fixed_coord |> in_units_of(u"km")
-    h_m      = _surface_heights(header, data) |> in_units_of(u"m")
+    h_m      = surface_heights(header, data) |> in_units_of(u"m")
 
     verts = zeros(Float64, n_pos, n_t + 1, 3)
-    if orient == :along_x
+    if orient === :along_x
         @views verts[:, :, 1] .= pos_km
         @views verts[:, :, 2] .= fixed_km
         @views verts[:, :, 3] .= h_m
-    else  # :along_y
+    else
         @views verts[:, :, 1] .= fixed_km
         @views verts[:, :, 2] .= pos_km
         @views verts[:, :, 3] .= h_m
@@ -115,47 +98,37 @@ function fence_plot!(f::F, ax::Axis3, header::Header, data::DataSlice;
 end
 
 # -----------------------------------------------------------------------------
-# Decorations (bedrock surface, sea level, unconformities, coeval lines)
+# Decorations (bedrock, sea level, unconformities, coeval lines)
 # -----------------------------------------------------------------------------
 
-function _plot_bedrock!(ax::Axis3, header::Header, data::DataVolume;
-                        alpha::Real=0.35)
+function _plot_bedrock!(ax::Axis3, header::Header, data::DataVolume; alpha::Real=0.35)
     x_km = header.axes.x[data.slice[1]] |> in_units_of(u"km")
     y_km = header.axes.y[data.slice[2]] |> in_units_of(u"km")
-    total_subsidence =
-        (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
-    bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |>
-        in_units_of(u"m")
+    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |> in_units_of(u"m")
     surface!(ax, x_km, y_km, bedrock;
-             color=fill(0.5, size(bedrock)),
-             colormap=:grays, alpha=alpha, transparency=true,
-             colorrange=(0.0, 1.0))
+             color=fill(0.5, size(bedrock)), colormap=:grays,
+             alpha=alpha, transparency=true, colorrange=(0.0, 1.0))
 end
 
-function _plot_sealevel!(ax::Axis3, header::Header, data::DataVolume;
-                         alpha::Real=0.2)
+function _plot_sealevel!(ax::Axis3, header::Header, data::DataVolume; alpha::Real=0.2)
     x_km = header.axes.x[data.slice[1]] |> in_units_of(u"km")
     y_km = header.axes.y[data.slice[2]] |> in_units_of(u"km")
     sea_level = header.sea_level[end] |> in_units_of(u"m")
     z = fill(sea_level, length(x_km), length(y_km))
     surface!(ax, x_km, y_km, z;
-             color=fill(0.7, size(z)),
-             colormap=:Blues, alpha=alpha, transparency=true,
-             colorrange=(0.0, 1.0))
+             color=fill(0.7, size(z)), colormap=:Blues,
+             alpha=alpha, transparency=true, colorrange=(0.0, 1.0))
 end
 
-# 3D version of plot_unconformities from SedimentProfile.jl
 function _plot_fence_unconformities!(ax::Axis3, header::Header, data::DataSlice,
-                                     h_m::AbstractMatrix;
-                                     minwidth::Int, kwargs...)
+                                     h_m::AbstractMatrix; minwidth::Int, kwargs...)
     orient, pos_axis, fixed_coord = _slice_geometry(header, data)
     pos_km   = pos_axis    |> in_units_of(u"km")
     fixed_km = fixed_coord |> in_units_of(u"km")
-
     hiatus = skeleton(water_depth(header, data) .< 0.0u"m"; minwidth=minwidth)
     isempty(hiatus[1]) && return
-
-    verts = if orient == :along_x
+    verts = if orient === :along_x
         [Point3f(pos_km[pt[1]], fixed_km, h_m[pt...]) for pt in hiatus[1]]
     else
         [Point3f(fixed_km, pos_km[pt[1]], h_m[pt...]) for pt in hiatus[1]]
@@ -163,18 +136,15 @@ function _plot_fence_unconformities!(ax::Axis3, header::Header, data::DataSlice,
     linesegments!(ax, vec(permutedims(verts[hiatus[2]])); kwargs...)
 end
 
-# 3D version of coeval_lines! from SedimentProfile.jl
 function _plot_fence_coeval_lines!(ax::Axis3, header::Header, data::DataSlice,
-                                   h_m::AbstractMatrix, tics::Vector{Int};
-                                   kwargs...)
+                                   h_m::AbstractMatrix, tics::Vector{Int}; kwargs...)
     orient, pos_axis, fixed_coord = _slice_geometry(header, data)
     pos_km   = pos_axis    |> in_units_of(u"km")
     fixed_km = fixed_coord |> in_units_of(u"km")
     n_pos = size(h_m, 1)
-
     for t in tics
         t = clamp(t, 1, size(h_m, 2))
-        if orient == :along_x
+        if orient === :along_x
             lines!(ax, pos_km, fill(fixed_km, n_pos), h_m[:, t]; kwargs...)
         else
             lines!(ax, fill(fixed_km, n_pos), pos_km, h_m[:, t]; kwargs...)
@@ -182,36 +152,33 @@ function _plot_fence_coeval_lines!(ax::Axis3, header::Header, data::DataSlice,
     end
 end
 
-# Dispatch helpers so the `show_unconformities` / `show_coeval_lines` kwargs
-# accept the same range of types as the equivalents on `sediment_profile!`.
 _apply_unconformities!(::Axis3, ::Header, ::DataSlice, _, ::Nothing) = nothing
-_apply_unconformities!(ax::Axis3, header::Header, data::DataSlice, h_m, flag::Bool) =
-    flag && _plot_fence_unconformities!(ax, header, data, h_m;
+_apply_unconformities!(ax::Axis3, h::Header, d::DataSlice, hm, flag::Bool) =
+    flag && _plot_fence_unconformities!(ax, h, d, hm;
         minwidth=10, color=:white, linestyle=:dash, linewidth=1)
-_apply_unconformities!(ax::Axis3, header::Header, data::DataSlice, h_m, minwidth::Int) =
-    _plot_fence_unconformities!(ax, header, data, h_m;
+_apply_unconformities!(ax::Axis3, h::Header, d::DataSlice, hm, minwidth::Int) =
+    _plot_fence_unconformities!(ax, h, d, hm;
         minwidth=minwidth, color=:white, linestyle=:dash, linewidth=1)
 
-function _apply_coeval_lines!(ax::Axis3, header::Header, data::DataSlice, h_m,
-                              n_tics::Tuple{Int,Int})
-    n_steps = div(header.time_steps, data.write_interval)
+function _apply_coeval_lines!(ax::Axis3, header::Header, data::DataSlice,
+                               h_m, n_tics::Tuple{Int,Int})
+    n_steps  = div(header.time_steps, data.write_interval)
     n_major, n_minor = n_tics
-    major_tics = collect(div.(n_steps:n_steps:n_steps*n_major, n_major) .+ 1)
-    minor_tics = filter(t -> !(t in major_tics),
-                        collect(div.(n_steps:n_steps:n_steps*n_minor, n_minor) .+ 1))
-    _plot_fence_coeval_lines!(ax, header, data, h_m, minor_tics;
+    major = collect(div.(n_steps:n_steps:n_steps*n_major, n_major) .+ 1)
+    minor = filter(t -> !(t in major),
+                   collect(div.(n_steps:n_steps:n_steps*n_minor, n_minor) .+ 1))
+    _plot_fence_coeval_lines!(ax, header, data, h_m, minor;
         color=:black, linewidth=0.6, linestyle=:dot)
-    _plot_fence_coeval_lines!(ax, header, data, h_m, major_tics;
+    _plot_fence_coeval_lines!(ax, header, data, h_m, major;
         color=:black, linewidth=0.8, linestyle=:solid)
 end
-_apply_coeval_lines!(ax::Axis3, header::Header, data::DataSlice, h_m, flag::Bool) =
-    flag && _apply_coeval_lines!(ax, header, data, h_m, (4, 8))
-_apply_coeval_lines!(ax::Axis3, header::Header, data::DataSlice, h_m,
-                     tics::Vector{Int}) =
-    _plot_fence_coeval_lines!(ax, header, data, h_m, tics;
+_apply_coeval_lines!(ax::Axis3, h::Header, d::DataSlice, hm, flag::Bool) =
+    flag && _apply_coeval_lines!(ax, h, d, hm, (4, 8))
+_apply_coeval_lines!(ax::Axis3, h::Header, d::DataSlice, hm, tics::Vector{Int}) =
+    _plot_fence_coeval_lines!(ax, h, d, hm, tics;
         color=:black, linewidth=0.8, linestyle=:solid)
-function _apply_coeval_lines!(ax::Axis3, header::Header, data::DataSlice, h_m,
-                              tics::Vector{<:Time})
+function _apply_coeval_lines!(ax::Axis3, header::Header, data::DataSlice,
+                               h_m, tics::Vector{<:Time})
     t_axis = header.axes.t[1:data.write_interval:end]
     idx = Int[searchsortedfirst(t_axis, ti) for ti in tics]
     _plot_fence_coeval_lines!(ax, header, data, h_m, idx;
@@ -219,107 +186,76 @@ function _apply_coeval_lines!(ax::Axis3, header::Header, data::DataSlice, h_m,
 end
 
 # -----------------------------------------------------------------------------
-# Main entry points
+# Core method: sequence of DataSlice
 # -----------------------------------------------------------------------------
 
 """
-    fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
-                   x_slices=[], y_slices=[], ...)
+    fence_diagram!(ax::Axis3, header::Header, slices; kwargs...)
 
-Plot a fence diagram into the given `Axis3`. Each entry of `x_slices`
-specifies a vertical fence perpendicular to the x-axis (i.e. the fence
-extends in the y direction); each entry of `y_slices` is a fence
-perpendicular to the y-axis. Entries may be given either as grid indices
-(`Int`) or as physical positions (a `Unitful.Quantity` of length, e.g.
-`5.0u"km"`), and at least one slice must be provided.
+Core fence-diagram renderer. `slices` is any iterable of `DataSlice` objects;
+each slice is rendered as a vertical panel at its actual 3D position (inferred
+from `data.slice`). This is the lowest-level entry point — it does not add
+bedrock or sea-level surfaces, which require a full `DataVolume`.
 
-Keyword arguments mirror those of `sediment_profile!` where applicable:
+The `DataVolume` method (below) generates slices from `x_slices`/`y_slices`
+and delegates here; users can also build slice collections manually — for
+example to plot all saved profiles from a `MemoryOutput`, to combine slices
+from different HDF5 files, or to select arbitrary subsets of a volume.
 
-- `show_unconformities::Union{Nothing,Bool,Int}=true` — draw dashed white
-  unconformity lines on each fence (`false`/`nothing` disables, an `Int`
-  gives the `minwidth` threshold).
-- `show_coeval_lines::Union{Bool,Vector{Int},Vector{Time}}=false` — draw
-  time-correlation lines on each fence. `true` uses the same defaults as
-  `sediment_profile!`; a vector specifies either time indices or `Myr`
-  times.
-- `show_bedrock::Bool=true` — overlay the (subsided) initial topography
-  as a translucent gray surface.
-- `show_sealevel::Bool=false` — overlay the final sea-level plane.
-- `color_by::Symbol=:facies` — controls how each fence cell is coloured.
-  Use `:facies` to colour by the dominant facies, or `:facies_fraction`
-  to colour by the proportion of one selected facies.
-- `facies::Union{Nothing,Integer}=nothing` — facies index used when
-  `color_by = :facies_fraction`.
-- `colormap`, `alpha`, and any other keyword arguments are forwarded to
-  the per-fence `mesh!` call (default colormap is a discrete Wong palette
-  matching `sediment_profile!`).
+Keyword arguments:
+
+- `show_unconformities::Union{Nothing,Bool,Int}=true`
+- `show_coeval_lines::Union{Bool,Tuple{Int,Int},Vector{Int},Vector{Time}}=false`
+- `color_by::Symbol=:facies` — `:facies` or `:facies_fraction`
+- `facies::Union{Nothing,Integer}=nothing` — required when `color_by=:facies_fraction`
+- `colormap`, `alpha` — forwarded to `mesh!`
 """
-function fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
-                        x_slices::AbstractVector=Int[],
-                        y_slices::AbstractVector=Int[],
+function fence_diagram!(ax::Axis3, header::Header, slices;
                         show_unconformities::Union{Nothing,Bool,Int}=true,
                         show_coeval_lines::Union{Bool,Tuple{Int,Int},Vector{Int},Vector{<:Time}}=false,
-                        show_bedrock::Bool=true,
-                        show_sealevel::Bool=false,
                         color_by::Symbol=:facies,
                         facies::Union{Nothing,Integer}=nothing,
                         colormap=nothing,
                         alpha::Real=1.0,
                         mesh_args...)
-    n_facies = size(data.production, 1)
+    n_facies_ref = Ref{Int}(0)
+    plot_ref = nothing
 
-    if isempty(x_slices) && isempty(y_slices)
-        error("fence_diagram!: specify at least one slice via `x_slices` or `y_slices`.")
+    color_function, cmap, colorrange = if color_by === :facies
+        (argmax,
+         nothing,  # resolved per-slice once n_facies is known
+         nothing)
+    elseif color_by === :facies_fraction
+        facies === nothing &&
+            error("fence_diagram!: `facies` must be specified when `color_by=:facies_fraction`.")
+        facies_idx = Int(facies)
+        (col -> _facies_fraction(col, facies_idx),
+         colormap === nothing ? :viridis : colormap,
+         (0.0, 1.0))
+    else
+        error("fence_diagram!: `color_by` must be :facies or :facies_fraction, got :$(color_by)")
     end
 
-   if color_by == :facies
-       color_function = argmax
-       cmap = colormap === nothing ?
-           cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true) :
-           colormap
-       colorrange = (1, n_facies)
+    for slice in slices
+        n_f = size(slice.production, 1)
+        n_facies_ref[] = max(n_facies_ref[], n_f)
 
-   elseif color_by == :facies_fraction
-       facies === nothing &&
-           error("fence_diagram!: `facies` must be specified when `color_by = :facies_fraction`.")
-
-       facies_idx = Int(facies)
-
-       if facies_idx < 1 || facies_idx > n_facies
-           error("fence_diagram!: `facies` must be between 1 and $(n_facies).")
-       end
-
-       color_function = column -> _facies_fraction(column, facies_idx)
-       cmap = colormap === nothing ? :viridis : colormap
-       colorrange = (0.0, 1.0)
-
-   else
-       error("fence_diagram!: `color_by` must be either :facies or :facies_fraction.")
-   end
-
-    x_idx = Int[_to_index(header.axes.x, p) for p in x_slices]
-    y_idx = Int[_to_index(header.axes.y, p) for p in y_slices]
-
-    # Draw context surfaces first so the fence meshes overlay them.
-    show_bedrock  && _plot_bedrock!(ax, header, data)
-    show_sealevel && _plot_sealevel!(ax, header, data)
-
-    plot_ref = nothing
-    slices_to_draw = Iterators.flatten((
-        ((:x, i) for i in x_idx),
-        ((:y, j) for j in y_idx),
-    ))
-
-    for (kind, idx) in slices_to_draw
-        slice = kind == :x ? data[idx, :] : data[:, idx]
+        # Resolve categorical colormap once we know n_facies
+        resolved_cmap = if color_by === :facies
+            colormap === nothing ?
+                cgrad(Makie.wong_colors()[1:n_f], n_f, categorical=true) :
+                colormap
+        else
+            cmap
+        end
+        resolved_range = color_by === :facies ? (1, n_f) : colorrange
 
         p = fence_plot!(color_function, ax, header, slice;
-                        colormap=cmap, colorrange=colorrange,
+                        colormap=resolved_cmap, colorrange=resolved_range,
                         alpha=alpha, mesh_args...)
         plot_ref = something(plot_ref, p)
 
-        # Decoration helpers are no-ops when their setting is disabled.
-        h_m = _surface_heights(header, slice) |> in_units_of(u"m")
+        h_m = surface_heights(header, slice) |> in_units_of(u"m")
         _apply_coeval_lines!(ax, header, slice, h_m, show_coeval_lines)
         _apply_unconformities!(ax, header, slice, h_m, show_unconformities)
     end
@@ -328,24 +264,61 @@ function fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
     ax.ylabel = "y [km]"
     ax.zlabel = "depth [m]"
     ax.title  = "fence diagram"
-
     return plot_ref
 end
 
-"""
-    fence_diagram(header::Header, data::DataVolume; kwargs...)
-    fence_diagram(filename::AbstractString, group; kwargs...)
+# -----------------------------------------------------------------------------
+# DataVolume convenience method
+# -----------------------------------------------------------------------------
 
-Convenience wrapper that builds a figure with a single `Axis3` and plots
-a fence diagram into it. The first form works with data already in memory
-(e.g. a `DataVolume` from `MemoryOutput`); the second reads the given
-volume group from an HDF5 file produced by CarboKitten and then plots.
-
-All keyword arguments are forwarded to `fence_diagram!`. Additionally,
-`size=(w, h)` controls the figure size and `azimuth`, `elevation` set the
-default camera angles.
 """
-function fence_diagram(header::Header, data::DataVolume;
+    fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
+                   x_slices=[], y_slices=[], show_bedrock=true,
+                   show_sealevel=false, kwargs...)
+
+Plot a fence diagram from a `DataVolume`. Generates `DataSlice` objects from
+`x_slices` and `y_slices` (grid indices or physical positions), adds bedrock
+and sea-level surfaces, then delegates per-slice rendering to the sequence
+method.
+"""
+function fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
+                        x_slices::AbstractVector=Int[],
+                        y_slices::AbstractVector=Int[],
+                        show_bedrock::Bool=true,
+                        show_sealevel::Bool=false,
+                        kwargs...)
+    isempty(x_slices) && isempty(y_slices) &&
+        error("fence_diagram!: specify at least one slice via `x_slices` or `y_slices`.")
+
+    x_idx = Int[_to_index(header.axes.x, p) for p in x_slices]
+    y_idx = Int[_to_index(header.axes.y, p) for p in y_slices]
+
+    show_bedrock  && _plot_bedrock!(ax, header, data)
+    show_sealevel && _plot_sealevel!(ax, header, data)
+
+    slices = Iterators.flatten((
+        (data[i, :] for i in x_idx),
+        (data[:, j] for j in y_idx),
+    ))
+    return fence_diagram!(ax, header, slices; kwargs...)
+end
+
+# -----------------------------------------------------------------------------
+# Standalone figure wrappers
+# -----------------------------------------------------------------------------
+
+"""
+    fence_diagram(header, data::DataVolume; size, azimuth, elevation, kwargs...)
+    fence_diagram(header, slices; size, azimuth, elevation, kwargs...)
+    fence_diagram(filename, group; kwargs...)
+
+Convenience wrapper: builds a `Figure` with a single `Axis3`, calls
+`fence_diagram!`, adds a legend or colorbar, and returns the figure.
+
+The second form accepts any iterable of `DataSlice` directly, enabling plots
+from `MemoryOutput` results, subsets, or multi-file combinations.
+"""
+function fence_diagram(header::Header, data;
                        size::Tuple{Int,Int}=(1400, 800),
                        azimuth::Real=-π/3,
                        elevation::Real=π/8,
@@ -353,7 +326,8 @@ function fence_diagram(header::Header, data::DataVolume;
                        facies::Union{Nothing,Integer}=nothing,
                        colormap=nothing,
                        kwargs...)
-    n_facies = Base.size(data.production, 1)
+    n_facies = Base.size(data isa DataVolume ? data.production :
+                         first(data).production, 1)
 
     fig = Figure(size=size)
     ax  = Axis3(fig[1, 1])
@@ -361,33 +335,64 @@ function fence_diagram(header::Header, data::DataVolume;
     ax.elevation = elevation
 
     fence_diagram!(ax, header, data;
-        color_by=color_by,
-        facies=facies,
-        colormap=colormap,
-        kwargs...)
+        color_by=color_by, facies=facies, colormap=colormap, kwargs...)
 
-    if color_by == :facies
-        colors = Makie.wong_colors()[1:n_facies]
+    if color_by === :facies
+        colors   = Makie.wong_colors()[1:n_facies]
         elements = [PolyElement(color=colors[i]) for i in 1:n_facies]
-        labels = ["Facies $(i)" for i in 1:n_facies]
+        labels   = ["Facies $(i)" for i in 1:n_facies]
         Legend(fig[1, 2], elements, labels, "Facies")
-    elseif color_by == :facies_fraction
+    elseif color_by === :facies_fraction
         Colorbar(fig[1, 2];
-            colormap=colormap === nothing ? :viridis : colormap,
-            limits=(0, 1),
-            label="Proportion of facies $(facies)")
+            colormap = colormap === nothing ? :viridis : colormap,
+            limits   = (0, 1),
+            label    = "Proportion of facies $(facies)")
     end
-
     return fig
 end
 
 function fence_diagram(filename::AbstractString,
-                       group::Union{Symbol,AbstractString};
-                       kwargs...)
+                       group::Union{Symbol,AbstractString}; kwargs...)
     header, data = read_volume(filename, group)
     return fence_diagram(header, data; kwargs...)
 end
 
-end  # module
+"""
+    fence_diagram(filename; kwargs...)
 
+Plot all `DataSlice` groups found in `filename` as a fence diagram.
+This is the most convenient form when an HDF5 file contains several saved
+profile slices and you want to visualise all of them at once without
+manually listing group names.
+"""
+function fence_diagram(filename::AbstractString; kwargs...)
+    HDF5.h5open(filename, "r") do fid
+        header = read_header(fid)
+        groups = group_datasets(fid)
+        isempty(groups[:slice]) &&
+            error("fence_diagram: no DataSlice groups found in $(filename)")
+        slices = [read_data(Val{2}, fid[g]) for g in groups[:slice]]
+        return fence_diagram(header, slices; kwargs...)
+    end
+end
+
+"""
+    fence_diagram(output::MemoryOutput; kwargs...)
+
+Plot all `DataSlice` datasets stored in a `MemoryOutput` as a fence diagram.
+Use this immediately after `run_model` to inspect results without writing to
+disk.
+
+```julia
+result = run_model(Model{ALCAP}, input, MemoryOutput(input))
+fence_diagram(result)
+```
+"""
+function fence_diagram(output::MemoryOutput; kwargs...)
+    isempty(output.data_slices) &&
+        error("fence_diagram: MemoryOutput contains no DataSlice datasets")
+    return fence_diagram(output.header, values(output.data_slices); kwargs...)
+end
+
+end  # module
 # ~/~ end

@@ -62,10 +62,19 @@ function from_slice_sequence()
     save("docs/src/fig/fence_diagram_slice_sequence.png", fig)
 end
 
+# -- Example 4: all slices from HDF5 file ------------------------------------
+
+function from_all_slices()
+    fig = fence_diagram("data/output/alcap-example.h5";
+        color_by = :facies)
+    save("docs/src/fig/fence_diagram_all_slices.png", fig)
+end
+
 function main()
     from_file_categorical()
     from_file_fraction()
     from_slice_sequence()
+    from_all_slices()
 end
 
 end

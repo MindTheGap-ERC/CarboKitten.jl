@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/visualization/fence_diagrams.md#ext/FenceDiagrams.jl>>[init]
+# ~/~ begin <<docs/src/visualization/fence-diagrams.md#ext/FenceDiagrams.jl>>[init]
 module FenceDiagram
 
 import CarboKitten.Visualization: fence_diagram, fence_diagram!
@@ -11,9 +11,6 @@ using CarboKitten.Output.MemoryWriter: MemoryOutput
 using CarboKitten.Algorithms: skeleton
 using CarboKitten.Output.Abstract: stratigraphic_column, water_depth, surface_heights
 
-# Re-use the existing mesh helper from SedimentProfile.
-# Warning: both submodules are siblings under VisualizationExt, so a relative
-# import works as long as FenceDiagram.jl is `include`d AFTER SedimentProfile.jl.
 import ..SedimentProfile: explode_quad_vertices
 
 using Makie
@@ -26,12 +23,6 @@ const Amount = typeof(1.0u"m")
 const Length = typeof(1.0u"m")
 const Time   = typeof(1.0u"Myr")
 
-# -----------------------------------------------------------------------------
-# Helpers
-# -----------------------------------------------------------------------------
-
-# Convert a user-supplied slice position (grid index or physical length) into
-# a grid index.
 _to_index(axis::AbstractVector, idx::Integer) = Int(idx)
 _to_index(axis::AbstractVector{<:Quantity}, pos::Quantity) =
     argmin(abs.(axis .- pos))
@@ -42,7 +33,6 @@ function _facies_fraction(column, facies::Integer)
     return column[facies] / total
 end
 
-# Infer orientation and fixed coordinate of a DataSlice from data.slice.
 function _slice_geometry(header::Header, data::DataSlice)
     s = data.slice
     if s[1] isa Colon && s[2] isa Integer
@@ -54,18 +44,6 @@ function _slice_geometry(header::Header, data::DataSlice)
     end
 end
 
-# -----------------------------------------------------------------------------
-# Single-fence mesh
-# -----------------------------------------------------------------------------
-
-"""
-    fence_plot!(ax, header, data; color, mesh_args...)
-    fence_plot!(f, ax, header, data; mesh_args...)
-
-3D analogue of `profile_plot!`: render the sediment mesh of a single
-`DataSlice` into 3D space at its actual `(x, y)` position. The `f` variant
-generates colours by applying `f` to each deposition column.
-"""
 function fence_plot!(ax::Axis3, header::Header, data::DataSlice;
                      color::AbstractArray, mesh_args...)
     _, n_pos, n_t = size(data.production)
@@ -96,10 +74,6 @@ function fence_plot!(f::F, ax::Axis3, header::Header, data::DataSlice;
     color = f.(eachslice(data.deposition, dims=(2, 3)))
     return fence_plot!(ax, header, data; color=color, mesh_args...)
 end
-
-# -----------------------------------------------------------------------------
-# Decorations (bedrock, sea level, unconformities, coeval lines)
-# -----------------------------------------------------------------------------
 
 function _plot_bedrock!(ax::Axis3, header::Header, data::DataVolume; alpha::Real=0.35)
     x_km = header.axes.x[data.slice[1]] |> in_units_of(u"km")
@@ -185,10 +159,6 @@ function _apply_coeval_lines!(ax::Axis3, header::Header, data::DataSlice,
         color=:black, linewidth=0.8, linestyle=:solid)
 end
 
-# -----------------------------------------------------------------------------
-# Core method: sequence of DataSlice
-# -----------------------------------------------------------------------------
-
 """
     fence_diagram!(ax::Axis3, header::Header, slices; kwargs...)
 
@@ -196,19 +166,6 @@ Core fence-diagram renderer. `slices` is any iterable of `DataSlice` objects;
 each slice is rendered as a vertical panel at its actual 3D position (inferred
 from `data.slice`). This is the lowest-level entry point — it does not add
 bedrock or sea-level surfaces, which require a full `DataVolume`.
-
-The `DataVolume` method (below) generates slices from `x_slices`/`y_slices`
-and delegates here; users can also build slice collections manually — for
-example to plot all saved profiles from a `MemoryOutput`, to combine slices
-from different HDF5 files, or to select arbitrary subsets of a volume.
-
-Keyword arguments:
-
-- `show_unconformities::Union{Nothing,Bool,Int}=true`
-- `show_coeval_lines::Union{Bool,Tuple{Int,Int},Vector{Int},Vector{Time}}=false`
-- `color_by::Symbol=:facies` — `:facies` or `:facies_fraction`
-- `facies::Union{Nothing,Integer}=nothing` — required when `color_by=:facies_fraction`
-- `colormap`, `alpha` — forwarded to `mesh!`
 """
 function fence_diagram!(ax::Axis3, header::Header, slices;
                         show_unconformities::Union{Nothing,Bool,Int}=true,
@@ -218,13 +175,10 @@ function fence_diagram!(ax::Axis3, header::Header, slices;
                         colormap=nothing,
                         alpha::Real=1.0,
                         mesh_args...)
-    n_facies_ref = Ref{Int}(0)
     plot_ref = nothing
 
     color_function, cmap, colorrange = if color_by === :facies
-        (argmax,
-         nothing,  # resolved per-slice once n_facies is known
-         nothing)
+        (argmax, nothing, nothing)
     elseif color_by === :facies_fraction
         facies === nothing &&
             error("fence_diagram!: `facies` must be specified when `color_by=:facies_fraction`.")
@@ -238,13 +192,9 @@ function fence_diagram!(ax::Axis3, header::Header, slices;
 
     for slice in slices
         n_f = size(slice.production, 1)
-        n_facies_ref[] = max(n_facies_ref[], n_f)
-
-        # Resolve categorical colormap once we know n_facies
         resolved_cmap = if color_by === :facies
             colormap === nothing ?
-                cgrad(Makie.wong_colors()[1:n_f], n_f, categorical=true) :
-                colormap
+                cgrad(Makie.wong_colors()[1:n_f], n_f, categorical=true) : colormap
         else
             cmap
         end
@@ -267,19 +217,12 @@ function fence_diagram!(ax::Axis3, header::Header, slices;
     return plot_ref
 end
 
-# -----------------------------------------------------------------------------
-# DataVolume convenience method
-# -----------------------------------------------------------------------------
-
 """
-    fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
-                   x_slices=[], y_slices=[], show_bedrock=true,
-                   show_sealevel=false, kwargs...)
+    fence_diagram!(ax::Axis3, header::Header, data::DataVolume; x_slices=[], y_slices=[], kwargs...)
 
 Plot a fence diagram from a `DataVolume`. Generates `DataSlice` objects from
-`x_slices` and `y_slices` (grid indices or physical positions), adds bedrock
-and sea-level surfaces, then delegates per-slice rendering to the sequence
-method.
+`x_slices` and `y_slices`, adds bedrock and sea-level context surfaces, then
+delegates per-slice rendering to the sequence method.
 """
 function fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
                         x_slices::AbstractVector=Int[],
@@ -303,21 +246,6 @@ function fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
     return fence_diagram!(ax, header, slices; kwargs...)
 end
 
-# -----------------------------------------------------------------------------
-# Standalone figure wrappers
-# -----------------------------------------------------------------------------
-
-"""
-    fence_diagram(header, data::DataVolume; size, azimuth, elevation, kwargs...)
-    fence_diagram(header, slices; size, azimuth, elevation, kwargs...)
-    fence_diagram(filename, group; kwargs...)
-
-Convenience wrapper: builds a `Figure` with a single `Axis3`, calls
-`fence_diagram!`, adds a legend or colorbar, and returns the figure.
-
-The second form accepts any iterable of `DataSlice` directly, enabling plots
-from `MemoryOutput` results, subsets, or multi-file combinations.
-"""
 function fence_diagram(header::Header, data;
                        size::Tuple{Int,Int}=(1400, 800),
                        azimuth::Real=-π/3,
@@ -361,9 +289,6 @@ end
     fence_diagram(filename; kwargs...)
 
 Plot all `DataSlice` groups found in `filename` as a fence diagram.
-This is the most convenient form when an HDF5 file contains several saved
-profile slices and you want to visualise all of them at once without
-manually listing group names.
 """
 function fence_diagram(filename::AbstractString; kwargs...)
     HDF5.h5open(filename, "r") do fid
@@ -380,13 +305,6 @@ end
     fence_diagram(output::MemoryOutput; kwargs...)
 
 Plot all `DataSlice` datasets stored in a `MemoryOutput` as a fence diagram.
-Use this immediately after `run_model` to inspect results without writing to
-disk.
-
-```julia
-result = run_model(Model{ALCAP}, input, MemoryOutput(input))
-fence_diagram(result)
-```
 """
 function fence_diagram(output::MemoryOutput; kwargs...)
     isempty(output.data_slices) &&

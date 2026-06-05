@@ -5,8 +5,7 @@ import ...CarboKitten: set_attribute
 import ...Algorithms: stratigraphic_column!
 
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
-export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer
-export surface_heights
+export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer, surface_heights
 
 using Unitful
 using ...CarboKitten: OutputSpec, AbstractInput, AbstractState

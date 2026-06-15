@@ -75,19 +75,22 @@ function fence_plot!(f::F, ax::Axis3, header::Header, data::DataSlice;
     return fence_plot!(ax, header, data; color=color, mesh_args...)
 end
 
-function _plot_bedrock!(ax::Axis3, header::Header, data::DataVolume; alpha::Real=0.35)
-    x_km = header.axes.x[data.slice[1]] |> in_units_of(u"km")
-    y_km = header.axes.y[data.slice[2]] |> in_units_of(u"km")
+# Bedrock and sea-level only need the Header — initial_topography, subsidence_rate,
+# sea_level and axes are all stored there. No DataVolume required.
+
+function _plot_bedrock!(ax::Axis3, header::Header; alpha::Real=0.35)
+    x_km = header.axes.x |> in_units_of(u"km")
+    y_km = header.axes.y |> in_units_of(u"km")
     total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
-    bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |> in_units_of(u"m")
+    bedrock = (header.initial_topography .- total_subsidence) |> in_units_of(u"m")
     surface!(ax, x_km, y_km, bedrock;
              color=fill(0.5, size(bedrock)), colormap=:grays,
              alpha=alpha, transparency=true, colorrange=(0.0, 1.0))
 end
 
-function _plot_sealevel!(ax::Axis3, header::Header, data::DataVolume; alpha::Real=0.2)
-    x_km = header.axes.x[data.slice[1]] |> in_units_of(u"km")
-    y_km = header.axes.y[data.slice[2]] |> in_units_of(u"km")
+function _plot_sealevel!(ax::Axis3, header::Header; alpha::Real=0.2)
+    x_km = header.axes.x |> in_units_of(u"km")
+    y_km = header.axes.y |> in_units_of(u"km")
     sea_level = header.sea_level[end] |> in_units_of(u"m")
     z = fill(sea_level, length(x_km), length(y_km))
     surface!(ax, x_km, y_km, z;
@@ -164,17 +167,37 @@ end
 
 Core fence-diagram renderer. `slices` is any iterable of `DataSlice` objects;
 each slice is rendered as a vertical panel at its actual 3D position (inferred
-from `data.slice`). This is the lowest-level entry point — it does not add
-bedrock or sea-level surfaces, which require a full `DataVolume`.
+from `data.slice`).
+
+Bedrock and sea-level surfaces are produced from `header` alone — they do not
+require a `DataVolume` — so this method produces a complete plot from just a
+header and a sequence of slices. This makes it possible to plot slices read
+from different HDF5 files, extracted from a `MemoryOutput`, or selected
+arbitrarily from a volume.
+
+Keyword arguments:
+
+- `show_unconformities::Union{Nothing,Bool,Int}=true`
+- `show_coeval_lines::Union{Bool,Tuple{Int,Int},Vector{Int},Vector{Time}}=false`
+- `show_bedrock::Bool=true`
+- `show_sealevel::Bool=false`
+- `color_by::Symbol=:facies` — `:facies` or `:facies_fraction`
+- `facies::Union{Nothing,Integer}=nothing` — required when `color_by=:facies_fraction`
+- `colormap`, `alpha` — forwarded to `mesh!`
 """
 function fence_diagram!(ax::Axis3, header::Header, slices;
                         show_unconformities::Union{Nothing,Bool,Int}=true,
                         show_coeval_lines::Union{Bool,Tuple{Int,Int},Vector{Int},Vector{<:Time}}=false,
+                        show_bedrock::Bool=true,
+                        show_sealevel::Bool=false,
                         color_by::Symbol=:facies,
                         facies::Union{Nothing,Integer}=nothing,
                         colormap=nothing,
                         alpha::Real=1.0,
                         mesh_args...)
+    show_bedrock  && _plot_bedrock!(ax, header)
+    show_sealevel && _plot_sealevel!(ax, header)
+
     plot_ref = nothing
 
     color_function, cmap, colorrange = if color_by === :facies
@@ -220,24 +243,18 @@ end
 """
     fence_diagram!(ax::Axis3, header::Header, data::DataVolume; x_slices=[], y_slices=[], kwargs...)
 
-Plot a fence diagram from a `DataVolume`. Generates `DataSlice` objects from
-`x_slices` and `y_slices`, adds bedrock and sea-level context surfaces, then
-delegates per-slice rendering to the sequence method.
+Convenience method: generates `DataSlice` objects from `x_slices` and `y_slices`
+and delegates entirely to the sequence method. All kwargs are forwarded.
 """
 function fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
                         x_slices::AbstractVector=Int[],
                         y_slices::AbstractVector=Int[],
-                        show_bedrock::Bool=true,
-                        show_sealevel::Bool=false,
                         kwargs...)
     isempty(x_slices) && isempty(y_slices) &&
         error("fence_diagram!: specify at least one slice via `x_slices` or `y_slices`.")
 
     x_idx = Int[_to_index(header.axes.x, p) for p in x_slices]
     y_idx = Int[_to_index(header.axes.y, p) for p in y_slices]
-
-    show_bedrock  && _plot_bedrock!(ax, header, data)
-    show_sealevel && _plot_sealevel!(ax, header, data)
 
     slices = Iterators.flatten((
         (data[i, :] for i in x_idx),

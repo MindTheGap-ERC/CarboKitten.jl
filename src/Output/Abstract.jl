@@ -152,9 +152,8 @@ function surface_heights(header::Header, data::Data{F, D}) where {F, D}
     total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
-    sc_clamped = max.(sc, zero(eltype(sc)))
     # Sum over the facies dimension (dim 1), yielding (spatial..., n_t)
-    sc_sum = dropdims(sum(sc_clamped, dims=1), dims=1)
+    sc_sum = dropdims(sum(sc, dims=1), dims=1)
     # Cumulative sediment accumulation along the time axis (last dim)
     accumulated = cumsum(sc_sum, dims=ndims(sc_sum))
     n_t = size(sc_sum, ndims(sc_sum))

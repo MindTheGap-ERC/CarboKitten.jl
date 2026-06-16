@@ -35,7 +35,7 @@ Modifiers compose in declaration order: each operates on the rate produced by th
 
 ## Cumulative-subsidence integral
  
-For a base rate map (Matrix{Rate}) and a list of modifiers, the cumulative
+For a base rate map (`Matrix{Rate}`) and a list of modifiers, the cumulative
 subsidence at time `t` is the piecewise integral
  
 ```math

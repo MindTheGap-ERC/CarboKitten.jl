@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Fence Diagram · CarboKitten</title><meta name="title" content="Fence Diagram · CarboKitten"/><meta property="og:title" content="Fence Diagram · CarboKitten"/><meta property="twitter:title" content="Fence Diagram · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><a class="tocitem" href="../../getting-started/">Getting started</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../../initial-topography/">Initial Topography</a></li></ul></li><li><span class="tocitem">Developer</span><ul><li><a class="tocitem" href="../../CONTRIBUTING/">Contributing to this repository</a></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li></ul></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../../components/components/">Components</a></li><li><a class="tocitem" href="../../components/tag/">Tags</a></li><li><a class="tocitem" href="../../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../../components/time/">Time</a></li><li><a class="tocitem" href="../../components/output/">Output</a></li><li><a class="tocitem" href="../../components/facies/">Facies</a></li><li><a class="tocitem" href="../../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../../components/production/">Production</a></li><li><a class="tocitem" href="../../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="../overview/">Overview</a></li><li><a class="tocitem" href="../profiles/">Profiles</a></li><li class="is-active"><a class="tocitem" href>Fence Diagram</a></li><li><a class="tocitem" href="../topography/">Topography</a></li><li><a class="tocitem" href="../">Other</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../../output/abstract/">Output</a></li><li><a class="tocitem" href="../../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../../output/memory-writer/">Output to Memory</a></li><li><a class="tocitem" href="../../data-export/">CSV Export</a></li><li><a class="tocitem" href="../../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li><li><a class="tocitem" href="../../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../../algorithms/stratigraphic_column/">Stratigraphic Column</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Visualizations</a></li><li class="is-active"><a href>Fence Diagram</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Fence Diagram</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/visualization/fence-diagrams.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Fence-Diagrams"><a class="docs-heading-anchor" href="#Fence-Diagrams">Fence Diagrams</a><a id="Fence-Diagrams-1"></a><a class="docs-heading-anchor-permalink" href="#Fence-Diagrams" title="Permalink"></a></h1><p>The fence-diagram visualization generates multiple cross-sections through the model domain by specifying x and y slice positions. This provides an intuitive way to inspect 3D stratigraphic architecture and examine lateral and vertical variations in facies across the platform.</p><p><img src="../../fig/fence_diagram_file_cat.png" alt="Fence diagram — categorical"/> <img src="../../fig/fence_diagram_file_fraction.png" alt="Fence diagram — proportion"/></p><h3 id="Examples"><a class="docs-heading-anchor" href="#Examples">Examples</a><a id="Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Examples" title="Permalink"></a></h3><p>Example 1 reproduces the fence diagram above from <code>alcap-example.h5</code> with categorical colouring. Each colour corresponds to one facies.</p><p>Example 2 reproduces the same diagram but colours fences by the proportion of a single selected facies, making it easier to visualise its spatial distribution and relative abundance.</p><p>Example 3 demonstrates the <strong>sequence form</strong> of <code>fence_diagram!</code>. Instead of passing a full <code>DataVolume</code>, an iterable of pre-selected <code>DataSlice</code> objects is passed directly. This form is useful for combining slices from multiple HDF5 files, plotting all profiles saved to a <code>MemoryOutput</code>, or selecting arbitrary subsets without loading the full volume.</p><p>Example 4 shows the <strong>all-slices HDF5 form</strong>: <code>fence_diagram(filename)</code> reads every <code>DataSlice</code> group in the file and plots them all without any manual group listing. A matching <code>fence_diagram(output::MemoryOutput)</code> form works the same way for in-memory results.</p><div class="noweb-label">file:<i>examples/visualization/fence_diagrams.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/fig/fence_diagram_file_cat.png
+#|          docs/src/fig/fence_diagram_file_fraction.png
+#|          docs/src/fig/fence_diagram_slice_sequence.png
+#| requires: data/output/alcap-example.h5
+#| collect: figures
+
+module Script
+
+using Makie
+using Unitful
+using CarboKitten
+using CarboKitten.Export: read_volume, read_slice
+using CarboKitten.Visualization: fence_diagram, fence_diagram!
+
+# -- Example 1: categorical colouring from HDF5 file -------------------------
+
+function from_file_categorical()
+    fig = fence_diagram(
+        &quot;data/output/alcap-example.h5&quot;, :topography;
+        x_slices            = [10, 30, 50],
+        y_slices            = [2.0u&quot;km&quot;, 4.0u&quot;km&quot;, 6.0u&quot;km&quot;],
+        show_unconformities = 10,
+        show_coeval_lines   = true,
+        show_sealevel       = true,
+        color_by            = :facies)
+    save(&quot;docs/src/fig/fence_diagram_file_cat.png&quot;, fig)
+end
+
+# -- Example 2: proportional colouring from HDF5 file -------------------------
+
+function from_file_fraction()
+    fig = fence_diagram(
+        &quot;data/output/alcap-example.h5&quot;, :topography;
+        x_slices            = [10, 30, 50],
+        y_slices            = [2.0u&quot;km&quot;, 4.0u&quot;km&quot;, 6.0u&quot;km&quot;],
+        show_unconformities = 10,
+        show_coeval_lines   = true,
+        show_sealevel       = true,
+        color_by            = :facies_fraction,
+        facies              = 2,
+        colormap            = :viridis)
+    save(&quot;docs/src/fig/fence_diagram_file_fraction.png&quot;, fig)
+end
+
+# -- Example 3: sequence of DataSlice -----------------------------------------
+# Build the slice collection explicitly — any iterable works, including
+# results from MemoryOutput or slices read from different files.
+
+function from_slice_sequence()
+    header, vol = read_volume(&quot;data/output/alcap-example.h5&quot;, :topography)
+    nx, ny = header.grid_size
+
+    # Pick three dip sections and two strike sections
+    slices = [
+        vol[:, div(ny, 4)],
+        vol[:, div(ny, 2)],
+        vol[:, 3 * div(ny, 4)],
+        vol[div(nx, 3), :],
+        vol[2 * div(nx, 3), :],
+    ]
+
+    fig = fence_diagram(header, slices;
+        color_by = :facies,
+        show_unconformities = true,
+        show_coeval_lines   = true)
+    save(&quot;docs/src/fig/fence_diagram_slice_sequence.png&quot;, fig)
+end
+
+# -- Example 4: all slices from HDF5 file ------------------------------------
+
+function from_all_slices()
+    fig = fence_diagram(&quot;data/output/alcap-example.h5&quot;;
+        color_by = :facies)
+    save(&quot;docs/src/fig/fence_diagram_all_slices.png&quot;, fig)
+end
+
+function main()
+    from_file_categorical()
+    from_file_fraction()
+    from_slice_sequence()
+    from_all_slices()
+end
+
+end
+
+Script.main()</code></pre><p><img src="../../fig/fence_diagram_slice_sequence.png" alt="Fence diagram — slice sequence"/></p><h3 id="Implementation"><a class="docs-heading-anchor" href="#Implementation">Implementation</a><a id="Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Implementation" title="Permalink"></a></h3><p>The implementation is split into three layers:</p><ol><li><p><strong><code>fence_plot!</code></strong> — renders a single <code>DataSlice</code> as a 3D mesh panel. Re-uses <code>explode_quad_vertices</code> from <code>SedimentProfile</code> and delegates height computation to <code>surface_heights</code> (defined in <code>Output.Abstract</code>).</p></li><li><p><strong><code>fence_diagram!(ax, header, slices)</code></strong> — core sequence method. Iterates over any collection of <code>DataSlice</code> objects. Bedrock and sea-level surfaces are produced from <code>header</code> alone and are available here — no <code>DataVolume</code> required.</p></li><li><p><strong><code>fence_diagram!(ax, header, data::DataVolume)</code></strong> — convenience method. Converts <code>x_slices</code>/<code>y_slices</code> arguments into <code>DataSlice</code> objects, adds bedrock and sea-level context surfaces, then delegates to the core sequence method.</p></li></ol><h4 id="surface_heights"><a class="docs-heading-anchor" href="#surface_heights"><code>surface_heights</code></a><a id="surface_heights-1"></a><a class="docs-heading-anchor-permalink" href="#surface_heights" title="Permalink"></a></h4><p>The height array for a slice (shape <code>(n_pos, n_t+1)</code>) used to be computed inside <code>FenceDiagrams.jl</code>. It now lives in <code>Output.Abstract</code> as <code>surface_heights(header, data::Data{F,D})</code> and works generically for <code>DataColumn</code>, <code>DataSlice</code>, and <code>DataVolume</code>. It is also available to <code>SedimentProfile.jl</code> and any future visualization that needs the same quantity.</p><div class="noweb-label">file:<i>ext/FenceDiagrams.jl</i></div><pre><code class="language- julia hljs">module FenceDiagram
+
+import CarboKitten.Visualization: fence_diagram, fence_diagram!
+
+using CarboKitten.Visualization
+using CarboKitten.Utility: in_units_of
+using CarboKitten.Export: Header, Data, DataSlice, DataVolume, read_volume,
+    read_data, group_datasets, read_header
+using CarboKitten.Output.MemoryWriter: MemoryOutput
+using CarboKitten.Algorithms: skeleton
+using CarboKitten.Output.Abstract: stratigraphic_column, water_depth, surface_heights
+
+import ..SedimentProfile: explode_quad_vertices
+
+using Makie
+using GeometryBasics
+using Unitful
+using HDF5
+
+const Rate   = typeof(1.0u&quot;m/Myr&quot;)
+const Amount = typeof(1.0u&quot;m&quot;)
+const Length = typeof(1.0u&quot;m&quot;)
+const Time   = typeof(1.0u&quot;Myr&quot;)
+
+_to_index(axis::AbstractVector, idx::Integer) = Int(idx)
+_to_index(axis::AbstractVector{&lt;:Quantity}, pos::Quantity) =
+    argmin(abs.(axis .- pos))
+
+function _facies_fraction(column, facies::Integer)
+    total = sum(column)
+    iszero(total) &amp;&amp; return NaN
+    return column[facies] / total
+end
+
+function _slice_geometry(header::Header, data::DataSlice)
+    s = data.slice
+    if s[1] isa Colon &amp;&amp; s[2] isa Integer
+        return :along_x, header.axes.x, header.axes.y[s[2]]
+    elseif s[1] isa Integer &amp;&amp; s[2] isa Colon
+        return :along_y, header.axes.y, header.axes.x[s[1]]
+    else
+        error(&quot;fence_diagram: unsupported slice $(s); need (:, Int) or (Int, :)&quot;)
+    end
+end
+
+function fence_plot!(ax::Axis3, header::Header, data::DataSlice;
+                     color::AbstractArray, mesh_args...)
+    _, n_pos, n_t = size(data.production)
+    orient, pos_axis, fixed_coord = _slice_geometry(header, data)
+
+    pos_km   = pos_axis    |&gt; in_units_of(u&quot;km&quot;)
+    fixed_km = fixed_coord |&gt; in_units_of(u&quot;km&quot;)
+    h_m      = surface_heights(header, data) |&gt; in_units_of(u&quot;m&quot;)
+
+    verts = zeros(Float64, n_pos, n_t + 1, 3)
+    if orient === :along_x
+        @views verts[:, :, 1] .= pos_km
+        @views verts[:, :, 2] .= fixed_km
+        @views verts[:, :, 3] .= h_m
+    else
+        @views verts[:, :, 1] .= fixed_km
+        @views verts[:, :, 2] .= pos_km
+        @views verts[:, :, 3] .= h_m
+    end
+
+    v, f = explode_quad_vertices(verts)
+    c = reshape(color, n_pos * n_t)
+    return mesh!(ax, v, f; color=vcat(c, c), mesh_args...)
+end
+
+function fence_plot!(f::F, ax::Axis3, header::Header, data::DataSlice;
+                     mesh_args...) where {F}
+    color = f.(eachslice(data.deposition, dims=(2, 3)))
+    return fence_plot!(ax, header, data; color=color, mesh_args...)
+end
+
+# Bedrock and sea-level only need the Header — initial_topography, subsidence_rate,
+# sea_level and axes are all stored there. No DataVolume required.
+
+function _plot_bedrock!(ax::Axis3, header::Header; alpha::Real=0.35)
+    x_km = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
+    y_km = header.axes.y |&gt; in_units_of(u&quot;km&quot;)
+    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    bedrock = (header.initial_topography .- total_subsidence) |&gt; in_units_of(u&quot;m&quot;)
+    surface!(ax, x_km, y_km, bedrock;
+             color=fill(0.5, size(bedrock)), colormap=:grays,
+             alpha=alpha, transparency=true, colorrange=(0.0, 1.0))
+end
+
+function _plot_sealevel!(ax::Axis3, header::Header; alpha::Real=0.2)
+    x_km = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
+    y_km = header.axes.y |&gt; in_units_of(u&quot;km&quot;)
+    sea_level = header.sea_level[end] |&gt; in_units_of(u&quot;m&quot;)
+    z = fill(sea_level, length(x_km), length(y_km))
+    surface!(ax, x_km, y_km, z;
+             color=fill(0.7, size(z)), colormap=:Blues,
+             alpha=alpha, transparency=true, colorrange=(0.0, 1.0))
+end
+
+function _plot_fence_unconformities!(ax::Axis3, header::Header, data::DataSlice,
+                                     h_m::AbstractMatrix; minwidth::Int, kwargs...)
+    orient, pos_axis, fixed_coord = _slice_geometry(header, data)
+    pos_km   = pos_axis    |&gt; in_units_of(u&quot;km&quot;)
+    fixed_km = fixed_coord |&gt; in_units_of(u&quot;km&quot;)
+    hiatus = skeleton(water_depth(header, data) .&lt; 0.0u&quot;m&quot;; minwidth=minwidth)
+    isempty(hiatus[1]) &amp;&amp; return
+    verts = if orient === :along_x
+        [Point3f(pos_km[pt[1]], fixed_km, h_m[pt...]) for pt in hiatus[1]]
+    else
+        [Point3f(fixed_km, pos_km[pt[1]], h_m[pt...]) for pt in hiatus[1]]
+    end
+    linesegments!(ax, vec(permutedims(verts[hiatus[2]])); kwargs...)
+end
+
+function _plot_fence_coeval_lines!(ax::Axis3, header::Header, data::DataSlice,
+                                   h_m::AbstractMatrix, tics::Vector{Int}; kwargs...)
+    orient, pos_axis, fixed_coord = _slice_geometry(header, data)
+    pos_km   = pos_axis    |&gt; in_units_of(u&quot;km&quot;)
+    fixed_km = fixed_coord |&gt; in_units_of(u&quot;km&quot;)
+    n_pos = size(h_m, 1)
+    for t in tics
+        t = clamp(t, 1, size(h_m, 2))
+        if orient === :along_x
+            lines!(ax, pos_km, fill(fixed_km, n_pos), h_m[:, t]; kwargs...)
+        else
+            lines!(ax, fill(fixed_km, n_pos), pos_km, h_m[:, t]; kwargs...)
+        end
+    end
+end
+
+_apply_unconformities!(::Axis3, ::Header, ::DataSlice, _, ::Nothing) = nothing
+_apply_unconformities!(ax::Axis3, h::Header, d::DataSlice, hm, flag::Bool) =
+    flag &amp;&amp; _plot_fence_unconformities!(ax, h, d, hm;
+        minwidth=10, color=:white, linestyle=:dash, linewidth=1)
+_apply_unconformities!(ax::Axis3, h::Header, d::DataSlice, hm, minwidth::Int) =
+    _plot_fence_unconformities!(ax, h, d, hm;
+        minwidth=minwidth, color=:white, linestyle=:dash, linewidth=1)
+
+function _apply_coeval_lines!(ax::Axis3, header::Header, data::DataSlice,
+                               h_m, n_tics::Tuple{Int,Int})
+    n_steps  = div(header.time_steps, data.write_interval)
+    n_major, n_minor = n_tics
+    major = collect(div.(n_steps:n_steps:n_steps*n_major, n_major) .+ 1)
+    minor = filter(t -&gt; !(t in major),
+                   collect(div.(n_steps:n_steps:n_steps*n_minor, n_minor) .+ 1))
+    _plot_fence_coeval_lines!(ax, header, data, h_m, minor;
+        color=:black, linewidth=0.6, linestyle=:dot)
+    _plot_fence_coeval_lines!(ax, header, data, h_m, major;
+        color=:black, linewidth=0.8, linestyle=:solid)
+end
+_apply_coeval_lines!(ax::Axis3, h::Header, d::DataSlice, hm, flag::Bool) =
+    flag &amp;&amp; _apply_coeval_lines!(ax, h, d, hm, (4, 8))
+_apply_coeval_lines!(ax::Axis3, h::Header, d::DataSlice, hm, tics::Vector{Int}) =
+    _plot_fence_coeval_lines!(ax, h, d, hm, tics;
+        color=:black, linewidth=0.8, linestyle=:solid)
+function _apply_coeval_lines!(ax::Axis3, header::Header, data::DataSlice,
+                               h_m, tics::Vector{&lt;:Time})
+    t_axis = header.axes.t[1:data.write_interval:end]
+    idx = Int[searchsortedfirst(t_axis, ti) for ti in tics]
+    _plot_fence_coeval_lines!(ax, header, data, h_m, idx;
+        color=:black, linewidth=0.8, linestyle=:solid)
+end
+
+&quot;&quot;&quot;
+    fence_diagram!(ax::Axis3, header::Header, slices; kwargs...)
+
+Core fence-diagram renderer. `slices` is any iterable of `DataSlice` objects;
+each slice is rendered as a vertical panel at its actual 3D position (inferred
+from `data.slice`).
+
+Bedrock and sea-level surfaces are produced from `header` alone — they do not
+require a `DataVolume` — so this method produces a complete plot from just a
+header and a sequence of slices. This makes it possible to plot slices read
+from different HDF5 files, extracted from a `MemoryOutput`, or selected
+arbitrarily from a volume.
+
+Keyword arguments:
+
+- `show_unconformities::Union{Nothing,Bool,Int}=true`
+- `show_coeval_lines::Union{Bool,Tuple{Int,Int},Vector{Int},Vector{Time}}=false`
+- `show_bedrock::Bool=true`
+- `show_sealevel::Bool=false`
+- `color_by::Symbol=:facies` — `:facies` or `:facies_fraction`
+- `facies::Union{Nothing,Integer}=nothing` — required when `color_by=:facies_fraction`
+- `colormap`, `alpha` — forwarded to `mesh!`
+&quot;&quot;&quot;
+function fence_diagram!(ax::Axis3, header::Header, slices;
+                        show_unconformities::Union{Nothing,Bool,Int}=true,
+                        show_coeval_lines::Union{Bool,Tuple{Int,Int},Vector{Int},Vector{&lt;:Time}}=false,
+                        show_bedrock::Bool=true,
+                        show_sealevel::Bool=false,
+                        color_by::Symbol=:facies,
+                        facies::Union{Nothing,Integer}=nothing,
+                        colormap=nothing,
+                        alpha::Real=1.0,
+                        mesh_args...)
+    show_bedrock  &amp;&amp; _plot_bedrock!(ax, header)
+    show_sealevel &amp;&amp; _plot_sealevel!(ax, header)
+
+    plot_ref = nothing
+
+    color_function, cmap, colorrange = if color_by === :facies
+        (argmax, nothing, nothing)
+    elseif color_by === :facies_fraction
+        facies === nothing &amp;&amp;
+            error(&quot;fence_diagram!: `facies` must be specified when `color_by=:facies_fraction`.&quot;)
+        facies_idx = Int(facies)
+        (col -&gt; _facies_fraction(col, facies_idx),
+         colormap === nothing ? :viridis : colormap,
+         (0.0, 1.0))
+    else
+        error(&quot;fence_diagram!: `color_by` must be :facies or :facies_fraction, got :$(color_by)&quot;)
+    end
+
+    for slice in slices
+        n_f = size(slice.production, 1)
+        resolved_cmap = if color_by === :facies
+            colormap === nothing ?
+                cgrad(Makie.wong_colors()[1:n_f], n_f, categorical=true) : colormap
+        else
+            cmap
+        end
+        resolved_range = color_by === :facies ? (1, n_f) : colorrange
+
+        p = fence_plot!(color_function, ax, header, slice;
+                        colormap=resolved_cmap, colorrange=resolved_range,
+                        alpha=alpha, mesh_args...)
+        plot_ref = something(plot_ref, p)
+
+        h_m = surface_heights(header, slice) |&gt; in_units_of(u&quot;m&quot;)
+        _apply_coeval_lines!(ax, header, slice, h_m, show_coeval_lines)
+        _apply_unconformities!(ax, header, slice, h_m, show_unconformities)
+    end
+
+    ax.xlabel = &quot;x [km]&quot;
+    ax.ylabel = &quot;y [km]&quot;
+    ax.zlabel = &quot;depth [m]&quot;
+    ax.title  = &quot;fence diagram&quot;
+    return plot_ref
+end
+
+&quot;&quot;&quot;
+    fence_diagram!(ax::Axis3, header::Header, data::DataVolume; x_slices=[], y_slices=[], kwargs...)
+
+Convenience method: generates `DataSlice` objects from `x_slices` and `y_slices`
+and delegates entirely to the sequence method. All kwargs are forwarded.
+&quot;&quot;&quot;
+function fence_diagram!(ax::Axis3, header::Header, data::DataVolume;
+                        x_slices::AbstractVector=Int[],
+                        y_slices::AbstractVector=Int[],
+                        kwargs...)
+    isempty(x_slices) &amp;&amp; isempty(y_slices) &amp;&amp;
+        error(&quot;fence_diagram!: specify at least one slice via `x_slices` or `y_slices`.&quot;)
+
+    x_idx = Int[_to_index(header.axes.x, p) for p in x_slices]
+    y_idx = Int[_to_index(header.axes.y, p) for p in y_slices]
+
+    slices = Iterators.flatten((
+        (data[i, :] for i in x_idx),
+        (data[:, j] for j in y_idx),
+    ))
+    return fence_diagram!(ax, header, slices; kwargs...)
+end
+
+function fence_diagram(header::Header, data;
+                       size::Tuple{Int,Int}=(1400, 800),
+                       azimuth::Real=-π/3,
+                       elevation::Real=π/8,
+                       color_by::Symbol=:facies,
+                       facies::Union{Nothing,Integer}=nothing,
+                       colormap=nothing,
+                       kwargs...)
+    n_facies = Base.size(data isa DataVolume ? data.production :
+                         first(data).production, 1)
+
+    fig = Figure(size=size)
+    ax  = Axis3(fig[1, 1])
+    ax.azimuth   = azimuth
+    ax.elevation = elevation
+
+    fence_diagram!(ax, header, data;
+        color_by=color_by, facies=facies, colormap=colormap, kwargs...)
+
+    if color_by === :facies
+        colors   = Makie.wong_colors()[1:n_facies]
+        elements = [PolyElement(color=colors[i]) for i in 1:n_facies]
+        labels   = [&quot;Facies $(i)&quot; for i in 1:n_facies]
+        Legend(fig[1, 2], elements, labels, &quot;Facies&quot;)
+    elseif color_by === :facies_fraction
+        Colorbar(fig[1, 2];
+            colormap = colormap === nothing ? :viridis : colormap,
+            limits   = (0, 1),
+            label    = &quot;Proportion of facies $(facies)&quot;)
+    end
+    return fig
+end
+
+function fence_diagram(filename::AbstractString,
+                       group::Union{Symbol,AbstractString}; kwargs...)
+    header, data = read_volume(filename, group)
+    return fence_diagram(header, data; kwargs...)
+end
+
+&quot;&quot;&quot;
+    fence_diagram(filename; kwargs...)
+
+Plot all `DataSlice` groups found in `filename` as a fence diagram.
+&quot;&quot;&quot;
+function fence_diagram(filename::AbstractString; kwargs...)
+    HDF5.h5open(filename, &quot;r&quot;) do fid
+        header = read_header(fid)
+        groups = group_datasets(fid)
+        isempty(groups[:slice]) &amp;&amp;
+            error(&quot;fence_diagram: no DataSlice groups found in $(filename)&quot;)
+        slices = [read_data(Val{2}, fid[g]) for g in groups[:slice]]
+        return fence_diagram(header, slices; kwargs...)
+    end
+end
+
+&quot;&quot;&quot;
+    fence_diagram(output::MemoryOutput; kwargs...)
+
+Plot all `DataSlice` datasets stored in a `MemoryOutput` as a fence diagram.
+&quot;&quot;&quot;
+function fence_diagram(output::MemoryOutput; kwargs...)
+    isempty(output.data_slices) &amp;&amp;
+        error(&quot;fence_diagram: MemoryOutput contains no DataSlice datasets&quot;)
+    return fence_diagram(output.header, values(output.data_slices); kwargs...)
+end
+
+end  # module</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../profiles/">« Profiles</a><a class="docs-footer-nextpage" href="../topography/">Topography »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 16 June 2026 07:40">Tuesday 16 June 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

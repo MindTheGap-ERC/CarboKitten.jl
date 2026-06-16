@@ -1,5 +1,3 @@
-Manifest.toml
-
 docs/build
 *.h5
 data/*.csv
@@ -22,4 +20,3 @@ docs/src/_fig/*.gif
 scratch
 notebooks
 *.cov
-

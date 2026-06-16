@@ -114,6 +114,7 @@ makedocs(
         "Visualizations" => [
             "Overview" => "visualization/overview.md",
             "Profiles" => "visualization/profiles.md",
+            "Fence Diagram" => "visualization/fence-diagrams.md",
             "Topography" => "visualization/topography.md",
             "Other" => "visualization.md",
         ],

@@ -20,3 +20,4 @@ docs/src/_fig/*.gif
 scratch
 notebooks
 *.cov
+Manifest.toml

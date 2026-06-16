@@ -86,7 +86,7 @@ end
     disintegration::Array{Amount,F}
     production::Array{Amount,F}
     deposition::Array{Amount,F}
-    sediment_thickness::Array{Amount,D}
+    bathymetry::Array{Amount,D}
     active_layer::Union{Array{Amount,F}, Nothing} = nothing
 end
 
@@ -116,7 +116,7 @@ Base.getindex(v::Data{F,D}, args...) where {F,D} =
             v.disintegration[:, args..., :],
             v.production[:, args..., :],
             v.deposition[:, args..., :],
-            v.sediment_thickness[args..., :],
+            v.bathymetry[args..., :],
             v.active_layer == nothing ? nothing : v.active_layer[:, args..., :])
     end
 
@@ -162,12 +162,7 @@ Compute the water depth function for the given data set.
 """
 function water_depth(header::Header, data::Data{F, D}) where {F, D}
     na = [CartesianIndex()]
-    delta_t = header.axes.t[1:data.write_interval:end] .- header.axes.t[1]
-    sl = header.sea_level[1:data.write_interval:end]
-    h0 = header.initial_topography[data.slice..., na]
-    Δh = data.sediment_thickness
-    Σ = header.subsidence_rate .* delta_t[repeated(na, D-1)..., :]
-    return sl[repeated(na, D-1)...,:] .- h0 .- Δh .+ Σ
+    return sl[repeated(na, D-1)...,:] .- header.bathymetry[data.slice..., na]
 end
 
 """
@@ -221,18 +216,19 @@ Set an attribute in the output object.
 function set_attribute end
 
 """
-    write_sediment_thickness(out::T, name::Symbol, idx::Int, data::AbstractArray{Amount, dim}) where {T, dim}
+    write_bathymetry(out::T, name::Symbol, idx::Int, data::AbstractArray{Amount, dim}) where {T, dim}
 
-Write the sediment thickness to the output object. The `idx` should be corrected for write
-interval. That is, `idx` should range from `1` to `n_writes` for the named data set. This
-function should be implemented for 0, 1, and 2 dimensional arrays, corresponding to writing
-column, slice or volume data.
+Write the bathymetry to the output object. The `idx` should be corrected for
+write interval. That is, `idx` should range from `1` to `n_writes` for the named
+data set. This function should be implemented for 0, 1, and 2 dimensional
+arrays, corresponding to writing column, slice or volume data.
 
-If your output object type doesn't conform to the standard CarboKitten data layout, you may
-choose to not implement this function and implement `state_writer` and `frame_writer` instead.
-The same goes for `write_production`, `write_disintegration` and `write_deposition`.
+If your output object type doesn't conform to the standard CarboKitten data
+layout, you may choose to not implement this function and implement
+`state_writer` and `frame_writer` instead. The same goes for `write_production`,
+`write_disintegration` and `write_deposition`.
 """
-function write_sediment_thickness end
+function write_bathymetry end
 
 """
     write_active_layer(out::T, name::Symbol, idx::Int, data::AbstractArray{Amount, dim}) where {T, dim}
@@ -285,9 +281,9 @@ function state_writer(input::Input, out) where {Input <: AbstractInput}
     return function (idx::Int, state::AbstractState)
         for (k, v) in output_sets
             if mod(idx - 1, v.write_interval) == 0
-                write_sediment_thickness(
+                write_bathymetry(
                     out, k, div(idx - 1, v.write_interval) + 1,
-                    view(state.sediment_height, v.slice...))
+                    view(state.bathymetry, v.slice...))
 
                 if save_active_layer
                     write_active_layer(

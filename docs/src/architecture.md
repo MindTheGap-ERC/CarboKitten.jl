@@ -119,7 +119,7 @@ The problem is that this abstraction is neither idiomatic for those used to Juli
 | Boxes      | `box`                |                   |                   |
 | FaciesBase | `facies`             | `label = Nothing` |                   |
 | Time       | `time`               |                   | `step`            |
-| WaterDepth | `sea_level`          |                   | `sediment_height` |
+| WaterDepth | `sea_level`          |                   | `bathymetry`      |
 |            | `initial_topography` |                   |                   |
 |            | `subsidence_rate`    |                   |                   |
 | etc.       |                      |                   |                   |

@@ -98,9 +98,10 @@ using CarboKitten.Components.Common
                                           f[1,:,:].+f[3,:,:], f[4,:,:].+0.5.*f[2,:,:]),dims=1),
             )
 
+            bathymetry = initial_topography(input)
             state = AL.State(
                 step = 0,
-                sediment_height = zeros(Height, input.box.grid_size...),
+                bathymetry = bathymetry,
                 sediment_buffer = zeros(Float64, input.sediment_buffer_size, AL.n_facies(input), input.box.grid_size...),
                 active_layer=zeros(Amount, AL.n_facies(input), input.box.grid_size...))
 
@@ -552,9 +553,7 @@ function plot_1d_evolution!(ax::Axis, input, every=100)
 
 	plot_state() = begin
 		t = state.step * input.time.Δt
-		η = input.initial_topography.(x, y') .+ 
-            state.sediment_height .-
-            input.subsidence_rate * t
+		η = state.bathymetry
 		lines!(ax, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"),
                label=@sprintf("%.3f Myr", ustrip(t)))
 	end
@@ -878,20 +877,20 @@ modifies the state, popping sediment from the `sediment_buffer` and returns an a
 function disintegrator(input)
     max_h = input.disintegration_rate * input.time.Δt
     w = water_depth(input)
-    output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
+    output = Array{Amount,3}(undef, n_facies(input), input.box.grid_size...)
     depositional_resolution = input.depositional_resolution
     iz = input.intertidal_zone
     tf = input.disintegration_transfer
+    pop! = pop_sediment(input)
 
     return function (state)
         wn = w(state)
         wn .+= iz
-        h = min.(max_h, state.sediment_height)
+        h = min.(max_h, state.sediment_thickness)
         h[wn.<=0.0u"m"] .= 0.0u"m"
 
         @assert all(h .<= max_h)
-        state.sediment_height .-= h
-        pop_sediment!(state.sediment_buffer, h ./ depositional_resolution .|> NoUnits, output)
+        pop!(state, h, output)
         return output .* depositional_resolution
     end
 end

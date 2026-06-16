@@ -23,14 +23,17 @@ function initial_state(input::AbstractInput)
         CellularAutomaton.step!(input)(ca_state)
     end
 
-    sediment_height = zeros(Height, input.box.grid_size...)
+    bathymetry = initial_topography(input)
+    sediment_thickness = zeros(Height, input.box.grid_size...)
     sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
     active_layer = zeros(Amount, n_facies(input), input.box.grid_size...)
 
     state = State(
-        step=0, sediment_height=sediment_height,
+        step=0,
+        bathymetry=bathymetry,
+        sediment_thickness=sediment_thickness,
         sediment_buffer=sediment_buffer,
-         active_layer=active_layer,
+        active_layer=active_layer,
         ca=ca_state.ca, ca_priority=ca_state.ca_priority)
 
     InitialSediment.push_initial_sediment!(input, state)
@@ -40,7 +43,7 @@ end
 
 function initial_frame(input::Input)
     dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
-    return Frame(production=zeros(Sediment,size(dep)), 
+    return Frame(production=zeros(Sediment,size(dep)),
                   disintegration=zeros(Sediment,size(dep)),
                   deposition=dep)
 end
@@ -56,9 +59,12 @@ function step!(input::Input)
     slopefn = slope_function(input, input.box)
     pf = lithification_factor(input)
     dtf = input.disintegration_transfer
+    pop! = pop_sediment!(input)
+    push! = push_sediment(input)
+    subside! = subsider(input)
 
     slope = Array{Float64}(undef, input.box.grid_size...)
-    denuded_sediment = Array{Float64}(undef, n_facies(input), input.box.grid_size...)
+    denuded_sediment = Array{Amount}(undef, n_facies(input), input.box.grid_size...)
 
     function (state::State)
         if mod(state.step, input.ca_interval) == 0
@@ -78,29 +84,28 @@ function step!(input::Input)
         transport!(state)
 
         deposit = pf .* state.active_layer
-        push_sediment!(state.sediment_buffer, deposit ./ input.depositional_resolution .|> NoUnits)
+        push!(state, deposit)
         state.active_layer .-= deposit
-        state.sediment_height .+= sum(deposit; dims=1)[1, :, :]
 
         # subaerial: denudation and redistribution
         denudation_mass = denudate(state, w, slope)
         if denudation_mass !== nothing
-            denudation_mass = denudation_mass |> x -> sum(x, dims=1) |> x -> dropdims(x, dims=1) |> x -> min.(x, state.sediment_height)
+            denudation_mass = denudation_mass |>
+                x -> sum(x, dims=1) |>
+                x -> dropdims(x, dims=1) |>
+                x -> min.(x, state.sediment_thickness)
+            pop!(state, denudation_mass, denuded_sediment)
 
-            state.sediment_height .-= denudation_mass
+            d .+= denuded_sediment
 
-            pop_sediment!(state.sediment_buffer, denudation_mass ./ input.depositional_resolution .|> NoUnits, denuded_sediment)
-
-            d .+= denuded_sediment .* input.depositional_resolution
-
-            redistribution_mass = redistribute(state, w, denuded_sediment .* input.depositional_resolution)
+            redistribution_mass = redistribute(state, w, denuded_sediment)
             if redistribution_mass !== nothing
                 # redistribution returns a 3D facies array in meters
-                push_sediment!(state.sediment_buffer, redistribution_mass ./ input.depositional_resolution .|> NoUnits)
-                state.sediment_height .+= sum(redistribution_mass; dims=1)[1, :, :]
+                push!(state, redistribution_mass)
             end
         end
 
+        subside!(state)
         state.step += 1
 
         return Frame(

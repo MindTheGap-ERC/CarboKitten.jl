@@ -16,9 +16,10 @@ using CarboKitten.Components.Common
                                           f[1,:,:].+f[3,:,:], f[4,:,:].+0.5.*f[2,:,:]),dims=1),
             )
 
+            bathymetry = initial_topography(input)
             state = AL.State(
                 step = 0,
-                sediment_height = zeros(Height, input.box.grid_size...),
+                bathymetry = bathymetry,
                 sediment_buffer = zeros(Float64, input.sediment_buffer_size, AL.n_facies(input), input.box.grid_size...),
                 active_layer=zeros(Amount, AL.n_facies(input), input.box.grid_size...))
 

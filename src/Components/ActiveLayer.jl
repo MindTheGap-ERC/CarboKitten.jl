@@ -105,20 +105,20 @@ modifies the state, popping sediment from the `sediment_buffer` and returns an a
 function disintegrator(input)
     max_h = input.disintegration_rate * input.time.Δt
     w = water_depth(input)
-    output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
+    output = Array{Amount,3}(undef, n_facies(input), input.box.grid_size...)
     depositional_resolution = input.depositional_resolution
     iz = input.intertidal_zone
     tf = input.disintegration_transfer
+    pop! = pop_sediment(input)
 
     return function (state)
         wn = w(state)
         wn .+= iz
-        h = min.(max_h, state.sediment_height)
+        h = min.(max_h, state.sediment_thickness)
         h[wn.<=0.0u"m"] .= 0.0u"m"
 
         @assert all(h .<= max_h)
-        state.sediment_height .-= h
-        pop_sediment!(state.sediment_buffer, h ./ depositional_resolution .|> NoUnits, output)
+        pop!(state, h, output)
         return output .* depositional_resolution
     end
 end

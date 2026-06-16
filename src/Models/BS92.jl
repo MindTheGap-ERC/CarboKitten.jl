@@ -12,22 +12,25 @@ using ...Output: Frame
 export Input, Facies
 
 function initial_state(input::Input)
-    sediment_height = zeros(Height, input.box.grid_size...)
-    return State(0, sediment_height)
+    bathymetry = initial_topography(input)
+    return State(0, bathymetry)
 end
 
 function initial_frame(input::Input)
-    return Frame(production=zeros(Sediment,length(input.facies), input.box.grid_size...), 
+    return Frame(production=zeros(Sediment,length(input.facies), input.box.grid_size...),
                   disintegration=zeros(Sediment,length(input.facies), input.box.grid_size...),
                   deposition=zeros(Sediment,length(input.facies), input.box.grid_size...))
 end
 
 function step!(input::Input)
     τ = uniform_production(input)
+    subside! = subsider(input)
+
     function (state::State)
         prod = τ(state)
         Δη = sum(prod; dims=1)[1, :, :]
-        state.sediment_height .+= Δη
+        state.bathymetry .+= Δη
+        subside!(state)
         state.step += 1
         return Frame(
             production=prod,

@@ -49,8 +49,7 @@ end
 
 function push_initial_sediment!(input::AbstractInput, state::AbstractState)
     s = stack(initial_sediment(input.box, f) for f in input.facies; dims=1)
-    push_sediment!(state.sediment_buffer, s ./ input.depositional_resolution .|> NoUnits)
-    state.sediment_height .+= sum(s; dims=1)[1,:,:]
+    push_sediment(input)(state, s)
 end
 ```
 

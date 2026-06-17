@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/components/wavefield.md#examples/wavefield/airy_test.jl>>[init]
+# ~/~ begin <<docs/src/wavefield.md#examples/wavefield/airy_test.jl>>[init]
 module AiryTest
 
 using Unitful

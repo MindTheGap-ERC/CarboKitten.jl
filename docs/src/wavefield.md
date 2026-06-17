@@ -34,7 +34,7 @@ $$u_b = \frac{\pi H_{\mathrm{eff}}}{T \sinh(k h)}$$
 
 This expression decays rapidly with depth and approaches deep-water behavior for large $kh$.
 
-![Near-bed orbital velocity vs depth](../fig/velocity_combination.png)
+![Near-bed orbital velocity vs depth](./fig/velocity_combination.png)
 
 ### Multi-directional superposition
 
@@ -44,8 +44,8 @@ $$\mathbf{v} = \sum_i u_{b,i} \, \hat{\mathbf{d}}_i$$
 
 where $\hat{\mathbf{d}}_i = (\cos\theta_i, \sin\theta_i)$ is the propagation direction of component $i$.
 
-![Components combination](../fig/components_superimposition.png)
-![Velocity combination](../fig/velocity_superimposition.png)
+![Components combination](./fig/components_superimposition.png)
+![Velocity combination](./fig/velocity_superimposition.png)
 
 ### Energy flux
 

@@ -35,7 +35,7 @@ Modules = [CarboKitten.Export]
 ## Components
 
 ```@autodocs
-Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer
+Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer]
 ```
 
 ## Output

@@ -21,6 +21,11 @@ Modules = [CarboKitten.Production]
 Modules = [CarboKitten.Transport.Advection]
 ```
 
+## Interface
+```@autodocs
+Modules = [CarboKitten.WaveField]
+```
+
 ## Export
 
 ```@autodocs
@@ -30,7 +35,7 @@ Modules = [CarboKitten.Export]
 ## Components
 
 ```@autodocs
-Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer, CarboKitten.Components.WaveField]
+Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer
 ```
 
 ## Output

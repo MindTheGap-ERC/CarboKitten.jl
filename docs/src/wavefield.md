@@ -81,7 +81,7 @@ The `Facies.wave_velocity` field accepts any callable with signature `water_dept
 
 ## Implementation
 
-``` {.julia file=src/Components/WaveField.jl}
+``` {.julia file=src/WaveField.jl}
 module WaveField
 
 using Unitful

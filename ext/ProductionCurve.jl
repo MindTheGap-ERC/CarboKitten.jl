@@ -23,7 +23,7 @@ Plot production rate vs depth for each facies in `input`. The production
 profile `(t, w) -> rate` is evaluated at the initial time (t=0) over a depth
 range determined by the facies definitions.
 """
-function production_curve!(ax, input::I) where {I <: AbstractInput}
+function production_curve!(ax::Axis, input::I) where {I <: AbstractInput}
     ax.xlabel = "production [m/Myr]"
     ax.ylabel = "depth [m]"
     ax.yreversed = true

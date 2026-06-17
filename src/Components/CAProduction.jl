@@ -2,7 +2,6 @@
 @compose module CAProduction
     @mixin TimeIntegration, CellularAutomaton, Production
     using ..Common
-    using ..Production: insolation_curve
     using ..TimeIntegration: time
     using ..WaterDepth: water_depth
     using ...Production: production_profile, capped_production
@@ -13,11 +12,8 @@
         na = [CartesianIndex()]
         output_ = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
 
-        s = insolation_curve(input)   # kept for reference; captured in production_specs
-        n_f = n_facies(input)
         facies = input.facies
         dt = input.time.Δt
-        # Insolation is captured inside each production spec closure.
         production_specs = ((production_profile(input, f.production) for f in facies)...,)
         get_time = time(input)
 

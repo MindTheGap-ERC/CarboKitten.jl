@@ -10,10 +10,6 @@ using ..Utility: in_units_of
 
 export production_profile
 
-# =============================================================================
-# Core production equation (Bosscher & Schlager 1992)
-# =============================================================================
-
 # ~/~ begin <<docs/src/components/production.md#component-production-rate>>[init]
 function production_rate(insolation, facies, water_depth)
     gₘ = facies.maximum_growth_rate
@@ -28,8 +24,7 @@ benthic_production(i, f, w) = production_rate(i, f, w)
     capped_production(f, time, water_depth, dt)
 
 Apply production function `f(time, water_depth) -> rate`, clip to non-negative,
-and cap by available accommodation (water depth). Returns the deposited thickness
-for time step `dt`.
+and cap by available accommodation. Returns the deposited thickness for `dt`.
 """
 function capped_production(f, time, water_depth, dt)
     clip_positive(x::T) where {T} = max(x, zero(T))
@@ -37,25 +32,18 @@ function capped_production(f, time, water_depth, dt)
     return min(max(0.0u"m", water_depth), p * dt)
 end
 # ~/~ end
-
 # ~/~ begin <<docs/src/components/production.md#pelagic-production>>[init]
 function pelagic_production(insolation, facies, water_depth)
     return quadgk(w -> production_rate(insolation, facies, w), 0.0u"m", water_depth)[1]
 end
 # ~/~ end
-
-# =============================================================================
-# Insolation helper
-# =============================================================================
-
 # ~/~ begin <<docs/src/components/production.md#insolation-curve>>[init]
 """
     insolation_curve(input) -> function(time) -> insolation
 
-Build a closure that maps time to insolation from the input specification.
-This is used by `production_profile` to capture insolation inside the
-returned `(time, water_depth) -> rate` closure, removing the need to pass
-insolation explicitly through the model loop.
+Build a closure mapping time to insolation from the input specification.
+Handles constant (`Quantity`), tabular (`AbstractVector`), and functional
+insolation inputs.
 """
 function insolation_curve(input::AbstractInput)
     insolation_param = input.insolation
@@ -72,11 +60,6 @@ function insolation_curve(input::AbstractInput)
     end
 end
 # ~/~ end
-
-# =============================================================================
-# Production profile API
-# =============================================================================
-
 # ~/~ begin <<docs/src/components/production.md#production-profile>>[init]
 """
     production_profile(input::AbstractInput, p)
@@ -84,32 +67,49 @@ end
 Given an input and a production configuration, returns a function
 `(time, water_depth) -> production_rate`.
 
-Insolation is read from `input` and composed into the returned closure —
-the caller does not need to pass insolation at each time step.
+Insolation is read from `input` and composed into the returned closure via
+`insolation_curve` — the caller does not need to pass insolation at each
+time step.
 
 The default implementation assumes `p` is already a callable
 `(time, water_depth) -> rate`.
+
+## Example
+
+    struct MyProduction <: AbstractProduction
+        ...
+    end
+
+    import CarboKitten.Production: production_profile
+
+    production_profile(input::AbstractInput, p::MyProduction) =
+        function (time, water_depth)
+            ...
+        end
 """
 production_profile(input::AbstractInput, p) = p
 
 """
     is_benthic(obj)
 
-Predicate: is this a benthic (seafloor) production spec? Default `false`.
+Predicate to determine if a facies or production spec is benthic.
+Defaults to `false`.
 """
 is_benthic(p) = false
 
 """
     is_pelagic(obj)
 
-Predicate: is this a pelagic (water column) production spec? Default `false`.
+Predicate to determine if a facies or production spec is pelagic.
+Defaults to `false`.
 """
 is_pelagic(p) = false
 
 """
     is_interpolated(obj)
 
-Predicate: is this a knot-based interpolated production spec? Default `false`.
+Predicate to determine if a facies or production spec is interpolation-based.
+Defaults to `false`.
 """
 is_interpolated(p) = false
 
@@ -129,12 +129,6 @@ end
 is_benthic(::BenthicProduction) = true
 is_pelagic(::BenthicProduction) = false
 
-"""
-    production_profile(input, p::BenthicProduction)
-
-Returns `(time, water_depth) -> rate`. Insolation at `time` is looked up
-from `input.insolation` via `insolation_curve`.
-"""
 function production_profile(input::AbstractInput, p::BenthicProduction)
     I_of_t = insolation_curve(input)
     return (t, w) -> benthic_production(I_of_t(t), p, w)
@@ -150,33 +144,8 @@ end
 
 is_benthic(::PelagicProduction) = false
 is_pelagic(::PelagicProduction) = true
-
-function production_profile(input::AbstractInput, p::PelagicProduction)
-    return pelagic_production_lookup(input, p)
-end
+production_profile(input::AbstractInput, p::PelagicProduction) = pelagic_production_lookup(input, p)
 # ~/~ end
-
-# =============================================================================
-# Input parameters
-# =============================================================================
-
-# ~/~ begin <<docs/src/components/production.md#production-input>>[init]
-@kwdef struct Input <: AbstractInput
-    insolation
-end
-
-@kwdef struct Facies <: AbstractFacies
-    production = NoProduction()
-end
-
-is_benthic(facies::AbstractFacies) = is_benthic(facies.production)
-is_pelagic(facies::AbstractFacies) = is_pelagic(facies.production)
-# ~/~ end
-
-# =============================================================================
-# Pelagic lookup table
-# =============================================================================
-
 # ~/~ begin <<docs/src/components/production.md#production-lookup>>[init]
 function pelagic_production_lookup(input::AbstractInput, prod::PelagicProduction)
     I_of_t = insolation_curve(input)
@@ -219,6 +188,8 @@ shape over `(depth, multiplier)` knots. Independent of insolation.
 
     rate(t, w) = maximum_production × interpolate(depth_knots, multipliers; w)
 
+`depth_knots` need not be sorted; they are sorted internally.
+
 # Example
 
     InterpolatedProduction(
@@ -232,8 +203,8 @@ shape over `(depth, multiplier)` knots. Independent of insolation.
     multipliers::Vector{Float64}            = Float64[]
 end
 
-is_benthic(::InterpolatedProduction)     = false
-is_pelagic(::InterpolatedProduction)     = false
+is_benthic(::InterpolatedProduction)      = false
+is_pelagic(::InterpolatedProduction)      = false
 is_interpolated(::InterpolatedProduction) = true
 
 function production_profile(::AbstractInput, p::InterpolatedProduction)
@@ -256,27 +227,12 @@ const _ProdTimeSpec = Union{Colon, Tuple{_ProdTime,_ProdTime}}
 """
     MultiplyProduction(base, factor; t_range=:)
 
-Transforms `base::AbstractProduction` into a new production spec that
-multiplies the output by `factor` during `t_range`. Outside `t_range` the
-base production is returned unchanged.
+Wraps `base::AbstractProduction`, multiplying its output by `factor` during
+`t_range`. Outside `t_range` the base production is unchanged.
 
-This implements the modifier pattern as an `AbstractProduction -> AbstractProduction`
-transformation: modifiers compose directly in the production spec rather than
-living in a separate `production_modifiers` list.
-
-# Example
-
-    # Reef growth halved between 0.5 and 1.0 Myr
-    MultiplyProduction(
-        BenthicProduction(maximum_growth_rate=500u"m/Myr", ...),
-        0.5;
-        t_range=(0.5u"Myr", 1.0u"Myr"))
-
-    # Composing multiple modifiers
-    MultiplyProduction(
-        MultiplyProduction(base_prod, 0.5; t_range=(0u"Myr", 0.3u"Myr")),
-        2.0;
-        t_range=(0.8u"Myr", 1.0u"Myr"))
+This implements the modifier pattern as `AbstractProduction -> AbstractProduction`:
+modifiers compose directly in the production spec rather than in a separate
+`production_modifiers` list on `Input`.
 """
 @kwdef struct MultiplyProduction <: AbstractProduction
     base::AbstractProduction
@@ -286,9 +242,8 @@ end
 MultiplyProduction(base, factor::Real; kwargs...) =
     MultiplyProduction(; base=base, factor=Float64(factor), kwargs...)
 
-# Delegate predicates to the wrapped base production
-is_benthic(p::MultiplyProduction)     = is_benthic(p.base)
-is_pelagic(p::MultiplyProduction)     = is_pelagic(p.base)
+is_benthic(p::MultiplyProduction)      = is_benthic(p.base)
+is_pelagic(p::MultiplyProduction)      = is_pelagic(p.base)
 is_interpolated(p::MultiplyProduction) = is_interpolated(p.base)
 
 function production_profile(input::AbstractInput, p::MultiplyProduction)
@@ -298,10 +253,6 @@ function production_profile(input::AbstractInput, p::MultiplyProduction)
         return base_profile(t, w) * f
     end
 end
-
-# =============================================================================
-# Example configurations
-# =============================================================================
 
 const EXAMPLE = Dict(
     :euphotic => BenthicProduction(

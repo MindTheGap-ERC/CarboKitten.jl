@@ -171,6 +171,10 @@ The comparison protocol is:
 3. Differences in the output factory maps reflect the conditioning strength,
    not differences in the prior.
 
+![Refinement0](../fig/envcap_ref0_z41_maps.png)
+![Refinement05](../fig/envcap_ref05_z41_maps.png)
+![Refinement1](../fig/envcap_ref1_z41_maps.png)
+
 ``` {.julia #apply-prior-bias}
 function apply_prior_bias!(
         ca::Matrix{Int},

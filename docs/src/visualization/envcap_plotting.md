@@ -10,6 +10,10 @@ The plotter reconstructs three maps at the same stratigraphic level:
 2. the shared factory-probability block,
 3. the deposited factory block from the EnvCAP output.
 
+![Refinement0](../fig/envcap_ref0_z41_maps.png)
+![Refinement05](../fig/envcap_ref05_z41_maps.png)
+![Refinement1](../fig/envcap_ref1_z41_maps.png)
+
 ``` {.julia file=ext/EnvCAPPlotting.jl}
 module EnvCAPPlotting
 

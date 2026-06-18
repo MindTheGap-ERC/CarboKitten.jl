@@ -142,6 +142,7 @@ include("./Models/CAP.jl")
 include("./Models/ALCAP.jl")
 include("./Models/WithDenudation.jl")
 include("./Models/WithoutCA.jl")
+include("./Models/EnvCAP.jl")
 end
 
 include("./Export.jl")
@@ -151,13 +152,13 @@ include("./Testing.jl")
 using .Components.Common: in_units_of, @u_str
 using .Output.Abstract: OutputSpec, new_output
 using .Output.MemoryWriter: MemoryOutput
-using .Models: BS92, CAP, ALCAP
+using .Models: BS92, CAP, ALCAP, EnvCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 using .Production: BenthicProduction, PelagicProduction
 using GeometryBasics: Vec2
 
 export run_model, Box, box_axes, TimeProperties, time_axis,
-    Model, BS92, CAP, ALCAP, in_units_of, @u_str,
+    Model, BS92, CAP, ALCAP, EnvCAP, in_units_of, @u_str,
     AbstractBox, Boundary, Coast, Periodic, Reflected,
     Vec2, OutputSpec, MemoryOutput, new_output, n_steps,
     BenthicProduction, PelagicProduction

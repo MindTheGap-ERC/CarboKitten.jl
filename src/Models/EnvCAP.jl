@@ -70,6 +70,7 @@ function step!(input::Input)
 
     prior     = input.factory_prior
     α         = input.ca_refinement
+    @assert 0.0 <= α <= 1.0 "ca_refinement must be between 0 and 1"
     env_rng   = MersenneTwister(input.env_random_seed)
     has_prior = prior !== nothing && α > 0.0
 

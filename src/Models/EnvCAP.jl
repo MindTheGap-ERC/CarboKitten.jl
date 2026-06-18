@@ -20,7 +20,7 @@ export EnvMapping
 
 # ~/~ begin <<docs/src/models/envcap.md#envcap-input>>[init]
 @kwdef struct Input <: AbstractInput
-    factory_prior::Union{Array{Float64,3},Nothing} = nothing
+    factory_prior::Union{Array{Float64,4},Nothing} = nothing
     ca_refinement::Float64                         = 0.0
     env_random_seed::Int                           = 1
 end
@@ -81,7 +81,14 @@ function step!(input::Input)
         if mod(state.step, input.ca_interval) == 0
             step_ca!(state)
             if has_prior
-                apply_prior_bias!(state.ca, prior, α, env_rng)
+                apply_prior_bias!(
+                    state.ca,
+                    prior,
+                    state.sediment_height,
+                    input.depositional_resolution,
+                    α,
+                    env_rng,
+                )
             end
         end
 

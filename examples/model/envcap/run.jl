@@ -3,7 +3,7 @@
 module Script
 using CarboKitten
 using CarboKitten.Models: EnvCAP, WithoutCA
-using CarboKitten.Models.EnvCAP.EnvMapping: dominant_env, env_to_factory_prior
+using CarboKitten.Models.EnvCAP.EnvMapping: dominant_env_block, env_to_factory_prior_block
 using CarboKitten.Export: read_volume
 using HDF5
 
@@ -110,7 +110,8 @@ function make_stage2_input(factory_prior, ca_refinement; tag)
         time                    = TimeProperties(Δt=ΔT, steps=STEPS),
         output                  = Dict(
             :topography => OutputSpec(write_interval=50),
-            :profile    => OutputSpec(slice=(:, 25))),
+            :profile    => OutputSpec(slice=(:, 25)),
+            :full       => OutputSpec(write_interval=50)),
         initial_topography      = (x, y) -> -x / 300.0,
         sea_level               = t -> 4.0u"m" * sin(2π * t / 200.0u"kyr"),
         subsidence_rate         = 50.0u"m/Myr",
@@ -132,8 +133,16 @@ function main()
 
     # Extract environmental belt from stage-1 output
     header, stage1_data = read_volume("data/output/envcap_stage1.h5", :full)
-    env_field     = dominant_env(stage1_data.deposition)
-    factory_prior = env_to_factory_prior(env_field, ENV_TO_FACTORY)
+        env_belt = dominant_env_block(
+            stage1_data.deposition;
+            dz = 0.5,
+            min_nz = 41,
+        )
+        
+        factory_prior = env_to_factory_prior_block(
+            env_belt,
+            ENV_TO_FACTORY,
+        )
 
     # Save the env_field and factory_prior as attributes in each stage-2 file
     # (they are inputs, not outputs, but useful to archive alongside results)

@@ -6,7 +6,7 @@ using Unitful
 
 using CarboKitten
 using CarboKitten.Models: EnvCAP, WithoutCA
-using CarboKitten.Models.EnvCAP.EnvMapping: dominant_env, env_to_factory_prior, apply_prior_bias!
+using CarboKitten.Models.EnvCAP.EnvMapping: dominant_env_block, env_to_factory_prior_block, apply_prior_bias!
 
 const BOX  = Box{Coast}(grid_size=(5, 5), phys_scale=150.0u"m")
 const TIME = TimeProperties(Δt=200.0u"yr", steps=10)
@@ -63,7 +63,7 @@ const FACTORY_FACIES = [
     dep = zeros(typeof(1.0u"m"), 2, 2, 2, 3)
     dep[1, 1, 1, :] .= 1.0u"m"
     dep[2, 2, 2, :] .= 2.0u"m"
-    ef = dominant_env(dep)
+    ef = dominant_env_block(dep)
     @test size(ef) == (2, 2)
     @test ef[1, 1] == 1
     @test ef[2, 2] == 2
@@ -73,7 +73,7 @@ end
 @testset "EnvMapping/env_to_factory_prior" begin
     env_field = [1 2; 0 1]
     mapping = [0.8 0.2; 0.3 0.7]
-    prior = env_to_factory_prior(env_field, mapping)
+    prior = env_to_factory_prior_block(env_field, mapping)
     @test size(prior) == (2, 2, 2)
     @test prior[1, 1, 1] ≈ 0.8
     @test prior[2, 2, 1] ≈ 0.7
@@ -107,9 +107,9 @@ const STAGE1_OUT = run_model(Model{WithoutCA}, STAGE1_INPUT, MemoryOutput(STAGE1
     @test size(dep, 3) == 5
 end
 
-const ENV_FIELD     = dominant_env(STAGE1_OUT.data_volumes[:full].deposition)
+const ENV_FIELD     = dominant_env_block(STAGE1_OUT.data_volumes[:full].deposition)
 const MAPPING       = [0.9 0.1; 0.1 0.9]
-const FACTORY_PRIOR = env_to_factory_prior(ENV_FIELD, MAPPING)
+const FACTORY_PRIOR = env_to_factory_prior_block(ENV_FIELD, MAPPING)
 
 @testset "Factory prior shape and validity" begin
     @test size(FACTORY_PRIOR) == (2, 5, 5)

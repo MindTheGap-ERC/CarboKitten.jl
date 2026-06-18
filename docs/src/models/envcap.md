@@ -37,7 +37,7 @@ model.  It is a sibling model that reuses the same mixin chain
 (`CAProduction`, `CAFeedback`, `ActiveLayer`, `InitialSediment`, `Diagnostics`)
 and adds exactly two inputs:
 
-- `factory_prior::Union{Array{Float64,3},Nothing}` — the static prior array
+- `factory_prior::Union{Array{Float64,4},Nothing}` — the static prior array
 - `ca_refinement::Float64` — the conditioning strength
 
 When `factory_prior` is `nothing` **or** `ca_refinement == 0.0`, the model
@@ -49,7 +49,7 @@ is algebraically equivalent to `ALCAP`.
 Stage 1 ─ WithoutCA
   Define environments via production curves, topography, sea level, etc.
   Run the model.
-  Extract dominant_env() from the output deposition.
+  Extract dominant_env_block() from the output deposition.
 
 Stage 2 ─ EnvCAP
   Convert env_field + user mapping → factory_prior.
@@ -64,29 +64,47 @@ than specific carbonate factories.  The production curves should reflect the
 large-scale environmental gradient (e.g., high-energy inner platform vs.
 low-energy slope) rather than exact organism groups.
 
-Use `EnvMapping.dominant_env(data.deposition)` to convert the accumulated
+Use `EnvMapping.dominant_env_block(data.deposition)` to convert the accumulated
 deposition array into a `Matrix{Int}` of the same spatial dimensions as the
 grid, where each cell contains the 1-based index of the environment that
 contributed most sediment.
 
 ``` {.julia #dominant-env}
-function dominant_env(deposition::AbstractArray{T,4}) where T
-    total = dropdims(sum(deposition; dims=4), dims=4)  # (n_envs, nx, ny)
-    n_envs, nx, ny = size(total)
-    result = zeros(Int, nx, ny)
-    for ix in 1:nx, iy in 1:ny
-        best_env = 0
-        best_val = zero(T)
-        for e in 1:n_envs
-            v = total[e, ix, iy]
-            if v > best_val
-                best_val = v
-                best_env = e
-            end
-        end
-        result[ix, iy] = best_env
+function dominant_env_block(deposition::AbstractArray{T,4}; dz = 0.5, min_nz = 1) where T
+    n_envs, nx, ny, nt = size(deposition)
+
+    numeric_dep = try
+        ustrip.(u"m", deposition)
+    catch
+        Float64.(deposition)
     end
-    return result
+
+    total_thickness = dropdims(sum(numeric_dep; dims = (1, 4)), dims = (1, 4))
+    nz = max(min_nz, 1, ceil(Int, maximum(total_thickness) / dz))
+
+    belt = zeros(Int, nx, ny, nz)
+
+    for ix in 1:nx, iy in 1:ny
+        zpos = 1
+
+        for it in 1:nt
+            dep = numeric_dep[:, ix, iy, it]
+            thickness = sum(dep)
+
+            thickness <= 0.0 && continue
+
+            env = argmax(dep)
+            nvox = max(1, round(Int, thickness / dz))
+            ztop = min(nz, zpos + nvox - 1)
+
+            belt[ix, iy, zpos:ztop] .= env
+
+            zpos = ztop + 1
+            zpos > nz && break
+        end
+    end
+
+    return belt
 end
 ```
 
@@ -97,28 +115,33 @@ relative probability weight of each factory in environment `e`.  Each row is
 normalised automatically.
 
 ``` {.julia #env-to-factory-prior}
-function env_to_factory_prior(
-        env_field::Matrix{Int},
-        mapping::Matrix{Float64})::Array{Float64,3}
+function env_to_factory_prior_block(
+        env_belt::Array{Int,3},
+        mapping::Matrix{Float64})::Array{Float64,4}
 
     n_envs, n_factories = size(mapping)
-    nx, ny = size(env_field)
+    nx, ny, nz = size(env_belt)
 
     normalised = similar(mapping)
+
     for e in 1:n_envs
-        s = sum(mapping[e, :])
-        normalised[e, :] .= s > 0.0 ? mapping[e, :] ./ s : fill(1.0/n_factories, n_factories)
+        row = max.(mapping[e, :], 0.0)
+        s = sum(row)
+        normalised[e, :] .= s > 0.0 ? row ./ s : fill(1.0 / n_factories, n_factories)
     end
 
-    prior = zeros(Float64, n_factories, nx, ny)
-    for ix in 1:nx, iy in 1:ny
-        e = env_field[ix, iy]
+    prior = zeros(Float64, n_factories, nx, ny, nz)
+
+    for ix in 1:nx, iy in 1:ny, iz in 1:nz
+        e = env_belt[ix, iy, iz]
+
         if e == 0 || e > n_envs
-            prior[:, ix, iy] .= 1.0 / n_factories
+            prior[:, ix, iy, iz] .= 1.0 / n_factories
         else
-            prior[:, ix, iy] .= normalised[e, :]
+            prior[:, ix, iy, iz] .= normalised[e, :]
         end
     end
+
     return prior
 end
 ```
@@ -151,17 +174,26 @@ The comparison protocol is:
 ``` {.julia #apply-prior-bias}
 function apply_prior_bias!(
         ca::Matrix{Int},
-        factory_prior::Array{Float64,3},
+        factory_prior::Array{Float64,4},
+        sediment_height,
+        depositional_resolution,
         ca_refinement::Float64,
         rng)
 
     ca_refinement == 0.0 && return
 
+    _, nx, ny, nz = size(factory_prior)
+
     for ix in axes(ca, 1), iy in axes(ca, 2)
         f = ca[ix, iy]
         f == 0 && continue
-        p_prior = factory_prior[f, ix, iy]
+
+        z = floor(Int, sediment_height[ix, iy] / depositional_resolution |> NoUnits) + 1
+        z = clamp(z, 1, nz)
+
+        p_prior = factory_prior[f, ix, iy, z]
         p_kill  = ca_refinement * (1.0 - p_prior)
+
         if rand(rng) < p_kill
             ca[ix, iy] = 0
         end
@@ -179,8 +211,9 @@ model loop and can be called at any point between the two stages.
 module EnvMapping
 
 using Unitful
+using Unitful: NoUnits
 
-export dominant_env, env_to_factory_prior, apply_prior_bias!
+export dominant_env_block, env_to_factory_prior_block, apply_prior_bias!
 
 <<dominant-env>>
 <<env-to-factory-prior>>
@@ -234,7 +267,7 @@ end
 
 ``` {.julia #envcap-input}
 @kwdef struct Input <: AbstractInput
-    factory_prior::Union{Array{Float64,3},Nothing} = nothing
+    factory_prior::Union{Array{Float64,4},Nothing} = nothing
     ca_refinement::Float64                         = 0.0
     env_random_seed::Int                           = 1
 end
@@ -293,7 +326,14 @@ function step!(input::Input)
         if mod(state.step, input.ca_interval) == 0
             step_ca!(state)
             if has_prior
-                apply_prior_bias!(state.ca, prior, α, env_rng)
+                apply_prior_bias!(
+                    state.ca,
+                    prior,
+                    state.sediment_height,
+                    input.depositional_resolution,
+                    α,
+                    env_rng,
+                )
             end
         end
 
@@ -346,7 +386,7 @@ environmental belt, the factory prior, and three EnvCAP runs with different
 module Script
 using CarboKitten
 using CarboKitten.Models: EnvCAP, WithoutCA
-using CarboKitten.Models.EnvCAP.EnvMapping: dominant_env, env_to_factory_prior
+using CarboKitten.Models.EnvCAP.EnvMapping: dominant_env_block, env_to_factory_prior_block
 using CarboKitten.Export: read_volume
 using HDF5
 
@@ -453,7 +493,8 @@ function make_stage2_input(factory_prior, ca_refinement; tag)
         time                    = TimeProperties(Δt=ΔT, steps=STEPS),
         output                  = Dict(
             :topography => OutputSpec(write_interval=50),
-            :profile    => OutputSpec(slice=(:, 25))),
+            :profile    => OutputSpec(slice=(:, 25)),
+            :full       => OutputSpec(write_interval=50)),
         initial_topography      = (x, y) -> -x / 300.0,
         sea_level               = t -> 4.0u"m" * sin(2π * t / 200.0u"kyr"),
         subsidence_rate         = 50.0u"m/Myr",
@@ -475,8 +516,16 @@ function main()
 
     # Extract environmental belt from stage-1 output
     header, stage1_data = read_volume("data/output/envcap_stage1.h5", :full)
-    env_field     = dominant_env(stage1_data.deposition)
-    factory_prior = env_to_factory_prior(env_field, ENV_TO_FACTORY)
+        env_belt = dominant_env_block(
+            stage1_data.deposition;
+            dz = 0.5,
+            min_nz = 41,
+        )
+        
+        factory_prior = env_to_factory_prior_block(
+            env_belt,
+            ENV_TO_FACTORY,
+        )
 
     # Save the env_field and factory_prior as attributes in each stage-2 file
     # (they are inputs, not outputs, but useful to archive alongside results)
@@ -505,7 +554,7 @@ using Unitful
 
 using CarboKitten
 using CarboKitten.Models: EnvCAP, WithoutCA
-using CarboKitten.Models.EnvCAP.EnvMapping: dominant_env, env_to_factory_prior, apply_prior_bias!
+using CarboKitten.Models.EnvCAP.EnvMapping: dominant_env_block, env_to_factory_prior_block, apply_prior_bias!
 
 const BOX  = Box{Coast}(grid_size=(5, 5), phys_scale=150.0u"m")
 const TIME = TimeProperties(Δt=200.0u"yr", steps=10)
@@ -562,7 +611,7 @@ const FACTORY_FACIES = [
     dep = zeros(typeof(1.0u"m"), 2, 2, 2, 3)
     dep[1, 1, 1, :] .= 1.0u"m"
     dep[2, 2, 2, :] .= 2.0u"m"
-    ef = dominant_env(dep)
+    ef = dominant_env_block(dep)
     @test size(ef) == (2, 2)
     @test ef[1, 1] == 1
     @test ef[2, 2] == 2
@@ -572,7 +621,7 @@ end
 @testset "EnvMapping/env_to_factory_prior" begin
     env_field = [1 2; 0 1]
     mapping = [0.8 0.2; 0.3 0.7]
-    prior = env_to_factory_prior(env_field, mapping)
+    prior = env_to_factory_prior_block(env_field, mapping)
     @test size(prior) == (2, 2, 2)
     @test prior[1, 1, 1] ≈ 0.8
     @test prior[2, 2, 1] ≈ 0.7
@@ -606,9 +655,9 @@ const STAGE1_OUT = run_model(Model{WithoutCA}, STAGE1_INPUT, MemoryOutput(STAGE1
     @test size(dep, 3) == 5
 end
 
-const ENV_FIELD     = dominant_env(STAGE1_OUT.data_volumes[:full].deposition)
+const ENV_FIELD     = dominant_env_block(STAGE1_OUT.data_volumes[:full].deposition)
 const MAPPING       = [0.9 0.1; 0.1 0.9]
-const FACTORY_PRIOR = env_to_factory_prior(ENV_FIELD, MAPPING)
+const FACTORY_PRIOR = env_to_factory_prior_block(ENV_FIELD, MAPPING)
 
 @testset "Factory prior shape and validity" begin
     @test size(FACTORY_PRIOR) == (2, 5, 5)

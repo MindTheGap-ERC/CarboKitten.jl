@@ -104,11 +104,13 @@ function main()
     nx, ny = header.grid_size
 
     # Build slice list (same geometry for both panels)
-    x_idx  = [i for i in X_SLICES if i <= nx]
-    y_idx  = [argmin(abs.(header.axes.y .- p))
-               for p in Y_SLICES if p <= header.axes.y[end]]
+    x_idx = [i for i in X_SLICES if i <= nx]
+    y_idx = [argmin(abs.(header.axes.y .- p))
+              for p in Y_SLICES if uconvert(unit(header.axes.y[1]), p) <= header.axes.y[end]]
     slices_prod = vcat([vol[i, :] for i in x_idx],
                        [vol[:, j] for j in y_idx])
+    isempty(slices_prod) && error("No slices selected — check X_SLICES/Y_SLICES against grid size $(nx)×$(ny)")
+    @info "$(length(slices_prod)) slices selected, types: $(typeof.(slices_prod))"
 
     # Classify each slice
     @info "Classifying …"

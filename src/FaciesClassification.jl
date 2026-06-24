@@ -99,7 +99,79 @@ function reclassify_data(header::Header,
                          data::Data{F,D},
                          rules::AbstractVector{FaciesRule};
                          wave_field::Union{AiryWaveField,Nothing}=nothing) where {F,D}
-    # ... (full implementation in src/FaciesClassification.jl)
+    n_prod  = size(data.deposition, 1)    # original production-facies count
+    n_class = length(rules) + 1           # classified facies + fallback
+    dep_sz  = size(data.deposition)
+    sp_size = dep_sz[2:end-1]             # (): column, (nx,): slice, (nx,ny): volume
+    n_t     = dep_sz[end]
+
+    # --- allocate output arrays (same element type / units as input) ---
+    zero_like(a) = zeros(eltype(a), n_class, sp_size..., n_t)
+    dep_out  = zero_like(data.deposition)
+    prod_out = zero_like(data.production)
+    dis_out  = zero_like(data.disintegration)
+
+    # --- water depth: stored field preferred, fallback to header reconstruction ---
+    wd_array = water_depth(header, data)   # shape (spatial..., n_t)
+
+    _wd(sp_idx::CartesianIndex{0}, t) = wd_array[t]
+    _wd(sp_idx, t)                    = wd_array[sp_idx, t]
+
+    zero_energy = 0.0u"W/m"
+
+    # --- iterate over every spatial cell and time step ---
+    for t_idx in 1:n_t
+        for sp_idx in CartesianIndices(sp_size)
+            wd_val = _wd(sp_idx, t_idx)
+
+            dep_col  = @view data.deposition[:,     sp_idx, t_idx]
+            prod_col = @view data.production[:,     sp_idx, t_idx]
+            dis_col  = @view data.disintegration[:, sp_idx, t_idx]
+
+            total_dep = sum(dep_col)
+            fractions = if total_dep > zero(eltype(dep_col))
+                ustrip.(dep_col ./ total_dep)
+            else
+                zeros(Float64, n_prod)
+            end
+
+            we  = wave_field !== nothing ? energy_flux(wave_field, wd_val) : zero_energy
+            cls = classify_block(rules, fractions, wd_val, we)
+
+            dep_out[cls,  sp_idx, t_idx] += total_dep
+            prod_out[cls, sp_idx, t_idx] += sum(prod_col)
+            dis_out[cls,  sp_idx, t_idx] += sum(dis_col)
+        end
+    end
+
+    # --- build new header ---
+    new_header = Header(
+        tag                = header.tag,
+        axes               = header.axes,
+        Δt                 = header.Δt,
+        time_steps         = header.time_steps,
+        grid_size          = header.grid_size,
+        n_facies           = n_class,
+        initial_topography = header.initial_topography,
+        sea_level          = header.sea_level,
+        subsidence_rate    = header.subsidence_rate,
+        data_sets          = header.data_sets,
+        attributes         = merge(header.attributes,
+                                   Dict("facies_classification" => true,
+                                        "classified_facies" =>
+                                            [[r.name for r in rules]; "fallback"])))
+
+    new_data = Data{F,D}(
+        slice              = data.slice,
+        write_interval     = data.write_interval,
+        disintegration     = dis_out,
+        production         = prod_out,
+        deposition         = dep_out,
+        sediment_thickness = data.sediment_thickness,
+        active_layer       = nothing,
+        water_depth        = data.water_depth)
+
+    return new_header, new_data
 end
 # ~/~ end
 

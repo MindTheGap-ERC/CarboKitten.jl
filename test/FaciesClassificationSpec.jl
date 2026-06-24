@@ -1,5 +1,4 @@
 # ~/~ begin <<docs/src/facies-classification.md#test/FaciesClassificationSpec.jl>>[init]
-# ~/~ begin <<docs/src/facies-classification.md#test/FaciesClassificationSpec.jl>>[init]
 module FaciesClassificationSpec
 
 using Test
@@ -310,5 +309,4 @@ end
 end
 
 end  # module FaciesClassificationSpec
-# ~/~ end
 # ~/~ end

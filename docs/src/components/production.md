@@ -21,16 +21,29 @@ end
 
 benthic_production(i, f, w) = production_rate(i, f, w)
 
-function capped_production(f, insolation, water_depth, dt)
+"""
+    capped_production(f, time, water_depth, dt)
+
+Apply production function `f(time, water_depth) -> rate`, clip to non-negative,
+and cap by available accommodation. Returns the deposited thickness for `dt`.
+"""
+function capped_production(f, time, water_depth, dt)
     clip_positive(x::T) where {T} = max(x, zero(T))
-    p = clip_positive(f(insolation, water_depth))
+    p = clip_positive(f(time, water_depth))
     return min(max(0.0u"m", water_depth), p * dt)
 end
 ```
 
-From just this equation we can define a uniform production process. This requires that we have a `Facies` that defines the `maximum_growth_rate`, `extinction_coefficient` and `saturation_intensity`.
+`capped_production` now takes `time` instead of `insolation`. Insolation is
+captured inside each production profile closure via `insolation_curve` — the
+model loop only needs to pass the current simulation time.
 
-The `insolation` input may be given as a scalar quantity, say `400u"W/m^2"`, or as a function of time.
+From just this equation we can define a uniform production process. This
+requires that we have a `Facies` that defines the `maximum_growth_rate`,
+`extinction_coefficient` and `saturation_intensity`.
+
+The `insolation` input may be given as a scalar quantity, say `400u"W/m^2"`,
+or as a function of time.
 
 ## Pelagic Production
 
@@ -67,7 +80,7 @@ function main()
     ax = Axis(fig[1, 1], yreversed=true, ylabel="depth [m]", xlabel="production [m/Myr]")
     for (k, prod) in pairs(Production.EXAMPLE)
         f = production_profile(input, prod)
-        p = water_depth .|> (w -> f(input.insolation, w))
+        p = water_depth .|> (w -> f(input.time.t0, w))
         lines!(ax, p |> in_units_of(u"m/Myr"),
             water_depth |> in_units_of(u"m"), label = string(k))
     end
@@ -78,34 +91,167 @@ end
 end
 ```
 
+## Insolation curve
+
+Production profiles are now functions of `(time, water_depth)` rather than
+`(insolation, water_depth)`. The `insolation_curve` helper captures insolation
+inside the closure returned by `production_profile`, so the model loop never
+needs to call an insolation function explicitly.
+
+``` {.julia #insolation-curve}
+"""
+    insolation_curve(input) -> function(time) -> insolation
+
+Build a closure mapping time to insolation from the input specification.
+Handles constant (`Quantity`), tabular (`AbstractVector`), and functional
+insolation inputs.
+"""
+function insolation_curve(input::AbstractInput)
+    insolation_param = input.insolation
+    if insolation_param isa Quantity
+        return _ -> insolation_param
+    elseif insolation_param isa AbstractVector
+        t_axis = time_axis(input)
+        t_vals = ustrip.(u"Myr", t_axis)
+        I_vals = ustrip.(u"W/m^2", insolation_param)
+        itp = linear_interpolation(t_vals, I_vals, extrapolation_bc=Flat())
+        return t -> itp(ustrip(u"Myr", t)) * u"W/m^2"
+    else
+        return t -> insolation_param(t)
+    end
+end
+```
+
+## Interpolated Production
+
+Not all production curves follow the Bosscher & Schlager model. In some cases it is more natural to specify the curve directly, as a set of depth knots and multipliers applied to a peak rate. The `InterpolatedProduction` type supports this:
+
+$$g(t, w) = g_{\max} \cdot f(w),$$
+
+where $f(w)$ is a piecewise-linear function defined by `(depth_knots, multipliers)` pairs, with **flat extrapolation** outside the knot range.
+
+This curve is **independent of insolation** — the per-depth shape is fixed by the user. To vary the overall scale over time, wrap it in `MultiplyProduction`.
+
+### Example
+
+```julia
+using CarboKitten.Production: InterpolatedProduction
+
+# Shallow reef builder: peaks at 5–15 m, dies off by 50 m
+InterpolatedProduction(
+    maximum_production = 500.0u"m/Myr",
+    depth_knots  = [0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
+    multipliers  = [0.0,     1.0,     1.0,      0.4,      0.0])
+```
+
+### Mixing curve types
+
+Different facies in the same run can use different production types:
+
+```julia
+facies = [
+    ALCAP.Facies(production = BenthicProduction(
+        maximum_growth_rate=500u"m/Myr",
+        extinction_coefficient=0.8u"m^-1",
+        saturation_intensity=60u"W/m^2")),
+    ALCAP.Facies(production = InterpolatedProduction(
+        maximum_production=350.0u"m/Myr",
+        depth_knots=[0.0u"m", 10.0u"m", 40.0u"m", 60.0u"m"],
+        multipliers=[0.0, 0.5, 1.0, 0.0])),
+]
+```
+
+## Time-window production modifiers
+
+Instead of a separate `production_modifiers` list on `Input`, time-varying
+behaviour is expressed by wrapping any production spec in `MultiplyProduction`.
+This implements the modifier pattern as an `AbstractProduction -> AbstractProduction`
+transformation, keeping all production logic self-contained in the facies
+definition.
+
+### `MultiplyProduction`
+
+```julia
+using CarboKitten.Production: MultiplyProduction, BenthicProduction
+
+# Reef growth halved between 0.5 and 1.0 Myr
+facies = ALCAP.Facies(
+    production = MultiplyProduction(
+        BenthicProduction(
+            maximum_growth_rate = 500u"m/Myr",
+            extinction_coefficient = 0.8u"m^-1",
+            saturation_intensity = 60u"W/m^2"),
+        0.5;
+        t_range = (0.5u"Myr", 1.0u"Myr")))
+```
+
+Modifiers compose by nesting:
+
+```julia
+MultiplyProduction(
+    MultiplyProduction(base_prod, 0.5; t_range=(0u"Myr", 0.3u"Myr")),
+    2.0;
+    t_range=(0.8u"Myr", 1.0u"Myr"))
+```
+
+Parameters:
+
+- `base` — any `AbstractProduction` to wrap.
+- `factor::Float64` — multiplicative scaling factor.
+- `t_range` — `:` (always active) or a `(t_lo, t_hi)` tuple in time units.
+
+`MultiplyProduction` delegates `is_benthic`, `is_pelagic`, and `is_interpolated`
+to its `base`, so CA participation is correctly inherited.
+
+### How it works
+
+`production_profile(input, p::MultiplyProduction)` calls
+`production_profile(input, p.base)` and wraps the result:
+
+```julia
+function production_profile(input, p::MultiplyProduction)
+    base_profile = production_profile(input, p.base)
+    return function(t, w)
+        f = p.t_range isa Colon || (p.t_range[1] <= t <= p.t_range[2]) ? p.factor : 1.0
+        return base_profile(t, w) * f
+    end
+end
+```
+
+Because modifiers are baked into the production closure, `uniform_production`
+and `CAProduction` contain no modifier-related code — they simply call
+`capped_production(profile, t, wd, dt)`.
+
 ## Production Component
 
 ### Production Properties
+
 Because the parameters for benthic and pelagic production have different units, we need different types to store them.
 
 ``` {.julia #production-profile}
 """
     production_profile(input::AbstractInput, p)
 
-Given an input production configuration, returns a function of
-insolation (in W/m^2) and water depth (in m) to production (in m/Myr).
+Given an input and a production configuration, returns a function
+`(time, water_depth) -> production_rate`.
 
-The default implementation is the identity function; it assumes
-that its parameter is a callable object with the correct behaviour.
+Insolation is read from `input` and composed into the returned closure via
+`insolation_curve` — the caller does not need to pass insolation at each
+time step.
+
+The default implementation assumes `p` is already a callable
+`(time, water_depth) -> rate`.
 
 ## Example
-If you want to implement your own production profile, define a new type,
 
     struct MyProduction <: AbstractProduction
         ...
     end
 
-and implement this method for that type,
-
-    import CarboKitten.Components.Production: production_profile
+    import CarboKitten.Production: production_profile
 
     production_profile(input::AbstractInput, p::MyProduction) =
-        function (insolation, water_depth)
+        function (time, water_depth)
             ...
         end
 """
@@ -127,6 +273,14 @@ Defaults to `false`.
 """
 is_pelagic(p) = false
 
+"""
+    is_interpolated(obj)
+
+Predicate to determine if a facies or production spec is interpolation-based.
+Defaults to `false`.
+"""
+is_interpolated(p) = false
+
 abstract type AbstractProduction end
 
 struct NoProduction <: AbstractProduction
@@ -142,7 +296,11 @@ end
 
 is_benthic(::BenthicProduction) = true
 is_pelagic(::BenthicProduction) = false
-production_profile(input::AbstractInput, p::BenthicProduction) = (I, w) -> benthic_production(I, p, w)
+
+function production_profile(input::AbstractInput, p::BenthicProduction)
+    I_of_t = insolation_curve(input)
+    return (t, w) -> benthic_production(I_of_t(t), p, w)
+end
 
 @kwdef struct PelagicProduction <: AbstractProduction
     maximum_growth_rate::typeof(1.0u"1/Myr") = 0.0u"1/Myr"
@@ -155,12 +313,9 @@ end
 is_benthic(::PelagicProduction) = false
 is_pelagic(::PelagicProduction) = true
 production_profile(input::AbstractInput, p::PelagicProduction) = pelagic_production_lookup(input, p)
-
 ```
 
 ### Input parameters
-
-In the case of pelagic production, the exact production rate can be quite expensive to compute. Instead, we create look-up tables for each facies. These tables are also easy to store in HDF5. The `maximum_production_depth` parameter controls down to which depth the table is precomputed. At larger depths, we use linear extrapolation (negative values will be clipped to 0). The `production_table_size` parameter determines the resolution of the look-up table.
 
 ``` {.julia #production-input}
 @kwdef struct Input <: AbstractInput
@@ -175,69 +330,60 @@ is_benthic(facies::AbstractFacies) = is_benthic(facies.production)
 is_pelagic(facies::AbstractFacies) = is_pelagic(facies.production)
 ```
 
-### Insolation
-
-Insolation can be passed as a constant, function or array (which should have the same length as number of time steps in the run).
-
-``` {.julia #production-insolation}
-function insolation(input::AbstractInput)
-    insolation = input.insolation
-    tprop = input.time
-    if insolation isa Quantity
-        return s -> insolation
-    end
-    if insolation isa AbstractVector
-        @info "Reading insolation from a table"
-        return s -> insolation[s.step+1]
-    end
-    @info "Reading insolation from a function"
-    function (s::AbstractState)
-        t = time(tprop, s)
-        return insolation(t)
-    end
-end
-```
+The `production_modifiers` field has been removed from `Input`. Time-dependent
+behaviour is now expressed by composing production specs directly in the `Facies`
+definition using `MultiplyProduction`.
 
 ### Pelagic Lookup tables
 
-We use `linear_interpolation` from `Interpolations` to compute production profiles from look-up tables. If insolation is constant we can use a one-dimensional interpolation. In case of variable insolation, we first find the extrema of the input insolation curve, and then compute a two-dimensional table of values.
+We use `linear_interpolation` from `Interpolations` to compute production profiles from look-up tables. `insolation_curve` provides a `time -> insolation` closure used to evaluate the lookup at the correct insolation for each time step.
 
 ``` {.julia #production-lookup}
 function pelagic_production_lookup(input::AbstractInput, prod::PelagicProduction)
-    insolation_param = input.insolation
+    I_of_t = insolation_curve(input)
     depth_grid = LinRange(0.0, prod.maximum_production_depth |> in_units_of(u"m"), prod.table_size[2])
 
-    if insolation_param isa Quantity
-        production_values = [pelagic_production(insolation_param, prod, w * u"m") |> in_units_of(u"m/Myr") for w in depth_grid]
-        interpolated = linear_interpolation(depth_grid, production_values, extrapolation_bc = Line())
-        return (I0, w) -> interpolated(w |> in_units_of(u"m")) * u"m/Myr"
+    if input.insolation isa Quantity
+        # Constant insolation — 1D depth lookup, time argument ignored
+        I0 = input.insolation
+        production_values = [pelagic_production(I0, prod, w * u"m") |> in_units_of(u"m/Myr")
+                             for w in depth_grid]
+        itp = linear_interpolation(depth_grid, production_values, extrapolation_bc=Line())
+        return (_, w) -> itp(w |> in_units_of(u"m")) * u"m/Myr"
     end
 
-    insolation_vec = if insolation_param isa AbstractVector
-        insolation_param
-    else
-        t = time_axis(input)
-        insolation_param.(t)
-    end
-    I_min, I_max = extrema(insolation_vec)
+    # Variable insolation — 2D (insolation × depth) lookup
+    t_axis = time_axis(input)
+    I_vals = [I_of_t(t) |> in_units_of(u"W/m^2") for t in t_axis]
+    I_min, I_max = extrema(I_vals)
 
-    insolation_grid = LinRange(
-        I_min |> in_units_of(u"W/m^2"),
-        I_max |> in_units_of(u"W/m^2"), prod.table_size[1])
+    insolation_grid = LinRange(I_min, I_max, prod.table_size[1])
     production_values = [
-        pelagic_production(I, prod, w * u"m") |> in_units_of(u"m/Myr")
+        pelagic_production(I * u"W/m^2", prod, w * u"m") |> in_units_of(u"m/Myr")
         for I in insolation_grid, w in depth_grid
     ]
-    interpolated = linear_interpolation((insolation_grid, depth_grid), production_values, extrapolation_bc = Line())
-    return (I0, w) -> interpolated(I0 |> in_units_of(u"W/m^2"), w |> in_units_of(u"m")) * u"m/Myr"
+    itp = linear_interpolation((collect(insolation_grid), collect(depth_grid)),
+                               production_values, extrapolation_bc=Line())
+    return (t, w) -> itp(I_of_t(t) |> in_units_of(u"W/m^2"), w |> in_units_of(u"m")) * u"m/Myr"
 end
 ```
+
+### HDF5 serialization
+
+Since `production_profile` is now fully generic, production is saved as a
+2D evaluated table per facies rather than as type-specific parameters. This
+means no type-specific branches are needed in either the writer or the reader.
+
+- `input/facies_N/production_table` — 2D array of shape `(n_depth, n_time)` in `m/Myr`.
+- `input/facies_N/production_depth_axis` — depth values in meters.
+- `input/facies_N/production_time_axis` — time values in Myr.
+
+The `ProductionCurve` visualisation reads the table directly and plots
+production vs depth as a family of time-slice curves.
 
 ### Boilerplate
 
 We put the basic production equations in a separate module `CarboKitten.Production`. This will contain the dynamic API (`production_profile`) and the implementation of `BenthicProduction` and `PelagicProduction`. We isolate these from the component `CarboKitten.Components.Production` implementation to prevent these production objects from being replicated in derived components, leading to problems with dispatch on `production_profile`.
-
-This design makes sense, since we isolate production equations from the larger lego-brick design of CarboKitten.
 
 ``` {.julia file=src/Production.jl}
 module Production
@@ -253,8 +399,87 @@ export production_profile
 
 <<component-production-rate>>
 <<pelagic-production>>
+<<insolation-curve>>
 <<production-profile>>
 <<production-lookup>>
+
+# =============================================================================
+# Interpolated (knot-based) production curve
+# =============================================================================
+
+"""
+    InterpolatedProduction(; maximum_production, depth_knots, multipliers)
+
+A depth-only production curve defined by a peak rate and a piecewise-linear
+shape over `(depth, multiplier)` knots. Independent of insolation.
+
+    rate(t, w) = maximum_production × interpolate(depth_knots, multipliers; w)
+
+`depth_knots` need not be sorted; they are sorted internally.
+
+# Example
+
+    InterpolatedProduction(
+        maximum_production = 500.0u"m/Myr",
+        depth_knots        = [0.0u"m", 5.0u"m", 20.0u"m", 50.0u"m"],
+        multipliers        = [0.0,     1.0,     0.6,      0.0])
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction)      = false
+is_pelagic(::InterpolatedProduction)      = false
+is_interpolated(::InterpolatedProduction) = true
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers)
+    @assert length(p.depth_knots) >= 2
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+
+# =============================================================================
+# Time-window modifier — AbstractProduction transformer
+# =============================================================================
+
+const _ProdTime     = typeof(1.0u"Myr")
+const _ProdTimeSpec = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+
+"""
+    MultiplyProduction(base, factor; t_range=:)
+
+Wraps `base::AbstractProduction`, multiplying its output by `factor` during
+`t_range`. Outside `t_range` the base production is unchanged.
+
+This implements the modifier pattern as `AbstractProduction -> AbstractProduction`:
+modifiers compose directly in the production spec rather than in a separate
+`production_modifiers` list on `Input`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProduction
+    base::AbstractProduction
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+end
+MultiplyProduction(base, factor::Real; kwargs...) =
+    MultiplyProduction(; base=base, factor=Float64(factor), kwargs...)
+
+is_benthic(p::MultiplyProduction)      = is_benthic(p.base)
+is_pelagic(p::MultiplyProduction)      = is_pelagic(p.base)
+is_interpolated(p::MultiplyProduction) = is_interpolated(p.base)
+
+function production_profile(input::AbstractInput, p::MultiplyProduction)
+    base_profile = production_profile(input, p.base)
+    return function(t, w)
+        f = p.t_range isa Colon || (p.t_range[1] <= t <= p.t_range[2]) ? p.factor : 1.0
+        return base_profile(t, w) * f
+    end
+end
 
 const EXAMPLE = Dict(
     :euphotic => BenthicProduction(
@@ -272,7 +497,18 @@ const EXAMPLE = Dict(
     :pelagic => PelagicProduction(
         maximum_growth_rate=7.0u"1/Myr",
         extinction_coefficient=0.1u"m^-1",
-        saturation_intensity=60u"W/m^2")
+        saturation_intensity=60u"W/m^2"),
+    :interpolated => InterpolatedProduction(
+        maximum_production=500u"m/Myr",
+        depth_knots=[0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
+        multipliers=[0.0, 1.0, 1.0, 0.4, 0.0]),
+    :time_varying => MultiplyProduction(
+        BenthicProduction(
+            maximum_growth_rate=500u"m/Myr",
+            extinction_coefficient=0.8u"m^-1",
+            saturation_intensity=60u"W/m^2"),
+        0.5;
+        t_range=(0.5u"Myr", 1.0u"Myr"))
 )
 
 end
@@ -284,8 +520,9 @@ end
 using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
-using ...Production: NoProduction
-import ...Production: production_profile, is_benthic, is_pelagic, capped_production
+using ...Production: NoProduction, InterpolatedProduction, MultiplyProduction
+import ...Production: production_profile, is_benthic, is_pelagic, is_interpolated,
+    capped_production, insolation_curve
 
 using HDF5
 using QuadGK
@@ -293,52 +530,44 @@ using Interpolations
 using Logging
 
 export uniform_production
+export MultiplyProduction, InterpolatedProduction, NoProduction
 
 <<production-input>>
-<<production-insolation>>
 
 function write_header(input::AbstractInput, output::AbstractOutput)
-    if input.insolation isa Quantity
-        set_attribute(output, "insolation",
-            fill(input.insolation |> in_units_of(u"W/m^2"), input.time.steps))
-    elseif input.insolation isa AbstractVector
-        set_attribute(output, "insolation",
-            input.insolation |> in_units_of(u"W/m^2"))
-    else
-        t = write_times(input)[1:end-1]
-        set_attribute(output, "insolation",
-            input.insolation.(t) |> in_units_of(u"W/m^2"))
-    end
+    # Insolation time series
+    I_of_t = insolation_curve(input)
+    t_write = write_times(input)[1:end-1]
+    set_attribute(output, "insolation",
+        [I_of_t(t) |> in_units_of(u"W/m^2") for t in t_write])
 
+    # Generic 2D production table — no type-specific branches needed
+    depth_grid = LinRange(0.0u"m", 200.0u"m", 200)
     for (i, f) in enumerate(input.facies)
-        p = f.production
-        if is_pelagic(p)
-            set_attribute(output, "facies$(i)/type", "pelagic")
-            set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"1/Myr"))
-            set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
-            set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
-        elseif is_benthic(p)
-            set_attribute(output, "facies$(i)/type", "benthic")
-            set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"m/Myr"))
-            set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
-            set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
-        end
+        prof = production_profile(input, f.production)
+        table = [prof(t, d) |> in_units_of(u"m/Myr")
+                 for d in depth_grid, t in t_write]
+        set_attribute(output, "facies$(i)/production_table", table)
+        set_attribute(output, "facies$(i)/production_depth_axis",
+            collect(depth_grid) .|> in_units_of(u"m"))
+        set_attribute(output, "facies$(i)/production_time_axis",
+            t_write .|> in_units_of(u"Myr"))
     end
 end
 
 function uniform_production(input::AbstractInput)
     w = water_depth(input)
     na = [CartesianIndex()]
-    insolation_func = insolation(input)
     facies = input.facies
     dt = input.time.Δt
     production_rates = [production_profile(input, f.production) for f in facies]
+    get_time = time(input)
 
-    p(state::AbstractState, wd::AbstractMatrix) =
-        capped_production.(production_rates[:, na, na], insolation_func(state), wd[na, :, :], dt)
-
+    p(state::AbstractState, wd::AbstractMatrix) = begin
+        t = get_time(state)
+        capped_production.(production_rates[:, na, na], t, wd[na, :, :], dt)
+    end
     p(state::AbstractState) = p(state, w(state))
-
     return p
 end
 
@@ -352,12 +581,14 @@ CarboKitten.Components.CAProduction
 ```
 
 The `CAProduction` component gives production that depends on the provided CA.
+Insolation is captured inside each production spec closure — the production
+loop only needs the current time, not an insolation value.
 
 ``` {.julia file=src/Components/CAProduction.jl}
 @compose module CAProduction
     @mixin TimeIntegration, CellularAutomaton, Production
     using ..Common
-    using ..Production: insolation
+    using ..TimeIntegration: time
     using ..WaterDepth: water_depth
     using ...Production: production_profile, capped_production
     using Logging
@@ -367,27 +598,22 @@ The `CAProduction` component gives production that depends on the provided CA.
         na = [CartesianIndex()]
         output_ = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
 
-        w = water_depth(input)
-        s = insolation(input)
-        n_f = n_facies(input)
         facies = input.facies
-        active_facies = [i for (i, f) in pairs(facies) if f.active]
-        global_facies = [i for (i, f) in pairs(facies) if !f.active]
         dt = input.time.Δt
-        # Having this a Tuple should make things type stable?
         production_specs = ((production_profile(input, f.production) for f in facies)...,)
+        get_time = time(input)
 
         function p(state::AbstractState, wd::AbstractMatrix)::Array{Amount,3}
             output::Array{Amount, 3} = output_
-            insolation::typeof(1.0u"W/m^2") = s(state)
+            t = get_time(state)
             for i in eachindex(IndexCartesian(), wd)
                 for f in eachindex(facies)
                     if facies[f].active
                         output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u"m" :
-                            capped_production(production_specs[f], insolation, wd[i], dt)
+                            capped_production(production_specs[f], t, wd[i], dt)
                     else
                         output[f, i[1], i[2]] =
-                            capped_production(production_specs[f], insolation, wd[i], dt)
+                            capped_production(production_specs[f], t, wd[i], dt)
                     end
                 end
             end
@@ -395,7 +621,6 @@ The `CAProduction` component gives production that depends on the provided CA.
         end
 
         @inline p(state::AbstractState) = p(state, w(state))
-
         return p
     end
 end
@@ -403,9 +628,10 @@ end
 
 ## Tests
 
-### If production is higher in shallower water 
+### Production higher in shallower water
 
-And reversed with pelagic production.
+And reversed with pelagic production. The interpolated test uses a sloping
+topography so different cells have different water depths.
 
 ```{.julia #production-spec}
 @testset "Components/Production" begin
@@ -443,6 +669,53 @@ And reversed with pelagic production.
         state = initial_state(input)
         prod = uniform_production(input)(state)
         @test all(prod[1:end-1,:] .<= prod[2:end,:])
+    end
+end
+
+@testset "Components/Production/interpolated" begin
+    let prod = InterpolatedProduction(
+            maximum_production = 500u"m/Myr",
+            depth_knots = [0.0u"m", 5.0u"m", 15.0u"m", 50.0u"m"],
+            multipliers = [0.0,     1.0,     1.0,      0.0]),
+        input = Input(
+            box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=5.0u"m"),
+            time = TimeProperties(Δt=1.0u"kyr", steps=10),
+            sea_level = t -> 0.0u"m",
+            initial_topography = (x, y) -> -x * 1.0,
+            subsidence_rate = 0.0u"m/Myr",
+            facies = [Facies(production=prod)],
+            insolation = 400.0u"W/m^2")
+
+        state = initial_state(input)
+        p = uniform_production(input)(state)
+        @test p[1, 3, 1] > p[1, 1, 1]
+        @test all(p .>= 0.0u"m")
+    end
+end
+
+@testset "Components/Production/time_varying" begin
+    let base = BenthicProduction(
+            maximum_growth_rate = 500u"m/Myr",
+            extinction_coefficient = 0.8u"m^-1",
+            saturation_intensity = 60u"W/m^2"),
+        prod = MultiplyProduction(base, 0.5; t_range=(0.0u"Myr", 0.5u"Myr")),
+        input = Input(
+            box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
+            time = TimeProperties(Δt=0.1u"Myr", steps=10),
+            sea_level = t -> 0.0u"m",
+            initial_topography = (x, y) -> -10u"m",
+            subsidence_rate = 0.0u"m/Myr",
+            facies = [Facies(production=prod)],
+            insolation = 400.0u"W/m^2")
+
+        state = initial_state(input)
+        # Inside t_range: production halved relative to base
+        state.step = 1
+        p_inside = copy(uniform_production(input)(state))
+        # Outside t_range: production at full rate
+        state.step = 8
+        p_outside = copy(uniform_production(input)(state))
+        @test all(p_outside .>= p_inside)
     end
 end
 ```
@@ -483,7 +756,7 @@ module ProductionSpec
     using CarboKitten.Components.Common
     using CarboKitten.Components.Production: Facies, Input, uniform_production
     using CarboKitten.Components.WaterDepth: initial_state
-
+    using CarboKitten.Production: InterpolatedProduction, MultiplyProduction
     <<production-spec>>
 end
 ```

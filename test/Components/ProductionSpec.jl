@@ -5,7 +5,7 @@ module ProductionSpec
     using CarboKitten.Components.Common
     using CarboKitten.Components.Production: Facies, Input, uniform_production
     using CarboKitten.Components.WaterDepth: initial_state
-
+    using CarboKitten.Production: InterpolatedProduction, MultiplyProduction
     # ~/~ begin <<docs/src/components/production.md#production-spec>>[init]
     @testset "Components/Production" begin
         let prod = BenthicProduction(
@@ -42,6 +42,53 @@ module ProductionSpec
             state = initial_state(input)
             prod = uniform_production(input)(state)
             @test all(prod[1:end-1,:] .<= prod[2:end,:])
+        end
+    end
+    
+    @testset "Components/Production/interpolated" begin
+        let prod = InterpolatedProduction(
+                maximum_production = 500u"m/Myr",
+                depth_knots = [0.0u"m", 5.0u"m", 15.0u"m", 50.0u"m"],
+                multipliers = [0.0,     1.0,     1.0,      0.0]),
+            input = Input(
+                box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=5.0u"m"),
+                time = TimeProperties(Δt=1.0u"kyr", steps=10),
+                sea_level = t -> 0.0u"m",
+                initial_topography = (x, y) -> -x * 1.0,
+                subsidence_rate = 0.0u"m/Myr",
+                facies = [Facies(production=prod)],
+                insolation = 400.0u"W/m^2")
+    
+            state = initial_state(input)
+            p = uniform_production(input)(state)
+            @test p[1, 3, 1] > p[1, 1, 1]
+            @test all(p .>= 0.0u"m")
+        end
+    end
+    
+    @testset "Components/Production/time_varying" begin
+        let base = BenthicProduction(
+                maximum_growth_rate = 500u"m/Myr",
+                extinction_coefficient = 0.8u"m^-1",
+                saturation_intensity = 60u"W/m^2"),
+            prod = MultiplyProduction(base, 0.5; t_range=(0.0u"Myr", 0.5u"Myr")),
+            input = Input(
+                box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
+                time = TimeProperties(Δt=0.1u"Myr", steps=10),
+                sea_level = t -> 0.0u"m",
+                initial_topography = (x, y) -> -10u"m",
+                subsidence_rate = 0.0u"m/Myr",
+                facies = [Facies(production=prod)],
+                insolation = 400.0u"W/m^2")
+    
+            state = initial_state(input)
+            # Inside t_range: production halved relative to base
+            state.step = 1
+            p_inside = copy(uniform_production(input)(state))
+            # Outside t_range: production at full rate
+            state.step = 8
+            p_outside = copy(uniform_production(input)(state))
+            @test all(p_outside .>= p_inside)
         end
     end
     # ~/~ end

@@ -1,23 +1,20 @@
 # Post-Deposition Facies Classification
 
-CarboKitten models record deposition in terms of **production facies** —
-categories that reflect the biological or abiotic source of the sediment
-(e.g. euphotic, oligophotic, aphotic carbonate).  In practice, stratigraphers
-classify sediment packages into **depositional facies** (wackestone, packstone,
-grainstone, …) based on observable proxies: sediment composition, palaeo-water
-depth, and wave energy.
+CarboKitten models record deposition in terms of **production facies** that reflect the biological or abiotic source of the sediment (e.g. euphotic, oligophotic, aphotic carbonate).  In practice, stratigraphers classify sediment packages into **depositional facies** (wackestone, packstone,
+grainstone, …) based on observable proxies: sediment composition, palaeo-water depth, and wave energy.
+
+![Fence diagram — factories](./fig/alcap-example_fence_production.png)
+![Fence diagram — facies](./fig/alcap-example_fence_classified.png)
 
 The `FaciesClassification` module provides a lightweight, non-invasive workflow
 that performs this second classification step entirely in post-processing, on
 the `Data` objects returned by the standard read routines.  No model, component,
-or output writer is modified.  The approach is conceptually analogous to the
-rule-based facies assignment in DIONISOSFlow.
+or output writer is modified. 
 
 Wave energy is computed using the physically consistent Airy wave theory
 formulation provided by the `WaveField` module (see [Wave Field](wavefield.md)).
 The same `AiryWaveField` used to drive sediment transport during the run is
-passed to `reclassify_data` at classification time — there is no separate proxy
-to calibrate.
+passed to `reclassify_data` at classification time.
 
 ## Design overview
 

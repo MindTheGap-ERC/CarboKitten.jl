@@ -315,6 +315,15 @@ example wave field (1.5 m / 8 s swell):
 These values scale with `H²`, so a 3 m wave has roughly 4× the flux of a 1.5 m
 wave at the same depth.
 
+## API reference
+
+```@docs
+CarboKitten.FaciesClassification
+CarboKitten.FaciesClassification.FaciesRule
+CarboKitten.FaciesClassification.classify_block
+CarboKitten.FaciesClassification.reclassify_data
+```
+
 ## Limitations
 
 - All production at one cell in one time step is collapsed to a single

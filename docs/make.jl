@@ -91,6 +91,7 @@ makedocs(
             "Tutorial (Pluto notebook)" => "first_tutorial.md",
             "Tabular Sea Levels" => "cases/tabular-sea-level.md",
             "Initial Topography" => "initial-topography.md",
+            "Facies Classification" => "facies-classification.md",
         ],
         "Developer" => [
             "CONTRIBUTING.md",

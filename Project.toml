@@ -38,7 +38,6 @@ VisualizationExt = ["Makie", "Statistics", "GeometryBasics"]
 CSV = "0.10"
 CategoricalArrays = "1.0.2"
 DataFrames = "1"
-GLMakie = "0.13.11"
 GeometryBasics = "0.5.7"
 HDF5 = "0.17"
 Interpolations = "0.16.2"

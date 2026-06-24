@@ -38,7 +38,7 @@ import ...CarboKitten: set_attribute
 import ...Algorithms: stratigraphic_column!
 
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
-export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer, surface_heights
+export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer, surface_heights, write_water_depth
 
 using Unitful
 using ...CarboKitten: OutputSpec, AbstractInput, AbstractState
@@ -88,6 +88,11 @@ end
     deposition::Array{Amount,F}
     sediment_thickness::Array{Amount,D}
     active_layer::Union{Array{Amount,F}, Nothing} = nothing
+    # Stored water depth: shape (spatial..., n_t).  `nothing` when not saved
+    # during the run.  Access via water_depth(header, data), which falls back
+    # to reconstruction from the header when this field is nothing (valid only
+    # for spatially uniform subsidence).
+    water_depth::Union{Array{Amount,D}, Nothing} = nothing
 end
 
 const DataVolume = Data{4,3}
@@ -117,7 +122,8 @@ Base.getindex(v::Data{F,D}, args...) where {F,D} =
             v.production[:, args..., :],
             v.deposition[:, args..., :],
             v.sediment_thickness[args..., :],
-            v.active_layer == nothing ? nothing : v.active_layer[:, args..., :])
+            v.active_layer == nothing ? nothing : v.active_layer[:, args..., :],
+            v.water_depth == nothing ? nothing : v.water_depth[args..., :])
     end
 
 function parse_slice(s::AbstractString)
@@ -158,9 +164,21 @@ end
 """
     water_depth(header, data)
 
-Compute the water depth function for the given data set.
+Return the water depth array for the given data set, shape `(spatial..., n_t)`.
+
+When `data.water_depth` is not `nothing` (i.e. the run was configured with
+`save_water_depth=true`) the stored field is returned directly.  This is
+required for correctness when subsidence is spatially variable.
+
+Otherwise the water depth is reconstructed from the header using the
+closed-form expression:
+
+    sl(t) - h0 - Δh(t) + subsidence_rate * t
+
+This is exact for spatially uniform subsidence.
 """
 function water_depth(header::Header, data::Data{F, D}) where {F, D}
+    data.water_depth !== nothing && return data.water_depth
     na = [CartesianIndex()]
     delta_t = header.axes.t[1:data.write_interval:end] .- header.axes.t[1]
     sl = header.sea_level[1:data.write_interval:end]
@@ -242,6 +260,16 @@ Write the contents of the active layer to the output object.
 function write_active_layer end
 
 """
+    write_water_depth(out::T, name::Symbol, idx::Int, data::AbstractArray{Amount, dim}) where {T, dim}
+
+Write the water depth at each grid cell to the output object.  Called by
+`state_writer` when `save_water_depth=true` is set in the model input.
+Should accept 0, 1, and 2 dimensional arrays corresponding to column, slice,
+and volume data respectively.
+"""
+function write_water_depth end
+
+"""
     write_production(out::T, name::Symbol, idx::Int, data::AbstractArray{Amount, dim}) where {T, dim}
 
 See `write_sediment_thickness`. Should accept 1, 2, and 3 dimensional arrays, corresponding to
@@ -281,17 +309,20 @@ function state_writer(input::Input, out) where {Input <: AbstractInput}
     grid_size = input.box.grid_size
     save_active_layer = hasfield(Input, :save_active_layer) ?
         input.save_active_layer : false
+    save_water_depth = hasfield(Input, :save_water_depth) ?
+        input.save_water_depth : false
 
     return function (idx::Int, state::AbstractState)
         for (k, v) in output_sets
             if mod(idx - 1, v.write_interval) == 0
+                write_idx = div(idx - 1, v.write_interval) + 1
                 write_sediment_thickness(
-                    out, k, div(idx - 1, v.write_interval) + 1,
+                    out, k, write_idx,
                     view(state.sediment_height, v.slice...))
 
                 if save_active_layer
                     write_active_layer(
-                        out, k, div(idx - 1, v.write_interval) + 1,
+                        out, k, write_idx,
                         view(state.active_layer, :, v.slice...))
                 end
             end

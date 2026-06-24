@@ -4,7 +4,8 @@ module MemoryWriter
 using ..Abstract
 import ..Abstract:
     new_output, add_data_set, set_attribute, write_sediment_thickness,
-    write_production, write_disintegration, write_deposition, write_active_layer
+    write_production, write_disintegration, write_deposition, write_active_layer,
+    write_water_depth
 using ...Components.Common
 using ...Components.WaterDepth: initial_topography
 using ...CarboKitten: time_axis, box_axes, OutputSpec, AbstractOutput, AbstractInput, AbstractState
@@ -12,6 +13,7 @@ using ...CarboKitten: time_axis, box_axes, OutputSpec, AbstractOutput, AbstractI
 struct MemoryOutput <: AbstractOutput
     header::Header
     save_active_layer::Bool
+    save_water_depth::Bool
     data_volumes::Dict{Symbol,DataVolume}
     data_slices::Dict{Symbol,DataSlice}
     data_columns::Dict{Symbol,DataColumn}
@@ -27,6 +29,8 @@ function new_output(::Type{MemoryOutput}, input::Input) where {Input <: Abstract
     sl = input.sea_level.(t_axis)
     save_active_layer = hasfield(Input, :save_active_layer) ?
         input.save_active_layer : false
+    save_water_depth = hasfield(Input, :save_water_depth) ?
+        input.save_water_depth : false
 
     header = Header(
         tag=input.tag,
@@ -41,7 +45,7 @@ function new_output(::Type{MemoryOutput}, input::Input) where {Input <: Abstract
         data_sets=Dict(),
         attributes=Dict())
 
-    return MemoryOutput(header, save_active_layer, Dict(), Dict(), Dict())
+    return MemoryOutput(header, save_active_layer, save_water_depth, Dict(), Dict(), Dict())
 end
 
 axis_size(::Colon, a::Int) = a
@@ -67,7 +71,8 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::OutputSpec)
             zeros(Amount, n_facies, size..., n_steps + 1),
             zeros(Amount, n_facies, size..., n_steps + 1),
             zeros(Amount, size..., n_steps + 1),
-            out.save_active_layer ? zeros(Amount, n_facies, size..., n_steps + 1) : nothing)
+            out.save_active_layer ? zeros(Amount, n_facies, size..., n_steps + 1) : nothing,
+            out.save_water_depth  ? zeros(Amount, size..., n_steps + 1) : nothing)
     elseif h.kind == :slice
         size = axis_size.(slice, full_size)
         slice_size = size[1] == 1 ? size[2] : size[1]
@@ -77,7 +82,8 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::OutputSpec)
             zeros(Amount, n_facies, slice_size, n_steps + 1),
             zeros(Amount, n_facies, slice_size, n_steps + 1),
             zeros(Amount, slice_size, n_steps + 1),
-            out.save_active_layer ? zeros(Amount, n_facies, slice_size, n_steps + 1) : nothing)
+            out.save_active_layer ? zeros(Amount, n_facies, slice_size, n_steps + 1) : nothing,
+            out.save_water_depth  ? zeros(Amount, slice_size, n_steps + 1) : nothing)
     elseif h.kind == :column
         out.data_columns[label] = DataColumn(
             slice, write_interval,
@@ -85,7 +91,8 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::OutputSpec)
             zeros(Amount, n_facies, n_steps + 1),
             zeros(Amount, n_facies, n_steps + 1),
             zeros(Amount, n_steps + 1),
-            out.save_active_layer ? zeros(Amount, n_facies, n_steps + 1) : nothing)
+            out.save_active_layer ? zeros(Amount, n_facies, n_steps + 1) : nothing,
+            out.save_water_depth  ? zeros(Amount, n_steps + 1) : nothing)
     end
 end
 
@@ -127,6 +134,46 @@ write_deposition(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray
     out.data_slices[label].deposition[:, :, idx] .+= data
 write_deposition(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,3}) =
     out.data_volumes[label].deposition[:, :, :, idx] .+= data
+
+write_water_depth(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,0}) =
+    out.data_columns[label].water_depth[idx] = data[]
+write_water_depth(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
+    out.data_slices[label].water_depth[:, idx] .= data
+write_water_depth(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
+    out.data_volumes[label].water_depth[:, :, idx] .= data
+
+import ..Abstract: state_writer
+using ...Components.WaterDepth: water_depth as wd_from_input
+
+function state_writer(input::Input, out::MemoryOutput) where {Input <: AbstractInput}
+    output_sets = input.output
+    save_active_layer = hasfield(Input, :save_active_layer) ?
+        input.save_active_layer : false
+    save_water_depth = out.save_water_depth
+    local_wd = save_water_depth ? wd_from_input(input) : nothing
+
+    return function (idx::Int, state::AbstractState)
+        for (k, v) in output_sets
+            if mod(idx - 1, v.write_interval) == 0
+                write_idx = div(idx - 1, v.write_interval) + 1
+                write_sediment_thickness(
+                    out, k, write_idx,
+                    view(state.sediment_height, v.slice...))
+
+                if save_active_layer
+                    write_active_layer(
+                        out, k, write_idx,
+                        view(state.active_layer, :, v.slice...))
+                end
+
+                if save_water_depth
+                    wd = local_wd(state)
+                    write_water_depth(out, k, write_idx, view(wd, v.slice...))
+                end
+            end
+        end
+    end
+end
 
 end
 # ~/~ end

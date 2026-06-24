@@ -113,6 +113,9 @@ function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {d
 		gid["sediment_thickness"][reduce.(slice)..., :] * u"m",
 		"active_layer" in keys(gid) ?
 		    gid["active_layer"][:, reduce.(slice)..., :] * u"m" :
+			nothing,
+		"water_depth" in keys(gid) ?
+		    gid["water_depth"][reduce.(slice)..., :] * u"m" :
 			nothing)
 end
 

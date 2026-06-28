@@ -23,23 +23,29 @@ const FACIES = [
 	    CAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
-        maximum_growth_rate = 500u"m/Myr",
-        extinction_coefficient = 0.8u"m^-1",
-        saturation_intensity = 60u"W/m^2"),
+        production=BenthicProduction(
+            maximum_growth_rate = 500u"m/Myr",
+            extinction_coefficient = 0.8u"m^-1",
+            saturation_intensity = 60u"W/m^2"
+        )),
 
 	    CAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
-        maximum_growth_rate = 400u"m/Myr",
-        extinction_coefficient = 0.1u"m^-1",
-        saturation_intensity = 60u"W/m^2"),
+        production=BenthicProduction(
+            maximum_growth_rate = 400u"m/Myr",
+            extinction_coefficient = 0.1u"m^-1",
+            saturation_intensity = 60u"W/m^2"
+        )),
 
 	    CAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
-        maximum_growth_rate = 100u"m/Myr",
-        extinction_coefficient = 0.005u"m^-1",
-        saturation_intensity = 60u"W/m^2")
+        production=BenthicProduction(
+            maximum_growth_rate = 100u"m/Myr",
+            extinction_coefficient = 0.005u"m^-1",
+            saturation_intensity = 60u"W/m^2"
+        ))
 	]
 
 	const INPUT = CAP.Input(
@@ -87,7 +93,7 @@ CarboKitten.Models.CAP
 
 ``` {.julia file=src/Models/CAP.jl}
 @compose module CAP
-@mixin Tag, Diagnostics, Output, CAProduction, InitialSediment
+@mixin Tag, Diagnostics, Output, CAProduction
 
 using ..Common
 using ..CAProduction: production
@@ -109,15 +115,12 @@ function initial_state(input::Input)
         step=0, sediment_height=sediment_height,
         ca=ca_state.ca, ca_priority=ca_state.ca_priority)
 
-    InitialSediment.push_initial_sediment!(input, state)
     return state
 end
 
 function initial_frame(input::Input)
-    dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
-    return Frame(production=zeros(Sediment,size(dep)), 
-                  disintegration=zeros(Sediment,size(dep)),
-                  deposition=dep)
+    return Frame(production=zeros(Sediment,n_facies(input), input.box.grid_size...), 
+                  deposition=zeros(Sediment,n_facies(input), input.box.grid_size...))
 end
 
 function step!(input::Input)
@@ -144,4 +147,65 @@ function write_header(input::AbstractInput, output::AbstractOutput)
     @for_each(P -> P.write_header(input, output), PARENTS)
 end
 end
+```
+
+## Tests
+
+Checks that the CAP model type runs without error and returns a result with the expected dimensions.
+
+``` {.julia file=test/Models/CAPSpec.jl}
+module CAPSpec
+
+using Test
+using Unitful
+
+using CarboKitten
+using CarboKitten.Models: CAP
+
+    const FACIES = [
+	    CAP.Facies(
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        production=BenthicProduction(
+            maximum_growth_rate = 500u"m/Myr",
+            extinction_coefficient = 0.8u"m^-1",
+            saturation_intensity = 60u"W/m^2")
+        ),
+	    CAP.Facies(
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        production=BenthicProduction(
+            maximum_growth_rate = 400u"m/Myr",
+            extinction_coefficient = 0.1u"m^-1",
+            saturation_intensity = 60u"W/m^2")
+        ),
+	    CAP.Facies(
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        production=BenthicProduction(
+            maximum_growth_rate = 100u"m/Myr",
+            extinction_coefficient = 0.005u"m^-1",
+            saturation_intensity = 60u"W/m^2")
+        )]
+
+    const INPUT = CAP.Input(
+		tag = "cap_test",
+		box = Box{Coast}(grid_size=(1, 1), phys_scale=150.0u"m"),
+		time = TimeProperties(
+			Δt = 200.0u"yr",
+			steps = 10),
+        output = Dict(
+            :full => OutputSpec(write_interval = 1)),
+		initial_topography = (x, y) -> - x / 300.0,
+		insolation = 400.0u"W/m^2",
+		facies = FACIES)
+
+    const OUT = run_model(Model{CAP}, INPUT, MemoryOutput(INPUT))
+
+    @testset "Models/CAP" begin
+        @test all(size(OUT.data_volumes[:full].sediment_thickness) .== (1,1,11))
+    end
+
+end
+
 ```

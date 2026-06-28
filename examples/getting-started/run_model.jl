@@ -3,30 +3,41 @@ module Script
 
 using Unitful
 using CarboKitten
+using CarboKitten.Production: BenthicProduction
 
 function main()
     # Configure a list of facies types and their production curves
     facies = [
         ALCAP.Facies(
-            maximum_growth_rate=500u"m/Myr",
-            extinction_coefficient=0.8u"m^-1",
-            saturation_intensity=60u"W/m^2",
+            viability_range=(4, 10),
+            activation_range=(6, 10),
+            production=BenthicProduction(
+                maximum_growth_rate=500u"m/Myr",
+                extinction_coefficient=0.8u"m^-1",
+                saturation_intensity=60u"W/m^2"),
             transport_coefficient=50.0u"m/yr"),
         ALCAP.Facies(
-            maximum_growth_rate=400u"m/Myr",
-            extinction_coefficient=0.1u"m^-1",
-            saturation_intensity=60u"W/m^2",
+            viability_range=(4, 10),
+            activation_range=(6, 10),
+            production=BenthicProduction(
+                maximum_growth_rate=400u"m/Myr",
+                extinction_coefficient=0.1u"m^-1",
+                saturation_intensity=60u"W/m^2"),
             transport_coefficient=25.0u"m/yr"),
         ALCAP.Facies(
-            maximum_growth_rate=100u"m/Myr",
-            extinction_coefficient=0.005u"m^-1",
-            saturation_intensity=60u"W/m^2",
+            viability_range=(4, 10),
+            activation_range=(6, 10),
+            production=BenthicProduction(
+                maximum_growth_rate=100u"m/Myr",
+                extinction_coefficient=0.005u"m^-1",
+                saturation_intensity=60u"W/m^2"),
             transport_coefficient=12.5u"m/yr")
     ]
 
     input = ALCAP.Input(
         # configure a box geometry
         box = Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+        ca_interval = 1,
 
         # choose time integration step
         time = TimeProperties(

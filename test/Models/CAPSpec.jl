@@ -1,60 +1,56 @@
-# ~/~ begin <<docs/src/models/ca-with-production.md#examples/model/cap/run.jl>>[init]
+# ~/~ begin <<docs/src/models/ca-with-production.md#test/Models/CAPSpec.jl>>[init]
+module CAPSpec
 
-module Script
+using Test
+using Unitful
 
 using CarboKitten
+using CarboKitten.Models: CAP
 
-const PERIOD = 200.0u"kyr"
-const AMPLITUDE = 4.0u"m"
-
-const FACIES = [
+    const FACIES = [
 	    CAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
         production=BenthicProduction(
             maximum_growth_rate = 500u"m/Myr",
             extinction_coefficient = 0.8u"m^-1",
-            saturation_intensity = 60u"W/m^2"
-        )),
-
+            saturation_intensity = 60u"W/m^2")
+        ),
 	    CAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
         production=BenthicProduction(
             maximum_growth_rate = 400u"m/Myr",
             extinction_coefficient = 0.1u"m^-1",
-            saturation_intensity = 60u"W/m^2"
-        )),
-
+            saturation_intensity = 60u"W/m^2")
+        ),
 	    CAP.Facies(
         viability_range = (4, 10),
         activation_range = (6, 10),
         production=BenthicProduction(
             maximum_growth_rate = 100u"m/Myr",
             extinction_coefficient = 0.005u"m^-1",
-            saturation_intensity = 60u"W/m^2"
-        ))
-	]
+            saturation_intensity = 60u"W/m^2")
+        )]
 
-	const INPUT = CAP.Input(
-		tag = "cap1",
-		box = Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    const INPUT = CAP.Input(
+		tag = "cap_test",
+		box = Box{Coast}(grid_size=(1, 1), phys_scale=150.0u"m"),
 		time = TimeProperties(
 			Δt = 200.0u"yr",
-			steps = 5000),
-
+			steps = 10),
         output = Dict(
-            :topography => OutputSpec(write_interval = 500),
-            :profile => OutputSpec(slice = (:, 25))),
-
-		sea_level = t -> 4.0u"m" * sin(2π * t / 0.2u"Myr"),
+            :full => OutputSpec(write_interval = 1)),
 		initial_topography = (x, y) -> - x / 300.0,
-		subsidence_rate = 50.0u"m/Myr",
 		insolation = 400.0u"W/m^2",
 		facies = FACIES)
 
-	main() = run_model(Model{CAP}, INPUT, "data/output/cap1.h5")
+    const OUT = run_model(Model{CAP}, INPUT, MemoryOutput(INPUT))
+
+    @testset "Models/CAP" begin
+        @test all(size(OUT.data_volumes[:full].sediment_thickness) .== (1,1,11))
+    end
+
 end
 
-Script.main()
 # ~/~ end

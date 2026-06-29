@@ -25,6 +25,8 @@ glamour_view!(args...) = print_instructions("glamour_view!", args)
 summary_plot(args...) = print_instructions("summary_plot", args)
 sediment_proportion!(args...) = print_instructions("sediment_proportion!", args)
 sediment_proportion(args...) = print_instructions("sediment_proportion", args)
+fence_diagram(args...) = print_instructions("fence_diagram", args)
+fence_diagram!(args...) = print_instructions("fence_diagram!", args)
 
 end  # module
 # ~/~ end

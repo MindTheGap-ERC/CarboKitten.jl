@@ -4,8 +4,9 @@
 using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
-using ...Production: NoProduction
-import ...Production: production_profile, is_benthic, is_pelagic, capped_production
+using ...Production: NoProduction, InterpolatedProduction,
+    AbstractProductionModifier, MultiplyProduction, production_factor
+import ...Production: production_profile, is_benthic, is_pelagic, is_interpolated, capped_production
 
 using HDF5
 using QuadGK
@@ -13,10 +14,12 @@ using Interpolations
 using Logging
 
 export uniform_production
+export AbstractProductionModifier, MultiplyProduction, InterpolatedProduction, NoProduction
 
 # ~/~ begin <<docs/src/components/production.md#production-input>>[init]
 @kwdef struct Input <: AbstractInput
     insolation
+    production_modifiers = []
 end
 
 @kwdef struct Facies <: AbstractFacies
@@ -65,12 +68,27 @@ function write_header(input::AbstractInput, output::AbstractOutput)
             set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"1/Myr"))
             set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
             set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
+        elseif is_interpolated(p)
+            set_attribute(output, "facies$(i)/type", "interpolated")
+            set_attribute(output, "facies$(i)/maximum_production", p.maximum_production |> in_units_of(u"m/Myr"))
+            set_attribute(output, "facies$(i)/depth_knots", p.depth_knots .|> in_units_of(u"m"))
+            set_attribute(output, "facies$(i)/multipliers", collect(Float64, p.multipliers))
         elseif is_benthic(p)
             set_attribute(output, "facies$(i)/type", "benthic")
             set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"m/Myr"))
             set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
             set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
         end
+    end
+
+    for (idx, m) in enumerate(input.production_modifiers)
+        prefix = "production_modifiers/m$(idx)"
+        set_attribute(output, "$(prefix)/kind", "MultiplyProduction")
+        set_attribute(output, "$(prefix)/factor", m.factor)
+        set_attribute(output, "$(prefix)/t_range",
+            m.t_range isa Colon ? [NaN, NaN] : [ustrip(u"Myr", m.t_range[1]), ustrip(u"Myr", m.t_range[2])])
+        set_attribute(output, "$(prefix)/facies",
+            m.facies isa Colon ? [-1] : m.facies isa Int ? [m.facies] : collect(Int, m.facies))
     end
 end
 
@@ -82,12 +100,26 @@ function uniform_production(input::AbstractInput)
     dt = input.time.Δt
     production_rates = [production_profile(input, f.production) for f in facies]
 
-    p(state::AbstractState, wd::AbstractMatrix) =
-        capped_production.(production_rates[:, na, na], insolation_func(state), wd[na, :, :], dt)
+    modifiers = hasfield(typeof(input), :production_modifiers) ?
+        input.production_modifiers : AbstractProductionModifier[]
 
-    p(state::AbstractState) = p(state, w(state))
+    if isempty(modifiers)
+        p(state::AbstractState, wd::AbstractMatrix) =
+            capped_production.(production_rates[:, na, na], insolation_func(state), wd[na, :, :], dt)
+        p(state::AbstractState) = p(state, w(state))
+        return p
+    end
 
-    return p
+    n_f = length(facies)
+    get_time = time(input)
+    function p_mod(state::AbstractState, wd::AbstractMatrix)
+        t = get_time(state)
+        factors = Float64[production_factor(modifiers, t, i) for i in 1:n_f]
+        return capped_production.(production_rates[:, na, na], insolation_func(state),
+                                  wd[na, :, :], dt, factors[:, na, na])
+    end
+    p_mod(state::AbstractState) = p_mod(state, w(state))
+    return p_mod
 end
 
 end

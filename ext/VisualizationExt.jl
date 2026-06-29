@@ -7,6 +7,8 @@ include("StratigraphicColumn.jl")
 include("SedimentProfile.jl")
 include("GlamourView.jl")
 include("SummaryPlot.jl")
+include("MapView.jl")
+
 include("FenceDiagrams.jl")
 end
 # ~/~ end

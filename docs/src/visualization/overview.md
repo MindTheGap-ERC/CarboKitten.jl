@@ -66,6 +66,8 @@ production_curve!(args...) = print_instructions("production_curve!", args)
 stratigraphic_column!(args...) = print_instructions("production_curve!", args)
 glamour_view!(args...) = print_instructions("glamour_view!", args)
 summary_plot(args...) = print_instructions("summary_plot", args)
+map_view(args...) = print_instructions("map_view", args)
+map_view!(args...) = print_instructions("map_view!", args)
 fence_diagram(args...) = print_instructions("fence_diagram", args)
 fence_diagram!(args...) = print_instructions("fence_diagram!", args)
 
@@ -81,6 +83,8 @@ include("StratigraphicColumn.jl")
 include("SedimentProfile.jl")
 include("GlamourView.jl")
 include("SummaryPlot.jl")
+include("MapView.jl")
+
 include("FenceDiagrams.jl")
 end
 ```

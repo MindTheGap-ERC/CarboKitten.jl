@@ -243,7 +243,7 @@ end # module
 
 ``` {.julia file=src/Components/SedimentBuffer.jl}
 @compose module SedimentBuffer
-@mixin Boxes
+@mixin Boxes, FaciesBase
 
 using StaticArrays
 using Unitful

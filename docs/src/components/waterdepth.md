@@ -25,7 +25,7 @@ using ..Common
 using HDF5
 using ..TimeIntegration: time, time_axis
 
-export water_depth, subsider
+export water_depth, subsider, initial_topography
 
 @kwdef struct Input <: AbstractInput
     sea_level = t -> 0.0u"m"

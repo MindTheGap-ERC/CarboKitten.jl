@@ -69,7 +69,7 @@ const DISINTEGRATION1 = cat(
         1:10 .|> (x -> x < 4 || x > 6 ? 0.0u"m" : 2.0u"m"),
         zeros(Amount, 10))', 1, 3, 1, 10); dims=4)
 
-const ELEVATION1 = 
+const ELEVATION1 =
     cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :]
 
 const DATA1 = DataVolume(
@@ -78,7 +78,7 @@ const DATA1 = DataVolume(
     disintegration=DISINTEGRATION1,
     production=PRODUCTION1,
     deposition=PRODUCTION1,
-    sediment_thickness=ELEVATION1)
+    bathymetry=ELEVATION1)
 
 const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
 
@@ -289,7 +289,7 @@ copied from `data.sediment_thickness`. Returns a `DataFrame` with `time` and
 function extract_sac(header::Header, data::DataColumn, label)
     DataFrame(
         "timestep" => 0:data.write_interval:header.time_steps,
-        "sac_$(label)" => data.sediment_thickness)
+        "sac_$(label)" => sediment_thickness(data))
 end
 
 """
@@ -497,7 +497,7 @@ const Amount = typeof(1.0u"m")
 
             adm_tab = read_csv(spec.output_files[:age_depth_model], DataFrame)
             rename!(adm_tab, (n => split(n)[1] for n in names(adm_tab))...)
-            @test select(adm_tab, ["adm_$(i)" for i in 1:3]) == 
+            @test select(adm_tab, ["adm_$(i)" for i in 1:3]) ==
                 select(ustrip(adm), ["adm_$(i)" for i in 1:3])
         end
     end

@@ -288,7 +288,7 @@ copied from `data.sediment_thickness`. Returns a `DataFrame` with `time` and
 function extract_sac(header::Header, data::DataColumn, label)
     DataFrame(
         "timestep" => 0:data.write_interval:header.time_steps,
-        "sac_$(label)" => data.sediment_thickness)
+        "sac_$(label)" => sediment_thickness(data))
 end
 
 """

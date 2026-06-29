@@ -48,7 +48,7 @@ using CarboKitten.Models: CAP
     const OUT = run_model(Model{CAP}, INPUT, MemoryOutput(INPUT))
 
     @testset "Models/CAP" begin
-        @test all(size(OUT.data_volumes[:full].sediment_thickness) .== (1,1,11))
+        @test all(size(OUT.data_volumes[:full].bathymetry) .== (1,1,11))
     end
 
 end

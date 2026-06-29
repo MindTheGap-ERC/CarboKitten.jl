@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/components/sediment_buffer.md#src/Components/SedimentBuffer.jl>>[init]
 @compose module SedimentBuffer
-@mixin Boxes
+@mixin Boxes, FaciesBase
 
 using StaticArrays
 using Unitful

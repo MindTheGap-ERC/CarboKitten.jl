@@ -68,6 +68,8 @@ glamour_view!(args...) = print_instructions("glamour_view!", args)
 summary_plot(args...) = print_instructions("summary_plot", args)
 map_view(args...) = print_instructions("map_view", args)
 map_view!(args...) = print_instructions("map_view!", args)
+fence_diagram(args...) = print_instructions("fence_diagram", args)
+fence_diagram!(args...) = print_instructions("fence_diagram!", args)
 
 end  # module
 ```
@@ -83,6 +85,7 @@ include("GlamourView.jl")
 include("SummaryPlot.jl")
 include("MapView.jl")
 
+include("FenceDiagrams.jl")
 end
 ```
 

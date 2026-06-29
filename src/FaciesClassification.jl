@@ -1,5 +1,4 @@
 # ~/~ begin <<docs/src/facies-classification.md#src/FaciesClassification.jl>>[init]
-# ~/~ begin <<docs/src/facies-classification.md#src/FaciesClassification.jl>>[init]
 """
     FaciesClassification
 ...
@@ -7,10 +6,11 @@
 module FaciesClassification
 
 using Unitful
+using HDF5
 using ..Output.Abstract: Data, Header, water_depth
 using ..WaveField: AiryWaveField, energy_flux
 
-export FaciesRule, classify_block, reclassify_data
+export FaciesRule, classify_block, reclassify_data, reclassify_volume, save_classified
 
 # ~/~ begin <<docs/src/facies-classification.md#facies-rule>>[init]
 """
@@ -168,13 +168,107 @@ function reclassify_data(header::Header,
         production         = prod_out,
         deposition         = dep_out,
         sediment_thickness = data.sediment_thickness,
-        active_layer       = nothing,
-        water_depth        = data.water_depth)
+        active_layer       = nothing)
 
     return new_header, new_data
 end
 # ~/~ end
 
-end  # module FaciesClassification
+# ~/~ begin <<docs/src/facies-classification.md#reclassify-volume>>[init]
+"""
+    reclassify_volume(header, vol, rules; wave_field=nothing) -> (Header, DataVolume)
+
+Convenience wrapper: reclassify a full `DataVolume` into depositional
+environments.  Identical to calling `reclassify_data` on the volume directly.
+"""
+function reclassify_volume(header::Header,
+                           vol,
+                           rules::AbstractVector{FaciesRule};
+                           wave_field::Union{AiryWaveField,Nothing}=nothing)
+    return reclassify_data(header, vol, rules; wave_field=wave_field)
+end
 # ~/~ end
+
+# ~/~ begin <<docs/src/facies-classification.md#save-classified>>[init]
+"""
+    save_classified(filename, header, data; group=:classified)
+
+Write a classified `Data` object (volume, slice, or column) to HDF5 in the
+same layout as a standard CarboKitten output file, so it can be read back with
+`read_volume`, `read_slice`, or `read_column`.
+
+# Arguments
+- `filename` — output path; created or overwritten.
+- `header`   — classified header from `reclassify_volume` / `reclassify_data`.
+- `data`     — classified data from the same call.
+- `group`    — HDF5 group name (default `:classified`).
+
+# Example
+
+```julia
+cls_header, cls_vol = reclassify_volume(header, vol, rules; wave_field=wf)
+save_classified("output_classified.h5", cls_header, cls_vol)
+
+# Read back:
+header2, vol2 = read_volume("output_classified.h5", :classified)
+```
+"""
+function save_classified(filename::AbstractString,
+                         header::Header,
+                         data::Data;
+                         group::Symbol = :classified)
+
+    dep_f    = ustrip.(u"m", data.deposition)
+    prod_f   = ustrip.(u"m", data.production)
+    disint_f = ustrip.(u"m", data.disintegration)
+    thick_f  = ustrip.(u"m", data.sediment_thickness)
+
+    n_facies = header.n_facies
+    x_m      = ustrip.(u"m", header.axes.x)
+    y_m      = ustrip.(u"m", header.axes.y)
+    t_myr    = ustrip.(u"Myr", header.axes.t)
+    sl_m     = ustrip.(u"m", header.sea_level)
+    topo_m   = ustrip.(u"m", header.initial_topography)
+
+    slice_str(::Colon) = ":"
+    slice_str(i::Int)  = string(i)
+
+    h5open(filename, "w") do fid
+        # /input — mirrors H5Writer layout so read_header works unchanged
+        grp_in = create_group(fid, "input")
+        grp_in["x"]                   = x_m
+        grp_in["y"]                   = y_m
+        grp_in["t"]                   = t_myr
+        grp_in["initial_topography"]  = topo_m
+        grp_in["sea_level"]           = sl_m
+
+        a = HDF5.attributes(grp_in)
+        a["tag"]             = header.tag
+        a["delta_t"]         = ustrip(u"Myr", header.Δt)
+        a["time_steps"]      = header.time_steps
+        a["n_facies"]        = n_facies
+        a["subsidence_rate"] = ustrip(u"m/Myr", header.subsidence_rate)
+
+        if haskey(header.attributes, "classified_facies")
+            a["classified_facies"] = join(header.attributes["classified_facies"], ",")
+        end
+
+        # data group
+        grp = create_group(fid, string(group))
+        ag  = HDF5.attributes(grp)
+        ag["write_interval"] = data.write_interval
+        ag["slice"]          = join(slice_str.(data.slice), ",")
+
+        grp["deposition"]         = dep_f
+        grp["production"]         = prod_f
+        grp["disintegration"]     = disint_f
+        grp["sediment_thickness"] = thick_f
+    end
+
+    @info "Classified output saved → $filename  (group=$group, n_facies=$n_facies)"
+    return filename
+end
+# ~/~ end
+
+end  # module FaciesClassification
 # ~/~ end

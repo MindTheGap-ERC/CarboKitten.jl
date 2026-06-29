@@ -5,7 +5,7 @@
 The sediment profile is probably the most important visualization that we provide. By default it allows us to study the sediment composition of a section, by plotting the `argmax` of the deposition. In cases where significant amounts of sediment is eroded, all deposition is plotted, and it is assumed that newest depositions are shown on top of possible older ones.
 
 ``` {.julia .task file=examples/visualization/sediment_profile.jl}
-#| creates: docs/src/_fig/sediment_profile.png
+#| creates: docs/src/fig/sediment_profile.png
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
@@ -15,7 +15,7 @@ using CarboKitten.Export: read_slice
 using CarboKitten.Visualization: sediment_profile
 
 function main()
-    save("docs/src/_fig/sediment_profile.png",
+    save("docs/src/fig/sediment_profile.png",
         sediment_profile(read_slice("data/output/alcap-example.h5", :profile)...))
 end
 end
@@ -28,7 +28,7 @@ If you want to visualize something other than the `argmax` of the deposition, yo
 ![](../fig/profile_fraction.png)
 
 ``` {.julia .task file=examples/visualization/profile_fraction.jl}
-#| creates: docs/src/_fig/profile_fraction.png
+#| creates: docs/src/fig/profile_fraction.png
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
@@ -48,13 +48,144 @@ function main()
     plot = profile_plot!(x -> x[2]/sum(x), ax, header, slice; colorrange=(0, 1))
     Colorbar(fig[1, 2], plot; label=L"f_2 / f_{total}")
 
-    save("docs/src/_fig/profile_fraction.png", fig)
+    save("docs/src/fig/profile_fraction.png", fig)
     fig
 end
 end
 
 Script.main()
 ```
+
+By default, `sediment_profile` shows the **deposited** record — raw deposition at each time step, including material that may later be eroded. To show only the **preserved** record (what survives after erosion, as computed by the stratigraphic column algorithm), pass `mode=:preserved`:
+
+```julia
+sediment_profile(header, data; mode=:preserved)
+```
+
+The default `mode=:deposited` is fully backward compatible with all existing call sites.
+
+## Cross-section direction
+
+A profile `DataSlice` can represent either a **dip section** (varying along x, fixed y index) or a **strike section** (fixed x index, varying along y). Both are produced by the same `DataVolume` indexing:
+
+```julia
+vol[:, j]   # dip section at y = j
+vol[i, :]   # strike section at x = i
+```
+
+The correct spatial positions and axis label are inferred automatically from `data.slice` — no direction argument is needed. If `data.slice[1]` is an `Int`, the section is fixed in x and varies along y (strike); otherwise it varies along x (dip).
+
+``` {.julia #section-positions}
+"""
+    _section_positions(header, data)
+
+Return the physical positions along the spatial axis of a profile `data`.
+For a dip section (varying x, fixed y) this is `header.axes.x`; for a strike
+section (fixed x, varying y) this is `header.axes.y`. The distinction is made
+by inspecting `data.slice`: if `data.slice[1]` is an `Int`, x is fixed and the
+section runs along y.
+"""
+function _section_positions(header::Header, data::DataSlice)
+    if data.slice[1] isa Int
+        return header.axes.y |> in_units_of(u"km")
+    else
+        return header.axes.x |> in_units_of(u"km")
+    end
+end
+```
+
+## Proportion plot
+
+Beyond the dominant-facies categorical view, it is useful to see the proportion of a specific facies relative to total sediment at each location and time step. The `sediment_proportion!` function provides this using the same mesh geometry as `sediment_profile!`.
+
+![Proportion plot](../fig/profile_fraction.png)
+
+``` {.julia .task file=examples/visualization/profile_proportion.jl}
+#| creates: docs/src/fig/profile_proportion.png
+#| requires: data/output/alcap-example.h5
+#| collect: figures
+
+module Script
+using CairoMakie
+using CarboKitten.Export: read_slice
+using CarboKitten.Visualization: sediment_proportion
+
+function main()
+    header, data = read_slice("data/output/alcap-example.h5", :profile)
+    save("docs/src/fig/profile_proportion.png",
+         sediment_proportion(header, data, 1; mode=:preserved))
+end
+end
+
+Script.main()
+```
+
+The `mode` keyword selects the sediment record:
+
+- `:deposited` — proportion of raw deposition at each time step (default, consistent with the categorical `sediment_profile!`).
+- `:preserved` — proportion of net preserved sediment after applying the stratigraphic column algorithm.
+
+## Cross-section examples
+
+The following script uses the existing `alcap-example.h5` volume output (the
+`:topography` group, which carries full 2D spatial data at every 10 write steps).
+It takes one dip section and one strike section from the mid-grid position, then
+plots all four combinations of section direction × proportion mode.
+
+``` {.julia .task file=examples/visualization/cross_sections.jl}
+#| creates: docs/src/fig/xsec_dip.png
+#|          docs/src/fig/xsec_strike.png
+#|          docs/src/fig/xsec_proportion_deposited.png
+#|          docs/src/fig/xsec_proportion_preserved.png
+#| requires: data/output/alcap-example.h5
+#| collect: figures
+
+module Script
+
+using CairoMakie
+using CarboKitten.Export: read_volume
+using CarboKitten.Visualization: sediment_profile, sediment_proportion
+
+function main()
+    header, vol = read_volume("data/output/alcap-example.h5", :topography)
+
+    nx, ny = size(vol.sediment_thickness)[1:2]
+    dip    = vol[:, div(ny, 2) + 1]   # dip section at mid-y
+    strike = vol[div(nx, 2) + 1, :]   # strike section at mid-x
+
+    save("docs/src/fig/xsec_dip.png",
+         sediment_profile(header, dip))
+
+    save("docs/src/fig/xsec_strike.png",
+         sediment_profile(header, strike))
+
+    save("docs/src/fig/xsec_proportion_deposited.png",
+         sediment_proportion(header, dip, 1; mode=:deposited))
+
+    save("docs/src/fig/xsec_proportion_preserved.png",
+         sediment_proportion(header, dip, 1; mode=:preserved))
+end
+
+end
+
+Script.main()
+```
+
+Dip section (perpendicular to strike), dominant deposited facies:
+
+![Dip cross section](../fig/xsec_dip.png)
+
+Strike section (parallel to platform margin), dominant deposited facies:
+
+![Strike cross section](../fig/xsec_strike.png)
+
+Proportion of facies 1 — deposited record:
+
+![Proportion deposited](../fig/xsec_proportion_deposited.png)
+
+Proportion of facies 1 — preserved record only:
+
+![Proportion preserved](../fig/xsec_proportion_preserved.png)
 
 ## Implementation
 
@@ -130,7 +261,7 @@ function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwi
 end
 
 function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Int; kwargs...)
-    x = header.axes.x |> in_units_of(u"km")
+    x = _section_positions(header, data)
     wi = data.write_interval
     hiatus = skeleton(water_depth(header, data) .< 0.0u"m", minwidth=minwidth)
 
@@ -230,7 +361,7 @@ coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwar
     coeval_lines!(ax, header, data, age_depth_model(header, data), tics; kwargs...)
 
 function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Int}; kwargs...)
-    x = header.axes.x |> in_units_of(u"km")
+    x = _section_positions(header, data)
     h = adm |> in_units_of(u"m")
     for t in tics
         lines!(ax, x, h[:, t]; kwargs...)
@@ -246,7 +377,7 @@ end
 ```{.julia file=ext/SedimentProfile.jl}
 module SedimentProfile
 
-import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!
+import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!, sediment_proportion!, sediment_proportion
 
 using CarboKitten.Visualization
 using CarboKitten.Utility: in_units_of
@@ -267,6 +398,8 @@ const Time = typeof(1.0u"Myr")
 
 const na = [CartesianIndex()]
 
+
+<<section-positions>>
 <<explode-vertices>>
 <<plot-unconformities>>
 <<plot-coeval-lines>>
@@ -280,7 +413,7 @@ function, plots the initial topography and the mesh by passing `mesh_args...`.
 The `color` array should have the same size as a single facies for `data.production`.
 """
 function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::AbstractArray, mesh_args...)
-    x = header.axes.x |> in_units_of(u"km")
+    x = _section_positions(header, data)
     t = header.axes.t |> in_units_of(u"Myr")
 
     n_facies, n_x, n_t = size(data.production)
@@ -302,7 +435,7 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
     lines!(ax, x, bedrock; color=:black, label="initial topography")
     ylims!(ax, lower_limit + 10, nothing)
     xlims!(ax, x[1], x[end])
-    ax.xlabel = "position [km]"
+    ax.xlabel = data.slice[1] isa Int ? "position along strike [km]" : "position along dip [km]"
     ax.ylabel = "depth [m]"
 
     c = reshape(color, n_x * n_t)
@@ -323,19 +456,24 @@ function profile_plot!(f::F, ax::Axis, header::Header, data::DataSlice; mesh_arg
 end
 
 """
-    sediment_profile!(ax, header, data; show_unconformities)
+    sediment_profile!(ax, header, data; show_unconformities, mode=:deposited)
 
-Plot the sediment profile, choosing colour by dominant facies type (argmax). Unconformaties
-are shown when the sediment is subaerially exposed (even if sediment is still deposited
-due to a set intertidal zone).
+Plot the sediment profile, choosing colour by dominant facies type (argmax).
+
+`mode` selects the sediment record:
+
+- `:deposited` — dominant facies of raw deposition at each time step (default,
+  original behaviour — fully backward compatible).
+- `:preserved` — dominant facies of net preserved sediment after applying the
+  stratigraphic column algorithm.
+
+Unconformities are shown when the sediment is subaerially exposed.
 """
 function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
+                           mode::Symbol = :deposited,
                            show_unconformities::Union{Nothing,Bool,Int} = true,
                            show_coeval_lines::Union{Bool,Tuple{Int, Int},Vector{Int},Vector{Time}} = true,
                            show_sealevel::Bool = true)
-    x = header.axes.x |> in_units_of(u"km")
-    t = header.axes.t |> in_units_of(u"Myr")
-
     n_facies, n_x, n_t = size(data.production)
     total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
     initial_topography = header.initial_topography[data.slice...]
@@ -347,8 +485,16 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
         plot_sealevel!(ax, header)
     end
 
-    plot = profile_plot!(argmax, ax, header, data; alpha=1.0,
-        colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+    plot = if mode === :deposited
+            profile_plot!(argmax, ax, header, data; alpha=1.0,
+                colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+        elseif mode === :preserved
+            color = map(argmax, eachslice(sc, dims=(2, 3)))
+            profile_plot!(ax, header, data; color=color, alpha=1.0,
+                colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+        else
+            error("mode must be :deposited or :preserved, got :$(mode)")
+        end
 
     coeval_lines!(ax, header, data, h, show_coeval_lines)
 
@@ -356,22 +502,85 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
     plot_unconformities(ax, header, data, h, minwidth; label = "unconformities",
                         color=:white, linestyle=:dash, linewidth=1)
 
-    ax.title = "sediment profile"
+    ax.title = "sediment profile ($(mode))"
     return plot
 end
 
 """
-    sediment_profile(header, data_slice; show_unconformities=true)
+    sediment_profile(header, data_slice; mode=:deposited, show_unconformities=true)
 
-Plot the sediment profile from `data_slice`. This takes the deposited sediments and
-find the dominant facies at every point. By default unconformities are shown using
-dashed white lines. If this generates too much visual noise, you can increase the
-treshold (default 10).
+Plot the sediment profile from `data_slice`. Dominant facies colour is chosen
+by `argmax`. `mode` selects `:deposited` (default) or `:preserved` sediment.
+By default unconformities are shown using dashed white lines.
 """
-function sediment_profile(header::Header, data_slice::DataSlice; show_unconformities::Union{Bool,Int,Nothing} = true)
+function sediment_profile(header::Header, data_slice::DataSlice;
+                           mode::Symbol = :deposited,
+                           show_unconformities::Union{Bool,Int,Nothing} = true)
     fig = Figure(size=(1000, 600))
     ax = Axis(fig[1, 1])
-    sediment_profile!(ax, header, data_slice; show_unconformities = show_unconformities)
+    sediment_profile!(ax, header, data_slice; mode=mode, show_unconformities=show_unconformities)
+    return fig
+end
+
+"""
+    sediment_proportion!(ax, header, data, facies_index;
+                         mode=:deposited, colorrange=(0,1), colormap=:viridis)
+
+Plot the proportion of `facies_index` relative to total sediment at each
+location and time step, using the same stratigraphic mesh as `sediment_profile!`.
+
+
+`mode` selects the sediment record:
+
+- `:deposited` — proportion of raw deposition (`data.deposition`).
+- `:preserved` — proportion of net preserved sediment (`stratigraphic_column`).
+
+Returns the `mesh!` plot object (for attaching a `Colorbar`).
+"""
+function sediment_proportion!(ax::Axis, header::Header, data::DataSlice, facies_index::Int;
+                               mode::Symbol = :deposited,
+                               colorrange::Tuple = (0.0, 1.0),
+                               colormap = :viridis)
+    n_facies = size(data.production, 1)
+    @assert 1 <= facies_index <= n_facies "facies_index $(facies_index) out of range 1:$(n_facies)"
+
+    source = if mode === :deposited
+        data.deposition
+    elseif mode === :preserved
+        stratigraphic_column(data)
+    else
+        error("mode must be :deposited or :preserved, got :$(mode)")
+    end
+
+    proportion = map(eachslice(source, dims=(2, 3))) do col
+        total = sum(col)
+        total > zero(total) ? col[facies_index] / total : 0.0
+    end
+
+    plot = profile_plot!(ax, header, data; color=proportion,
+        colorrange=colorrange, colormap=colormap)
+    ax.title = "proportion of facies $(facies_index) ($(mode))"
+    return plot
+end
+
+"""
+    sediment_proportion(header, data, facies_index; mode=:deposited, kwargs...)
+
+Standalone proportion figure. Shows the fraction of `facies_index` relative to
+total sediment using the same mesh geometry as `sediment_profile`. A `Colorbar`
+is added automatically.
+
+See `sediment_proportion!` for keyword arguments.
+"""
+function sediment_proportion(header::Header, data::DataSlice, facies_index::Int;
+                              mode::Symbol = :deposited,
+                              colorrange::Tuple = (0.0, 1.0),
+                              colormap = :viridis)
+    fig = Figure(size=(1000, 600))
+    ax  = Axis(fig[1, 1])
+    plot = sediment_proportion!(ax, header, data, facies_index;
+        mode=mode, colorrange=colorrange, colormap=colormap)
+    Colorbar(fig[1, 2], plot; label="facies $(facies_index) proportion ($(mode))")
     return fig
 end
 

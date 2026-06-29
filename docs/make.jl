@@ -108,7 +108,7 @@ makedocs(
             "Production" => "components/production.md",
             "Sediment Buffers" => "components/sediment_buffer.md",
             "Active Layer Transport" => "active-layer-transport.md",
-            "Onshore Transport" => "onshore-transport.md"
+            "Onshore Transport" => "onshore-transport.md",
         ],
         "Visualizations" => [
             "Overview" => "visualization/overview.md",
@@ -143,6 +143,7 @@ makedocs(
             "Skeleton" => "algorithms/skeleton.md",
             "Stratigraphic Column" => "algorithms/stratigraphic_column.md",
         ],
+        "Interface" => "wavefield.md",
         "API Documentation" => "api.md",
         "References" => "references.md"
     ],

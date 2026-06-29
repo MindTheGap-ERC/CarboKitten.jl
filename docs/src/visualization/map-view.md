@@ -252,20 +252,20 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
             cgrad(colors[1:n_facies], n_facies, categorical = true) :
             colormap
         colorrange = (0.5, n_facies + 0.5)
-    
+
     elseif color_by == :facies_fraction
         facies === nothing &&
             error("map_view!: `facies` must be specified when `color_by = :facies_fraction`.")
-    
+
         facies_idx = Int(facies)
-    
+
         if facies_idx < 1 || facies_idx > n_facies
             error("map_view!: `facies` must be between 1 and $(n_facies).")
         end
-    
+
         cmap = colormap === nothing ? :viridis : colormap
         colorrange = (0.0, 1.0)
-    
+
     else
         error("map_view!: `color_by` must be either :facies or :facies_fraction.")
     end
@@ -276,33 +276,33 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
 
     function model_values()
         d = data.deposition[:, :, :, t_idx]
-    
+
         m = if color_by == :facies
             Matrix{Union{Missing,Int}}(_colormax(d))
         else
             _facies_fraction(d, facies_idx)
         end
-    
+
         if mask_emerged
             m[wd .> 0u"m"] .= missing
         end
-    
+
         return m
     end
-    
+
     function preserved_values()
         sc_full = stratigraphic_column(data)
         sc = sc_full[:, :, :, t_idx]
-    
+
         m = if color_by == :facies
             Matrix{Union{Missing,Int}}(_colormax(sc))
         else
             _facies_fraction(sc, facies_idx)
         end
-    
+
         acc = dropdims(sum(sc; dims = 1); dims = 1)
         m[acc .< prec] .= missing
-    
+
         return m
     end
 

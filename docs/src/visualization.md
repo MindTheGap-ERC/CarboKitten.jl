@@ -323,15 +323,15 @@ using CarboKitten.Export: Header, DataColumn, stratigraphic_column, age_depth_mo
 
 function scdata(header::Header, data::DataColumn)
     n_facies = size(data.production)[1]
-    n_times = length(header.axes.t) 
+    sc_f1 = stratigraphic_column(header, data, 1) / u"m"
+    n_times = length(sc_f1)                          # ← use actual length
     sc = zeros(Float64, n_facies, n_times)
-    for f = 1:n_facies
+    sc[1, :] = sc_f1
+    for f = 2:n_facies
         sc[f, :] = stratigraphic_column(header, data, f) / u"m"
     end
-
     colormax(d) = getindex.(argmax(d; dims=1)[1, :], 1)
     adm = age_depth_model(data.sediment_thickness)
-
     return (ys_low=adm[1:end-1] / u"m", ys_high=adm[2:end] / u"m", facies=colormax(sc)[1:end-1])
 end
 

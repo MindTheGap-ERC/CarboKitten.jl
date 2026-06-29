@@ -90,8 +90,7 @@ makedocs(
         "Examples" => [
             "Tutorial (Pluto notebook)" => "first_tutorial.md",
             "Tabular Sea Levels" => "cases/tabular-sea-level.md",
-            "Initial Topography" => "initial-topography.md",
-            "Facies Classification" => "facies-classification.md",
+            "Initial Topography" => "initial-topography.md"
         ],
         "Developer" => [
             "CONTRIBUTING.md",
@@ -146,7 +145,7 @@ makedocs(
         ],
         "Interface" => [
         "Wave field"=>"wavefield.md",
-        "Facies Classification" => "facies-classification.md"
+        "Facies Classification" => "facies-classification.md",
         ],
         "API Documentation" => "api.md",
         "References" => "references.md"

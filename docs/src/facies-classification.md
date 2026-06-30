@@ -256,25 +256,15 @@ end
 """
     save_classified(filename, header, data; group=:classified)
 
-Write a classified `Data` object (volume, slice, or column) to HDF5 in the
-same layout as a standard CarboKitten output file, so it can be read back with
-`read_volume`, `read_slice`, or `read_column`.
+Write a classified `Data` object to HDF5 in the same layout as a standard
+CarboKitten output file, so it can be read back with `read_volume`,
+`read_slice`, or `read_column`.
 
 # Arguments
 - `filename` — output path; created or overwritten.
-- `header`   — classified header from `reclassify_volume` / `reclassify_data`.
-- `data`     — classified data from the same call.
-- `group`    — HDF5 group name (default `:classified`).
-
-# Example
-
-```julia
-cls_header, cls_vol = reclassify_volume(header, vol, rules; wave_field=wf)
-save_classified("output_classified.h5", cls_header, cls_vol)
-
-# Read back:
-header2, vol2 = read_volume("output_classified.h5", :classified)
-```
+- `header` — classified header from `reclassify_volume` or `reclassify_data`.
+- `data` — classified data from the same call.
+- `group` — HDF5 group name. Defaults to `:classified`.
 """
 function save_classified(filename::AbstractString,
                          header::Header,
@@ -294,37 +284,35 @@ function save_classified(filename::AbstractString,
     topo_m   = ustrip.(u"m", header.initial_topography)
 
     slice_str(::Colon) = ":"
-    slice_str(i::Int)  = string(i)
+    slice_str(i::Int) = string(i)
 
     h5open(filename, "w") do fid
-        # /input — mirrors H5Writer layout so read_header works unchanged
         grp_in = create_group(fid, "input")
-        grp_in["x"]                  = x_m
-        grp_in["y"]                  = y_m
-        grp_in["t"]                  = t_myr
+        grp_in["x"] = x_m
+        grp_in["y"] = y_m
+        grp_in["t"] = t_myr
         grp_in["initial_topography"] = topo_m
-        grp_in["sea_level"]          = sl_m
+        grp_in["sea_level"] = sl_m
 
         a = HDF5.attributes(grp_in)
-        a["tag"]             = header.tag
-        a["delta_t"]         = ustrip(u"Myr", header.Δt)
-        a["time_steps"]      = header.time_steps
-        a["n_facies"]        = n_facies
+        a["tag"] = header.tag
+        a["delta_t"] = ustrip(u"Myr", header.Δt)
+        a["time_steps"] = header.time_steps
+        a["n_facies"] = n_facies
         a["subsidence_rate"] = ustrip(u"m/Myr", header.subsidence_rate)
 
         if haskey(header.attributes, "classified_facies")
             a["classified_facies"] = join(header.attributes["classified_facies"], ",")
         end
 
-        # data group
         grp = create_group(fid, string(group))
-        ag  = HDF5.attributes(grp)
+        ag = HDF5.attributes(grp)
         ag["write_interval"] = data.write_interval
-        ag["slice"]          = join(slice_str.(data.slice), ",")
+        ag["slice"] = join(slice_str.(data.slice), ",")
 
-        grp["deposition"]         = dep_f
-        grp["production"]         = prod_f
-        grp["disintegration"]     = disint_f
+        grp["deposition"] = dep_f
+        grp["production"] = prod_f
+        grp["disintegration"] = disint_f
         grp["sediment_thickness"] = thick_f
     end
 
@@ -432,11 +420,12 @@ using Unitful
 using CarboKitten
 using CarboKitten.FaciesClassification: FaciesRule, classify_block, reclassify_data
 using CarboKitten.WaveField: AiryWaveField, AiryWaveComponent, energy_flux
-using CarboKitten.Output.Abstract: Header, Axes, Data, DataSlice, water_depth
+using CarboKitten.Output.Abstract: Header, Axes, DataSlice, water_depth
 
 function _make_header(n_facies::Int; nx=4, n_t=3,
                       sea_level_m=10.0, subsidence=0.0u"m/Myr")
-    t = collect(0.0:0.2:n_t*0.2) * u"Myr"
+    t = collect(0.0:0.2:(n_t-1)*0.2) * u"Myr"
+
     Header(
         tag                = "test",
         axes               = Axes(
@@ -448,7 +437,7 @@ function _make_header(n_facies::Int; nx=4, n_t=3,
         grid_size          = (nx, 1),
         n_facies           = n_facies,
         initial_topography = zeros(typeof(1.0u"m"), nx, 1),
-        sea_level          = fill(sea_level_m * u"m", n_t + 1),
+        sea_level          = fill(sea_level_m * u"m", n_t),
         subsidence_rate    = subsidence,
         data_sets          = Dict(),
         attributes         = Dict())
@@ -474,78 +463,93 @@ const TEST_WAVE = AiryWaveField(components=[
 @testset "FaciesClassification/energy_flux sanity" begin
     E_shallow = energy_flux(TEST_WAVE, 5.0u"m")
     E_deep    = energy_flux(TEST_WAVE, 50.0u"m")
-    @test E_shallow > E_deep
+
+    @test E_shallow > 0.0u"W/m"
+    @test E_deep > 0.0u"W/m"
     @test unit(E_shallow) == u"W/m"
+    @test unit(E_deep) == u"W/m"
     @test energy_flux(TEST_WAVE, 0.0u"m") == 0.0u"W/m"
 end
 
-@testset "FaciesClassification/classify_block — depth gate" begin
+@testset "FaciesClassification/classify_block - depth gate" begin
     rules = [
-        FaciesRule(name="shallow", depth_range=(0.0u"m",  5.0u"m")),
-        FaciesRule(name="mid",     depth_range=(5.0u"m",  30.0u"m")),
-        FaciesRule(name="deep",    depth_range=(30.0u"m", 200.0u"m")),
+        FaciesRule(name="shallow", depth_range=(0.0u"m", 5.0u"m")),
+        FaciesRule(name="mid", depth_range=(5.0u"m", 30.0u"m")),
+        FaciesRule(name="deep", depth_range=(30.0u"m", 200.0u"m")),
     ]
+
     we = 0.0u"W/m"
-    @test classify_block(rules, [1.0], 2.0u"m",   we) == 1
-    @test classify_block(rules, [1.0], 5.0u"m",   we) == 1
-    @test classify_block(rules, [1.0], 15.0u"m",  we) == 2
+
+    @test classify_block(rules, [1.0], 2.0u"m", we) == 1
+    @test classify_block(rules, [1.0], 5.0u"m", we) == 1
+    @test classify_block(rules, [1.0], 15.0u"m", we) == 2
     @test classify_block(rules, [1.0], 100.0u"m", we) == 3
     @test classify_block(rules, [1.0], 500.0u"m", we) == 4
 end
 
-@testset "FaciesClassification/classify_block — fraction gate" begin
+@testset "FaciesClassification/classify_block - fraction gate" begin
     rules = [
         FaciesRule(name="euphotic_dom",
-                   sediment_fractions = Dict(1 => (0.6, 1.0)),
-                   depth_range = (-Inf*u"m", Inf*u"m")),
+                   sediment_fractions=Dict(1 => (0.6, 1.0)),
+                   depth_range=(-Inf*u"m", Inf*u"m")),
         FaciesRule(name="mixed",
-                   depth_range = (-Inf*u"m", Inf*u"m")),
+                   depth_range=(-Inf*u"m", Inf*u"m")),
     ]
+
     we = 0.0u"W/m"
+
     @test classify_block(rules, [0.8, 0.2], 5.0u"m", we) == 1
     @test classify_block(rules, [0.3, 0.7], 5.0u"m", we) == 2
     @test classify_block(rules, [0.0, 0.0], 5.0u"m", we) == 2
 end
 
-@testset "FaciesClassification/classify_block — wave energy gate" begin
-    E_high = energy_flux(TEST_WAVE, 3.0u"m")
-    E_low  = energy_flux(TEST_WAVE, 80.0u"m")
-    threshold = (E_high + E_low) / 2
+@testset "FaciesClassification/classify_block - wave energy gate" begin
+    E_high = 1000.0u"W/m"
+    E_low = 100.0u"W/m"
+    threshold = 500.0u"W/m"
+
     rules = [
         FaciesRule(name="high_energy", wave_energy_range=(threshold, Inf*u"W/m")),
-        FaciesRule(name="low_energy",  wave_energy_range=(0.0u"W/m", threshold)),
+        FaciesRule(name="low_energy", wave_energy_range=(0.0u"W/m", threshold)),
     ]
+
     @test classify_block(rules, [1.0], 5.0u"m", E_high) == 1
-    @test classify_block(rules, [1.0], 5.0u"m", E_low)  == 2
+    @test classify_block(rules, [1.0], 5.0u"m", E_low) == 2
 end
 
-@testset "FaciesClassification/classify_block — combined gates" begin
-    E_ref = energy_flux(TEST_WAVE, 10.0u"m")
+@testset "FaciesClassification/classify_block - combined gates" begin
+    E_hi = 1000.0u"W/m"
+    E_lo = 100.0u"W/m"
+    E_ref = 500.0u"W/m"
+
     rules = [
         FaciesRule(name="grainstone",
-                   sediment_fractions = Dict(1 => (0.5, 1.0)),
-                   depth_range        = (0.0u"m", 15.0u"m"),
-                   wave_energy_range  = (E_ref, Inf*u"W/m")),
+                   sediment_fractions=Dict(1 => (0.5, 1.0)),
+                   depth_range=(0.0u"m", 15.0u"m"),
+                   wave_energy_range=(E_ref, Inf*u"W/m")),
         FaciesRule(name="wackestone",
-                   depth_range = (0.0u"m", Inf*u"m")),
+                   depth_range=(0.0u"m", Inf*u"m")),
     ]
-    E_hi = energy_flux(TEST_WAVE, 5.0u"m")
-    E_lo = energy_flux(TEST_WAVE, 80.0u"m")
-    @test classify_block(rules, [0.7, 0.3], 5.0u"m",  E_hi) == 1
+
+    @test classify_block(rules, [0.7, 0.3], 5.0u"m", E_hi) == 1
     @test classify_block(rules, [0.7, 0.3], 25.0u"m", E_hi) == 2
-    @test classify_block(rules, [0.7, 0.3], 5.0u"m",  E_lo) == 2
-    @test classify_block(rules, [0.3, 0.7], 5.0u"m",  E_hi) == 2
+    @test classify_block(rules, [0.7, 0.3], 5.0u"m", E_lo) == 2
+    @test classify_block(rules, [0.3, 0.7], 5.0u"m", E_hi) == 2
 end
 
-@testset "FaciesClassification/reclassify_data — shape" begin
+@testset "FaciesClassification/reclassify_data - shape" begin
     n_f, nx, n_t = 3, 4, 5
+
     header = _make_header(n_f; nx=nx, n_t=n_t)
-    data   = _make_slice(n_f, nx, n_t)
-    rules  = [
+    data = _make_slice(n_f, nx, n_t)
+
+    rules = [
         FaciesRule(name="A", depth_range=(-Inf*u"m", Inf*u"m")),
         FaciesRule(name="B", depth_range=(-Inf*u"m", Inf*u"m")),
     ]
+
     new_header, new_data = reclassify_data(header, data, rules)
+
     @test new_header.n_facies == 3
     @test size(new_data.deposition, 1) == 3
     @test size(new_data.deposition, 2) == nx
@@ -554,114 +558,153 @@ end
     @test new_header.attributes["classified_facies"] == ["A", "B", "fallback"]
 end
 
-@testset "FaciesClassification/reclassify_data — bucket routing" begin
+@testset "FaciesClassification/reclassify_data - bucket routing" begin
     n_f, nx, n_t = 2, 2, 2
+
     header = _make_header(n_f; nx=nx, n_t=n_t)
+
     dep = zeros(typeof(1.0u"m"), n_f, nx, n_t)
     dep[1, 1, :] .= 1.0u"m"
     dep[2, 2, :] .= 1.0u"m"
+
     data = _make_slice(n_f, nx, n_t; deposition=dep)
+
     rules = [
         FaciesRule(name="f1_dom",
-                   sediment_fractions = Dict(1 => (0.9, 1.0)),
-                   depth_range = (-Inf*u"m", Inf*u"m")),
+                   sediment_fractions=Dict(1 => (0.9, 1.0)),
+                   depth_range=(-Inf*u"m", Inf*u"m")),
         FaciesRule(name="f2_dom",
-                   sediment_fractions = Dict(2 => (0.9, 1.0)),
-                   depth_range = (-Inf*u"m", Inf*u"m")),
+                   sediment_fractions=Dict(2 => (0.9, 1.0)),
+                   depth_range=(-Inf*u"m", Inf*u"m")),
     ]
+
     _, new_data = reclassify_data(header, data, rules)
+
     @test all(new_data.deposition[1, 1, :] .≈ 1.0u"m")
     @test all(new_data.deposition[2, 2, :] .≈ 1.0u"m")
 end
 
-@testset "FaciesClassification/reclassify_data — mass conservation" begin
+@testset "FaciesClassification/reclassify_data - mass conservation" begin
     n_f, nx, n_t = 3, 3, 4
+
     header = _make_header(n_f; nx=nx, n_t=n_t)
-    dep  = rand(typeof(1.0u"m"), n_f, nx, n_t) .* 0.5u"m"
+
+    dep = fill(0.25u"m", n_f, nx, n_t)
     data = _make_slice(n_f, nx, n_t; deposition=dep)
+
     rules = [FaciesRule(name="all", depth_range=(-Inf*u"m", Inf*u"m"))]
+
     _, new_data = reclassify_data(header, data, rules)
-    orig_total = dropdims(sum(dep,                 dims=1), dims=1)
-    new_total  = dropdims(sum(new_data.deposition, dims=1), dims=1)
+
+    orig_total = dropdims(sum(dep, dims=1), dims=1)
+    new_total = dropdims(sum(new_data.deposition, dims=1), dims=1)
+
     @test all(new_total .≈ orig_total)
 end
 
-@testset "FaciesClassification/reclassify_data — AiryWaveField routing" begin
+@testset "FaciesClassification/reclassify_data - AiryWaveField routing" begin
     n_f, nx, n_t = 1, 1, 1
+
     header = _make_header(n_f; nx=nx, n_t=n_t, sea_level_m=10.0)
-    dep  = fill(1.0u"m", n_f, nx, n_t)
+
+    dep = fill(1.0u"m", n_f, nx, n_t)
     data = _make_slice(n_f, nx, n_t; deposition=dep)
-    E_at_10   = energy_flux(TEST_WAVE, 10.0u"m")
+
+    E_at_10 = energy_flux(TEST_WAVE, 10.0u"m")
     threshold = E_at_10 / 2
+
     rules = [
         FaciesRule(name="wave_active",
-                   wave_energy_range = (threshold, Inf*u"W/m"),
-                   depth_range = (-Inf*u"m", Inf*u"m")),
+                   wave_energy_range=(threshold, Inf*u"W/m"),
+                   depth_range=(-Inf*u"m", Inf*u"m")),
         FaciesRule(name="wave_quiet",
-                   depth_range = (-Inf*u"m", Inf*u"m")),
+                   depth_range=(-Inf*u"m", Inf*u"m")),
     ]
+
     _, new_data = reclassify_data(header, data, rules; wave_field=TEST_WAVE)
+
     @test all(new_data.deposition[1, :, :] .≈ 1.0u"m")
     @test all(new_data.deposition[2, :, :] .≈ 0.0u"m")
 end
 
-@testset "FaciesClassification/reclassify_data — no wave field fallthrough" begin
+@testset "FaciesClassification/reclassify_data - no wave field fallthrough" begin
     n_f, nx, n_t = 1, 1, 1
+
     header = _make_header(n_f; nx=nx, n_t=n_t)
-    dep  = fill(1.0u"m", n_f, nx, n_t)
+
+    dep = fill(1.0u"m", n_f, nx, n_t)
     data = _make_slice(n_f, nx, n_t; deposition=dep)
+
     rules = [
         FaciesRule(name="wave_only",
-                   wave_energy_range = (1.0u"W/m", Inf*u"W/m"),
-                   depth_range = (-Inf*u"m", Inf*u"m")),
-        FaciesRule(name="catch_all", depth_range=(-Inf*u"m", Inf*u"m")),
+                   wave_energy_range=(1.0u"W/m", Inf*u"W/m"),
+                   depth_range=(-Inf*u"m", Inf*u"m")),
+        FaciesRule(name="catch_all",
+                   depth_range=(-Inf*u"m", Inf*u"m")),
     ]
+
     _, new_data = reclassify_data(header, data, rules)
+
     @test all(new_data.deposition[1, :, :] .≈ 0.0u"m")
     @test all(new_data.deposition[2, :, :] .≈ 1.0u"m")
 end
 
-@testset "FaciesClassification/water_depth — stored field" begin
+@testset "FaciesClassification/water_depth - stored field" begin
     n_f, nx, n_t = 1, 3, 2
-    header    = _make_header(n_f; nx=nx, n_t=n_t, sea_level_m=10.0)
+
+    header = _make_header(n_f; nx=nx, n_t=n_t, sea_level_m=10.0)
     wd_stored = fill(7.0u"m", nx, n_t)
-    data_with  = _make_slice(n_f, nx, n_t; water_depth_arr=wd_stored)
+
+    data_with = _make_slice(n_f, nx, n_t; water_depth_arr=wd_stored)
     data_plain = _make_slice(n_f, nx, n_t)
-    @test water_depth(header, data_with)  === wd_stored
+
+    @test water_depth(header, data_with) === wd_stored
     @test all(water_depth(header, data_plain) .≈ 10.0u"m")
 end
 
-@testset "FaciesClassification/reclassify_data — stored depth overrides header" begin
+@testset "FaciesClassification/reclassify_data - stored depth overrides header" begin
     n_f, nx, n_t = 1, 1, 1
+
     header = _make_header(n_f; nx=nx, n_t=n_t, sea_level_m=10.0)
-    dep    = fill(1.0u"m", n_f, nx, n_t)
-    data   = _make_slice(n_f, nx, n_t;
-                         deposition      = dep,
-                         water_depth_arr = fill(3.0u"m", nx, n_t))
+
+    dep = fill(1.0u"m", n_f, nx, n_t)
+    data = _make_slice(n_f, nx, n_t;
+                       deposition=dep,
+                       water_depth_arr=fill(3.0u"m", nx, n_t))
+
     rules = [
-        FaciesRule(name="shallow", depth_range=(0.0u"m",  5.0u"m")),
-        FaciesRule(name="deep",    depth_range=(5.0u"m",  Inf*u"m")),
+        FaciesRule(name="shallow", depth_range=(0.0u"m", 5.0u"m")),
+        FaciesRule(name="deep", depth_range=(5.0u"m", Inf*u"m")),
     ]
+
     _, new_data = reclassify_data(header, data, rules)
+
     @test all(new_data.deposition[1, :, :] .≈ 1.0u"m")
     @test all(new_data.deposition[2, :, :] .≈ 0.0u"m")
 end
 
-@testset "FaciesClassification/reclassify_data — fallback" begin
+@testset "FaciesClassification/reclassify_data - fallback" begin
     n_f, nx, n_t = 1, 2, 1
+
     header = _make_header(n_f; nx=nx, n_t=n_t)
-    dep    = fill(1.0u"m", n_f, nx, n_t)
-    data   = _make_slice(n_f, nx, n_t; deposition=dep)
-    rules  = [FaciesRule(name="impossible", depth_range=(-100.0u"m", -50.0u"m"))]
+
+    dep = fill(1.0u"m", n_f, nx, n_t)
+    data = _make_slice(n_f, nx, n_t; deposition=dep)
+
+    rules = [
+        FaciesRule(name="impossible", depth_range=(-100.0u"m", -50.0u"m")),
+    ]
+
     _, new_data = reclassify_data(header, data, rules)
+
     @test all(new_data.deposition[1, :, :] .≈ 0.0u"m")
     @test all(new_data.deposition[2, :, :] .≈ 1.0u"m")
 end
 
 @testset "FaciesClassification/backward-compatibility" begin
     @test !hasfield(CarboKitten.Components.FaciesBase.Facies, :classification_rules)
-    @test !hasfield(CarboKitten.Models.ALCAP.Input,           :classification_rules)
-    @test !hasfield(CarboKitten.Models.ALCAP.Input,           :save_water_depth)
+    @test !hasfield(CarboKitten.Models.ALCAP.Input, :classification_rules)
+    @test !hasfield(CarboKitten.Models.ALCAP.Input, :save_water_depth)
 end
 
 end  # module FaciesClassificationSpec

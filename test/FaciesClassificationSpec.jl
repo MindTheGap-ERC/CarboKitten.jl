@@ -1,3 +1,4 @@
+# ~/~ begin <<docs/src/facies-classification.md#test/FaciesClassificationSpec.jl>>[init]
 module FaciesClassificationSpec
 
 using Test
@@ -292,4 +293,5 @@ end
     @test !hasfield(CarboKitten.Models.ALCAP.Input, :save_water_depth)
 end
 
-end
+end  # module FaciesClassificationSpec
+# ~/~ end

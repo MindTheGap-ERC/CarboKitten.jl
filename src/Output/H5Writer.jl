@@ -7,7 +7,7 @@ using Unitful
 import ...CarboKitten: run_model, Model, AbstractOutput, AbstractInput, OutputSpec, AbstractState
 
 using ...CarboKitten: time_axis, box_axes
-using ...Components.WaterDepth: initial_topography
+using ...Components.WaterDepth: initial_topography, water_depth as wd_from_input
 
 using ...Utility: in_units_of
 using ..Abstract
@@ -16,6 +16,7 @@ import ..Abstract: add_data_set, set_attribute, frame_writer, state_writer
 mutable struct H5Output <: AbstractOutput
     header::Header
     save_active_layer::Bool
+    save_water_depth::Bool
     fid::HDF5.File
 end
 
@@ -48,8 +49,10 @@ function H5Output(input::Input, filename::String) where {Input <: AbstractInput}
     create_group(fid, "input")
     save_active_layer = hasfield(Input, :save_active_layer) ?
         input.save_active_layer : false
+    save_water_depth = hasfield(Input, :save_water_depth) ?
+        input.save_water_depth : false
 
-    finalizer(H5Output(header, save_active_layer, fid)) do x
+    finalizer(H5Output(header, save_active_layer, save_water_depth, fid)) do x
         close(x.fid)
     end
 end
@@ -59,9 +62,11 @@ function H5Output(f, input::Input, filename::String) where {Input <: AbstractInp
     header = make_header(input)
     save_active_layer = hasfield(Input, :save_active_layer) ?
         input.save_active_layer : false
+    save_water_depth = hasfield(Input, :save_water_depth) ?
+        input.save_water_depth : false
     h5open(filename, "w") do fid
         create_group(fid, "input")
-        out = H5Output(header, save_active_layer, fid)
+        out = H5Output(header, save_active_layer, save_water_depth, fid)
         f(out)
     end
 end
@@ -109,6 +114,12 @@ function add_data_set(out::H5Output, name::Symbol, spec::OutputSpec)
             dataspace(nf, size..., nw + 1),
             chunk=(nf, size..., 1), deflate=3)
     end
+
+    if out.save_water_depth
+        HDF5.create_dataset(grp, "water_depth", datatype(Float64),
+            dataspace(size..., nw + 1),
+            chunk=(size..., 1), deflate=3)
+    end
 end
 
 function get_group(fid::HDF5.File, name::String)
@@ -143,19 +154,27 @@ function state_writer(input::AbstractInput, out::H5Output)
     fid = out.fid
     grid_size = out.header.grid_size
     n_f = out.header.n_facies
+    local_wd = out.save_water_depth ? wd_from_input(input) : nothing
 
     function (idx::Int, state::AbstractState)
         for (k, v) in output_spec
             size = axis_size.(v.slice, grid_size)
             if mod(idx - 1, v.write_interval) == 0
-                fid[string(k)]["sediment_thickness"][:, :, div(idx - 1, v.write_interval)+1] =
+                write_idx = div(idx - 1, v.write_interval) + 1
+                fid[string(k)]["sediment_thickness"][:, :, write_idx] =
                     (is_column(v.slice...) ?
                      Float64[state.sediment_height[v.slice...] |> in_units_of(u"m");] :
                      reshape(state.sediment_height[v.slice...], size) |> in_units_of(u"m"))
 
                 if out.save_active_layer
-                    fid[string(k)]["active_layer"][:, :, :, div(idx - 1, v.write_interval) + 1] =
+                    fid[string(k)]["active_layer"][:, :, :, write_idx] =
                         reshape(state.active_layer[:, v.slice...], (n_f, size...)) |> in_units_of(u"m")
+                end
+
+                if out.save_water_depth && local_wd !== nothing
+                    wd = local_wd(state)
+                    fid[string(k)]["water_depth"][:, :, write_idx] =
+                        reshape(wd[v.slice...], size) |> in_units_of(u"m")
                 end
             end
         end

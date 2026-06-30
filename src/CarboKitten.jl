@@ -104,6 +104,8 @@ include("./SedimentStack.jl")
 include("./Utility.jl")
 include("./DataSets.jl")
 include("./Production.jl")
+include("./WaveField.jl")
+
 
 include("./RunModel.jl")
 
@@ -147,6 +149,7 @@ end
 include("./Export.jl")
 include("./Visualization.jl")
 include("./Testing.jl")
+include("./FaciesClassification.jl")
 
 using .Components.Common: in_units_of, @u_str
 using .Output.Abstract: OutputSpec, new_output
@@ -155,11 +158,14 @@ using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 using .Production: BenthicProduction, PelagicProduction
 using GeometryBasics: Vec2
+using .WaveField
+using .FaciesClassification: FaciesRule, classify_block, reclassify_data
 
 export run_model, Box, box_axes, TimeProperties, time_axis,
     Model, BS92, CAP, ALCAP, in_units_of, @u_str,
     AbstractBox, Boundary, Coast, Periodic, Reflected,
     Vec2, OutputSpec, MemoryOutput, new_output, n_steps,
-    BenthicProduction, PelagicProduction
+    BenthicProduction, PelagicProduction,
+    FaciesRule, classify_block, reclassify_data
 
 end # module CarboKitten

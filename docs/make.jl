@@ -90,7 +90,7 @@ makedocs(
         "Examples" => [
             "Tutorial (Pluto notebook)" => "first_tutorial.md",
             "Tabular Sea Levels" => "cases/tabular-sea-level.md",
-            "Initial Topography" => "initial-topography.md",
+            "Initial Topography" => "initial-topography.md"
         ],
         "Developer" => [
             "CONTRIBUTING.md",
@@ -108,7 +108,7 @@ makedocs(
             "Production" => "components/production.md",
             "Sediment Buffers" => "components/sediment_buffer.md",
             "Active Layer Transport" => "active-layer-transport.md",
-            "Onshore Transport" => "onshore-transport.md"
+            "Onshore Transport" => "onshore-transport.md",
         ],
         "Visualizations" => [
             "Overview" => "visualization/overview.md",
@@ -142,6 +142,10 @@ makedocs(
             "Nested Sequence Enumeration" => "algorithms/enumerate_seq.md",
             "Skeleton" => "algorithms/skeleton.md",
             "Stratigraphic Column" => "algorithms/stratigraphic_column.md",
+        ],
+        "Interface" => [
+        "Wave field"=>"wavefield.md",
+        "Facies Classification" => "facies-classification.md",
         ],
         "API Documentation" => "api.md",
         "References" => "references.md"

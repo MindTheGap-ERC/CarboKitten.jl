@@ -243,7 +243,7 @@ end # module
 
 ``` {.julia file=src/Components/SedimentBuffer.jl}
 @compose module SedimentBuffer
-@mixin Boxes, FaciesBase
+@mixin Boxes, FaciesBase, WaterDepth
 
 using StaticArrays
 using Unitful
@@ -263,18 +263,22 @@ end
     sediment_thickness::Array{Height, 2}
 end
 
+@constructor _initial_state(input)::State[sediment_buffer, sediment_thickness] = (
+    sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...),
+    sediment_thickness = zeros(Amount, input.box.grid_size...))
+
 function push_sediment(input::AbstractInput)
     res = input.depositional_resolution
     n_f = n_facies(input)
     n_g = input.box.grid_size
 
     function (state::AbstractState, sediment::Array{Amount, 3})
-        for i in CartesianIndices(n_g...)
+        for i in CartesianIndices(n_g)
             total = sum(@view sediment[:, i[1], i[2]])
             state.sediment_thickness[i] += total
             state.bathymetry[i] += total
             v = SVector{n_f, Float64}(sediment[:, i[1], i[2]] ./ res .|> NoUnits)
-            push_sediment!(state.sediment_buffer[:, :, i[1], i[2]], v)
+            push_sediment!(view(state.sediment_buffer, :, :, i[1], i[2]), v)
         end
     end
 end
@@ -293,5 +297,41 @@ function pop_sediment(input::AbstractInput)
     end
 end
 
+end
+```
+
+### Component Test
+
+``` {.julia file=test/Components/SedimentBufferSpec.jl}
+using CarboKitten
+using CarboKitten.Components.Common: Amount
+import CarboKitten.Components.SedimentBuffer as SB
+
+@testset "Components/SedimentBuffer" begin
+    input = SB.Input(
+        box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
+        time = TimeProperties(Δt=1.0u"yr", steps=10),
+        facies = [SB.Facies()],
+        sediment_buffer_size = 10,
+        depositional_resolution = 1.0u"m")
+    state = SB._initial_state(input)
+
+    @test size(state.sediment_thickness) == (10, 1)
+    @test size(state.sediment_buffer) == (10, 1, 10, 1)
+
+    push! = SB.push_sediment(input)
+    pop! = SB.pop_sediment(input)
+
+    push!(state, reshape((1:10) .* 0.5u"m" |> collect, (1, 10, 1)))
+    @test state.sediment_buffer[1, 1, :, 1] == repeat([0.5, 0.0], 5)
+    # no initial topography, no subsidence
+    @test state.sediment_thickness ≈ state.bathymetry
+
+    buffer = zeros(Amount, 1, 10, 1)
+    pop!(state, state.sediment_thickness ./ 2, buffer)
+    @test reshape(state.sediment_thickness, (1, 10, 1)) ≈ buffer
+    @test state.sediment_buffer[1, 1, :, 1] .% 1.0 ≈ repeat([0.25, 0.5, 0.75, 0.0], 3)[1:10]
+    # no initial topography, no subsidence
+    @test state.sediment_thickness ≈ state.bathymetry
 end
 ```

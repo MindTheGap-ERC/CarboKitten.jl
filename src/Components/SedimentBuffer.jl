@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/components/sediment_buffer.md#src/Components/SedimentBuffer.jl>>[init]
 @compose module SedimentBuffer
-@mixin Boxes, FaciesBase
+@mixin Boxes, FaciesBase, WaterDepth
 
 using StaticArrays
 using Unitful
@@ -20,18 +20,22 @@ end
     sediment_thickness::Array{Height, 2}
 end
 
+@constructor _initial_state(input)::State[sediment_buffer, sediment_thickness] = (
+    sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...),
+    sediment_thickness = zeros(Amount, input.box.grid_size...))
+
 function push_sediment(input::AbstractInput)
     res = input.depositional_resolution
     n_f = n_facies(input)
     n_g = input.box.grid_size
 
     function (state::AbstractState, sediment::Array{Amount, 3})
-        for i in CartesianIndices(n_g...)
+        for i in CartesianIndices(n_g)
             total = sum(@view sediment[:, i[1], i[2]])
             state.sediment_thickness[i] += total
             state.bathymetry[i] += total
             v = SVector{n_f, Float64}(sediment[:, i[1], i[2]] ./ res .|> NoUnits)
-            push_sediment!(state.sediment_buffer[:, :, i[1], i[2]], v)
+            push_sediment!(view(state.sediment_buffer, :, :, i[1], i[2]), v)
         end
     end
 end

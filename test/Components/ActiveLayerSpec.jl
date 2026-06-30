@@ -21,6 +21,7 @@ using CarboKitten.Components.WaterDepth: initial_topography
             state = AL.State(
                 step = 0,
                 bathymetry = bathymetry,
+                sediment_thickness = zeros(Amount, input.box.grid_size...),
                 sediment_buffer = zeros(Float64, input.sediment_buffer_size, AL.n_facies(input), input.box.grid_size...),
                 active_layer=zeros(Amount, AL.n_facies(input), input.box.grid_size...))
 

@@ -103,6 +103,7 @@ using CarboKitten.Components.WaterDepth: initial_topography
             state = AL.State(
                 step = 0,
                 bathymetry = bathymetry,
+                sediment_thickness = zeros(Amount, input.box.grid_size...),
                 sediment_buffer = zeros(Float64, input.sediment_buffer_size, AL.n_facies(input), input.box.grid_size...),
                 active_layer=zeros(Amount, AL.n_facies(input), input.box.grid_size...))
 
@@ -802,6 +803,9 @@ end
     save_active_layer::Bool = false
 end
 
+@constructor _initial_state(input)::State[active_layer] = (
+    active_layer = zeros(Amount, n_facies(input), input.box.grid_size...),)
+
 courant_max(::Type{Val{:RK4}}) = 2.0
 courant_max(::Type{Val{:forward_euler}}) = 1.0
 
@@ -892,7 +896,7 @@ function disintegrator(input)
 
         @assert all(h .<= max_h)
         pop!(state, h, output)
-        return output .* depositional_resolution
+        return output
     end
 end
 
@@ -1178,7 +1182,7 @@ The following tests that we see the expected behaviours both without an intertid
     function end_sediment_thickness(input)
         state = ALCAP.initial_state(input)
         run_model((_, _) -> (), Model{ALCAP}, input, state)
-        return state.sediment_thickness
+        return state.bathymetry
     end
 
     function three_peaks(x, y)

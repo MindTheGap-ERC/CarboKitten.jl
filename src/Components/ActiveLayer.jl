@@ -29,6 +29,9 @@ end
     save_active_layer::Bool = false
 end
 
+@constructor _initial_state(input)::State[active_layer] = (
+    active_layer = zeros(Amount, n_facies(input), input.box.grid_size...),)
+
 courant_max(::Type{Val{:RK4}}) = 2.0
 courant_max(::Type{Val{:forward_euler}}) = 1.0
 
@@ -119,7 +122,7 @@ function disintegrator(input)
 
         @assert all(h .<= max_h)
         pop!(state, h, output)
-        return output .* depositional_resolution
+        return output
     end
 end
 

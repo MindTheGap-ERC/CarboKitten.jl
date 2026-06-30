@@ -394,6 +394,13 @@ end
     <<ca-state>>
     <<ca-step>>
 
+    @constructor function _initial_state(input)::State[ca, ca_priority]
+        n_facies = length(input.facies)
+        active_facies = 1:n_facies |> filter(f->input.facies[f].active==true)
+        ca = rand(MersenneTwister(input.ca_random_seed), [0; active_facies], input.box.grid_size...)
+        return (ca = ca, ca_priority = active_facies |> collect)
+    end
+
     function initial_state(input::AbstractInput)
         n_facies = length(input.facies)
         active_facies = 1:n_facies |> filter(f->input.facies[f].active==true)

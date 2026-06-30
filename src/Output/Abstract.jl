@@ -6,7 +6,7 @@ import ...Algorithms: stratigraphic_column!
 
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
 export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer, surface_heights
-export sediment_thickness
+export sediment_thickness, water_depth
 
 using Unitful
 using ...CarboKitten: OutputSpec, AbstractInput, AbstractState
@@ -130,7 +130,7 @@ Compute the water depth function for the given data set.
 """
 function water_depth(header::Header, data::Data{F, D}) where {F, D}
     na = [CartesianIndex()]
-    return sl[repeated(na, D-1)...,:] .- header.bathymetry[data.slice..., na]
+    return header.sea_level[repeated(na, D-1)...,:] .- data.bathymetry
 end
 
 """

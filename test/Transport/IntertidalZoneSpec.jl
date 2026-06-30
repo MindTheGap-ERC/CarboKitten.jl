@@ -6,7 +6,7 @@
     function end_sediment_thickness(input)
         state = ALCAP.initial_state(input)
         run_model((_, _) -> (), Model{ALCAP}, input, state)
-        return state.sediment_thickness
+        return state.bathymetry
     end
 
     function three_peaks(x, y)

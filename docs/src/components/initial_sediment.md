@@ -78,7 +78,7 @@ let box = Box{Periodic}(grid_size=(50, 50), phys_scale=100.0u"m"),
     input = IS.Input(
         time = TimeProperties(steps=0, Δt=1.0u"yr"),
         box = box,
-        facies = [ IS.Facies(initial_sediment=30u"m") ] ),
+        facies = [ IS.Facies(initial_sediment=30.0u"m") ] ),
     state = initial_state(input)
 
     @test all(isapprox.(state.sediment_thickness, 30.0u"m"))

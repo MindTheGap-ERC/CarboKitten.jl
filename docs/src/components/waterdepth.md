@@ -37,6 +37,9 @@ end
     bathymetry::Matrix{Height}
 end
 
+@constructor _initial_state(input)::State[bathymetry] =
+    (bathymetry = initial_topography(input),)
+
 function initial_state(input::AbstractInput)
     bathymetry = initial_topography(input)
     return State(step=0, bathymetry=bathymetry)

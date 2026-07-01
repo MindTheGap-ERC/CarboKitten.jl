@@ -1,51 +1,87 @@
-# ~/~ begin <<docs/src/facies-classification.md#src/FaciesClassification.jl>>[init]
 """
     FaciesClassification
-...
+
+Post-processing tools for reclassifying CarboKitten production facies into
+depositional facies.
+
+Classification is based on:
+- production-facies fractions,
+- palaeo-water depth,
+- optional wave-velocity magnitude.
+
+The wave-velocity formulation follows the standard CarboKitten transport
+interface: a `wave_velocity` function takes water depth and returns
+`(velocity, shear)`, where velocity has units of length/time and shear has
+units of 1/time. Classification uses only the velocity magnitude.
 """
 module FaciesClassification
 
 using Unitful
 using HDF5
 using ..Output.Abstract: Data, Header, water_depth
-using ..WaveField: AiryWaveField, energy_flux
 
-export FaciesRule, classify_block, reclassify_data, reclassify_volume, save_classified
+export FaciesRule, classify_block, reclassify_data, reclassify_volume,
+       save_classified, velocity_magnitude
 
-# ~/~ begin <<docs/src/facies-classification.md#facies-rule>>[init]
 """
-    FaciesRule(; name, sediment_fractions, depth_range, wave_energy_range)
+    FaciesRule(; name, sediment_fractions, depth_range, wave_velocity_range)
 
 A single rule for post-depositional facies classification.
 
 ## Fields
 - `name::String` — label assigned to blocks that match this rule.
 - `sediment_fractions::Union{Nothing, Dict{Int,NTuple{2,Float64}}}` —
-  optional per-production-facies fraction constraints.  Keys are 1-based
+  optional per-production-facies fraction constraints. Keys are 1-based
   production-facies indices; values are `(lo, hi)` with `0 ≤ lo ≤ hi ≤ 1`.
-  All listed constraints must be satisfied simultaneously.  `nothing` means
+  All listed constraints must be satisfied simultaneously. `nothing` means
   no constraint on sediment proportion.
 - `depth_range::NTuple{2,<:Quantity}` — `(min_depth, max_depth)` water-depth
-  window in metres.  Bounds are inclusive.  Use `(-Inf*u"m", Inf*u"m")` to
+  window in metres. Bounds are inclusive. Use `(-Inf*u"m", Inf*u"m")` to
   leave depth unconstrained.
-- `wave_energy_range::NTuple{2,<:Quantity}` — `(lo, hi)` for Airy wave energy
-  flux in W/m, from `WaveField.energy_flux`.  Use `(0.0u"W/m", Inf*u"W/m")`
-  to leave wave energy unconstrained.
+- `wave_velocity_range::NTuple{2,<:Quantity}` — `(lo, hi)` for the magnitude
+  of the CarboKitten `wave_velocity(depth)[1]` vector. Use
+  `(0.0u"m/Myr", Inf*u"m/Myr")` to leave wave velocity unconstrained.
 
-Rules are evaluated in order; first match wins.  Unmatched blocks go to the
+Rules are evaluated in order; first match wins. Unmatched blocks go to the
 fallback class at index `length(rules) + 1`.
 """
-@kwdef struct FaciesRule
+Base.@kwdef struct FaciesRule
     name::String
     sediment_fractions::Union{Nothing,Dict{Int,NTuple{2,Float64}}} = nothing
-    depth_range::NTuple{2,<:Quantity}       = (-Inf * u"m",   Inf * u"m")
-    wave_energy_range::NTuple{2,<:Quantity} = (0.0  * u"W/m", Inf * u"W/m")
+    depth_range::NTuple{2,<:Quantity}         = (-Inf * u"m",     Inf * u"m")
+    wave_velocity_range::NTuple{2,<:Quantity} = (0.0  * u"m/Myr", Inf * u"m/Myr")
 end
-# ~/~ end
 
-# ~/~ begin <<docs/src/facies-classification.md#classify-block>>[init]
 """
-    classify_block(rules, fractions, depth, wave_energy) -> Int
+    velocity_magnitude(wave_velocity, depth) -> Quantity
+
+Evaluate a CarboKitten-style wave-velocity function at a water depth and return
+the magnitude of the velocity vector.
+
+The expected interface is the standard active-layer transport interface:
+
+```julia
+wave_velocity(depth) -> (velocity, shear)
+```
+
+where `velocity` is a scalar, vector, tuple, or `Vec2` with velocity units.
+When `wave_velocity === nothing`, the returned value is `0 m/Myr`.
+"""
+function velocity_magnitude(wave_velocity, depth::Quantity)
+    wave_velocity === nothing && return 0.0u"m/Myr"
+
+    v, _ = wave_velocity(depth)
+
+    if v isa Quantity
+        return abs(uconvert(u"m/Myr", v))
+    end
+
+    mag = sqrt(sum(abs2, v))
+    return uconvert(u"m/Myr", mag)
+end
+
+"""
+    classify_block(rules, fractions, depth, wave_velocity) -> Int
 
 Classify a single deposited block against an ordered list of `FaciesRule`s.
 
@@ -55,12 +91,13 @@ Returns the 1-based index of the first matching rule, or `length(rules) + 1`
 function classify_block(rules::AbstractVector{FaciesRule},
                         fractions::AbstractVector{<:Real},
                         depth::Quantity,
-                        wave_energy::Quantity)::Int
+                        wave_velocity::Quantity)::Int
     for (i, rule) in enumerate(rules)
         depth < rule.depth_range[1] && continue
         depth > rule.depth_range[2] && continue
-        wave_energy < rule.wave_energy_range[1] && continue
-        wave_energy > rule.wave_energy_range[2] && continue
+        wave_velocity < rule.wave_velocity_range[1] && continue
+        wave_velocity > rule.wave_velocity_range[2] && continue
+
         if rule.sediment_fractions !== nothing
             ok = true
             for (fid, (lo, hi)) in rule.sediment_fractions
@@ -72,33 +109,39 @@ function classify_block(rules::AbstractVector{FaciesRule},
             end
             ok || continue
         end
+
         return i
     end
+
     return length(rules) + 1
 end
-# ~/~ end
 
-# ~/~ begin <<docs/src/facies-classification.md#reclassify-data>>[init]
 """
-    reclassify_data(header, data, rules; wave_field=nothing) -> (Header, Data)
+    reclassify_data(header, data, rules; wave_velocity=nothing) -> (Header, Data)
 
 Reclassify a CarboKitten `Data` object using an ordered vector of `FaciesRule`s.
 
-`wave_field::Union{AiryWaveField, Nothing}` — the same wave field used during
-the model run.  `WaveField.energy_flux(wave_field, wd)` is called at each cell
-to obtain the wave energy in W/m.  When `nothing`, wave energy is `0 W/m`
-everywhere.
+`wave_velocity` is optional. If provided, it must follow the standard
+CarboKitten active-layer transport interface:
 
-Water depth is read from `data.water_depth` when stored (run with
-`save_water_depth=true`), otherwise reconstructed from the header.
+```julia
+wave_velocity(depth) -> (velocity, shear)
+```
+
+Only the magnitude of `velocity` is used for classification. This keeps
+classification consistent with the original CarboKitten velocity-based
+transport formulation and avoids depending on an external `WaveField` module.
+
+Water depth is read from `data.water_depth` when stored, otherwise reconstructed
+from the header.
 
 Returns `(new_header, new_data)` with the same `Data{F,D}` type, fully
-compatible with all existing visualisation routines.
+compatible with existing visualisation routines.
 """
 function reclassify_data(header::Header,
                          data::Data{F,D},
                          rules::AbstractVector{FaciesRule};
-                         wave_field::Union{AiryWaveField,Nothing}=nothing) where {F,D}
+                         wave_velocity=nothing) where {F,D}
     n_prod  = size(data.deposition, 1)
     n_class = length(rules) + 1
     dep_sz  = size(data.deposition)
@@ -115,8 +158,6 @@ function reclassify_data(header::Header,
     _wd(sp_idx::CartesianIndex{0}, t) = wd_array[t]
     _wd(sp_idx, t)                    = wd_array[sp_idx, t]
 
-    zero_energy = 0.0u"W/m"
-
     for t_idx in 1:n_t
         for sp_idx in CartesianIndices(sp_size)
             wd_val = _wd(sp_idx, t_idx)
@@ -132,8 +173,8 @@ function reclassify_data(header::Header,
                 zeros(Float64, n_prod)
             end
 
-            we  = wave_field !== nothing ? energy_flux(wave_field, wd_val) : zero_energy
-            cls = classify_block(rules, fractions, wd_val, we)
+            wv  = velocity_magnitude(wave_velocity, wd_val)
+            cls = classify_block(rules, fractions, wd_val, wv)
 
             dep_out[cls,  sp_idx, t_idx] += total_dep
             prod_out[cls, sp_idx, t_idx] += sum(prod_col)
@@ -168,46 +209,26 @@ function reclassify_data(header::Header,
 
     return new_header, new_data
 end
-# ~/~ end
 
-# ~/~ begin <<docs/src/facies-classification.md#reclassify-volume>>[init]
 """
-    reclassify_volume(header, vol, rules; wave_field=nothing) -> (Header, DataVolume)
+    reclassify_volume(header, vol, rules; wave_velocity=nothing) -> (Header, DataVolume)
 
 Convenience wrapper: reclassify a full `DataVolume` into depositional
-environments.  Identical to calling `reclassify_data` on the volume directly.
+environments. Identical to calling `reclassify_data` on the volume directly.
 """
 function reclassify_volume(header::Header,
                            vol,
                            rules::AbstractVector{FaciesRule};
-                           wave_field::Union{AiryWaveField,Nothing}=nothing)
-    return reclassify_data(header, vol, rules; wave_field=wave_field)
+                           wave_velocity=nothing)
+    return reclassify_data(header, vol, rules; wave_velocity=wave_velocity)
 end
-# ~/~ end
 
-# ~/~ begin <<docs/src/facies-classification.md#save-classified>>[init]
 """
     save_classified(filename, header, data; group=:classified)
 
-Write a classified `Data` object (volume, slice, or column) to HDF5 in the
-same layout as a standard CarboKitten output file, so it can be read back with
-`read_volume`, `read_slice`, or `read_column`.
-
-# Arguments
-- `filename` — output path; created or overwritten.
-- `header`   — classified header from `reclassify_volume` / `reclassify_data`.
-- `data`     — classified data from the same call.
-- `group`    — HDF5 group name (default `:classified`).
-
-# Example
-
-```julia
-cls_header, cls_vol = reclassify_volume(header, vol, rules; wave_field=wf)
-save_classified("output_classified.h5", cls_header, cls_vol)
-
-# Read back:
-header2, vol2 = read_volume("output_classified.h5", :classified)
-```
+Write a classified `Data` object to HDF5 in the same layout as a standard
+CarboKitten output file, so it can be read back with `read_volume`,
+`read_slice`, or `read_column`.
 """
 function save_classified(filename::AbstractString,
                          header::Header,
@@ -231,11 +252,11 @@ function save_classified(filename::AbstractString,
 
     h5open(filename, "w") do fid
         grp_in = create_group(fid, "input")
-        grp_in["x"]                   = x_m
-        grp_in["y"]                   = y_m
-        grp_in["t"]                   = t_myr
-        grp_in["initial_topography"]  = topo_m
-        grp_in["sea_level"]           = sl_m
+        grp_in["x"]                  = x_m
+        grp_in["y"]                  = y_m
+        grp_in["t"]                  = t_myr
+        grp_in["initial_topography"] = topo_m
+        grp_in["sea_level"]          = sl_m
 
         a = HDF5.attributes(grp_in)
         a["tag"]             = header.tag
@@ -262,7 +283,5 @@ function save_classified(filename::AbstractString,
     @info "Classified output saved -> $filename  (group=$group, n_facies=$n_facies)"
     return filename
 end
-# ~/~ end
 
 end  # module FaciesClassification
-# ~/~ end

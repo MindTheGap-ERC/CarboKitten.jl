@@ -1,12 +1,12 @@
-# ~/~ begin <<docs/src/facies-classification.md#test/FaciesClassificationSpec.jl>>[init]
 module FaciesClassificationSpec
 
 using Test
 using Unitful
+using GeometryBasics
 using CarboKitten
-using CarboKitten.FaciesClassification: FaciesRule, classify_block, reclassify_data
-using CarboKitten.WaveField: AiryWaveField, AiryWaveComponent, energy_flux
-using CarboKitten.Output.Abstract: Header, Axes, Data, DataSlice, water_depth
+using CarboKitten.FaciesClassification: FaciesRule, classify_block,
+    reclassify_data, velocity_magnitude
+using CarboKitten.Output.Abstract: Header, Axes, DataSlice, water_depth
 
 function _make_header(n_facies::Int; nx=4, n_t=3,
                       sea_level_m=10.0, subsidence=0.0u"m/Myr")
@@ -42,15 +42,18 @@ function _make_slice(n_f, nx, n_t;
         water_depth        = water_depth_arr)
 end
 
-const TEST_WAVE = AiryWaveField(components=[
-    AiryWaveComponent(amplitude=1.5u"m", period=8.0u"s", direction=0.0)])
+const TEST_VELOCITY = w -> begin
+    v = 1.0u"m/yr" * exp(-w / (20.0u"m"))
+    s = -v / (20.0u"m")
+    (Vec2(v, 0.0u"m/yr"), Vec2(s, 0.0u"1/yr"))
+end
 
-@testset "FaciesClassification/energy_flux sanity" begin
-    E_shallow = energy_flux(TEST_WAVE, 5.0u"m")
-    E_deep    = energy_flux(TEST_WAVE, 50.0u"m")
-    @test E_shallow > E_deep
-    @test unit(E_shallow) == u"W/m"
-    @test energy_flux(TEST_WAVE, 0.0u"m") == 0.0u"W/m"
+@testset "FaciesClassification/velocity_magnitude sanity" begin
+    V_shallow = velocity_magnitude(TEST_VELOCITY, 5.0u"m")
+    V_deep    = velocity_magnitude(TEST_VELOCITY, 50.0u"m")
+    @test V_shallow > V_deep
+    @test unit(V_shallow) == u"m/Myr"
+    @test velocity_magnitude(nothing, 5.0u"m") == 0.0u"m/Myr"
 end
 
 @testset "FaciesClassification/classify_block — depth gate" begin
@@ -59,12 +62,12 @@ end
         FaciesRule(name="mid",     depth_range=(5.0u"m",  30.0u"m")),
         FaciesRule(name="deep",    depth_range=(30.0u"m", 200.0u"m")),
     ]
-    we = 0.0u"W/m"
-    @test classify_block(rules, [1.0], 2.0u"m",   we) == 1
-    @test classify_block(rules, [1.0], 5.0u"m",   we) == 1
-    @test classify_block(rules, [1.0], 15.0u"m",  we) == 2
-    @test classify_block(rules, [1.0], 100.0u"m", we) == 3
-    @test classify_block(rules, [1.0], 500.0u"m", we) == 4
+    wv = 0.0u"m/Myr"
+    @test classify_block(rules, [1.0], 2.0u"m",   wv) == 1
+    @test classify_block(rules, [1.0], 5.0u"m",   wv) == 1
+    @test classify_block(rules, [1.0], 15.0u"m",  wv) == 2
+    @test classify_block(rules, [1.0], 100.0u"m", wv) == 3
+    @test classify_block(rules, [1.0], 500.0u"m", wv) == 4
 end
 
 @testset "FaciesClassification/classify_block — fraction gate" begin
@@ -75,40 +78,40 @@ end
         FaciesRule(name="mixed",
                    depth_range = (-Inf*u"m", Inf*u"m")),
     ]
-    we = 0.0u"W/m"
-    @test classify_block(rules, [0.8, 0.2], 5.0u"m", we) == 1
-    @test classify_block(rules, [0.3, 0.7], 5.0u"m", we) == 2
-    @test classify_block(rules, [0.0, 0.0], 5.0u"m", we) == 2
+    wv = 0.0u"m/Myr"
+    @test classify_block(rules, [0.8, 0.2], 5.0u"m", wv) == 1
+    @test classify_block(rules, [0.3, 0.7], 5.0u"m", wv) == 2
+    @test classify_block(rules, [0.0, 0.0], 5.0u"m", wv) == 2
 end
 
-@testset "FaciesClassification/classify_block — wave energy gate" begin
-    E_high = energy_flux(TEST_WAVE, 3.0u"m")
-    E_low  = energy_flux(TEST_WAVE, 80.0u"m")
-    threshold = (E_high + E_low) / 2
+@testset "FaciesClassification/classify_block — wave velocity gate" begin
+    V_high = velocity_magnitude(TEST_VELOCITY, 3.0u"m")
+    V_low  = velocity_magnitude(TEST_VELOCITY, 80.0u"m")
+    threshold = (V_high + V_low) / 2
     rules = [
-        FaciesRule(name="high_energy", wave_energy_range=(threshold, Inf*u"W/m")),
-        FaciesRule(name="low_energy",  wave_energy_range=(0.0u"W/m", threshold)),
+        FaciesRule(name="high_velocity", wave_velocity_range=(threshold, Inf*u"m/Myr")),
+        FaciesRule(name="low_velocity",  wave_velocity_range=(0.0u"m/Myr", threshold)),
     ]
-    @test classify_block(rules, [1.0], 5.0u"m", E_high) == 1
-    @test classify_block(rules, [1.0], 5.0u"m", E_low)  == 2
+    @test classify_block(rules, [1.0], 5.0u"m", V_high) == 1
+    @test classify_block(rules, [1.0], 5.0u"m", V_low)  == 2
 end
 
 @testset "FaciesClassification/classify_block — combined gates" begin
-    E_ref = energy_flux(TEST_WAVE, 10.0u"m")
+    V_ref = velocity_magnitude(TEST_VELOCITY, 10.0u"m")
     rules = [
         FaciesRule(name="grainstone",
                    sediment_fractions = Dict(1 => (0.5, 1.0)),
-                   depth_range        = (0.0u"m", 15.0u"m"),
-                   wave_energy_range  = (E_ref, Inf*u"W/m")),
+                   depth_range          = (0.0u"m", 15.0u"m"),
+                   wave_velocity_range = (V_ref, Inf*u"m/Myr")),
         FaciesRule(name="wackestone",
                    depth_range = (0.0u"m", Inf*u"m")),
     ]
-    E_hi = energy_flux(TEST_WAVE, 5.0u"m")
-    E_lo = energy_flux(TEST_WAVE, 80.0u"m")
-    @test classify_block(rules, [0.7, 0.3], 5.0u"m",  E_hi) == 1
-    @test classify_block(rules, [0.7, 0.3], 25.0u"m", E_hi) == 2
-    @test classify_block(rules, [0.7, 0.3], 5.0u"m",  E_lo) == 2
-    @test classify_block(rules, [0.3, 0.7], 5.0u"m",  E_hi) == 2
+    V_hi = velocity_magnitude(TEST_VELOCITY, 5.0u"m")
+    V_lo = velocity_magnitude(TEST_VELOCITY, 80.0u"m")
+    @test classify_block(rules, [0.7, 0.3], 5.0u"m",  V_hi) == 1
+    @test classify_block(rules, [0.7, 0.3], 25.0u"m", V_hi) == 2
+    @test classify_block(rules, [0.7, 0.3], 5.0u"m",  V_lo) == 2
+    @test classify_block(rules, [0.3, 0.7], 5.0u"m",  V_hi) == 2
 end
 
 @testset "FaciesClassification/reclassify_data — shape" begin
@@ -160,33 +163,33 @@ end
     @test all(new_total .≈ orig_total)
 end
 
-@testset "FaciesClassification/reclassify_data — AiryWaveField routing" begin
+@testset "FaciesClassification/reclassify_data — velocity routing" begin
     n_f, nx, n_t = 1, 1, 1
     header = _make_header(n_f; nx=nx, n_t=n_t, sea_level_m=10.0)
     dep  = fill(1.0u"m", n_f, nx, n_t)
     data = _make_slice(n_f, nx, n_t; deposition=dep)
-    E_at_10   = energy_flux(TEST_WAVE, 10.0u"m")
-    threshold = E_at_10 / 2
+    V_at_10   = velocity_magnitude(TEST_VELOCITY, 10.0u"m")
+    threshold = V_at_10 / 2
     rules = [
         FaciesRule(name="wave_active",
-                   wave_energy_range = (threshold, Inf*u"W/m"),
+                   wave_velocity_range = (threshold, Inf*u"m/Myr"),
                    depth_range = (-Inf*u"m", Inf*u"m")),
         FaciesRule(name="wave_quiet",
                    depth_range = (-Inf*u"m", Inf*u"m")),
     ]
-    _, new_data = reclassify_data(header, data, rules; wave_field=TEST_WAVE)
+    _, new_data = reclassify_data(header, data, rules; wave_velocity=TEST_VELOCITY)
     @test all(new_data.deposition[1, :, :] .≈ 1.0u"m")
     @test all(new_data.deposition[2, :, :] .≈ 0.0u"m")
 end
 
-@testset "FaciesClassification/reclassify_data — no wave field fallthrough" begin
+@testset "FaciesClassification/reclassify_data — no wave velocity fallthrough" begin
     n_f, nx, n_t = 1, 1, 1
     header = _make_header(n_f; nx=nx, n_t=n_t)
     dep  = fill(1.0u"m", n_f, nx, n_t)
     data = _make_slice(n_f, nx, n_t; deposition=dep)
     rules = [
         FaciesRule(name="wave_only",
-                   wave_energy_range = (1.0u"W/m", Inf*u"W/m"),
+                   wave_velocity_range = (1.0u"m/Myr", Inf*u"m/Myr"),
                    depth_range = (-Inf*u"m", Inf*u"m")),
         FaciesRule(name="catch_all", depth_range=(-Inf*u"m", Inf*u"m")),
     ]
@@ -239,4 +242,3 @@ end
 end
 
 end  # module FaciesClassificationSpec
-# ~/~ end

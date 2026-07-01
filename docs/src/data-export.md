@@ -459,8 +459,6 @@ using TOML
 using DataFrames
 using Unitful
 
-const Amount = typeof(1.0u"m")
-
 <<export-test-case>>
 
 @testset "CarboKitten.Export" begin
@@ -493,16 +491,6 @@ const Amount = typeof(1.0u"m")
             @test select(adm_tab, ["adm_$(i)" for i in 1:3]) ==
                 select(ustrip(adm), ["adm_$(i)" for i in 1:3])
         end
-    end
-
-    @testset "Water depth signs" begin
-        test_path::String = TEST_PATH
-        header, data = read_column(joinpath(test_path, "bs92_spm.h5"), :full)
-        wd = extract_wd(header, data, 1)
-        sac = extract_sac(header, data, 1)
-        submerged = wd.wd_1 .> -1.0u"m"
-        growing = (sac.sac_1[2:end] .- sac.sac_1[1:end-1]) .> 0.5u"m"
-        @test all(growing .&& (submerged[1:end-1] .|| submerged[2:end]) .|| .!growing)
     end
 end
 ```

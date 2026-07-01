@@ -106,6 +106,7 @@ makedocs(
             "Facies" => "components/facies.md",
             "Cellular Automata" => "components/cellular-automata.md",
             "Water Depth" => "components/waterdepth.md",
+            "Subsidence" => "components/subsidence.md",
             "Production" => "components/production.md",
             "Sediment Buffers" => "components/sediment_buffer.md",
             "Active Layer Transport" => "active-layer-transport.md",

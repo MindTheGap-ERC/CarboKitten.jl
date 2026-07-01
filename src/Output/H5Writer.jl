@@ -7,7 +7,12 @@ using Unitful
 import ...CarboKitten: run_model, Model, AbstractOutput, AbstractInput, OutputSpec, AbstractState
 
 using ...CarboKitten: time_axis, box_axes
+<<<<<<< HEAD
 using ...Components.WaterDepth: initial_topography, water_depth as wd_from_input
+=======
+using ...Components.WaterDepth: initial_topography, subsidence_rate_map
+using ...Components.Common: Rate
+>>>>>>> origin/245-Space-and-time-dependent-subsidence-rate
 
 using ...Utility: in_units_of
 using ..Abstract
@@ -28,6 +33,20 @@ function make_header(input::AbstractInput)
     h0 = initial_topography(input)
     sl = input.sea_level.(t_axis)
 
+    # Same resolution logic as MemoryWriter — scalar fast path, otherwise
+    # store the full map plus a representative scalar.
+    rate_input = input.subsidence_rate
+    if rate_input isa Quantity
+        sr_scalar = rate_input
+        sr_map = nothing
+    else
+        sr_map = subsidence_rate_map(input)
+        sr_scalar = sum(sr_map) / length(sr_map)
+    end
+
+    mods = hasfield(typeof(input), :subsidence_modifiers) ?
+        Any[m for m in input.subsidence_modifiers] : Any[]
+
     header = Header(
         tag=input.tag,
         axes=axes,
@@ -37,7 +56,9 @@ function make_header(input::AbstractInput)
         n_facies=length(input.facies),
         initial_topography=h0,
         sea_level=sl,
-        subsidence_rate=input.subsidence_rate,
+        subsidence_rate=sr_scalar,
+        subsidence_rate_map=sr_map,
+        subsidence_modifiers=mods,
         data_sets=Dict(),
         attributes=Dict())
 end
@@ -82,6 +103,7 @@ slice_str(i::Int) = "$(i)"
 
 is_column(::Int, ::Int) = true
 is_column(_, _) = false
+
 
 function add_data_set(out::H5Output, name::Symbol, spec::OutputSpec)
     header = out.header

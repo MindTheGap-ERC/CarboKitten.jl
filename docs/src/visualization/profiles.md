@@ -149,7 +149,7 @@ function age_depth_model(header::Header, data::DataSlice)
     t = header.axes.t |> in_units_of(u"Myr")
 
     n_facies, n_x, n_t = size(data.production)
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    total_subsidence = cumulative_subsidence(header, header.axes.t[end])[data.slice...]
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
     h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
@@ -252,7 +252,7 @@ using CarboKitten.Visualization
 using CarboKitten.Utility: in_units_of
 using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
 using CarboKitten.Algorithms: skeleton
-using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
+using CarboKitten.Output.Abstract: stratigraphic_column, water_depth, cumulative_subsidence
 
 using Makie
 using GeometryBasics
@@ -284,7 +284,7 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
     t = header.axes.t |> in_units_of(u"Myr")
 
     n_facies, n_x, n_t = size(data.production)
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    total_subsidence = cumulative_subsidence(header, header.axes.t[end])[data.slice...]
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
     h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
@@ -295,7 +295,7 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
     @views verts[:, :, 2] .= h |> in_units_of(u"m")
     v, f = explode_quad_vertices(verts)
 
-    total_subsidence = header.subsidence_rate * (header.axes.t[end] - header.axes.t[1])
+    total_subsidence = cumulative_subsidence(header, header.axes.t[end])[data.slice...]
     bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |> in_units_of(u"m")
     lower_limit = minimum(bedrock) - 20
     band!(ax, x, lower_limit, bedrock; color=:gray, label="initial topography")
@@ -337,7 +337,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
     t = header.axes.t |> in_units_of(u"Myr")
 
     n_facies, n_x, n_t = size(data.production)
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    total_subsidence = cumulative_subsidence(header, header.axes.t[end])[data.slice...]
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
     h = repeat(initial_topography .- total_subsidence, 1, n_t+1)

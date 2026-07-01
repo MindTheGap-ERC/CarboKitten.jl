@@ -4,7 +4,7 @@ module WheelerDiagram
 import CarboKitten.Visualization: wheeler_diagram, wheeler_diagram!
 using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
 using CarboKitten.Utility: in_units_of
-using CarboKitten.Output.Abstract: stratigraphic_column
+using CarboKitten.Output.Abstract: stratigraphic_column, cumulative_subsidence
 using Makie
 using Unitful
 using CarboKitten.BoundaryTrait
@@ -13,21 +13,32 @@ using CarboKitten.Stencil: convolution
 
 const na = [CartesianIndex()]
 
-elevation(h::Header, d::DataSlice) =
-    let bl = h.initial_topography[d.slice..., na],
-        sr = (h.axes.t[end] - h.axes.t[1]) * h.subsidence_rate
+# Elevation surface at every write step. Uses the per-cell *total* subsidence
+# at the run's end so the result is referenced to a present-day datum the same
+# way the original (scalar) code did, but now correctly when subsidence is
+# spatially or temporally non-uniform.
 
-        bl .+ d.sediment_thickness .- sr
-    end
+function elevation(h::Header, d::DataSlice)
+    bl = h.initial_topography[d.slice..., na]
+    # Per-cell total subsidence at the final time, then sliced to match `d`.
+    sr_full = cumulative_subsidence(h, h.axes.t[end])
+    sr = sr_full[d.slice..., na]
+    return bl .+ d.sediment_thickness .- sr
+end
 
-water_depth(header::Header, data::DataSlice) =
-    let h = elevation(header, data),
-        wi = data.write_interval,
-        s = header.subsidence_rate .* (header.axes.t[1:wi:end] .- header.axes.t[end]),
-        l = header.sea_level[1:wi:end]
+# Per-cell water depth at every write step. `cumulative_subsidence(h, d)` gives
+# a (n_pos, n_writes) array already sliced to `d`; we subtract its final
+# column to convert "subsidence from t0" into "subsidence relative to t_end",
+# preserving the original convention.
 
-        h .- (s.+l)[na, :]
-    end
+function water_depth(header::Header, data::DataSlice)
+    h = elevation(header, data)                            # (n_pos, n_writes)
+    wi = data.write_interval
+    Σ = cumulative_subsidence(header, data)                # (n_pos, n_writes)
+    s = Σ .- Σ[:, end:end]                                 # subsidence offset from end-time
+    l = header.sea_level[1:wi:end]
+    return h .- (s .+ reshape(l, 1, :))
+end
 
 const Rate = typeof(1.0u"m/Myr")
 

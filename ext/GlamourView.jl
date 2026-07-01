@@ -4,6 +4,7 @@ module GlamourView
 import CarboKitten.Visualization: glamour_view!
 using CarboKitten.Utility: in_units_of
 using CarboKitten.Export: Header, DataVolume
+using CarboKitten.Output.Abstract: cumulative_subsidence
 using Makie
 using HDF5
 using Unitful
@@ -26,7 +27,12 @@ function glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; colorm
         collect(1:n_steps)
     end
 
-    bedrock = header.initial_topography .- (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    # Per-cell total subsidence at the end of the run. For a uniform-subsidence
+    # input this reduces to `rate * (t_end - t_start)`; with a rate map or
+    # modifiers it integrates them faithfully.
+    total_subsidence = cumulative_subsidence(header, header.axes.t[end])
+
+    bedrock = header.initial_topography .- total_subsidence
     result = Array{Float64, 3}(undef, grid_size..., length(selected_steps))
     for (i, j) in enumerate(selected_steps)
         result[:, :, i] = (data.sediment_thickness[:,:,j] .+ bedrock) |> in_units_of(u"m")

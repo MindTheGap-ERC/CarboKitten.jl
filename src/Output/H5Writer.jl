@@ -7,12 +7,9 @@ using Unitful
 import ...CarboKitten: run_model, Model, AbstractOutput, AbstractInput, OutputSpec, AbstractState
 
 using ...CarboKitten: time_axis, box_axes
-<<<<<<< HEAD
 using ...Components.WaterDepth: initial_topography, water_depth as wd_from_input
-=======
 using ...Components.WaterDepth: initial_topography, subsidence_rate_map
 using ...Components.Common: Rate
->>>>>>> origin/245-Space-and-time-dependent-subsidence-rate
 
 using ...Utility: in_units_of
 using ..Abstract

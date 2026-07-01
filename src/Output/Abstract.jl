@@ -9,12 +9,8 @@ import ...Algorithms: stratigraphic_column!
 import CarboKitten.Components.Subsidence: cumulative_subsidence, deserialize_modifier, AbstractSubsidenceModifier
 
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
-<<<<<<< HEAD
-export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer, surface_heights, write_water_depth
-=======
 export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer, surface_heights
 export cumulative_subsidence
->>>>>>> origin/245-Space-and-time-dependent-subsidence-rate
 
 using Unitful
 using ...CarboKitten: OutputSpec, AbstractInput, AbstractState
@@ -201,25 +197,10 @@ end
 """
     water_depth(header, data)
 
-<<<<<<< HEAD
-Return the water depth array for the given data set, shape `(spatial..., n_t)`.
-
-When `data.water_depth` is not `nothing` (i.e. the run was configured with
-`save_water_depth=true`) the stored field is returned directly.  This is
-required for correctness when subsidence is spatially variable.
-
-Otherwise the water depth is reconstructed from the header using the
-closed-form expression:
-
-    sl(t) - h0 - Δh(t) + subsidence_rate * t
-
-This is exact for spatially uniform subsidence.
-=======
 Compute the water depth function for the given data set.
 
 The subsidence contribution is computed via `cumulative_subsidence(header, data)`,
 which honours per-cell rate maps and modifiers when present.
->>>>>>> origin/245-Space-and-time-dependent-subsidence-rate
 """
 function water_depth(header::Header, data::Data{F, D}) where {F, D}
     data.water_depth !== nothing && return data.water_depth

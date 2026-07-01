@@ -30,11 +30,7 @@ Modules = [CarboKitten.Export]
 ## Components
 
 ```@autodocs
-<<<<<<< HEAD
-Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer, CarboKitten.Components.Production]
-=======
 Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer, CarboKitten.Components.WaterDepth, CarboKitten.Components.Subsidence]
->>>>>>> origin/245-Space-and-time-dependent-subsidence-rate
 ```
 
 ## Output

@@ -110,22 +110,22 @@ function initial_state(input::Input)
         CellularAutomaton.step!(input)(ca_state)
     end
 
-    sediment_height = zeros(Height, input.box.grid_size...)
     state = State(
-        step=0, sediment_height=sediment_height,
+        step=0, bathymetry=initial_topography(input),
         ca=ca_state.ca, ca_priority=ca_state.ca_priority)
 
     return state
 end
 
 function initial_frame(input::Input)
-    return Frame(production=zeros(Sediment,n_facies(input), input.box.grid_size...), 
+    return Frame(production=zeros(Sediment,n_facies(input), input.box.grid_size...),
                   deposition=zeros(Sediment,n_facies(input), input.box.grid_size...))
 end
 
 function step!(input::Input)
     τ = production(input)
     step_ca = CellularAutomaton.step!(input)
+    subside! = subsider(input)
 
     function (state::State)
         if mod(state.step, input.ca_interval) == 0
@@ -134,7 +134,8 @@ function step!(input::Input)
 
         prod = τ(state)
         Δη = sum(prod; dims=1)[1, :, :]
-        state.sediment_height .+= Δη
+        state.bathymetry .+= Δη
+        subside!(state)
         state.step += 1
 
         return Frame(
@@ -203,7 +204,7 @@ using CarboKitten.Models: CAP
     const OUT = run_model(Model{CAP}, INPUT, MemoryOutput(INPUT))
 
     @testset "Models/CAP" begin
-        @test all(size(OUT.data_volumes[:full].sediment_thickness) .== (1,1,11))
+        @test all(size(OUT.data_volumes[:full].bathymetry) .== (1,1,11))
     end
 
 end

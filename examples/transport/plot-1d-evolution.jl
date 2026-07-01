@@ -10,9 +10,7 @@ function plot_1d_evolution!(ax::Axis, input, every=100)
 
 	plot_state() = begin
 		t = state.step * input.time.Δt
-		η = input.initial_topography.(x, y') .+ 
-            state.sediment_height .-
-            input.subsidence_rate * t
+		η = state.bathymetry
 		lines!(ax, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"),
                label=@sprintf("%.3f Myr", ustrip(t)))
 	end

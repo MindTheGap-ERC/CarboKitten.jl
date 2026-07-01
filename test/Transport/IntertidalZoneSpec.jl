@@ -3,10 +3,10 @@
     using CarboKitten
     using CarboKitten.Testing: transport_test_input
 
-    function end_sediment_height(input)
+    function end_sediment_thickness(input)
         state = ALCAP.initial_state(input)
         run_model((_, _) -> (), Model{ALCAP}, input, state)
-        return state.sediment_height
+        return state.sediment_thickness
     end
 
     function three_peaks(x, y)
@@ -30,7 +30,7 @@
         intertidal_zone = 0u"m"
     )
 
-    output1 = end_sediment_height(input1)[:, 1]
+    output1 = end_sediment_thickness(input1)[:, 1]
 
     input2 = transport_test_input(
         initial_topography = staircase(5.0u"km", -10.0u"m", 10.0u"m"),
@@ -40,7 +40,7 @@
         intertidal_zone = 10u"m"
     )
 
-    output2 = end_sediment_height(input2)[:, 1]
+    output2 = end_sediment_thickness(input2)[:, 1]
 
     @test output1[10:30] ≈ output1[50:70] atol=0.01u"m"
     @test !isapprox(output1[50:70], output1[90:110], atol=1.0u"m")

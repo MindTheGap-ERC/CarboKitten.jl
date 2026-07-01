@@ -3,7 +3,7 @@ module MemoryWriter
 
 using ..Abstract
 import ..Abstract:
-    new_output, add_data_set, set_attribute, write_sediment_thickness,
+    new_output, add_data_set, set_attribute, write_bathymetry,
     write_production, write_disintegration, write_deposition, write_active_layer
 using ...Components.Common
 using ...Components.WaterDepth: initial_topography
@@ -93,12 +93,12 @@ function set_attribute(out::MemoryOutput, name::String, value::Any)
     out.header.attributes[name] = value
 end
 
-write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,0}) =
-    out.data_columns[label].sediment_thickness[idx] = data[]
-write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
-    out.data_slices[label].sediment_thickness[:, idx] .= data
-write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
-    out.data_volumes[label].sediment_thickness[:, :, idx] .= data
+write_bathymetry(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,0}) =
+    out.data_columns[label].bathymetry[idx] = data[]
+write_bathymetry(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
+    out.data_slices[label].bathymetry[:, idx] .= data
+write_bathymetry(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
+    out.data_volumes[label].bathymetry[:, :, idx] .= data
 
 write_active_layer(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
     out.data_columns[label].active_layer[:, idx] .= data

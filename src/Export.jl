@@ -110,7 +110,7 @@ function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {d
 		gid["disintegration"][:, reduce.(slice)..., :] * u"m",
 		gid["production"][:, reduce.(slice)..., :] * u"m",
 		gid["deposition"][:, reduce.(slice)..., :] * u"m",
-		gid["sediment_thickness"][reduce.(slice)..., :] * u"m",
+		gid["bathymetry"][reduce.(slice)..., :] * u"m",
 		"active_layer" in keys(gid) ?
 		    gid["active_layer"][:, reduce.(slice)..., :] * u"m" :
 			nothing)
@@ -288,7 +288,7 @@ copied from `data.sediment_thickness`. Returns a `DataFrame` with `time` and
 function extract_sac(header::Header, data::DataColumn, label)
     DataFrame(
         "timestep" => 0:data.write_interval:header.time_steps,
-        "sac_$(label)" => data.sediment_thickness)
+        "sac_$(label)" => sediment_thickness(data))
 end
 
 """
@@ -312,16 +312,9 @@ Extract the water depth from the data. Returns a `DataFrame` with `time` and
 `wd<n>` columns where `<n>` is in the range `1:length(grid_locations)`.
 """
 function extract_wd(header::Header, data::DataColumn, label)
-    na = [CartesianIndex()]
-    t = header.axes.t[1:data.write_interval:end]
-    sea_level = header.sea_level[1:data.write_interval:end]
-    wd = header.subsidence_rate .* t .-
-        header.initial_topography[data.slice...] .-
-        data.sediment_thickness .+
-        sea_level
     return DataFrame(
         "timestep" => 0:data.write_interval:header.time_steps,
-        "wd_$(label)" => wd)
+        "wd_$(label)" => water_depth(header, data))
 end
 # ~/~ end
 

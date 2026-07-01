@@ -17,12 +17,15 @@ function initial_state(input::AbstractInput)
         CellularAutomaton.step!(input)(ca_state)
     end
 
-    sediment_height = zeros(Height, input.box.grid_size...)
+    bathymetry = initial_topography(input)
     sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
+    sediment_thickness = zeros(Height, input.box.grid_size...)
     active_layer = zeros(Amount, n_facies(input), input.box.grid_size...)
 
     state = State(
-        step=0, sediment_height=sediment_height,
+        step=0,
+        bathymetry=bathymetry,
+        sediment_thickness=sediment_thickness,
         sediment_buffer=sediment_buffer,
         active_layer=active_layer,
         ca=ca_state.ca, ca_priority=ca_state.ca_priority)
@@ -40,6 +43,7 @@ end
 
 function step!(input::Input)
     step_ca! = CellularAutomaton.step!(input)
+    subside! = subsider(input)
     disintegrate! = ActiveLayer.disintegrator(input)
     produce = production(input)
     kill_unproductivity! = CAFeedback.ca_feedback(input)
@@ -49,6 +53,8 @@ function step!(input::Input)
     pf = lithification_factor(input)
     dtf = input.disintegration_transfer
     debug = input.diagnostics
+    push! = push_sediment(input)
+    pop! = pop_sediment(input)
 
     function (state::State)
         if debug
@@ -79,9 +85,9 @@ function step!(input::Input)
         end
 
         deposit = pf .* state.active_layer
-        push_sediment!(state.sediment_buffer, deposit ./ input.depositional_resolution .|> NoUnits)
+        push!(state, deposit)
         state.active_layer .-= deposit
-        state.sediment_height .+= sum(deposit; dims=1)[1, :, :]
+        subside!(state)
         state.step += 1
 
         return Frame(

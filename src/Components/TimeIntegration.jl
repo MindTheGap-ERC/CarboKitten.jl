@@ -16,6 +16,8 @@ end
 
 State(_::AbstractInput) = State(0)
 
+@constructor _initial_state(input)::State[step] = (step = 0,)
+
 """
     time(input, state)
 

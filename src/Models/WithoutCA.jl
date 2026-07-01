@@ -12,17 +12,22 @@ using ModuleMixins: @for_each
 export Input, Facies
 
 function initial_state(input::Input)
-    sediment_height = zeros(Height, input.box.grid_size...)
+    sediment_thickness = zeros(Height, input.box.grid_size...)
     sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
     active_layer = zeros(Amount, n_facies(input), input.box.grid_size...)
-    state = State(step=0, sediment_height=sediment_height, sediment_buffer=sediment_buffer, active_layer=active_layer)
+    state = State(
+        step=0,
+        bathymetry=initial_topography(input),
+        sediment_thickness=sediment_thickness,
+        sediment_buffer=sediment_buffer,
+        active_layer=active_layer)
     InitialSediment.push_initial_sediment!(input, state)
     return state
 end
 
 function initial_frame(input::Input)
     dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
-    return Frame(production=zeros(Sediment,size(dep)), 
+    return Frame(production=zeros(Sediment,size(dep)),
                   disintegration=zeros(Sediment,size(dep)),
                   deposition=dep)
 end
@@ -36,6 +41,8 @@ function step!(input::Input)
     na = [CartesianIndex()]
     pf = lithification_factor(input)
     dtf = input.disintegration_transfer
+    push! = push_sediment(input)
+    subside! = subsider(input)
 
     function (state::State)
         wd = local_water_depth(state)
@@ -47,9 +54,9 @@ function step!(input::Input)
         transport!(state)
 
         deposit = pf .* state.active_layer
-        push_sediment!(state.sediment_buffer, deposit ./ input.depositional_resolution .|> NoUnits)
+        push!(state, deposit)
         state.active_layer .-= deposit
-        state.sediment_height .+= sum(deposit; dims=1)[1, :, :]
+        subside!(state)
         state.step += 1
 
         return Frame(

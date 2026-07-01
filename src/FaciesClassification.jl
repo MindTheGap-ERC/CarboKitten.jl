@@ -99,27 +99,24 @@ function reclassify_data(header::Header,
                          data::Data{F,D},
                          rules::AbstractVector{FaciesRule};
                          wave_field::Union{AiryWaveField,Nothing}=nothing) where {F,D}
-    n_prod  = size(data.deposition, 1)    # original production-facies count
-    n_class = length(rules) + 1           # classified facies + fallback
+    n_prod  = size(data.deposition, 1)
+    n_class = length(rules) + 1
     dep_sz  = size(data.deposition)
-    sp_size = dep_sz[2:end-1]             # (): column, (nx,): slice, (nx,ny): volume
+    sp_size = dep_sz[2:end-1]
     n_t     = dep_sz[end]
 
-    # --- allocate output arrays (same element type / units as input) ---
     zero_like(a) = zeros(eltype(a), n_class, sp_size..., n_t)
     dep_out  = zero_like(data.deposition)
     prod_out = zero_like(data.production)
     dis_out  = zero_like(data.disintegration)
 
-    # --- water depth: stored field preferred, fallback to header reconstruction ---
-    wd_array = water_depth(header, data)   # shape (spatial..., n_t)
+    wd_array = water_depth(header, data)
 
     _wd(sp_idx::CartesianIndex{0}, t) = wd_array[t]
     _wd(sp_idx, t)                    = wd_array[sp_idx, t]
 
     zero_energy = 0.0u"W/m"
 
-    # --- iterate over every spatial cell and time step ---
     for t_idx in 1:n_t
         for sp_idx in CartesianIndices(sp_size)
             wd_val = _wd(sp_idx, t_idx)
@@ -144,7 +141,6 @@ function reclassify_data(header::Header,
         end
     end
 
-    # --- build new header ---
     new_header = Header(
         tag                = header.tag,
         axes               = header.axes,
@@ -234,7 +230,6 @@ function save_classified(filename::AbstractString,
     slice_str(i::Int)  = string(i)
 
     h5open(filename, "w") do fid
-        # /input — mirrors H5Writer layout so read_header works unchanged
         grp_in = create_group(fid, "input")
         grp_in["x"]                   = x_m
         grp_in["y"]                   = y_m
@@ -253,7 +248,6 @@ function save_classified(filename::AbstractString,
             a["classified_facies"] = join(header.attributes["classified_facies"], ",")
         end
 
-        # data group
         grp = create_group(fid, string(group))
         ag  = HDF5.attributes(grp)
         ag["write_interval"] = data.write_interval
@@ -265,7 +259,7 @@ function save_classified(filename::AbstractString,
         grp["sediment_thickness"] = thick_f
     end
 
-    @info "Classified output saved → $filename  (group=$group, n_facies=$n_facies)"
+    @info "Classified output saved -> $filename  (group=$group, n_facies=$n_facies)"
     return filename
 end
 # ~/~ end

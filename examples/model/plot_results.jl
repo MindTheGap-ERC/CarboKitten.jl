@@ -1,4 +1,5 @@
 # examples/model/plot_results.jl
+# Final Eclepens calibration version: 7 production factories + 9 classified facies
 #
 # Reads the saved production and classified HDF5 files and plots:
 #   - Fence diagrams production + classified
@@ -38,7 +39,7 @@ mkpath(FIG_DIR)
 # Depths for depth-slice maps
 # ---------------------------------------------------------------------------
 
-const TARGET_DEPTHS_M = [50.0, 100.0, 150.0, 200.0]
+const TARGET_DEPTHS_M = [50.0, 100.0, 150.0, 200.0, 250.0, 300.0]
 
 # ---------------------------------------------------------------------------
 # Labels
@@ -49,18 +50,20 @@ const PROD_LABELS = [
     "corals",
     "mud",
     "peloids",
-    "grains",
+    "bioclasts_intraclasts",
     "oncoids",
+    "evap_mud",
 ]
 
 const CLS_LABELS = [
-    "FA5 tidal flat / local exposure",
-    "FA3 ooid shoal complex",
-    "FA3/FA2 coral-microbialite buildup",
-    "FA4 back-shoal peloid-oncoid",
-    "FA4 interior platform mudstone",
-    "FA1 lower offshore mudstone",
-    "FA2 upper offshore / oncoid-bioclastic wackestone",
+    "Tidal flat / sabkha",
+    "Barrier ooid/peloid shoal",
+    "Coral-microbialite / patch reef",
+    "Open lagoon / back-shoal",
+    "Restricted lagoon",
+    "Interior protected mudstone",
+    "Mid-ramp / outer lagoon",
+    "Offshore mudstone",
     "fallback",
 ]
 
@@ -68,29 +71,31 @@ const CLS_LABELS = [
 # Palette
 # ---------------------------------------------------------------------------
 
-function palette(n)
-    base = [
-        RGBAf(0.000, 0.447, 0.698, 1.0),
-        RGBAf(0.902, 0.624, 0.000, 1.0),
-        RGBAf(0.000, 0.620, 0.451, 1.0),
-        RGBAf(0.835, 0.369, 0.000, 1.0),
-        RGBAf(0.800, 0.475, 0.655, 1.0),
-        RGBAf(0.941, 0.894, 0.259, 1.0),
-        RGBAf(0.337, 0.706, 0.914, 1.0),
-        RGBAf(0.550, 0.337, 0.294, 1.0),
-        RGBAf(0.600, 0.600, 0.600, 1.0),
-        RGBAf(0.650, 0.800, 0.350, 1.0),
-        RGBAf(0.950, 0.500, 0.500, 1.0),
-        RGBAf(0.500, 0.300, 0.700, 1.0),
-        RGBAf(0.300, 0.750, 0.750, 1.0),
-        RGBAf(0.900, 0.700, 0.200, 1.0),
-        RGBAf(0.400, 0.400, 0.800, 1.0),
-        RGBAf(0.200, 0.500, 0.300, 1.0),
-        RGBAf(0.100, 0.100, 0.100, 1.0),
-    ]
+const PROD_COLORS_FINAL = [
+    RGBAf(1.000, 0.850, 0.180, 1.0),  # ooids
+    RGBAf(0.980, 0.350, 0.370, 1.0),  # corals
+    RGBAf(0.420, 0.310, 0.165, 1.0),  # mud
+    RGBAf(0.620, 0.820, 0.340, 1.0),  # peloids
+    RGBAf(0.960, 0.560, 0.250, 1.0),  # bioclasts / intraclasts
+    RGBAf(0.190, 0.690, 0.730, 1.0),  # oncoids
+    RGBAf(0.830, 0.350, 0.700, 1.0),  # evap_mud
+]
 
-    @assert n <= length(base) "Need at least $n colors"
-    return base[1:n]
+const CLS_COLORS_FINAL = [
+    RGBAf(0.780, 0.540, 0.000, 1.0),  # tidal flat / sabkha
+    RGBAf(1.000, 0.890, 0.300, 1.0),  # barrier shoal
+    RGBAf(1.000, 0.350, 0.370, 1.0),  # coral / reef
+    RGBAf(0.490, 0.880, 0.000, 1.0),  # open lagoon
+    RGBAf(0.120, 0.480, 0.120, 1.0),  # restricted lagoon
+    RGBAf(0.560, 0.560, 0.125, 1.0),  # interior mudstone
+    RGBAf(0.190, 0.780, 0.780, 1.0),  # mid-ramp
+    RGBAf(0.150, 0.310, 0.850, 1.0),  # offshore
+    RGBAf(0.740, 0.740, 0.740, 1.0),  # fallback
+]
+
+function checked_colors(colors, n, label)
+    @assert n <= length(colors) "Need at least $n colors for $label"
+    return colors[1:n]
 end
 
 # ---------------------------------------------------------------------------
@@ -104,7 +109,9 @@ _,      prof = read_slice(OUTPUT_FILE,  :profile)
 
 nx, ny = header.grid_size
 
-prod_colors = palette(length(PROD_LABELS))
+prod_colors = checked_colors(PROD_COLORS_FINAL, length(PROD_LABELS), "production")
+
+@assert header.n_facies == length(PROD_LABELS) "Production file has $(header.n_facies) factories but $(length(PROD_LABELS)) final labels were provided"
 
 # ---------------------------------------------------------------------------
 # Read classified output
@@ -116,9 +123,9 @@ cls_header, cls_vol = read_volume(OUTPUT_CLS_FILE, :classified)
 
 n_cls = cls_header.n_facies
 
-@assert n_cls <= length(CLS_LABELS) "Classified file has $n_cls facies but only $(length(CLS_LABELS)) labels were provided"
+@assert n_cls == length(CLS_LABELS) "Classified file has $n_cls facies but $(length(CLS_LABELS)) final labels were provided"
 
-cls_colors = palette(n_cls)
+cls_colors = checked_colors(CLS_COLORS_FINAL, n_cls, "classified")
 cls_labels = CLS_LABELS[1:n_cls]
 
 # Extract classified profile at same y-index used by the model profile

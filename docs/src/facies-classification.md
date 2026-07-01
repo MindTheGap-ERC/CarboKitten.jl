@@ -241,7 +241,7 @@ end
 
 ## save_classified
 
-``` {.julia #save-classified}
+```` {.julia #save-classified}
 """
     save_classified(filename, header, data; group=:classified)
 
@@ -317,127 +317,10 @@ function save_classified(filename::AbstractString,
         grp["sediment_thickness"] = thick_f
     end
 
-    @info "Classified output saved → $filename  (group=$group, n_facies=$n_facies)"
+    @info "Classified output saved -> $filename  (group=$group, n_facies=$n_facies)"
     return filename
 end
-```
-"""
-function save_classified(filename::AbstractString,
-                         header::Header,
-                         data::Data;
-                         group::Symbol = :classified)
-
-    dep_f    = ustrip.(u"m", data.deposition)
-    prod_f   = ustrip.(u"m", data.production)
-    disint_f = ustrip.(u"m", data.disintegration)
-    thick_f  = ustrip.(u"m", data.sediment_thickness)
-
-    n_facies = header.n_facies
-    x_m      = ustrip.(u"m", header.axes.x)
-    y_m      = ustrip.(u"m", header.axes.y)
-    t_myr    = ustrip.(u"Myr", header.axes.t)
-    sl_m     = ustrip.(u"m", header.sea_level)
-    topo_m   = ustrip.(u"m", header.initial_topography)
-
-    slice_str(::Colon) = ":"
-    slice_str(i::Int)  = string(i)
-
-    h5open(filename, "w") do fid
-        # /input — mirrors H5Writer layout so read_header works unchanged
-        grp_in = create_group(fid, "input")
-        grp_in["x"]                   = x_m
-        grp_in["y"]                   = y_m
-        grp_in["t"]                   = t_myr
-        grp_in["initial_topography"]  = topo_m
-        grp_in["sea_level"]           = sl_m
-
-        a = HDF5.attributes(grp_in)
-        a["tag"]             = header.tag
-        a["delta_t"]         = ustrip(u"Myr", header.Δt)
-        a["time_steps"]      = header.time_steps
-        a["n_facies"]        = n_facies
-        a["subsidence_rate"] = ustrip(u"m/Myr", header.subsidence_rate)
-
-        if haskey(header.attributes, "classified_facies")
-            a["classified_facies"] = join(header.attributes["classified_facies"], ",")
-        end
-
-        # data group
-        grp = create_group(fid, string(group))
-        ag  = HDF5.attributes(grp)
-        ag["write_interval"] = data.write_interval
-        ag["slice"]          = join(slice_str.(data.slice), ",")
-
-        grp["deposition"]         = dep_f
-        grp["production"]         = prod_f
-        grp["disintegration"]     = disint_f
-        grp["sediment_thickness"] = thick_f
-    end
-
-    @info "Classified output saved → $filename  (group=$group, n_facies=$n_facies)"
-    return filename
-end
-```
-"""
-function save_classified(filename, header, data; group=:classified)
-    error("save_classified is not implemented yet")
-end
-```
-"""
-function save_classified(filename::AbstractString,
-                         header::Header,
-                         data::Data;
-                         group::Symbol = :classified)
-
-    dep_f    = ustrip.(u"m", data.deposition)
-    prod_f   = ustrip.(u"m", data.production)
-    disint_f = ustrip.(u"m", data.disintegration)
-    thick_f  = ustrip.(u"m", data.sediment_thickness)
-
-    n_facies = header.n_facies
-    x_m      = ustrip.(u"m", header.axes.x)
-    y_m      = ustrip.(u"m", header.axes.y)
-    t_myr    = ustrip.(u"Myr", header.axes.t)
-    sl_m     = ustrip.(u"m", header.sea_level)
-    topo_m   = ustrip.(u"m", header.initial_topography)
-
-    slice_str(::Colon) = ":"
-    slice_str(i::Int)  = string(i)
-
-    h5open(filename, "w") do fid
-        grp_in = create_group(fid, "input")
-        grp_in["x"]                   = x_m
-        grp_in["y"]                   = y_m
-        grp_in["t"]                   = t_myr
-        grp_in["initial_topography"]  = topo_m
-        grp_in["sea_level"]           = sl_m
-
-        a = HDF5.attributes(grp_in)
-        a["tag"]             = header.tag
-        a["delta_t"]         = ustrip(u"Myr", header.Δt)
-        a["time_steps"]      = header.time_steps
-        a["n_facies"]        = n_facies
-        a["subsidence_rate"] = ustrip(u"m/Myr", header.subsidence_rate)
-
-        if haskey(header.attributes, "classified_facies")
-            a["classified_facies"] = join(header.attributes["classified_facies"], ",")
-        end
-
-        grp = create_group(fid, string(group))
-        ag  = HDF5.attributes(grp)
-        ag["write_interval"] = data.write_interval
-        ag["slice"]          = join(slice_str.(data.slice), ",")
-
-        grp["deposition"]         = dep_f
-        grp["production"]         = prod_f
-        grp["disintegration"]     = disint_f
-        grp["sediment_thickness"] = thick_f
-    end
-
-    @info "Classified output saved → $filename  (group=$group, n_facies=$n_facies)"
-    return filename
-end
-```
+````
 
 ## User-facing example
 

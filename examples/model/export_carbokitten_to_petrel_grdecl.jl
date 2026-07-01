@@ -1,5 +1,5 @@
 # export_carbokitten_to_petrel_grdecl.jl
-# Fixed version: dimension normalization + Julia 1.12 printf + fraction export fix
+# Fixed version: 7 production factories + 9 classified facies for final Eclépens calibration
 #
 # Purpose:
 #   Read CarboKitten HDF5 outputs and export one Petrel/ECLIPSE-style GRDECL
@@ -34,16 +34,23 @@ using LinearAlgebra
 const PROD_H5     = "data/output/eclepens_withoutca.h5"
 const CLASS_H5    = "data/output/eclepens_withoutca_classified.h5"
 const TSURF_FILE  = "data/input/coordinates_malm.ts"
-const OUT_GRDECL  = "data/output/eclepens_carbokitten_petrel.GRDECL"
+const OUT_GRDECL  = "data/output/eclepens_carbokitten_petrel_grid_keywords_7prod_9facies_poro_claytight_above_lmalm_shiftup265.GRDECL"
 
 # Use :bbox for a non-rotated Petrel grid covering the TSurf extent.
 # Use :pca if your Petrel grid is rotated along the main TSurf trend.
 const GRID_MODE = :bbox       # :bbox or :pca
 
+# The uploaded TSurf / bathymetry surface is the Lower Malm reference surface.
+# The CarboKitten package is deposited ABOVE this surface, not below it.
 # The uploaded TSurf says ZPOSITIVE Elevation and contains negative Z values.
 # Use :elevation to preserve those Petrel elevations.
 # If Petrel imports the grid upside down, switch to :depth.
-const Z_MODE = :elevation     # :elevation or :depth
+const Z_MODE = :depth         # positive depth for GRDECL/Petrel
+
+# Shift the whole exported GRDECL grid upward by this amount.
+# In depth mode, upward means subtracting from depth.
+# In elevation mode, upward means adding to elevation.
+const VERTICAL_SHIFT_UP_M = 265.0
 
 # HDF5 output frame 1 is normally zero thickness. Keep false for Petrel export.
 const INCLUDE_ZERO_FIRST_FRAME = false
@@ -58,15 +65,17 @@ const MIN_CELL_THICKNESS_M = 0.05
 # Extra vertical length added to COORD pillars below the deepest ZCORN.
 const PILLAR_EXTRA_M = 50.0
 
-# Invert the HDF5 Y index when mapping to Petrel coordinates.
-# Toggle this if the Petrel map appears north-south flipped.
-const FLIP_Y = false
+# Invert the HDF5 X/Y indices when mapping to Petrel coordinates.
+# For Petrel/ECLIPSE left-handed I/J orientation, reverse one horizontal axis only.
+const FLIP_X = false
+const FLIP_Y = true
 
 # IDW interpolation settings for the TSurf top surface.
 const IDW_K = 12
 const IDW_POWER = 2.0
 
 # Property labels.
+# These must match the final calibrated run-ecl.jl rule order.
 const PROD_NAMES = [
     "ooids",
     "corals",
@@ -74,22 +83,41 @@ const PROD_NAMES = [
     "peloids",
     "bioclasts_intraclasts",
     "oncoids",
+    "evap_mud",
 ]
 
 const CLASS_NAMES = [
-    "FA5 tidal flat / restricted platform",
-    "FA3 ooid shoal complex",
-    "FA3.4/FA2.2 coral-microbialite buildups",
-    "FA4.4 interior platform mudstone",
-    "FA4 back-shoal peloid-oncoid",
-    "FA2 mid-ramp oncoid/bioclastic",
-    "FA1 lower offshore mudstone/wackestone",
-    "FA2.4 upper-offshore bioclastic wackestone",
+    "Tidal flat / sabkha (dolomite-cap candidate)",
+    "Barrier ooid/peloid shoal",
+    "Coral-microbialite / patch-reef buildup",
+    "Open normal-marine lagoon (back-shoal)",
+    "Restricted lagoon",
+    "Interior platform / protected mudstone",
+    "Mid-ramp / outer lagoon oncoid-bioclastic",
+    "Offshore / outer platform mudstone",
     "fallback",
 ]
 
-const PROD_FRAC_KEYS = ["P_OOIDS", "P_CORAL", "P_MUD", "P_PELO", "P_BIOIN", "P_ONCO"]
-const CLS_FRAC_KEYS  = ["C_FA5", "C_FA3", "C_REEF", "C_FA44", "C_FA4", "C_FA2", "C_FA1", "C_F24", "C_FALLB"]
+const PROD_DOM_KEY      = "LITHO"
+const CLASS_DOM_KEY     = "FACIES"
+const PROD_ALIAS_KEY    = "FIPNUM"
+const CLASS_ALIAS_KEY   = "SATNUM"
+const WRITE_CLASSIC_ALIASES = true
+
+# Porosity-quality class property.
+# PORO is exported as integer classes because Petrel imports this keyword reliably.
+# Treat it as a categorical property/template after import, not as calibrated porosity:
+#   1 = CLAY     clay-rich/marly or very mud-rich tight carbonate proxy
+#   2 = TIGHTLS  tight limestone
+#   3 = MEDPOR   medium porous limestone
+#   4 = HIGHPOR  highly porous limestone
+const PORO_KEY = "PORO"
+const PORO_NAMES = ["CLAY", "TIGHTLS", "MEDPOR", "HIGHPOR"]
+
+# Keep GRDECL property keywords short and Petrel/ECLIPSE-friendly.
+const PROD_FRAC_KEYS = ["OOID", "CORAL", "MUD", "PELOID", "BIOCL", "ONCOID", "EVPMUD"]
+const CLS_FRAC_KEYS  = ["SABKHA", "BSHOAL", "REEF", "OPENLAG", "RESTLAG",
+                        "INMUD", "MIDRAMP", "OFFSH", "UNCLASS"]
 
 # ---------------------------------------------------------------------------
 # TSurf parsing and surface interpolation
@@ -132,8 +160,9 @@ function make_pillar_xy(vertices::Matrix{Float64}, nx::Int, ny::Int; mode::Symbo
         Y = zeros(Float64, ny+1, nx+1)
 
         for j in 1:ny+1, i in 1:nx+1
+            ii = FLIP_X ? (nx + 2 - i) : i
             jj = FLIP_Y ? (ny + 2 - j) : j
-            X[j, i] = xs[i]
+            X[j, i] = xs[ii]
             Y[j, i] = ys[jj]
         end
 
@@ -158,8 +187,9 @@ function make_pillar_xy(vertices::Matrix{Float64}, nx::Int, ny::Int; mode::Symbo
         Y = zeros(Float64, ny+1, nx+1)
 
         for j in 1:ny+1, i in 1:nx+1
+            ii = FLIP_X ? (nx + 2 - i) : i
             jj = FLIP_Y ? (ny + 2 - j) : j
-            p = center .+ V * [us[i], vs[jj]]
+            p = center .+ V * [us[ii], vs[jj]]
             X[j, i] = p[1]
             Y[j, i] = p[2]
         end
@@ -274,11 +304,19 @@ function centers_to_corners(A::Matrix{Float64})
     return C ./ W
 end
 
-function z_at(top_z::Float64, cumulative_thickness::Float64)
+function z_at(lower_malm_z::Float64, cumulative_thickness::Float64)
+    # lower_malm_z is the Petrel/TSurf elevation of the Lower Malm reference surface.
+    # Positive cumulative_thickness is deposited ABOVE Lower Malm.
+    #
+    # The final VERTICAL_SHIFT_UP_M moves the whole exported grid upward.
+    #
+    # If Z_MODE = :depth and lower_malm_z = -800 m:
+    #   cumulative_thickness = 0 m, shift = 265 m  -> z = 535 m depth
+    #   cumulative_thickness = 20 m, shift = 265 m -> z = 515 m depth
     if Z_MODE == :elevation
-        return top_z - cumulative_thickness
+        return lower_malm_z + cumulative_thickness + VERTICAL_SHIFT_UP_M
     elseif Z_MODE == :depth
-        return -top_z + cumulative_thickness
+        return -lower_malm_z - cumulative_thickness - VERTICAL_SHIFT_UP_M
     else
         error("Unknown Z_MODE=$Z_MODE. Use :elevation or :depth.")
     end
@@ -337,6 +375,64 @@ end
 function fraction_value(v::AbstractVector{<:Real}, idx::Int)
     s = sum(v)
     return s > 0.0 ? Float64(v[idx] / s) : 0.0
+end
+
+function poro_class(cls_vec::AbstractVector{<:Real}, prod_vec::AbstractVector{<:Real})
+    cls = dominant_index(cls_vec)
+    cls == 0 && return 0
+
+    s = sum(prod_vec)
+    if !(s > 0.0)
+        # Conservative fallback from depositional facies only.
+        return cls == 2 ? 3 :   # barrier shoal -> MEDPOR unless clean-grain override says HIGHPOR
+               cls == 3 ? 3 :   # coral patch reef -> MEDPOR unless clean-grain override says HIGHPOR
+               cls == 4 ? 2 :   # open/back-shoal lagoon -> TIGHTLS
+               cls == 7 ? 2 :   # mid-ramp/oncoid-bioclastic -> TIGHTLS
+               cls == 8 ? 1 :   # offshore mudstone -> CLAY
+               cls == 6 ? 1 :   # protected mudstone -> CLAY
+               2                # all others -> TIGHTLS
+    end
+
+    ooid    = length(prod_vec) >= 1 ? prod_vec[1] / s : 0.0
+    coral   = length(prod_vec) >= 2 ? prod_vec[2] / s : 0.0
+    mud     = length(prod_vec) >= 3 ? prod_vec[3] / s : 0.0
+    peloid  = length(prod_vec) >= 4 ? prod_vec[4] / s : 0.0
+    bioc    = length(prod_vec) >= 5 ? prod_vec[5] / s : 0.0
+    oncoid  = length(prod_vec) >= 6 ? prod_vec[6] / s : 0.0
+    evap    = length(prod_vec) >= 7 ? prod_vec[7] / s : 0.0
+    grain   = ooid + coral + peloid + bioc + oncoid
+    clean_grain = ooid + coral + bioc
+
+    # Conservative Eclepens Malm well-oriented mapping:
+    # mostly CLAY and TIGHTLS; MEDPOR/HIGHPOR only where composition is clearly favourable.
+    #
+    # CLAY = clay-rich/marly or very mud-rich tight carbonate proxy.
+    if cls == 8
+        return 1
+    elseif cls == 6 && mud >= 0.50
+        return 1
+    elseif mud >= 0.62 && grain <= 0.38
+        return 1
+    elseif cls == 5 && mud >= 0.55 && evap < 0.15
+        return 1
+    end
+
+    # HIGHPOR only for clean shoal/reef-prone cells.
+    if (cls == 2 || cls == 3) && clean_grain >= 0.32 && mud <= 0.45
+        return 4
+    end
+
+    # MEDPOR only for genuinely grainier or dolomitization-prone intervals.
+    if evap >= 0.15 && mud <= 0.70
+        return 3
+    elseif (cls == 2 || cls == 3) && grain >= 0.35 && mud <= 0.60
+        return 3
+    elseif (cls == 4 || cls == 7) && grain >= 0.42 && mud <= 0.52
+        return 3
+    end
+
+    # Everything else is tight limestone by default.
+    return 2
 end
 
 function read_grid_lengths(h5path::AbstractString)
@@ -435,27 +531,36 @@ end
 function build_zcorn(top_surface::Matrix{Float64}, cumulative::Array{Float64, 3},
                      kframes::Vector{Int})
     # cumulative has dimensions nt, ny, nx.
+    #
+    # The Lower Malm surface is the BASE of the modelled carbonate package.
+    # Therefore each depositional interval lies ABOVE the Lower Malm surface:
+    #
+    #   base of interval = cumulative thickness at previous frame
+    #   top  of interval = cumulative thickness at current frame
+    #
+    # kframes is ordered top-to-base before export, so Petrel K=1 is the youngest/top layer.
     nt, ny, nx = size(cumulative)
     nz = length(kframes)
 
     zcorn = zeros(Float64, 2*nx, 2*ny, 2*nz)
-
-    prev_corners = centers_to_corners(zeros(Float64, ny, nx))
+    zero_corners = centers_to_corners(zeros(Float64, ny, nx))
 
     for kk in 1:nz
         kt = kframes[kk]
-        bottom_corners = centers_to_corners(cumulative[kt, :, :])
+
+        top_corners = centers_to_corners(cumulative[kt, :, :])
+        base_corners = kt > 1 ? centers_to_corners(cumulative[kt - 1, :, :]) : zero_corners
 
         for j in 1:ny, i in 1:nx
-            top_sw = z_at(top_surface[j,   i],   prev_corners[j,   i])
-            top_se = z_at(top_surface[j,   i+1], prev_corners[j,   i+1])
-            top_nw = z_at(top_surface[j+1, i],   prev_corners[j+1, i])
-            top_ne = z_at(top_surface[j+1, i+1], prev_corners[j+1, i+1])
+            top_sw = z_at(top_surface[j,   i],   top_corners[j,   i])
+            top_se = z_at(top_surface[j,   i+1], top_corners[j,   i+1])
+            top_nw = z_at(top_surface[j+1, i],   top_corners[j+1, i])
+            top_ne = z_at(top_surface[j+1, i+1], top_corners[j+1, i+1])
 
-            bot_sw = z_at(top_surface[j,   i],   bottom_corners[j,   i])
-            bot_se = z_at(top_surface[j,   i+1], bottom_corners[j,   i+1])
-            bot_nw = z_at(top_surface[j+1, i],   bottom_corners[j+1, i])
-            bot_ne = z_at(top_surface[j+1, i+1], bottom_corners[j+1, i+1])
+            bot_sw = z_at(top_surface[j,   i],   base_corners[j,   i])
+            bot_se = z_at(top_surface[j,   i+1], base_corners[j,   i+1])
+            bot_nw = z_at(top_surface[j+1, i],   base_corners[j+1, i])
+            bot_ne = z_at(top_surface[j+1, i+1], base_corners[j+1, i+1])
 
             zcorn[2*i-1, 2*j-1, 2*kk-1] = top_sw
             zcorn[2*i,   2*j-1, 2*kk-1] = top_se
@@ -467,8 +572,6 @@ function build_zcorn(top_surface::Matrix{Float64}, cumulative::Array{Float64, 3}
             zcorn[2*i-1, 2*j,   2*kk] = bot_nw
             zcorn[2*i,   2*j,   2*kk] = bot_ne
         end
-
-        prev_corners = bottom_corners
     end
 
     return vec(zcorn)
@@ -479,14 +582,16 @@ function build_coord(X::Matrix{Float64}, Y::Matrix{Float64}, top_surface::Matrix
     ny1, nx1 = size(X)
     nt, ny, nx = size(cumulative)
 
+    # Top of the exported grid is the final cumulative depositional top.
+    # Base of the exported grid is the Lower Malm surface, slightly extended down the pillars.
     max_cum_center = cumulative[end, :, :]
     max_cum_corner = centers_to_corners(max_cum_center)
 
     coord = Float64[]
 
     for j in 1:ny1, i in 1:nx1
-        ztop = z_at(top_surface[j, i], 0.0)
-        zbot = z_at(top_surface[j, i], max_cum_corner[j, i] + PILLAR_EXTRA_M)
+        ztop = z_at(top_surface[j, i], max_cum_corner[j, i])
+        zbot = z_at(top_surface[j, i], -PILLAR_EXTRA_M)
         append!(coord, (X[j, i], Y[j, i], ztop, X[j, i], Y[j, i], zbot))
     end
 
@@ -496,16 +601,16 @@ end
 function build_actnum(cumulative::Array{Float64, 3}, kframes::Vector{Int})
     nt, ny, nx = size(cumulative)
     vals = Int[]
-
-    prev = zeros(Float64, ny, nx)
+    zero_surface = zeros(Float64, ny, nx)
 
     for kt in kframes
+        prev = kt > 1 ? cumulative[kt - 1, :, :] : zero_surface
         cur = cumulative[kt, :, :]
         thick = cur .- prev
+
         for j in 1:ny, i in 1:nx
             push!(vals, thick[j, i] > MIN_CELL_THICKNESS_M ? 1 : 0)
         end
-        prev = cur
     end
 
     return vals
@@ -531,6 +636,25 @@ function build_fraction_property(data::Array{Float64, 4}, kframes::Vector{Int}, 
     for kt in kframes
         for j in 1:ny, i in 1:nx
             push!(vals, fraction_value(@view(data[kt, j, i, :]), ifac))
+        end
+    end
+
+    return vals
+end
+
+function build_poro_property(cls::Array{Float64, 4}, prod::Array{Float64, 4}, kframes::Vector{Int})
+    nt, ny, nx, ncls = size(cls)
+    ntp, nyp, nxp, nprod = size(prod)
+
+    if (ntp, nyp, nxp) != (nt, ny, nx)
+        error("Cannot build PETRO: classified grid $(size(cls)) and production grid $(size(prod)) do not match.")
+    end
+
+    vals = Int[]
+
+    for kt in kframes
+        for j in 1:ny, i in 1:nx
+            push!(vals, poro_class(@view(cls[kt, j, i, :]), @view(prod[kt, j, i, :])))
         end
     end
 
@@ -577,7 +701,11 @@ function export_grdecl()
     nx = nx_norm
     ny = ny_norm
 
-    kframes = INCLUDE_ZERO_FIRST_FRAME ? collect(1:nt) : collect(2:nt)
+    interval_frames = INCLUDE_ZERO_FIRST_FRAME ? collect(1:nt) : collect(2:nt)
+
+    # Petrel expects K layers ordered from top to base.
+    # Because deposition is above the Lower Malm base, the final frame is the topmost layer.
+    kframes = reverse(interval_frames)
     nz = length(kframes)
 
     println("Normalized internal sizes:")
@@ -587,6 +715,13 @@ function export_grdecl()
     println("Grid dimensions exported: nx=$nx ny=$ny nz=$nz")
     println("Production factories: $nprod")
     println("Classified classes: $ncls")
+
+    if nprod != length(PROD_NAMES)
+        error("HDF5 production has $nprod factories but PROD_NAMES has $(length(PROD_NAMES)). Update PROD_NAMES/PROD_FRAC_KEYS.")
+    end
+    if ncls != length(CLASS_NAMES)
+        error("HDF5 classified data has $ncls classes but CLASS_NAMES has $(length(CLASS_NAMES)). Update CLASS_NAMES/CLS_FRAC_KEYS.")
+    end
 
     println("Reading and interpolating TSurf geometry...")
     verts = read_tsurf_vertices(TSURF_FILE)
@@ -599,6 +734,7 @@ function export_grdecl()
     actnum = build_actnum(cum, kframes)
     prod_dom = build_dominant_property(prod, kframes)
     cls_dom = build_dominant_property(cls, kframes)
+    poro = build_poro_property(cls, prod, kframes)
 
     println("Writing $OUT_GRDECL ...")
     mkpath(dirname(OUT_GRDECL))
@@ -609,14 +745,28 @@ function export_grdecl()
         println(io, "-- Classified HDF5: $CLASS_H5")
         println(io, "-- TSurf geometry: $TSURF_FILE")
         println(io, "-- GRID_MODE=$GRID_MODE Z_MODE=$Z_MODE")
+        println(io, "-- Lower Malm is treated as the base of the modelled package.")
+        println(io, "-- Vertical shift upward applied: $(VERTICAL_SHIFT_UP_M) m")
+        println(io, "-- Depositional thickness is exported upward above Lower Malm, not downward below it.")
+        println(io, "-- I/J handedness fix: FLIP_X=$FLIP_X FLIP_Y=$FLIP_Y")
+        println(io, "-- Single-axis flip changes handedness; double-axis flip only rotates 180 degrees.")
+        println(io, "-- Grid keywords: SPECGRID, COORD, ZCORN, ACTNUM")
+        println(io, "-- Display properties: FACIES, LITHO, PORO")
+        println(io, "-- Classic aliases: SATNUM = FACIES, FIPNUM = LITHO")
         println(io, "--")
-        println(io, "-- PRODFAC values:")
+        println(io, "-- LITHO/FIPNUM values:")
         for (i, name) in enumerate(PROD_NAMES)
             println(io, "--   $i = $name")
         end
         println(io, "--")
-        println(io, "-- CLSFAC values:")
+        println(io, "-- FACIES/SATNUM values:")
         for (i, name) in enumerate(CLASS_NAMES)
+            println(io, "--   $i = $name")
+        end
+        println(io, "--   0 = inactive/no deposit")
+        println(io, "--")
+        println(io, "-- PORO values:")
+        for (i, name) in enumerate(PORO_NAMES)
             println(io, "--   $i = $name")
         end
         println(io, "--   0 = inactive/no deposit")
@@ -637,13 +787,29 @@ function export_grdecl()
         write_int_values(io, actnum; perline=30)
         println(io)
 
-        println(io, "PRODFAC")
+        # Meaningful Petrel-style discrete properties.
+        println(io, CLASS_DOM_KEY)
+        write_int_values(io, cls_dom; perline=30)
+        println(io)
+
+        println(io, PROD_DOM_KEY)
         write_int_values(io, prod_dom; perline=30)
         println(io)
 
-        println(io, "CLSFAC")
-        write_int_values(io, cls_dom; perline=30)
+        println(io, PORO_KEY)
+        write_int_values(io, poro; perline=30)
         println(io)
+
+        # Classic ECLIPSE aliases for robust Petrel import/display.
+        if WRITE_CLASSIC_ALIASES
+            println(io, CLASS_ALIAS_KEY)
+            write_int_values(io, cls_dom; perline=30)
+            println(io)
+
+            println(io, PROD_ALIAS_KEY)
+            write_int_values(io, prod_dom; perline=30)
+            println(io)
+        end
 
         if WRITE_FRACTIONS
             for ifac in 1:nprod
@@ -663,7 +829,10 @@ function export_grdecl()
     end
 
     println("Done: $OUT_GRDECL")
-    println("If the grid is north-south flipped in Petrel, set FLIP_Y = true and rerun.")
+    println("Z position fix: Lower Malm is the base; modelled deposits are exported above it.")
+    println("Vertical shift applied upward: $(VERTICAL_SHIFT_UP_M) m")
+    println("I/J handedness fix used: FLIP_X = false, FLIP_Y = true.")
+    println("If orientation is mirrored the wrong way, try FLIP_X = true, FLIP_Y = false instead.")
     println("If the grid imports upside down vertically, set Z_MODE = :depth and rerun.")
 end
 

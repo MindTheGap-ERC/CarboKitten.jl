@@ -2,7 +2,7 @@
 
 julia_version = "1.12.3"
 manifest_format = "2.0"
-project_hash = "9c09fe2aa7ff84ceee32908c18c82f6c894e03a9"
+project_hash = "01bbd7afe90bc555a5a5412f223ac9e89f6591b5"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -240,7 +240,7 @@ uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.7+0"
 
 [[deps.CarboKitten]]
-deps = ["CSV", "CategoricalArrays", "DataFrames", "DelimitedFiles", "GLMakie", "GeometryBasics", "HDF5", "Interpolations", "LinearAlgebra", "Logging", "LoggingExtras", "Makie", "ModuleMixins", "Pkg", "ProgressLogging", "QuadGK", "Random", "StaticArrays", "TOML", "TerminalLoggers", "Unitful", "WGLMakie"]
+deps = ["CSV", "CategoricalArrays", "Colors", "DataFrames", "DelimitedFiles", "GLMakie", "GeometryBasics", "HDF5", "Interpolations", "LinearAlgebra", "Logging", "LoggingExtras", "Makie", "ModuleMixins", "Pkg", "ProgressLogging", "QuadGK", "Random", "StaticArrays", "TOML", "TerminalLoggers", "Unitful", "WGLMakie"]
 path = "."
 uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 version = "0.6.1"

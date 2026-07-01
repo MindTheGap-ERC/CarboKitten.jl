@@ -104,7 +104,6 @@ include("./SedimentStack.jl")
 include("./Utility.jl")
 include("./DataSets.jl")
 include("./Production.jl")
-include("./WaveField.jl")
 
 
 include("./RunModel.jl")
@@ -158,7 +157,6 @@ using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 using .Production: BenthicProduction, PelagicProduction
 using GeometryBasics: Vec2
-using .WaveField
 using .FaciesClassification: FaciesRule, classify_block, reclassify_data
 
 export run_model, Box, box_axes, TimeProperties, time_axis,

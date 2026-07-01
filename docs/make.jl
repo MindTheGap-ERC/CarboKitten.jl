@@ -144,7 +144,6 @@ makedocs(
             "Skeleton" => "algorithms/skeleton.md",
             "Stratigraphic Column" => "algorithms/stratigraphic_column.md",
         ],
-        "Interface" => "wavefield.md",
         "API Documentation" => "api.md",
         "References" => "references.md"
     ],

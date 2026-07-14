@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Wave fields · CarboKitten</title><meta name="title" content="Wave fields · CarboKitten"/><meta property="og:title" content="Wave fields · CarboKitten"/><meta property="twitter:title" content="Wave fields · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../getting-started/">Getting started</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../initial-topography/">Initial Topography</a></li></ul></li><li><span class="tocitem">Interface</span><ul><li class="is-active"><a class="tocitem" href>Wave fields</a><ul class="internal"><li><a class="tocitem" href="#Motivation"><span>Motivation</span></a></li><li><a class="tocitem" href="#Linear-wave-theory"><span>Linear wave theory</span></a></li><li><a class="tocitem" href="#Usage"><span>Usage</span></a></li><li><a class="tocitem" href="#Backward-compatibility"><span>Backward compatibility</span></a></li><li><a class="tocitem" href="#Implementation"><span>Implementation</span></a></li><li><a class="tocitem" href="#Tests"><span>Tests</span></a></li></ul></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../output/abstract/">Output</a></li><li><a class="tocitem" href="../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../output/memory-writer/">Output to Memory</a></li><li><a class="tocitem" href="../data-export/">CSV Export</a></li><li><a class="tocitem" href="../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="../visualization/overview/">Overview</a></li><li><a class="tocitem" href="../visualization/profiles/">Profiles</a></li><li><a class="tocitem" href="../visualization/fence-diagrams/">Fence Diagram</a></li><li><a class="tocitem" href="../visualization/topography/">Topography</a></li><li><a class="tocitem" href="../visualization/">Other</a></li></ul></li><li><span class="tocitem">Developer</span><ul><li><a class="tocitem" href="../CONTRIBUTING/">Contributing to this repository</a></li><li><a class="tocitem" href="../architecture/">Architecture</a></li></ul></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/output/">Output</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li><li><a class="tocitem" href="../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../algorithms/stratigraphic_column/">Stratigraphic Column</a></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Interface</a></li><li class="is-active"><a href>Wave fields</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Wave fields</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/wavefield.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Wave-Field"><a class="docs-heading-anchor" href="#Wave-Field">Wave Field</a><a id="Wave-Field-1"></a><a class="docs-heading-anchor-permalink" href="#Wave-Field" title="Permalink"></a></h1><p>The <code>WaveField</code> module extends CarboKitten&#39;s wave transport with physically consistent wave dynamics based on linear (Airy) wave theory. It provides a callable <code>AiryWaveField</code> struct that plugs directly into the existing <code>Facies.wave_velocity</code> interface — no changes to the transport solver or active layer code are required.</p><h2 id="Motivation"><a class="docs-heading-anchor" href="#Motivation">Motivation</a><a id="Motivation-1"></a><a class="docs-heading-anchor-permalink" href="#Motivation" title="Permalink"></a></h2><p>The original transport module represents wave action through a single depth-dependent velocity function <code>wave_velocity(h) -&gt; (velocity, shear)</code>. While flexible, this approach requires the user to hand-craft a closure for each scenario. The <code>AiryWaveField</code> type automates this by computing physically consistent near-bed orbital velocities from standard wave parameters (amplitude, period, direction).</p><h2 id="Linear-wave-theory"><a class="docs-heading-anchor" href="#Linear-wave-theory">Linear wave theory</a><a id="Linear-wave-theory-1"></a><a class="docs-heading-anchor-permalink" href="#Linear-wave-theory" title="Permalink"></a></h2><p>Each wave component is defined by amplitude <span>$H$</span>, period <span>$T$</span>, propagation direction <span>$\theta$</span>, phase offset <span>$\varphi_0$</span>, and a base attenuation coefficient.</p><h3 id="Dispersion-relation"><a class="docs-heading-anchor" href="#Dispersion-relation">Dispersion relation</a><a id="Dispersion-relation-1"></a><a class="docs-heading-anchor-permalink" href="#Dispersion-relation" title="Permalink"></a></h3><p>Wavelength is computed dynamically at each grid cell using the full dispersion relation:</p><p class="math-container">\[\omega^2 = g k \tanh(k h)\]</p><p>where <span>$\omega = 2\pi/T$</span> is angular frequency, <span>$k$</span> is wave number, <span>$g$</span> is gravitational acceleration, and <span>$h$</span> is local water depth. The equation is solved numerically using a Newton–Raphson iteration with the deep-water approximation <span>$k_0 = \omega^2/g$</span> as initial guess. This formulation ensures correct behavior across deep, intermediate, and shallow water regimes.</p><h3 id="Depth-limited-breaking"><a class="docs-heading-anchor" href="#Depth-limited-breaking">Depth-limited breaking</a><a id="Depth-limited-breaking-1"></a><a class="docs-heading-anchor-permalink" href="#Depth-limited-breaking" title="Permalink"></a></h3><p>To prevent unrealistic growth in shallow water, wave height is limited by a breaker index formulation (McCowan criterion):</p><p class="math-container">\[H_{\mathrm{eff}} = \min(H, \gamma_b \cdot h)\]</p><p>with <span>$\gamma_b = 0.78$</span> by default, corresponding to the classical shallow-water breaking index. This prevents wave heights from exceeding approximately 78% of local water depth.</p><h3 id="Near-bed-orbital-velocity"><a class="docs-heading-anchor" href="#Near-bed-orbital-velocity">Near-bed orbital velocity</a><a id="Near-bed-orbital-velocity-1"></a><a class="docs-heading-anchor-permalink" href="#Near-bed-orbital-velocity" title="Permalink"></a></h3><p>The near-bed orbital velocity amplitude is:</p><p class="math-container">\[u_b = \frac{\pi H_{\mathrm{eff}}}{T \sinh(k h)}\]</p><p>This expression decays rapidly with depth and approaches deep-water behavior for large <span>$kh$</span>.</p><p><img src="../fig/velocity_combination.png" alt="Near-bed orbital velocity vs depth"/></p><h3 id="Multi-directional-superposition"><a class="docs-heading-anchor" href="#Multi-directional-superposition">Multi-directional superposition</a><a id="Multi-directional-superposition-1"></a><a class="docs-heading-anchor-permalink" href="#Multi-directional-superposition" title="Permalink"></a></h3><p>Multiple wave components can be superposed. The total near-bed velocity vector is:</p><p class="math-container">\[\mathbf{v} = \sum_i u_{b,i} \, \hat{\mathbf{d}}_i\]</p><p>where <span>$\hat{\mathbf{d}}_i = (\cos\theta_i, \sin\theta_i)$</span> is the propagation direction of component <span>$i$</span>.</p><p><img src="../fig/components_superimposition.png" alt="Components combination"/> <img src="../fig/velocity_superimposition.png" alt="Velocity combination"/></p><h3 id="Energy-flux"><a class="docs-heading-anchor" href="#Energy-flux">Energy flux</a><a id="Energy-flux-1"></a><a class="docs-heading-anchor-permalink" href="#Energy-flux" title="Permalink"></a></h3><p>Wave energy flux per unit crest length is:</p><p class="math-container">\[E = \frac{1}{8} \rho g H_{\mathrm{eff}}^2 \, c_g\]</p><p>where group velocity <span>$c_g = c \cdot n$</span> with phase velocity <span>$c = \omega/k$</span> and the group velocity factor:</p><p class="math-container">\[n = \frac{1}{2}\left(1 + \frac{2kh}{\sinh 2kh}\right)\]</p><h2 id="Usage"><a class="docs-heading-anchor" href="#Usage">Usage</a><a id="Usage-1"></a><a class="docs-heading-anchor-permalink" href="#Usage" title="Permalink"></a></h2><p>The <code>AiryWaveField</code> is a drop-in replacement for the lambda-based <code>wave_velocity</code> closures. Existing closures (including the default no-transport and <code>v_const</code>) continue to work unchanged.</p><pre><code class="nohighlight hljs">using CarboKitten.WaveField: AiryWaveField, AiryWaveComponent
+
+# Single dominant swell from the west
+wf = AiryWaveField(components=[
+    AiryWaveComponent(amplitude=1.5u&quot;m&quot;, period=8.0u&quot;s&quot;, direction=0.0),
+])
+
+# Multi-directional sea state
+wf = AiryWaveField(components=[
+    AiryWaveComponent(amplitude=1.5u&quot;m&quot;, period=8.0u&quot;s&quot;, direction=0.0),
+    AiryWaveComponent(amplitude=0.5u&quot;m&quot;, period=5.0u&quot;s&quot;, direction=π/4),
+], breaker_index=0.78)
+
+# Plug into a facies definition
+facies = ALCAP.Facies(
+    wave_velocity = wf,
+    transport_coefficient = 50.0u&quot;m/yr&quot;,
+    ...)</code></pre><h2 id="Backward-compatibility"><a class="docs-heading-anchor" href="#Backward-compatibility">Backward compatibility</a><a id="Backward-compatibility-1"></a><a class="docs-heading-anchor-permalink" href="#Backward-compatibility" title="Permalink"></a></h2><p>The <code>Facies.wave_velocity</code> field accepts any callable with signature <code>water_depth -&gt; (Vec2{velocity}, Vec2{shear})</code>. The existing lambda-based closures and <code>v_const</code> helpers satisfy this interface. <code>AiryWaveField</code> is simply a new callable that also satisfies it. No existing code changes, no dispatch ambiguity, no type constraints broken.</p><h2 id="Implementation"><a class="docs-heading-anchor" href="#Implementation">Implementation</a><a id="Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Implementation" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/WaveField.jl</i></div><pre><code class="language- julia hljs">module WaveField
+
+using Unitful
+using GeometryBasics
+
+export AiryWaveComponent, AiryWaveField, energy_flux, group_velocity
+
+# =============================================================================
+# Types
+# =============================================================================
+
+&quot;&quot;&quot;
+    AiryWaveComponent(; amplitude, period, direction, phase=0.0, attenuation=0.0u&quot;m^-1&quot;)
+
+A single monochromatic wave component:
+
+- `amplitude` — wave height H (crest-to-trough) in meters.
+- `period` — wave period T in seconds.
+- `direction` — propagation angle θ in radians (0 = +x, π/2 = +y).
+- `phase` — phase offset φ₀ in radians.
+- `attenuation` — spatial decay coefficient (e.g. for bottom friction).
+&quot;&quot;&quot;
+@kwdef struct AiryWaveComponent
+    amplitude::typeof(1.0u&quot;m&quot;)       = 1.0u&quot;m&quot;
+    period::typeof(1.0u&quot;s&quot;)          = 10.0u&quot;s&quot;
+    direction::Float64               = 0.0
+    phase::Float64                   = 0.0
+    attenuation::typeof(1.0u&quot;m^-1&quot;)  = 0.0u&quot;m^-1&quot;
+end
+
+&quot;&quot;&quot;
+    AiryWaveField(; components, breaker_index=0.78, gravity=9.81u&quot;m/s^2&quot;, density=1025.0u&quot;kg/m^3&quot;)
+
+A superposition of `AiryWaveComponent`s. Callable: `wf(water_depth)` returns
+`(Vec2{velocity}, Vec2{shear})` compatible with the existing
+`Facies.wave_velocity` interface in `Components.ActiveLayer`.
+
+Existing lambda-based wave velocities (including the default no-transport
+closure and `v_const`) continue to work — this type is an alternative, not
+a replacement.
+
+- `breaker_index` — γ_b for depth-limited breaking (default 0.78).
+- `gravity` — gravitational acceleration.
+- `density` — water density (for energy flux diagnostics).
+&quot;&quot;&quot;
+@kwdef struct AiryWaveField
+    components::Vector{AiryWaveComponent} = AiryWaveComponent[]
+    breaker_index::Float64               = 0.78
+    gravity::typeof(1.0u&quot;m/s^2&quot;)         = 9.81u&quot;m/s^2&quot;
+    density::typeof(1.0u&quot;kg/m^3&quot;)        = 1025.0u&quot;kg/m^3&quot;
+end
+
+# =============================================================================
+# Dispersion relation
+# =============================================================================
+
+&quot;&quot;&quot;
+    solve_dispersion(ω, h, g; tol, maxiter) -&gt; k
+
+Solve ω² = g k tanh(k h) for wave number k using Newton–Raphson iteration,
+starting from the deep-water approximation k₀ = ω²/g. All arguments are
+plain Float64 in SI units.
+&quot;&quot;&quot;
+function solve_dispersion(ω::Float64, h::Float64, g::Float64;
+                          tol::Float64=1e-8, maxiter::Int=50)
+    h &lt;= 0.0 &amp;&amp; return 0.0
+    k = ω^2 / g                        # deep-water initial guess
+    for _ in 1:maxiter
+        kh = k * h
+        th = tanh(kh)
+        f  = ω^2 - g * k * th
+        df = -g * (th + k * h * (1.0 - th^2))
+        abs(df) &lt; 1e-30 &amp;&amp; break
+        dk = -f / df
+        k += dk
+        abs(dk) &lt; tol * abs(k) &amp;&amp; break
+    end
+    return max(k, 0.0)
+end
+
+# =============================================================================
+# Per-component orbital velocity (all SI, no units)
+# =============================================================================
+
+&quot;&quot;&quot;
+    _orbital_velocity(H, T, k, h, γ_b) -&gt; (u_b, H_eff)
+
+Near-bed orbital velocity amplitude and depth-limited wave height.
+All arguments in SI (m, s), returns (m/s, m).
+&quot;&quot;&quot;
+function _orbital_velocity(H::Float64, T::Float64, k::Float64, h::Float64, γ_b::Float64)
+    h &lt;= 0.0 &amp;&amp; return (0.0, 0.0)
+
+    # Depth-limited breaking
+    H_eff = min(H, γ_b * h)
+
+    # u_b = π H / (T sinh(kh))
+    kh = k * h
+    sh = sinh(max(kh, 1e-10))
+    u_b = π * H_eff / (T * sh)
+
+    return (u_b, H_eff)
+end
+
+# =============================================================================
+# Velocity vector at a given depth (SI, no units)
+# =============================================================================
+
+function _velocity_si(wf::AiryWaveField, h::Float64)
+    g  = ustrip(u&quot;m/s^2&quot;, wf.gravity)
+    γ_b = wf.breaker_index
+    vx = 0.0
+    vy = 0.0
+
+    for comp in wf.components
+        H  = ustrip(u&quot;m&quot;, comp.amplitude)
+        T  = ustrip(u&quot;s&quot;, comp.period)
+        ω  = 2π / T
+        k  = solve_dispersion(ω, h, g)
+        u_b, _ = _orbital_velocity(H, T, k, h, γ_b)
+
+        vx += u_b * cos(comp.direction)
+        vy += u_b * sin(comp.direction)
+    end
+
+    return (vx, vy)
+end
+
+# =============================================================================
+# Callable interface: (::AiryWaveField)(water_depth) -&gt; (Vec2, Vec2)
+# =============================================================================
+
+&quot;&quot;&quot;
+    (wf::AiryWaveField)(water_depth)
+
+Evaluate the wave field at `water_depth`. Returns
+`(velocity::Vec2, shear::Vec2)` in units of m/s and 1/s respectively,
+compatible with the `Facies.wave_velocity` interface.
+
+Velocity is the vector sum of near-bed orbital velocity amplitudes directed
+along each component&#39;s propagation direction. Shear is d(velocity)/d(depth),
+computed by central finite differences.
+&quot;&quot;&quot;
+function (wf::AiryWaveField)(water_depth)
+    h = ustrip(u&quot;m&quot;, water_depth)
+
+    vx, vy = _velocity_si(wf, h)
+
+    # Shear = dv/dh via central differences
+    δ = max(abs(h) * 1e-4, 1e-4)
+    vx_p, vy_p = _velocity_si(wf, h + δ)
+    vx_m, vy_m = _velocity_si(wf, max(0.0, h - δ))
+    sx = (vx_p - vx_m) / (2δ)
+    sy = (vy_p - vy_m) / (2δ)
+
+    return (Vec2(vx * u&quot;m/s&quot;, vy * u&quot;m/s&quot;),
+            Vec2(sx * u&quot;s^-1&quot;, sy * u&quot;s^-1&quot;))
+end
+
+# =============================================================================
+# Diagnostics: group velocity and energy flux
+# =============================================================================
+
+&quot;&quot;&quot;
+    group_velocity(comp, h, g) -&gt; c_g  [m/s]
+
+Group velocity from linear theory: c_g = c · n where
+n = ½(1 + 2kh / sinh(2kh)) and c = ω/k.
+&quot;&quot;&quot;
+function group_velocity(comp::AiryWaveComponent, h_m::Float64, g::Float64)
+    T  = ustrip(u&quot;s&quot;, comp.period)
+    ω  = 2π / T
+    k  = solve_dispersion(ω, h_m, g)
+    k &lt;= 0.0 &amp;&amp; return 0.0
+    kh = k * h_m
+    c  = ω / k
+    n  = 0.5 * (1.0 + 2kh / sinh(max(2kh, 1e-10)))
+    return c * n
+end
+
+&quot;&quot;&quot;
+    energy_flux(wf::AiryWaveField, water_depth) -&gt; E  [W/m]
+
+Total wave energy flux per unit crest length from all components:
+E = Σ (1/8) ρ g H_eff² c_g
+&quot;&quot;&quot;
+function energy_flux(wf::AiryWaveField, water_depth)
+    h  = ustrip(u&quot;m&quot;, water_depth)
+    g  = ustrip(u&quot;m/s^2&quot;, wf.gravity)
+    ρ  = ustrip(u&quot;kg/m^3&quot;, wf.density)
+    γ_b = wf.breaker_index
+
+    E = 0.0
+    for comp in wf.components
+        H  = ustrip(u&quot;m&quot;, comp.amplitude)
+        T  = ustrip(u&quot;s&quot;, comp.period)
+        ω  = 2π / T
+        k  = solve_dispersion(ω, h, g)
+        _, H_eff = _orbital_velocity(H, T, k, h, γ_b)
+        c_g = group_velocity(comp, h, g)
+        E += (1.0 / 8.0) * ρ * g * H_eff^2 * c_g
+    end
+    return E * u&quot;W/m&quot;
+end
+
+end</code></pre><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><div class="noweb-label">file:<i>examples/wavefield/airy_test.jl</i></div><pre><code class="language- julia hljs">module AiryTest
+
+using Unitful
+using CarboKitten
+using CarboKitten.WaveField: AiryWaveField, AiryWaveComponent, energy_flux
+
+# ── 1. Basic sanity: single swell ──────────────────────────────────────
+
+wf = AiryWaveField(components=[
+    AiryWaveComponent(amplitude=1.5u&quot;m&quot;, period=8.0u&quot;s&quot;, direction=0.0),
+])
+
+# Evaluate at several depths
+for h in [5.0, 10.0, 20.0, 50.0, 100.0]
+    v, s = wf(h * u&quot;m&quot;)
+    E = energy_flux(wf, h * u&quot;m&quot;)
+    println(&quot;h=$(h)m  v=$(v)  shear=$(s)  E=$(E)&quot;)
+end
+
+# ── 2. Verify breaking: velocity should plateau in very shallow water ──
+
+v_deep, _  = wf(50.0u&quot;m&quot;)
+v_shallow, _ = wf(0.5u&quot;m&quot;)
+println(&quot;\nDeep velocity: $(v_deep)&quot;)
+println(&quot;Shallow velocity (depth-limited): $(v_shallow)&quot;)
+
+# ── 3. Multi-directional sea state ─────────────────────────────────────
+
+wf2 = AiryWaveField(components=[
+    AiryWaveComponent(amplitude=1.5u&quot;m&quot;, period=8.0u&quot;s&quot;, direction=0.0),
+    AiryWaveComponent(amplitude=0.5u&quot;m&quot;, period=5.0u&quot;s&quot;, direction=π/4),
+    AiryWaveComponent(amplitude=0.3u&quot;m&quot;, period=12.0u&quot;s&quot;, direction=-π/6),
+])
+
+v, s = wf2(10.0u&quot;m&quot;)
+println(&quot;\nMulti-directional at 10m: v=$(v)  shear=$(s)&quot;)
+
+# ── 4. Plug into ALCAP facies (backward compat demo) ───────────────────
+
+input = ALCAP.Input(
+    tag = &quot;airy-wave-test&quot;,
+    box = Box{Coast}(grid_size=(50, 25), phys_scale=150.0u&quot;m&quot;),
+    time = TimeProperties(Δt=0.0002u&quot;Myr&quot;, steps=1000),
+    output = Dict(
+        :profile =&gt; OutputSpec(slice=(:, 13), write_interval=1)),
+    ca_interval = 1,
+    initial_topography = (x, y) -&gt; -x / 300.0,
+    sea_level = t -&gt; 4.0u&quot;m&quot; * sin(2π * t / 0.2u&quot;Myr&quot;),
+    subsidence_rate = 50.0u&quot;m/Myr&quot;,
+    disintegration_rate = 50.0u&quot;m/Myr&quot;,
+    lithification_time = 100.0u&quot;yr&quot;,
+    insolation = 400.0u&quot;W/m^2&quot;,
+    sediment_buffer_size = 50,
+    depositional_resolution = 0.5u&quot;m&quot;,
+    facies = [ALCAP.Facies(
+        viability_range = (4, 10),
+        activation_range = (6, 10),
+        production = ALCAP.Example.FACIES[1].production,
+        transport_coefficient = 50.0u&quot;m/yr&quot;,
+        wave_velocity = wf,
+        name = &quot;airy-swell&quot;)])
+
+mkpath(&quot;data/output&quot;)
+run_model(Model{ALCAP}, input, &quot;data/output/airy-wave-test.h5&quot;)
+println(&quot;\nModel run complete → data/output/airy-wave-test.h5&quot;)
+
+end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../initial-topography/">« Initial Topography</a><a class="docs-footer-nextpage" href="../input-methods/">Input Methods »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 14 July 2026 13:06">Tuesday 14 July 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

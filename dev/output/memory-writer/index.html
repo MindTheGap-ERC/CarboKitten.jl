@@ -96,7 +96,7 @@ end</code></pre><h2 id="Data-Structures"><a class="docs-heading-anchor" href="#D
 
 using ..Abstract
 import ..Abstract:
-    new_output, add_data_set, set_attribute, write_sediment_thickness,
+    new_output, add_data_set, set_attribute, write_bathymetry,
     write_production, write_disintegration, write_deposition, write_active_layer
 using ...Components.Common
 using ...Components.WaterDepth: initial_topography
@@ -186,12 +186,12 @@ function set_attribute(out::MemoryOutput, name::String, value::Any)
     out.header.attributes[name] = value
 end
 
-write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,0}) =
-    out.data_columns[label].sediment_thickness[idx] = data[]
-write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
-    out.data_slices[label].sediment_thickness[:, idx] .= data
-write_sediment_thickness(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
-    out.data_volumes[label].sediment_thickness[:, :, idx] .= data
+write_bathymetry(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,0}) =
+    out.data_columns[label].bathymetry[idx] = data[]
+write_bathymetry(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
+    out.data_slices[label].bathymetry[:, idx] .= data
+write_bathymetry(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,2}) =
+    out.data_volumes[label].bathymetry[:, :, idx] .= data
 
 write_active_layer(out::MemoryOutput, label::Symbol, idx::Int, data::AbstractArray{Amount,1}) =
     out.data_columns[label].active_layer[:, idx] .= data
@@ -310,4 +310,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../h5writer/">« HDF5 Output</a><a class="docs-footer-nextpage" href="../../data-export/">CSV Export »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 14 July 2026 13:06">Tuesday 14 July 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../h5writer/">« HDF5 Output</a><a class="docs-footer-nextpage" href="../../data-export/">CSV Export »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 15 July 2026 20:29">Wednesday 15 July 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

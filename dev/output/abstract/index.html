@@ -15,6 +15,7 @@ import ...Algorithms: stratigraphic_column!
 
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
 export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer, surface_heights
+export sediment_thickness, water_depth
 
 using Unitful
 using ...CarboKitten: OutputSpec, AbstractInput, AbstractState
@@ -62,7 +63,7 @@ end
     disintegration::Array{Amount,F}
     production::Array{Amount,F}
     deposition::Array{Amount,F}
-    sediment_thickness::Array{Amount,D}
+    bathymetry::Array{Amount,D}
     active_layer::Union{Array{Amount,F}, Nothing} = nothing
 end
 
@@ -92,7 +93,7 @@ Base.getindex(v::Data{F,D}, args...) where {F,D} =
             v.disintegration[:, args..., :],
             v.production[:, args..., :],
             v.deposition[:, args..., :],
-            v.sediment_thickness[args..., :],
+            v.bathymetry[args..., :],
             v.active_layer == nothing ? nothing : v.active_layer[:, args..., :])
     end
 
@@ -138,12 +139,23 @@ Compute the water depth function for the given data set.
 &quot;&quot;&quot;
 function water_depth(header::Header, data::Data{F, D}) where {F, D}
     na = [CartesianIndex()]
-    delta_t = header.axes.t[1:data.write_interval:end] .- header.axes.t[1]
-    sl = header.sea_level[1:data.write_interval:end]
-    h0 = header.initial_topography[data.slice..., na]
-    Δh = data.sediment_thickness
-    Σ = header.subsidence_rate .* delta_t[repeated(na, D-1)..., :]
-    return sl[repeated(na, D-1)...,:] .- h0 .- Δh .+ Σ
+    return header.sea_level[repeated(na, D-1)...,1:data.write_interval:end] .- data.bathymetry
+end
+
+&quot;&quot;&quot;
+    sediment_thickness(data)
+
+Compute the sediment thickness at each moment in the run by taking the cumulative
+sum of the net deposition (deposition - disintegration) at each moment.
+&quot;&quot;&quot;
+function sediment_thickness(data::Data{F, D}) where {F, D}
+    net_deposition = dropdims(sum(data.deposition .- data.disintegration, dims=1), dims=1)
+    for c in eachslice(net_deposition, dims=(1:D-1...,))
+        for i in 2:length(c)
+            c[i] += c[i-1]
+        end
+    end
+    return net_deposition
 end
 
 &quot;&quot;&quot;
@@ -197,18 +209,19 @@ Set an attribute in the output object.
 function set_attribute end
 
 &quot;&quot;&quot;
-    write_sediment_thickness(out::T, name::Symbol, idx::Int, data::AbstractArray{Amount, dim}) where {T, dim}
+    write_bathymetry(out::T, name::Symbol, idx::Int, data::AbstractArray{Amount, dim}) where {T, dim}
 
-Write the sediment thickness to the output object. The `idx` should be corrected for write
-interval. That is, `idx` should range from `1` to `n_writes` for the named data set. This
-function should be implemented for 0, 1, and 2 dimensional arrays, corresponding to writing
-column, slice or volume data.
+Write the bathymetry to the output object. The `idx` should be corrected for
+write interval. That is, `idx` should range from `1` to `n_writes` for the named
+data set. This function should be implemented for 0, 1, and 2 dimensional
+arrays, corresponding to writing column, slice or volume data.
 
-If your output object type doesn&#39;t conform to the standard CarboKitten data layout, you may
-choose to not implement this function and implement `state_writer` and `frame_writer` instead.
-The same goes for `write_production`, `write_disintegration` and `write_deposition`.
+If your output object type doesn&#39;t conform to the standard CarboKitten data
+layout, you may choose to not implement this function and implement
+`state_writer` and `frame_writer` instead. The same goes for `write_production`,
+`write_disintegration` and `write_deposition`.
 &quot;&quot;&quot;
-function write_sediment_thickness end
+function write_bathymetry end
 
 &quot;&quot;&quot;
     write_active_layer(out::T, name::Symbol, idx::Int, data::AbstractArray{Amount, dim}) where {T, dim}
@@ -261,9 +274,9 @@ function state_writer(input::Input, out) where {Input &lt;: AbstractInput}
     return function (idx::Int, state::AbstractState)
         for (k, v) in output_sets
             if mod(idx - 1, v.write_interval) == 0
-                write_sediment_thickness(
+                write_bathymetry(
                     out, k, div(idx - 1, v.write_interval) + 1,
-                    view(state.sediment_height, v.slice...))
+                    view(state.bathymetry, v.slice...))
 
                 if save_active_layer
                     write_active_layer(
@@ -356,4 +369,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../input-methods/">« Input Methods</a><a class="docs-footer-nextpage" href="../h5writer/">HDF5 Output »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 14 July 2026 13:06">Tuesday 14 July 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../input-methods/">« Input Methods</a><a class="docs-footer-nextpage" href="../h5writer/">HDF5 Output »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 15 July 2026 20:29">Wednesday 15 July 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

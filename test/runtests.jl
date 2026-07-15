@@ -47,6 +47,7 @@ TEST_PATH = mktempdir()
     include("Components/ProductionSpec.jl")
     include("Components/InitialSedimentSpec.jl")
     include("Components/ActiveLayerSpec.jl")
+    include("Components/WaterDepthSpec.jl")
 
     include("Transport/AdvectionSpec.jl")
     include("Transport/IntertidalZoneSpec.jl")

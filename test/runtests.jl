@@ -40,12 +40,14 @@ TEST_PATH = mktempdir()
     include("SedimentStackSpec.jl")
 
     include("Components/CellularAutomatonSpec.jl")
+    include("Components/SedimentBufferSpec.jl")
     include("Components/FaciesBaseSpec.jl")
     include("Components/TimeIntegrationSpec.jl")
     include("Components/BoxesSpec.jl")
     include("Components/ProductionSpec.jl")
     include("Components/InitialSedimentSpec.jl")
     include("Components/ActiveLayerSpec.jl")
+    include("Components/WaterDepthSpec.jl")
 
     include("Transport/AdvectionSpec.jl")
     include("Transport/IntertidalZoneSpec.jl")
@@ -55,4 +57,5 @@ TEST_PATH = mktempdir()
     include("Output/H5WriterSpec.jl")
 
     include("Models/CAPSpec.jl")
+    include("Models/BS92Spec.jl")
 end

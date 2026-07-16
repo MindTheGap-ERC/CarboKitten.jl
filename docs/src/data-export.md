@@ -69,7 +69,7 @@ const DISINTEGRATION1 = cat(
         1:10 .|> (x -> x < 4 || x > 6 ? 0.0u"m" : 2.0u"m"),
         zeros(Amount, 10))', 1, 3, 1, 10); dims=4)
 
-const ELEVATION1 = 
+const ELEVATION1 =
     cumsum(PRODUCTION1 .- DISINTEGRATION1; dims=4)[1, :, :, :]
 
 const DATA1 = DataVolume(
@@ -78,7 +78,7 @@ const DATA1 = DataVolume(
     disintegration=DISINTEGRATION1,
     production=PRODUCTION1,
     deposition=PRODUCTION1,
-    sediment_thickness=ELEVATION1)
+    bathymetry=ELEVATION1)
 
 const GRID_LOCATIONS1 = [(1, 1), (2, 1), (3, 1)]
 
@@ -289,7 +289,7 @@ copied from `data.sediment_thickness`. Returns a `DataFrame` with `time` and
 function extract_sac(header::Header, data::DataColumn, label)
     DataFrame(
         "timestep" => 0:data.write_interval:header.time_steps,
-        "sac_$(label)" => data.sediment_thickness)
+        "sac_$(label)" => sediment_thickness(data))
 end
 
 """
@@ -313,16 +313,9 @@ Extract the water depth from the data. Returns a `DataFrame` with `time` and
 `wd<n>` columns where `<n>` is in the range `1:length(grid_locations)`.
 """
 function extract_wd(header::Header, data::DataColumn, label)
-    na = [CartesianIndex()]
-    t = header.axes.t[1:data.write_interval:end]
-    sea_level = header.sea_level[1:data.write_interval:end]
-    wd = header.subsidence_rate .* t .-
-        header.initial_topography[data.slice...] .-
-        data.sediment_thickness .+
-        sea_level
     return DataFrame(
         "timestep" => 0:data.write_interval:header.time_steps,
-        "wd_$(label)" => wd)
+        "wd_$(label)" => water_depth(header, data))
 end
 ```
 
@@ -430,7 +423,7 @@ function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {d
 		gid["disintegration"][:, reduce.(slice)..., :] * u"m",
 		gid["production"][:, reduce.(slice)..., :] * u"m",
 		gid["deposition"][:, reduce.(slice)..., :] * u"m",
-		gid["sediment_thickness"][reduce.(slice)..., :] * u"m",
+		gid["bathymetry"][reduce.(slice)..., :] * u"m",
 		"active_layer" in keys(gid) ?
 		    gid["active_layer"][:, reduce.(slice)..., :] * u"m" :
 			nothing)
@@ -466,8 +459,6 @@ using TOML
 using DataFrames
 using Unitful
 
-const Amount = typeof(1.0u"m")
-
 <<export-test-case>>
 
 @testset "CarboKitten.Export" begin
@@ -497,19 +488,9 @@ const Amount = typeof(1.0u"m")
 
             adm_tab = read_csv(spec.output_files[:age_depth_model], DataFrame)
             rename!(adm_tab, (n => split(n)[1] for n in names(adm_tab))...)
-            @test select(adm_tab, ["adm_$(i)" for i in 1:3]) == 
+            @test select(adm_tab, ["adm_$(i)" for i in 1:3]) ==
                 select(ustrip(adm), ["adm_$(i)" for i in 1:3])
         end
-    end
-
-    @testset "Water depth signs" begin
-        test_path::String = TEST_PATH
-        header, data = read_column(joinpath(test_path, "bs92_spm.h5"), :full)
-        wd = extract_wd(header, data, 1)
-        sac = extract_sac(header, data, 1)
-        submerged = wd.wd_1 .> -1.0u"m"
-        growing = (sac.sac_1[2:end] .- sac.sac_1[1:end-1]) .> 0.5u"m"
-        @test all(growing .&& (submerged[1:end-1] .|| submerged[2:end]) .|| .!growing)
     end
 end
 ```

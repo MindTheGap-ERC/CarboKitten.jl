@@ -31,30 +31,13 @@ module WheelerDiagram
 import CarboKitten.Visualization: wheeler_diagram, wheeler_diagram!
 using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
 using CarboKitten.Utility: in_units_of
-using CarboKitten.Output.Abstract: stratigraphic_column
+using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
 using Makie
 using Unitful
 using CarboKitten.BoundaryTrait
 using CarboKitten.Stencil: convolution
 
-
 const na = [CartesianIndex()]
-
-elevation(h::Header, d::DataSlice) =
-    let bl = h.initial_topography[d.slice..., na],
-        sr = (h.axes.t[end] - h.axes.t[1]) * h.subsidence_rate
-
-        bl .+ d.sediment_thickness .- sr
-    end
-
-water_depth(header::Header, data::DataSlice) =
-    let h = elevation(header, data),
-        wi = data.write_interval,
-        s = header.subsidence_rate .* (header.axes.t[1:wi:end] .- header.axes.t[end]),
-        l = header.sea_level[1:wi:end]
-
-        h .- (s.+l)[na, :]
-    end
 
 const Rate = typeof(1.0u"m/Myr")
 

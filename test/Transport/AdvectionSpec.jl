@@ -64,7 +64,7 @@ times = []
 
 run_model(Model{ALCAP}, input, state) do i, delta
     if mod(i-1, 250) == 0
-        push!(result, deepcopy(state.sediment_height))
+        push!(result, deepcopy(state.sediment_thickness))
         push!(times, time(input, state))
     end
 end
@@ -74,11 +74,11 @@ end
 com_positions = [center_of_mass(r, x) for r in result]
 
 @assert length(com_positions) == length(times)
-observed_speeds = (com_positions[2:end] .- com_positions[1:end-1]) ./ 
+observed_speeds = (com_positions[2:end] .- com_positions[1:end-1]) ./
     (times[2:end] .- times[1:end-1])
 
 # Extract the expected speed from the wave transport
-expected_speed = input.facies[1].wave_velocity(0.0u"m")[1][1]  
+expected_speed = input.facies[1].wave_velocity(0.0u"m")[1][1]
 tolerance = 1e-6 * expected_speed  # Set a tolerance for the comparison
 # Check if all speeds are within tolerance
 for speed in observed_speeds

@@ -248,7 +248,7 @@ colors from a function `f` over the deposition data. So `f` should have signatur
 Here the vector input has size of the number of facies.
 """
 function profile_plot!(f::F, ax::Axis, header::Header, data::DataSlice; mesh_args...) where {F}
-    color = f.(eachslice(data.deposition, dims=(2, 3)))
+    color = f.(eachslice(stratigraphic_column(data), dims=(2, 3)))
     profile_plot!(ax, header, data; color=color, mesh_args...)
 end
 
@@ -257,17 +257,9 @@ end
 
 Plot the sediment profile, choosing colour by dominant facies type (argmax).
 
-`mode` selects the sediment record:
-
-- `:deposited` — dominant facies of raw deposition at each time step (default,
-  original behaviour — fully backward compatible).
-- `:preserved` — dominant facies of net preserved sediment after applying the
-  stratigraphic column algorithm.
-
 Unconformities are shown when the sediment is subaerially exposed.
 """
 function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
-                           mode::Symbol = :deposited,
                            show_unconformities::Union{Nothing,Bool,Int} = true,
                            show_coeval_lines::Union{Bool,Tuple{Int, Int},Vector{Int},Vector{Time}} = true,
                            show_sealevel::Bool = true)
@@ -282,16 +274,8 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
         plot_sealevel!(ax, header)
     end
 
-    plot = if mode === :deposited
-            profile_plot!(argmax, ax, header, data; alpha=1.0,
-                colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
-        elseif mode === :preserved
-            color = map(argmax, eachslice(sc, dims=(2, 3)))
-            profile_plot!(ax, header, data; color=color, alpha=1.0,
-                colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
-        else
-            error("mode must be :deposited or :preserved, got :$(mode)")
-        end
+    plot = profile_plot!(argmax, ax, header, data; alpha=1.0,
+        colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
 
     coeval_lines!(ax, header, data, h, show_coeval_lines)
 
@@ -304,14 +288,12 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
 end
 
 """
-    sediment_profile(header, data_slice; mode=:deposited, show_unconformities=true)
+    sediment_profile(header, data_slice; show_unconformities=true)
 
 Plot the sediment profile from `data_slice`. Dominant facies colour is chosen
-by `argmax`. `mode` selects `:deposited` (default) or `:preserved` sediment.
-By default unconformities are shown using dashed white lines.
+by `argmax`. By default unconformities are shown using dashed white lines.
 """
 function sediment_profile(header::Header, data_slice::DataSlice;
-                           mode::Symbol = :deposited,
                            show_unconformities::Union{Bool,Int,Nothing} = true)
     fig = Figure(size=(1000, 600))
     ax = Axis(fig[1, 1])
@@ -326,28 +308,15 @@ end
 Plot the proportion of `facies_index` relative to total sediment at each
 location and time step, using the same stratigraphic mesh as `sediment_profile!`.
 
-
-`mode` selects the sediment record:
-
-- `:deposited` — proportion of raw deposition (`data.deposition`).
-- `:preserved` — proportion of net preserved sediment (`stratigraphic_column`).
-
 Returns the `mesh!` plot object (for attaching a `Colorbar`).
 """
 function sediment_proportion!(ax::Axis, header::Header, data::DataSlice, facies_index::Int;
-                               mode::Symbol = :deposited,
                                colorrange::Tuple = (0.0, 1.0),
                                colormap = :viridis)
     n_facies = size(data.production, 1)
     @assert 1 <= facies_index <= n_facies "facies_index $(facies_index) out of range 1:$(n_facies)"
 
-    source = if mode === :deposited
-        data.deposition
-    elseif mode === :preserved
-        stratigraphic_column(data)
-    else
-        error("mode must be :deposited or :preserved, got :$(mode)")
-    end
+    source = stratigraphic_column(data)
 
     proportion = map(eachslice(source, dims=(2, 3))) do col
         total = sum(col)
@@ -361,7 +330,7 @@ function sediment_proportion!(ax::Axis, header::Header, data::DataSlice, facies_
 end
 
 """
-    sediment_proportion(header, data, facies_index; mode=:deposited, kwargs...)
+    sediment_proportion(header, data, facies_index; kwargs...)
 
 Standalone proportion figure. Shows the fraction of `facies_index` relative to
 total sediment using the same mesh geometry as `sediment_profile`. A `Colorbar`
@@ -370,13 +339,12 @@ is added automatically.
 See `sediment_proportion!` for keyword arguments.
 """
 function sediment_proportion(header::Header, data::DataSlice, facies_index::Int;
-                              mode::Symbol = :deposited,
                               colorrange::Tuple = (0.0, 1.0),
                               colormap = :viridis)
     fig = Figure(size=(1000, 600))
     ax  = Axis(fig[1, 1])
     plot = sediment_proportion!(ax, header, data, facies_index;
-        mode=mode, colorrange=colorrange, colormap=colormap)
+        colorrange=colorrange, colormap=colormap)
     Colorbar(fig[1, 2], plot; label="facies $(facies_index) proportion ($(mode))")
     return fig
 end

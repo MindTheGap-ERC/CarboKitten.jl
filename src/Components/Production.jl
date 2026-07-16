@@ -4,8 +4,9 @@
 using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
-using ...Production: NoProduction
-import ...Production: production_profile, is_benthic, is_pelagic, capped_production
+using ...Production: NoProduction, InterpolatedProduction, MultiplyProduction
+import ...Production: production_profile, is_benthic, is_pelagic, is_interpolated,
+    capped_production, insolation_curve
 
 using HDF5
 using QuadGK
@@ -13,6 +14,7 @@ using Interpolations
 using Logging
 
 export uniform_production
+export MultiplyProduction, InterpolatedProduction, NoProduction
 
 # ~/~ begin <<docs/src/components/production.md#production-input>>[init]
 @kwdef struct Input <: AbstractInput
@@ -26,67 +28,41 @@ end
 is_benthic(facies::AbstractFacies) = is_benthic(facies.production)
 is_pelagic(facies::AbstractFacies) = is_pelagic(facies.production)
 # ~/~ end
-# ~/~ begin <<docs/src/components/production.md#production-insolation>>[init]
-function insolation(input::AbstractInput)
-    insolation = input.insolation
-    tprop = input.time
-    if insolation isa Quantity
-        return s -> insolation
-    end
-    if insolation isa AbstractVector
-        @info "Reading insolation from a table"
-        return s -> insolation[s.step+1]
-    end
-    @info "Reading insolation from a function"
-    function (s::AbstractState)
-        t = time(tprop, s)
-        return insolation(t)
-    end
-end
-# ~/~ end
 
 function write_header(input::AbstractInput, output::AbstractOutput)
-    if input.insolation isa Quantity
-        set_attribute(output, "insolation",
-            fill(input.insolation |> in_units_of(u"W/m^2"), input.time.steps))
-    elseif input.insolation isa AbstractVector
-        set_attribute(output, "insolation",
-            input.insolation |> in_units_of(u"W/m^2"))
-    else
-        t = write_times(input)[1:end-1]
-        set_attribute(output, "insolation",
-            input.insolation.(t) |> in_units_of(u"W/m^2"))
-    end
+    # Insolation time series
+    I_of_t = insolation_curve(input)
+    t_write = write_times(input)[1:end-1]
+    set_attribute(output, "insolation",
+        [I_of_t(t) |> in_units_of(u"W/m^2") for t in t_write])
 
+    # Generic 2D production table — no type-specific branches needed
+    depth_grid = LinRange(0.0u"m", 200.0u"m", 200)
     for (i, f) in enumerate(input.facies)
-        p = f.production
-        if is_pelagic(p)
-            set_attribute(output, "facies$(i)/type", "pelagic")
-            set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"1/Myr"))
-            set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
-            set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
-        elseif is_benthic(p)
-            set_attribute(output, "facies$(i)/type", "benthic")
-            set_attribute(output, "facies$(i)/maximum_growth_rate", p.maximum_growth_rate |> in_units_of(u"m/Myr"))
-            set_attribute(output, "facies$(i)/extinction_coefficient", p.extinction_coefficient |> in_units_of(u"m^-1"))
-            set_attribute(output, "facies$(i)/saturation_intensity", p.saturation_intensity |> in_units_of(u"W/m^2"))
-        end
+        prof = production_profile(input, f.production)
+        table = [prof(t, d) |> in_units_of(u"m/Myr")
+                 for d in depth_grid, t in t_write]
+        set_attribute(output, "facies$(i)/production_table", table)
+        set_attribute(output, "facies$(i)/production_depth_axis",
+            collect(depth_grid) .|> in_units_of(u"m"))
+        set_attribute(output, "facies$(i)/production_time_axis",
+            t_write .|> in_units_of(u"Myr"))
     end
 end
 
 function uniform_production(input::AbstractInput)
     w = water_depth(input)
     na = [CartesianIndex()]
-    insolation_func = insolation(input)
     facies = input.facies
     dt = input.time.Δt
     production_rates = [production_profile(input, f.production) for f in facies]
+    get_time = time(input)
 
-    p(state::AbstractState, wd::AbstractMatrix) =
-        capped_production.(production_rates[:, na, na], insolation_func(state), wd[na, :, :], dt)
-
+    p(state::AbstractState, wd::AbstractMatrix) = begin
+        t = get_time(state)
+        capped_production.(production_rates[:, na, na], t, wd[na, :, :], dt)
+    end
     p(state::AbstractState) = p(state, w(state))
-
     return p
 end
 

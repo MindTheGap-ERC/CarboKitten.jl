@@ -17,9 +17,11 @@ function production_rate(insolation, facies, water_depth)
     x = water_depth * facies.extinction_coefficient
     return x > 0.0 ? gₘ * tanh(I * exp(-x)) : zero(typeof(gₘ))
 end
-
+# ~/~ end
+# ~/~ begin <<docs/src/components/production.md#component-production-rate>>[1]
 benthic_production(i, f, w) = production_rate(i, f, w)
-
+# ~/~ end
+# ~/~ begin <<docs/src/components/production.md#component-production-rate>>[2]
 """
     capped_production(f, time, water_depth, dt)
 
@@ -175,7 +177,7 @@ function pelagic_production_lookup(input::AbstractInput, prod::PelagicProduction
     return (t, w) -> itp(I_of_t(t) |> in_units_of(u"W/m^2"), w |> in_units_of(u"m")) * u"m/Myr"
 end
 # ~/~ end
-
+# ~/~ begin <<docs/src/components/production.md#interpolated-production>>[init]
 # =============================================================================
 # Interpolated (knot-based) production curve
 # =============================================================================
@@ -216,7 +218,8 @@ function production_profile(::AbstractInput, p::InterpolatedProduction)
     max_rate = p.maximum_production
     return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
 end
-
+# ~/~ end
+# ~/~ begin <<docs/src/components/production.md#multiply-production>>[init]
 # =============================================================================
 # Time-window modifier — AbstractProduction transformer
 # =============================================================================
@@ -239,6 +242,7 @@ modifiers compose directly in the production spec rather than in a separate
     factor::Float64
     t_range::_ProdTimeSpec = (:)
 end
+
 MultiplyProduction(base, factor::Real; kwargs...) =
     MultiplyProduction(; base=base, factor=Float64(factor), kwargs...)
 
@@ -246,6 +250,7 @@ is_benthic(p::MultiplyProduction)      = is_benthic(p.base)
 is_pelagic(p::MultiplyProduction)      = is_pelagic(p.base)
 is_interpolated(p::MultiplyProduction) = is_interpolated(p.base)
 
+# ~/~ begin <<docs/src/components/production.md#multiply-production-profile>>[init]
 function production_profile(input::AbstractInput, p::MultiplyProduction)
     base_profile = production_profile(input, p.base)
     return function(t, w)
@@ -253,6 +258,8 @@ function production_profile(input::AbstractInput, p::MultiplyProduction)
         return base_profile(t, w) * f
     end
 end
+# ~/~ end
+# ~/~ end
 
 const EXAMPLE = Dict(
     :euphotic => BenthicProduction(

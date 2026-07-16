@@ -18,9 +18,17 @@ function production_rate(insolation, facies, water_depth)
     x = water_depth * facies.extinction_coefficient
     return x > 0.0 ? gₘ * tanh(I * exp(-x)) : zero(typeof(gₘ))
 end
+```
 
+We also have an alias for benthic production rates `benthic_production`, as we will also allow for a `pelagic_production` function (see [Pelagic Production](@ref)).
+
+``` {.julia #component-production-rate}
 benthic_production(i, f, w) = production_rate(i, f, w)
+```
 
+Because we can only produce as much as keeps the factory submerged, we have to cap the total production in a single time step to the current water depth. This assumes we have production as a function of time and water depth.
+
+``` {.julia #component-production-rate}
 """
     capped_production(f, time, water_depth, dt)
 
@@ -34,16 +42,11 @@ function capped_production(f, time, water_depth, dt)
 end
 ```
 
-`capped_production` now takes `time` instead of `insolation`. Insolation is
-captured inside each production profile closure via `insolation_curve` — the
-model loop only needs to pass the current simulation time.
+Insolation is captured inside each production profile closure via `insolation_curve` — the model loop only needs to pass the current simulation time.
 
-From just this equation we can define a uniform production process. This
-requires that we have a `Facies` that defines the `maximum_growth_rate`,
-`extinction_coefficient` and `saturation_intensity`.
+From just this equation we can define a uniform production process. This requires that we have a `Facies` that defines the `maximum_growth_rate`, `extinction_coefficient` and `saturation_intensity`.
 
-The `insolation` input may be given as a scalar quantity, say `400u"W/m^2"`,
-or as a function of time.
+The `insolation` input may be given as a scalar quantity, say `400u"W/m^2"`, or as a function of time.
 
 ## Pelagic Production
 
@@ -94,9 +97,9 @@ end
 ## Insolation curve
 
 Production profiles are now functions of `(time, water_depth)` rather than
-`(insolation, water_depth)`. The `insolation_curve` helper captures insolation
-inside the closure returned by `production_profile`, so the model loop never
-needs to call an insolation function explicitly.
+`(insolation, water_depth)`.
+
+The `insolation_curve` helper captures insolation inside the closure returned by `production_profile`, so the model loop never needs to call an insolation function explicitly.
 
 ``` {.julia #insolation-curve}
 """
@@ -161,6 +164,51 @@ facies = [
 ]
 ```
 
+### Implementation
+
+``` {.julia #interpolated-production}
+# =============================================================================
+# Interpolated (knot-based) production curve
+# =============================================================================
+
+"""
+    InterpolatedProduction(; maximum_production, depth_knots, multipliers)
+
+A depth-only production curve defined by a peak rate and a piecewise-linear
+shape over `(depth, multiplier)` knots. Independent of insolation.
+
+    rate(t, w) = maximum_production × interpolate(depth_knots, multipliers; w)
+
+`depth_knots` need not be sorted; they are sorted internally.
+
+# Example
+
+    InterpolatedProduction(
+        maximum_production = 500.0u"m/Myr",
+        depth_knots        = [0.0u"m", 5.0u"m", 20.0u"m", 50.0u"m"],
+        multipliers        = [0.0,     1.0,     0.6,      0.0])
+"""
+@kwdef struct InterpolatedProduction <: AbstractProduction
+    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
+    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
+    multipliers::Vector{Float64}            = Float64[]
+end
+
+is_benthic(::InterpolatedProduction)      = false
+is_pelagic(::InterpolatedProduction)      = false
+is_interpolated(::InterpolatedProduction) = true
+
+function production_profile(::AbstractInput, p::InterpolatedProduction)
+    @assert length(p.depth_knots) == length(p.multipliers)
+    @assert length(p.depth_knots) >= 2
+    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
+    order = sortperm(depths_m)
+    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
+    max_rate = p.maximum_production
+    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
+end
+```
+
 ## Time-window production modifiers
 
 Instead of a separate `production_modifiers` list on `Input`, time-varying
@@ -208,8 +256,8 @@ to its `base`, so CA participation is correctly inherited.
 `production_profile(input, p::MultiplyProduction)` calls
 `production_profile(input, p.base)` and wraps the result:
 
-```julia
-function production_profile(input, p::MultiplyProduction)
+``` {.julia #multiply-production-profile}
+function production_profile(input::AbstractInput, p::MultiplyProduction)
     base_profile = production_profile(input, p.base)
     return function(t, w)
         f = p.t_range isa Colon || (p.t_range[1] <= t <= p.t_range[2]) ? p.factor : 1.0
@@ -217,10 +265,69 @@ function production_profile(input, p::MultiplyProduction)
     end
 end
 ```
-
 Because modifiers are baked into the production closure, `uniform_production`
 and `CAProduction` contain no modifier-related code — they simply call
 `capped_production(profile, t, wd, dt)`.
+
+``` {.julia #multiply-production}
+# =============================================================================
+# Time-window modifier — AbstractProduction transformer
+# =============================================================================
+
+const _ProdTime     = typeof(1.0u"Myr")
+const _ProdTimeSpec = Union{Colon, Tuple{_ProdTime,_ProdTime}}
+
+"""
+    MultiplyProduction(base, factor; t_range=:)
+
+Wraps `base::AbstractProduction`, multiplying its output by `factor` during
+`t_range`. Outside `t_range` the base production is unchanged.
+
+This implements the modifier pattern as `AbstractProduction -> AbstractProduction`:
+modifiers compose directly in the production spec rather than in a separate
+`production_modifiers` list on `Input`.
+"""
+@kwdef struct MultiplyProduction <: AbstractProduction
+    base::AbstractProduction
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+end
+
+MultiplyProduction(base, factor::Real; kwargs...) =
+    MultiplyProduction(; base=base, factor=Float64(factor), kwargs...)
+
+is_benthic(p::MultiplyProduction)      = is_benthic(p.base)
+is_pelagic(p::MultiplyProduction)      = is_pelagic(p.base)
+is_interpolated(p::MultiplyProduction) = is_interpolated(p.base)
+
+<<multiply-production-profile>>
+```
+
+### `ProductionBoost`
+
+We may use the `ProductionBoost` type to have an easier interface for `MultiplyProduction`. For example, to inhibit production at one stage and boost it at a later stage, you might write something like this:
+
+```julia
+base_production = BenthicProduction(
+    maximum_growth_rate = 500u"m/Myr",
+    extinction_coefficient = 0.8u"m^-1",
+    saturation_intensity = 60u"W/m^2")
+
+boosted_production = base_production * 
+    ProductionBoost(0.5, (0.2u"Myr", 0.4u"Myr")) * 
+    ProductionBoost(1.5, (0.6u"Myr", 0.8u"Myr"))
+```
+
+The implementation is smaller than the use case:
+
+``` {.julia #production-boost}
+@kwdef struct ProductionBoost
+    factor::Float64
+    t_range::_ProdTimeSpec = (:)
+end
+
+Base.:*(p::AbstractProduction, b::ProductionBoost) = MultiplyProduction(p, b.factor, b.t_range)
+```
 
 ## Production Component
 
@@ -402,84 +509,8 @@ export production_profile
 <<insolation-curve>>
 <<production-profile>>
 <<production-lookup>>
-
-# =============================================================================
-# Interpolated (knot-based) production curve
-# =============================================================================
-
-"""
-    InterpolatedProduction(; maximum_production, depth_knots, multipliers)
-
-A depth-only production curve defined by a peak rate and a piecewise-linear
-shape over `(depth, multiplier)` knots. Independent of insolation.
-
-    rate(t, w) = maximum_production × interpolate(depth_knots, multipliers; w)
-
-`depth_knots` need not be sorted; they are sorted internally.
-
-# Example
-
-    InterpolatedProduction(
-        maximum_production = 500.0u"m/Myr",
-        depth_knots        = [0.0u"m", 5.0u"m", 20.0u"m", 50.0u"m"],
-        multipliers        = [0.0,     1.0,     0.6,      0.0])
-"""
-@kwdef struct InterpolatedProduction <: AbstractProduction
-    maximum_production::typeof(1.0u"m/Myr") = 0.0u"m/Myr"
-    depth_knots::Vector{typeof(1.0u"m")}    = typeof(1.0u"m")[]
-    multipliers::Vector{Float64}            = Float64[]
-end
-
-is_benthic(::InterpolatedProduction)      = false
-is_pelagic(::InterpolatedProduction)      = false
-is_interpolated(::InterpolatedProduction) = true
-
-function production_profile(::AbstractInput, p::InterpolatedProduction)
-    @assert length(p.depth_knots) == length(p.multipliers)
-    @assert length(p.depth_knots) >= 2
-    depths_m = [d |> in_units_of(u"m") for d in p.depth_knots]
-    order = sortperm(depths_m)
-    itp = linear_interpolation(depths_m[order], p.multipliers[order], extrapolation_bc=Flat())
-    max_rate = p.maximum_production
-    return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
-end
-
-# =============================================================================
-# Time-window modifier — AbstractProduction transformer
-# =============================================================================
-
-const _ProdTime     = typeof(1.0u"Myr")
-const _ProdTimeSpec = Union{Colon, Tuple{_ProdTime,_ProdTime}}
-
-"""
-    MultiplyProduction(base, factor; t_range=:)
-
-Wraps `base::AbstractProduction`, multiplying its output by `factor` during
-`t_range`. Outside `t_range` the base production is unchanged.
-
-This implements the modifier pattern as `AbstractProduction -> AbstractProduction`:
-modifiers compose directly in the production spec rather than in a separate
-`production_modifiers` list on `Input`.
-"""
-@kwdef struct MultiplyProduction <: AbstractProduction
-    base::AbstractProduction
-    factor::Float64
-    t_range::_ProdTimeSpec = (:)
-end
-MultiplyProduction(base, factor::Real; kwargs...) =
-    MultiplyProduction(; base=base, factor=Float64(factor), kwargs...)
-
-is_benthic(p::MultiplyProduction)      = is_benthic(p.base)
-is_pelagic(p::MultiplyProduction)      = is_pelagic(p.base)
-is_interpolated(p::MultiplyProduction) = is_interpolated(p.base)
-
-function production_profile(input::AbstractInput, p::MultiplyProduction)
-    base_profile = production_profile(input, p.base)
-    return function(t, w)
-        f = p.t_range isa Colon || (p.t_range[1] <= t <= p.t_range[2]) ? p.factor : 1.0
-        return base_profile(t, w) * f
-    end
-end
+<<interpolated-production>>
+<<multiply-production>>
 
 const EXAMPLE = Dict(
     :euphotic => BenthicProduction(

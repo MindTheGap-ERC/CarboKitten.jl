@@ -369,8 +369,7 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
         ax.title = "t = $(round(t_myr; digits = 3)) Myr"
     else
         depth_value = ustrip(depth_m)
-        ax.title = "t = $(round(t_myr; digits = 3)) Myr, " *
-                   "depth = $(round(depth_value; digits = 3)) m"
+        ax.title = "depth = $(round(depth_value; digits = 3)) m"
     end
     return hm
 end

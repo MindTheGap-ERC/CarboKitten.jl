@@ -86,6 +86,7 @@ module ActiveLayerSpec
 using Test
 using CarboKitten.Components: ActiveLayer as AL
 using CarboKitten.Components.Common
+using CarboKitten.Components.WaterDepth: initial_topography
 
 @testset "Components/ActiveLayer" begin
     @testset "Disintegration transfer" begin
@@ -94,13 +95,15 @@ using CarboKitten.Components.Common
                 box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
                 time = TimeProperties(Δt=1.0u"kyr", steps=10),
                 facies=facies,
-                disintegration_transfer = f -> stack((0.0.*f[1,:,:], 0.5.*f[2,:,:], 
+                disintegration_transfer = f -> stack((0.0.*f[1,:,:], 0.5.*f[2,:,:],
                                           f[1,:,:].+f[3,:,:], f[4,:,:].+0.5.*f[2,:,:]),dims=1),
             )
 
+            bathymetry = initial_topography(input)
             state = AL.State(
                 step = 0,
-                sediment_height = zeros(Height, input.box.grid_size...),
+                bathymetry = bathymetry,
+                sediment_thickness = zeros(Amount, input.box.grid_size...),
                 sediment_buffer = zeros(Float64, input.sediment_buffer_size, AL.n_facies(input), input.box.grid_size...),
                 active_layer=zeros(Amount, AL.n_facies(input), input.box.grid_size...))
 
@@ -109,7 +112,7 @@ using CarboKitten.Components.Common
 
             dtf = input.disintegration_transfer
             transferred_sed = dtf(d)
-            state.active_layer .+= transferred_sed 
+            state.active_layer .+= transferred_sed
 
             @test all(state.active_layer[1,:] .≈ 0.0u"m")
             @test all(state.active_layer[2,:] .≈ 0.5u"m")
@@ -552,9 +555,7 @@ function plot_1d_evolution!(ax::Axis, input, every=100)
 
 	plot_state() = begin
 		t = state.step * input.time.Δt
-		η = input.initial_topography.(x, y') .+ 
-            state.sediment_height .-
-            input.subsidence_rate * t
+		η = state.bathymetry
 		lines!(ax, x |> in_units_of(u"km"), η[:, y_idx] |> in_units_of(u"m"),
                label=@sprintf("%.3f Myr", ustrip(t)))
 	end
@@ -802,6 +803,9 @@ end
     save_active_layer::Bool = false
 end
 
+@constructor _initial_state(input)::State[active_layer] = (
+    active_layer = zeros(Amount, n_facies(input), input.box.grid_size...),)
+
 courant_max(::Type{Val{:RK4}}) = 2.0
 courant_max(::Type{Val{:forward_euler}}) = 1.0
 
@@ -878,21 +882,21 @@ modifies the state, popping sediment from the `sediment_buffer` and returns an a
 function disintegrator(input)
     max_h = input.disintegration_rate * input.time.Δt
     w = water_depth(input)
-    output = Array{Float64,3}(undef, n_facies(input), input.box.grid_size...)
+    output = Array{Amount,3}(undef, n_facies(input), input.box.grid_size...)
     depositional_resolution = input.depositional_resolution
     iz = input.intertidal_zone
     tf = input.disintegration_transfer
+    pop! = pop_sediment(input)
 
     return function (state)
         wn = w(state)
         wn .+= iz
-        h = min.(max_h, state.sediment_height)
+        h = min.(max_h, state.sediment_thickness)
         h[wn.<=0.0u"m"] .= 0.0u"m"
 
         @assert all(h .<= max_h)
-        state.sediment_height .-= h
-        pop_sediment!(state.sediment_buffer, h ./ depositional_resolution .|> NoUnits, output)
-        return output .* depositional_resolution
+        pop!(state, h, output)
+        return output
     end
 end
 
@@ -1175,10 +1179,10 @@ The following tests that we see the expected behaviours both without an intertid
     using CarboKitten
     using CarboKitten.Testing: transport_test_input
 
-    function end_sediment_height(input)
+    function end_sediment_thickness(input)
         state = ALCAP.initial_state(input)
         run_model((_, _) -> (), Model{ALCAP}, input, state)
-        return state.sediment_height
+        return state.sediment_thickness
     end
 
     function three_peaks(x, y)
@@ -1202,7 +1206,7 @@ The following tests that we see the expected behaviours both without an intertid
         intertidal_zone = 0u"m"
     )
 
-    output1 = end_sediment_height(input1)[:, 1]
+    output1 = end_sediment_thickness(input1)[:, 1]
 
     input2 = transport_test_input(
         initial_topography = staircase(5.0u"km", -10.0u"m", 10.0u"m"),
@@ -1212,7 +1216,7 @@ The following tests that we see the expected behaviours both without an intertid
         intertidal_zone = 10u"m"
     )
 
-    output2 = end_sediment_height(input2)[:, 1]
+    output2 = end_sediment_thickness(input2)[:, 1]
 
     @test output1[10:30] ≈ output1[50:70] atol=0.01u"m"
     @test !isapprox(output1[50:70], output1[90:110], atol=1.0u"m")

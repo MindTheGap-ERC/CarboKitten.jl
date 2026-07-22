@@ -199,8 +199,7 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
     h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
-    sc_clamped = max.(sc, zero(eltype(sc)))  
-    @views h[:, 2:end] .+= cumsum(sum(sc_clamped, dims=1)[1,:,:], dims=2)
+    @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
 
     verts = zeros(Float64, n_x, n_t+1, 2)
     @views verts[:, :, 1] .= x
@@ -253,8 +252,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
     h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
-    sc_clamped = max.(sc, zero(eltype(sc)))   
-    @views h[:, 2:end] .+= cumsum(sum(sc_clamped, dims=1)[1,:,:], dims=2)
+    @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
 
     if show_sealevel
         plot_sealevel!(ax, header)

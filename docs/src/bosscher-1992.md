@@ -213,22 +213,25 @@ using ...Output: Frame
 export Input, Facies
 
 function initial_state(input::Input)
-    sediment_height = zeros(Height, input.box.grid_size...)
-    return State(0, sediment_height)
+    bathymetry = initial_topography(input)
+    return State(0, bathymetry)
 end
 
 function initial_frame(input::Input)
-    return Frame(production=zeros(Sediment,length(input.facies), input.box.grid_size...), 
+    return Frame(production=zeros(Sediment,length(input.facies), input.box.grid_size...),
                   disintegration=zeros(Sediment,length(input.facies), input.box.grid_size...),
                   deposition=zeros(Sediment,length(input.facies), input.box.grid_size...))
 end
 
 function step!(input::Input)
     τ = uniform_production(input)
+    subside! = subsider(input)
+
     function (state::State)
         prod = τ(state)
         Δη = sum(prod; dims=1)[1, :, :]
-        state.sediment_height .+= Δη
+        state.bathymetry .+= Δη
+        subside!(state)
         state.step += 1
         return Frame(
             production=prod,
@@ -273,9 +276,10 @@ const INPUT = BS92.Input(
     subsidence_rate = 0.0u"m/yr",
     insolation = 400.0u"W/m^2",
     facies = [BS92.Facies(
-      maximum_growth_rate = 0.005u"m/yr",
-      saturation_intensity = 50.0u"W/m^2",
-      extinction_coefficient = 0.05u"m^-1"
+      production=BenthicProduction(
+        maximum_growth_rate = 0.005u"m/yr",
+        saturation_intensity = 50.0u"W/m^2",
+        extinction_coefficient = 0.05u"m^-1")
     )])
 
 function main()
@@ -314,17 +318,20 @@ using CarboKitten
 
 const FACIES = [
     BS92.Facies(
-         maximum_growth_rate=500u"m/Myr"/4,
-         extinction_coefficient=0.8u"m^-1",
-         saturation_intensity=60u"W/m^2"),
+        production=BenthicProduction(
+            maximum_growth_rate=500u"m/Myr"/4,
+            extinction_coefficient=0.8u"m^-1",
+            saturation_intensity=60u"W/m^2")),
     BS92.Facies(
-         maximum_growth_rate=400u"m/Myr"/4,
-         extinction_coefficient=0.1u"m^-1",
-         saturation_intensity=60u"W/m^2"),
+        production=BenthicProduction(
+            maximum_growth_rate=400u"m/Myr"/4,
+            extinction_coefficient=0.1u"m^-1",
+            saturation_intensity=60u"W/m^2")),
     BS92.Facies(
-         maximum_growth_rate=100u"m/Myr"/4,
-         extinction_coefficient=0.005u"m^-1",
-         saturation_intensity=60u"W/m^2")]
+        production=BenthicProduction(
+            maximum_growth_rate=100u"m/Myr"/4,
+            extinction_coefficient=0.005u"m^-1",
+            saturation_intensity=60u"W/m^2"))]
 
 const INPUT = BS92.Input(
     tag = "example model BS92",

@@ -80,7 +80,7 @@ end
     attributes::Dict{String,Any} = Dict()
 end
 
-@kwdef struct Data{F,D}
+@kwdef mutable struct Data{F,D}
     slice::Slice2
     write_interval::Int
     # Julia doesn't allow to say Array{Amount,D+1} here
@@ -89,6 +89,7 @@ end
     deposition::Array{Amount,F}
     bathymetry::Array{Amount,D}
     active_layer::Union{Array{Amount,F}, Nothing} = nothing
+    stratigraphic_column::Union{Array{Amount,F}, Nothing} = nothing
 end
 
 const DataVolume = Data{4,3}
@@ -149,11 +150,14 @@ data_kind(spec::OutputSpec) = data_kind(spec.slice...)
 Given a data set, compute the stratigrahpic column.
 """
 function stratigraphic_column(data::Data{F, D}) where {F, D}
-    net_deposition = data.deposition .- data.disintegration
-    for c in eachslice(net_deposition, dims=(1:D...,))
-        stratigraphic_column!(c)
+    if data.stratigraphic_column === nothing
+        net_deposition = data.deposition .- data.disintegration
+        for c in eachslice(net_deposition, dims=(1:D...,))
+            stratigraphic_column!(c)
+        end
+        data.stratigraphic_column = net_deposition
     end
-    return net_deposition
+    return data.stratigraphic_column
 end
 
 """

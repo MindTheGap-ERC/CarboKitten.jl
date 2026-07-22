@@ -21,4 +21,73 @@ end
   a = peek_sediment(sediment, 1.0)
   @test all(sum(a; dims=1) .≈ 1.0)
 end
+@testset "Sediment layer reconstruction" begin
+    using CarboKitten.SedimentStack: sediment_layer
+
+    deposition = zeros(Float64, 3, 1, 1, 4)
+    disintegration = zeros(Float64, 3, 1, 1, 4)
+
+    deposition[1, 1, 1, 1] = 1.0
+    deposition[2, 1, 1, 2] = 1.0
+    deposition[3, 1, 1, 3] = 1.0
+
+    top, present = sediment_layer(deposition, disintegration, 3)
+    @test present[1, 1]
+    @test top[:, 1, 1] ≈ [0.0, 0.0, 1.0]
+
+    middle, present = sediment_layer(deposition, disintegration, 3; depth=1.0)
+    @test present[1, 1]
+    @test middle[:, 1, 1] ≈ [0.0, 1.0, 0.0]
+
+    bottom, present = sediment_layer(deposition, disintegration, 3; depth=2.0)
+    @test present[1, 1]
+    @test bottom[:, 1, 1] ≈ [1.0, 0.0, 0.0]
+
+    combined, present = sediment_layer(
+        deposition,
+        disintegration,
+        3;
+        thickness=2.0,
+    )
+    @test present[1, 1]
+    @test combined[:, 1, 1] ≈ [0.0, 1.0, 1.0]
+
+    earlier, present = sediment_layer(deposition, disintegration, 2)
+    @test present[1, 1]
+    @test earlier[:, 1, 1] ≈ [0.0, 1.0, 0.0]
+
+    absent, present = sediment_layer(deposition, disintegration, 3; depth=3.0)
+    @test !present[1, 1]
+    @test iszero(sum(absent[:, 1, 1]))
+
+    eroded_deposition = zeros(Float64, 2, 1, 1, 3)
+    eroded_disintegration = zeros(Float64, 2, 1, 1, 3)
+    eroded_deposition[1, 1, 1, 1] = 1.0
+    eroded_deposition[2, 1, 1, 2] = 1.0
+    eroded_disintegration[2, 1, 1, 3] = 1.0
+
+    exposed, present = sediment_layer(
+        eroded_deposition,
+        eroded_disintegration,
+        3,
+    )
+    @test present[1, 1]
+    @test exposed[:, 1, 1] ≈ [1.0, 0.0]
+
+    # A finite layer thickness combines a very small final event with the
+    # underlying sediment instead of letting that event dominate the map.
+    thin_deposition = zeros(Float64, 2, 1, 1, 2)
+    thin_disintegration = zeros(Float64, 2, 1, 1, 2)
+    thin_deposition[1, 1, 1, 1] = 1.0
+    thin_deposition[2, 1, 1, 2] = 0.01
+
+    smoothed, present = sediment_layer(
+        thin_deposition,
+        thin_disintegration,
+        2;
+        thickness=1.0,
+    )
+    @test present[1, 1]
+    @test smoothed[:, 1, 1] ≈ [0.99, 0.01]
+end
 # ~/~ end

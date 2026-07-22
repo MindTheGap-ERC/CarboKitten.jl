@@ -3,6 +3,16 @@
 The map-view visualization routine allows users to plot model output at selected stratigraphic positions or depths. This makes it possible to inspect 2D facies patterns, sediment distribution, and lateral organization across the platform at different stratigraphic levels.
 The user can select the stratigraphic position or depth to visualize, and the routine returns a horizontal map-view of the facies distribution. Maps can be coloured either categorically, by dominant facies, or continuously, by the proportion of one selected facies relative to the total sediment in each cell.
 
+For preserved maps, the routine replays all saved deposition and disintegration
+through the existing sediment-buffer operations up to the selected time. It
+then samples a finite interval at the requested depth below the sediment
+surface. This separates stratigraphic reconstruction from plotting and prevents
+a very small last sedimentation event from dominating facies fractions.
+
+For exact timestep-by-timestep reconstruction, use an output
+`write_interval = 1`. Larger intervals remain supported because CarboKitten
+aggregates deposition and disintegration within each saved interval.
+
 ![Map View Categotical](../fig/map_view_file_cat.png)
 ![Map View Proportion](../fig/map_view_file_fraction.png)
 
@@ -129,8 +139,8 @@ module MapView
 import CarboKitten.Visualization: map_view, map_view!
 using CarboKitten.Utility: in_units_of
 using CarboKitten.Export: Header, Data, DataVolume, read_volume
-using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
-
+using CarboKitten.Output.Abstract: water_depth
+using CarboKitten.SedimentStack: sediment_layer
 using Makie
 using Unitful
 
@@ -145,20 +155,12 @@ _colormax(d::AbstractArray) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 function _facies_fraction(d::AbstractArray, facies::Integer)
     total = dropdims(sum(d; dims = 1); dims = 1)
     selected = d[facies, :, :]
-
-    fraction = Matrix{Union{Missing,Float64}}(undef, Base.size(total))
-
-    for I in eachindex(total)
-        if iszero(total[I])
-            fraction[I] = missing
-        else
-            fraction[I] = Float64(ustrip(selected[I] / total[I]))
-        end
-    end
-
-    return fraction
+    return ifelse.(
+        iszero.(total),
+        missing,
+        Float64.(ustrip.(selected ./ total)),
+    )
 end
-
 # Resolve a stratigraphic position into an index along the (write-interval
 # corrected) time axis. Integer indices are passed through; Unitful time
 # quantities are matched by nearest neighbour.
@@ -169,6 +171,9 @@ _to_time_index(t_axis::AbstractVector{<:Quantity}, t::Quantity) =
 """
     map_view!(ax, header, data;
               time             = end,
+              depth                   = 0.0u"m",
+              layer_thickness         = 1.0u"m",
+              depositional_resolution = 0.5u"m",
               show             = :preserved,
               color_by         = :facies,
               facies           = nothing,
@@ -193,6 +198,13 @@ by the proportion of a selected facies using a continuous colour scale..
 - `time` — stratigraphic position. Either an integer write-frame index
   (1-based; defaults to the final frame) or a `Unitful.Quantity` time value
   such as `0.5u"Myr"`, in which case the nearest available frame is used.
+- `depth` — depth below the sediment surface at the selected time. The
+  default is `0u"m"`, i.e. the uppermost preserved sediment.
+- `layer_thickness` — thickness of the sampled interval. The default is
+  `1u"m"`, which reduces noise from very small sedimentation events.
+- `depositional_resolution` — vertical resolution used for the reconstructed
+  sediment buffer. The default is `0.5u"m"`; use the value from the model input
+  when a different resolution was used.
 - `show::Symbol` — controls which stratigraphic quantity is plotted.
   `:model` shows what is being deposited in the chosen frame; `:preserved`
   shows what is preserved in the stratigraphic column for that frame; `:both`
@@ -220,6 +232,9 @@ The `Heatmap` object. This can be used to attach a `Colorbar`.
 
 function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
                    time::Union{Integer,Quantity} = length(header.axes.t[1:data.write_interval:end]),
+                   depth = 0.0u"m",
+                   layer_thickness = 1.0u"m",
+                   depositional_resolution = 0.5u"m",
                    show::Symbol = :preserved,
                    color_by::Symbol = :facies,
                    facies::Union{Nothing,Integer} = nothing,
@@ -234,7 +249,19 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
         error("`show` must be one of :model, :preserved, :both — got $(show)")
     end
 
-    prec = 1e-8u"m"  # below this we treat accumulation as zero (mirrors WheelerDiagram)
+    depth_m = uconvert(u"m", depth)
+    layer_thickness_m = uconvert(u"m", layer_thickness)
+    resolution_m = uconvert(u"m", depositional_resolution)
+
+    depth_m >= 0.0u"m" || error("`depth` must be non-negative")
+    layer_thickness_m > 0.0u"m" ||
+        error("`layer_thickness` must be positive")
+    resolution_m > 0.0u"m" ||
+        error("`depositional_resolution` must be positive")
+
+    depth_cells = Float64(ustrip(depth_m / resolution_m))
+    layer_thickness_cells = Float64(ustrip(layer_thickness_m / resolution_m))
+    amount_to_cells = amount -> Float64(ustrip(amount / resolution_m))
     n_facies = size(data.production, 1)
     wi = data.write_interval
     t_axis = header.axes.t[1:wi:end]
@@ -284,28 +311,35 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
         end
     
         if mask_emerged
-            m[wd .> 0u"m"] .= missing
+            m[wd .< 0u"m"] .= missing
         end
     
         return m
     end
     
     function preserved_values()
-        sc_full = stratigraphic_column(data)
-        sc = sc_full[:, :, :, t_idx]
-    
+        layer, present = sediment_layer(
+            data.deposition,
+            data.disintegration,
+            t_idx;
+            depth = depth_cells,
+            thickness = layer_thickness_cells,
+            amount_to_cells = amount_to_cells,
+        )
+
         m = if color_by == :facies
-            Matrix{Union{Missing,Int}}(_colormax(sc))
+            Matrix{Union{Missing,Int}}(_colormax(layer))
         else
-            _facies_fraction(sc, facies_idx)
+            _facies_fraction(layer, facies_idx)
         end
-    
-        acc = dropdims(sum(sc; dims = 1); dims = 1)
-        m[acc .< prec] .= missing
-    
+
+        m[.!present] .= missing
+        if mask_emerged
+            m[wd .< 0u"m"] .= missing
+        end
+
         return m
     end
-
     # Merge defaults with user kwargs so caller's keys cleanly override ours
     base   = (colormap = cmap, colorrange = colorrange, nan_color = :white)
     user   = (; kwargs...)
@@ -331,8 +365,13 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
     ax.ylabel = "y [km]"
     ax.aspect = DataAspect()
     t_myr = t_axis[t_idx] |> in_units_of(u"Myr")
-    ax.title  = "t = $(round(t_myr; digits = 3)) Myr"
-
+    if show == :model
+        ax.title = "t = $(round(t_myr; digits = 3)) Myr"
+    else
+        depth_value = ustrip(depth_m)
+        ax.title = "t = $(round(t_myr; digits = 3)) Myr, " *
+                   "depth = $(round(depth_value; digits = 3)) m"
+    end
     return hm
 end
 

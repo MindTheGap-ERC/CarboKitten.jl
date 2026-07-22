@@ -49,6 +49,75 @@ end
   a = peek_sediment(sediment, 1.0)
   @test all(sum(a; dims=1) .≈ 1.0)
 end
+@testset "Sediment layer reconstruction" begin
+    using CarboKitten.SedimentStack: sediment_layer
+
+    deposition = zeros(Float64, 3, 1, 1, 4)
+    disintegration = zeros(Float64, 3, 1, 1, 4)
+
+    deposition[1, 1, 1, 1] = 1.0
+    deposition[2, 1, 1, 2] = 1.0
+    deposition[3, 1, 1, 3] = 1.0
+
+    top, present = sediment_layer(deposition, disintegration, 3)
+    @test present[1, 1]
+    @test top[:, 1, 1] ≈ [0.0, 0.0, 1.0]
+
+    middle, present = sediment_layer(deposition, disintegration, 3; depth=1.0)
+    @test present[1, 1]
+    @test middle[:, 1, 1] ≈ [0.0, 1.0, 0.0]
+
+    bottom, present = sediment_layer(deposition, disintegration, 3; depth=2.0)
+    @test present[1, 1]
+    @test bottom[:, 1, 1] ≈ [1.0, 0.0, 0.0]
+
+    combined, present = sediment_layer(
+        deposition,
+        disintegration,
+        3;
+        thickness=2.0,
+    )
+    @test present[1, 1]
+    @test combined[:, 1, 1] ≈ [0.0, 1.0, 1.0]
+
+    earlier, present = sediment_layer(deposition, disintegration, 2)
+    @test present[1, 1]
+    @test earlier[:, 1, 1] ≈ [0.0, 1.0, 0.0]
+
+    absent, present = sediment_layer(deposition, disintegration, 3; depth=3.0)
+    @test !present[1, 1]
+    @test iszero(sum(absent[:, 1, 1]))
+
+    eroded_deposition = zeros(Float64, 2, 1, 1, 3)
+    eroded_disintegration = zeros(Float64, 2, 1, 1, 3)
+    eroded_deposition[1, 1, 1, 1] = 1.0
+    eroded_deposition[2, 1, 1, 2] = 1.0
+    eroded_disintegration[2, 1, 1, 3] = 1.0
+
+    exposed, present = sediment_layer(
+        eroded_deposition,
+        eroded_disintegration,
+        3,
+    )
+    @test present[1, 1]
+    @test exposed[:, 1, 1] ≈ [1.0, 0.0]
+
+    # A finite layer thickness combines a very small final event with the
+    # underlying sediment instead of letting that event dominate the map.
+    thin_deposition = zeros(Float64, 2, 1, 1, 2)
+    thin_disintegration = zeros(Float64, 2, 1, 1, 2)
+    thin_deposition[1, 1, 1, 1] = 1.0
+    thin_deposition[2, 1, 1, 2] = 0.01
+
+    smoothed, present = sediment_layer(
+        thin_deposition,
+        thin_disintegration,
+        2;
+        thickness=1.0,
+    )
+    @test present[1, 1]
+    @test smoothed[:, 1, 1] ≈ [0.99, 0.01]
+end
 ```
 
 ### Pushing sediment
@@ -181,8 +250,7 @@ Instead of popping sediment, we can also *peek* at the stack with `peek_sediment
 ``` {.julia file=src/SedimentStack.jl}
 module SedimentStack
 
-export push_sediment!, pop_sediment!, peek_sediment
-
+export push_sediment!, pop_sediment!, peek_sediment, sediment_layer
 <<sediment-stack-impl>>
 
 function push_sediment!(sediment::AbstractArray{F, 4}, p::AbstractArray{F, 3}) where F <: Real
@@ -226,6 +294,132 @@ function peek_sediment(sediment::AbstractArray{F,4}, Δ::F) where F <: Real
   return out
 end
 
+"""
+    sediment_layer(deposition, disintegration, time_index;
+                   depth=0.0, thickness=1.0,
+                   amount_to_cells=Float64)
+
+Reconstruct the sediment stack through `time_index` and return a preserved
+interval below the sediment surface.
+
+`deposition` and `disintegration` have dimensions `(facies, x, y, time)`.
+`depth` and `thickness` are expressed in sediment-buffer cells.
+`amount_to_cells` converts one sediment amount to the same dimensionless units.
+The result is `(layer, present)`, where `layer` has dimensions
+`(facies, x, y)` and `present` marks cells that contain the requested interval.
+"""
+function sediment_layer(
+    deposition::AbstractArray{T,4},
+    disintegration::AbstractArray{T,4},
+    time_index::Integer;
+    depth::Real = 0.0,
+    thickness::Real = 1.0,
+    amount_to_cells = Float64,
+) where T
+    size(deposition) == size(disintegration) ||
+        throw(DimensionMismatch(
+            "deposition and disintegration must have the same shape",
+        ))
+
+    n_facies, nx, ny, n_times = size(deposition)
+    1 <= time_index <= n_times ||
+        throw(ArgumentError("time_index must be between 1 and $(n_times)"))
+    depth >= 0.0 || throw(ArgumentError("depth must be non-negative"))
+    thickness > 0.0 || throw(ArgumentError("thickness must be positive"))
+
+    function parcel_mass(data, i, j, k)
+        mass = 0.0
+        @inbounds for f in 1:n_facies
+            amount = Float64(amount_to_cells(data[f, i, j, k]))
+            amount >= 0.0 ||
+                throw(ArgumentError("sediment amounts must be non-negative"))
+            mass += amount
+        end
+        return mass
+    end
+
+    # Determine only the stack depth needed to preserve the requested final
+    # interval. In the absence of erosion this is approximately
+    # depth + thickness, rather than the complete accumulated succession.
+    required_capacity = depth + thickness
+    @inbounds for j in 1:ny, i in 1:nx
+        height = 0.0
+        maximum_height = 0.0
+
+        for k in 1:time_index
+            height = max(
+                0.0,
+                height - parcel_mass(disintegration, i, j, k),
+            )
+            height += parcel_mass(deposition, i, j, k)
+            maximum_height = max(maximum_height, height)
+        end
+
+        if height > depth
+            sample_bottom = max(0.0, height - depth - thickness)
+            required_capacity = max(
+                required_capacity,
+                maximum_height - sample_bottom,
+            )
+        end
+    end
+
+    # Extra empty rows keep complete-buffer pops away from the edge case in
+    # pop_sediment! while leaving the reconstructed result unchanged.
+    n_layers = max(3, ceil(Int, required_capacity) + 3)
+
+    layer = zeros(Float64, n_facies, nx, ny)
+    present = falses(nx, ny)
+    column = zeros(Float64, n_layers, n_facies)
+    parcel = zeros(Float64, n_facies)
+
+    @inbounds for j in 1:ny, i in 1:nx
+        fill!(column, 0.0)
+        available = 0.0
+
+        for k in 1:time_index
+            eroded = min(
+                parcel_mass(disintegration, i, j, k),
+                available,
+            )
+
+            if eroded > 0.0
+                pop_sediment!(column, eroded)
+                available -= eroded
+            end
+
+            deposited = 0.0
+            for f in 1:n_facies
+                amount = Float64(amount_to_cells(deposition[f, i, j, k]))
+                amount >= 0.0 ||
+                    throw(ArgumentError("sediment amounts must be non-negative"))
+                parcel[f] = amount
+                deposited += amount
+            end
+
+            if deposited > 0.0
+                push_sediment!(column, parcel)
+                available = min(Float64(n_layers), available + deposited)
+            end
+        end
+
+        available <= depth && continue
+
+        if depth > 0.0
+            pop_sediment!(column, depth)
+            available -= depth
+        end
+
+        sampled = min(thickness, available)
+        sampled <= 0.0 && continue
+
+        layer[:, i, j] .= pop_sediment!(column, sampled)
+        present[i, j] = true
+    end
+
+    return layer, present
+end
+
 function pop_sediment!(cols::AbstractArray{F, 4}, amount::AbstractArray{F, 2}, out::AbstractArray{F, 3}) where F <: Real
   @views for i in CartesianIndices(amount)
       out[:, i[1], i[2]] = pop_sediment!(cols[:, :, i[1], i[2]], amount[i[1], i[2]])
@@ -238,6 +432,18 @@ end # module
 ```@raw html
 </details>
 ```
+
+### Extracting a stratigraphic layer
+
+Map views reconstruct stratigraphy by replaying deposition and disintegration
+through the same sediment-stack operations used by the model. After the stack
+has been built to the requested time, `sediment_layer` removes the selected
+overburden and returns a finite interval. The finite thickness prevents a very
+small last sedimentation event from producing unstable facies fractions.
+
+The helper is unit-free, like the rest of `SedimentStack`. A caller working in
+physical lengths converts sediment amounts, depth, and layer thickness with the
+model's depositional resolution.
 
 ## Component
 

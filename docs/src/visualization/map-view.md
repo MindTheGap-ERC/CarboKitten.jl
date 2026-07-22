@@ -13,6 +13,7 @@ For exact timestep-by-timestep reconstruction, use an output
 `write_interval = 1`. Larger intervals remain supported because CarboKitten
 aggregates deposition and disintegration within each saved interval.
 
+![Map View Categorical time](../fig/map_model_facies_time20.png)
 ![Map View Categotical](../fig/map_facies_depth_20m.png)
 ![Map View Proportion](../fig/map_fraction_type1_depth_20m.png)
 

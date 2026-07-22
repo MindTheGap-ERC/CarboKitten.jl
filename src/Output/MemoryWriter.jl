@@ -6,7 +6,7 @@ import ..Abstract:
     new_output, add_data_set, set_attribute, write_bathymetry,
     write_production, write_disintegration, write_deposition, write_active_layer
 using ...Components.Common
-using ...Components.WaterDepth: initial_topography
+using ...Components.WaterDepth: initial_topography, subsidence_rate_map
 using ...CarboKitten: time_axis, box_axes, OutputSpec, AbstractOutput, AbstractInput, AbstractState
 
 struct MemoryOutput <: AbstractOutput
@@ -37,7 +37,12 @@ function new_output(::Type{MemoryOutput}, input::Input) where {Input <: Abstract
         n_facies=length(input.facies),
         initial_topography=h0,
         sea_level=sl,
-        subsidence_rate=input.subsidence_rate,
+        subsidence_rate=(input.subsidence_rate isa Quantity ? input.subsidence_rate :
+            let m = subsidence_rate_map(input); sum(m)/length(m) end),
+        subsidence_rate_map=(input.subsidence_rate isa Quantity ? nothing :
+            subsidence_rate_map(input)),
+        subsidence_modifiers=(hasfield(typeof(input), :subsidence_modifiers) ?
+            Any[m for m in input.subsidence_modifiers] : Any[]),
         data_sets=Dict(),
         attributes=Dict())
 

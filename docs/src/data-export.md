@@ -408,6 +408,13 @@ function read_header(fid)
         initial_topography = fid["input/initial_topography"][] * u"m",
         sea_level = fid["input/sea_level"][] * u"m",
         subsidence_rate = attrs["subsidence_rate"][] * u"m/Myr",
+        subsidence_rate_map = ("subsidence_rate_map" in keys(fid["input"]) ?
+            fid["input/subsidence_rate_map"][] * u"m/Myr" : nothing),
+        subsidence_modifiers = ("subsidence_modifiers" in keys(fid["input"]) ?
+            Any[Dict{String,Any}(
+                    k => HDF5.attributes(fid["input/subsidence_modifiers"][mn])[k][]
+                    for k in keys(HDF5.attributes(fid["input/subsidence_modifiers"][mn])))
+                for mn in sort(collect(keys(fid["input/subsidence_modifiers"])))] : Any[]),
         data_sets = data_sets)
 end
 

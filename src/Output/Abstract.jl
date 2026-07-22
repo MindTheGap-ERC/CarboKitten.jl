@@ -3,10 +3,11 @@ module Abstract
 
 import ...CarboKitten: set_attribute
 import ...Algorithms: stratigraphic_column!
+import CarboKitten.Components.Subsidence: cumulative_subsidence, deserialize_modifier, AbstractSubsidenceModifier
 
 export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
 export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer, surface_heights
-export sediment_thickness, water_depth
+export sediment_thickness, water_depth, cumulative_subsidence
 
 using Unitful
 using ...CarboKitten: OutputSpec, AbstractInput, AbstractState
@@ -43,6 +44,8 @@ end
     initial_topography::Matrix{Amount}
     sea_level::Vector{Length}
     subsidence_rate::Rate
+    subsidence_rate_map::Union{Matrix{Rate},Nothing} = nothing
+    subsidence_modifiers::Vector{Any} = Any[]
     data_sets::Dict{Symbol,DataHeader}
     attributes::Dict{String,Any} = Dict()
 end
@@ -161,7 +164,7 @@ sediment column.
 Works with `DataColumn`, `DataSlice`, and `DataVolume`.
 """
 function surface_heights(header::Header, data::Data{F, D}) where {F, D}
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    total_subsidence = cumulative_subsidence(header, header.axes.t[end])[data.slice...]
     initial_topography = header.initial_topography[data.slice...]
     sc = stratigraphic_column(data)
     # Sum over the facies dimension (dim 1), yielding (spatial..., n_t)
@@ -176,6 +179,39 @@ function surface_heights(header::Header, data::Data{F, D}) where {F, D}
     selectdim(h, ndims(h), 1) .= h0
     selectdim(h, ndims(h), 2:n_t+1) .= h0 .+ accumulated
     return h
+end
+
+"""
+    cumulative_subsidence(header::Header) -> (t -> Matrix{Length})
+
+Closure: per-cell cumulative subsidence from `header.axes.t[1]` to `t`.
+Falls back to the scalar `subsidence_rate` for legacy HDF5 files that lack the
+optional `subsidence_rate_map` and `subsidence_modifiers` fields.
+"""
+function cumulative_subsidence(header::Header)
+    t0   = header.axes.t[1]
+    base = something(header.subsidence_rate_map,
+                     fill(header.subsidence_rate, header.grid_size...))
+    mods = AbstractSubsidenceModifier[deserialize_modifier(m)
+                                      for m in header.subsidence_modifiers]
+    return cumulative_subsidence(base, mods, header.axes.x, header.axes.y, t0)
+end
+
+cumulative_subsidence(header::Header, t::Time) = cumulative_subsidence(header)(t)
+
+"""
+    cumulative_subsidence(header::Header, data::Data) -> Array{Length, D}
+
+Per-cell cumulative subsidence at every write step of `data`, sliced to match
+`data.slice`. Shape mirrors `data.bathymetry`.
+"""
+function cumulative_subsidence(header::Header, data::Data{F, D}) where {F, D}
+    cum = cumulative_subsidence(header)
+    out = similar(data.bathymetry, Length)
+    for (k, t) in enumerate(header.axes.t[1:data.write_interval:end])
+        selectdim(out, D, k) .= cum(t)[data.slice...]
+    end
+    return out
 end
 
 """

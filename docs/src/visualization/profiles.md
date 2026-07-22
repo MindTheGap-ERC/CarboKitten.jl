@@ -435,7 +435,7 @@ function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::Abstrac
     lines!(ax, x, bedrock; color=:black, label="initial topography")
     ylims!(ax, lower_limit + 10, nothing)
     xlims!(ax, x[1], x[end])
-    ax.xlabel = data.slice[1] isa Int ? "position along strike [km]" : "position along dip [km]"
+    ax.xlabel = "position [km]"
     ax.ylabel = "depth [m]"
 
     c = reshape(color, n_x * n_t)

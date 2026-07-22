@@ -89,6 +89,7 @@ end
     deposition::Array{Amount,F}
     bathymetry::Array{Amount,D}
     active_layer::Union{Array{Amount,F}, Nothing} = nothing
+    stratigraphic_column::Union{Array{Amount,F}, Nothing} = nothing
 end
 
 const DataVolume = Data{4,3}
@@ -118,7 +119,8 @@ Base.getindex(v::Data{F,D}, args...) where {F,D} =
             v.production[:, args..., :],
             v.deposition[:, args..., :],
             v.bathymetry[args..., :],
-            v.active_layer == nothing ? nothing : v.active_layer[:, args..., :])
+            v.active_layer == nothing ? nothing : v.active_layer[:, args..., :],
+            nothing)  # stratigraphic_column: reset so it is recomputed for the slice
     end
 
 function parse_slice(s::AbstractString)
@@ -146,14 +148,18 @@ data_kind(spec::OutputSpec) = data_kind(spec.slice...)
 """
     stratigraphic_column(data)
 
-Given a data set, compute the stratigrahpic column.
+Given a data set, compute the stratigraphic column. Result is memoised in
+`data.stratigraphic_column` so repeated calls are free.
 """
 function stratigraphic_column(data::Data{F, D}) where {F, D}
-    net_deposition = data.deposition .- data.disintegration
-    for c in eachslice(net_deposition, dims=(1:D...,))
-        stratigraphic_column!(c)
+    if data.stratigraphic_column === nothing
+        net_deposition = data.deposition .- data.disintegration
+        for c in eachslice(net_deposition, dims=(1:D...,))
+            stratigraphic_column!(c)
+        end
+        data.stratigraphic_column = net_deposition
     end
-    return net_deposition
+    return data.stratigraphic_column
 end
 
 """

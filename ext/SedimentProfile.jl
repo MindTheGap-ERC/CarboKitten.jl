@@ -253,7 +253,7 @@ function profile_plot!(f::F, ax::Axis, header::Header, data::DataSlice; mesh_arg
 end
 
 """
-    sediment_profile!(ax, header, data; show_unconformities, mode=:deposited)
+    sediment_profile!(ax, header, data; show_unconformities)
 
 Plot the sediment profile, choosing colour by dominant facies type (argmax).
 
@@ -283,7 +283,7 @@ function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
     plot_unconformities(ax, header, data, h, minwidth; label = "unconformities",
                         color=:white, linestyle=:dash, linewidth=1)
 
-    ax.title = "sediment profile ($(mode))"
+    ax.title = "sediment profile"
     return plot
 end
 
@@ -297,13 +297,12 @@ function sediment_profile(header::Header, data_slice::DataSlice;
                            show_unconformities::Union{Bool,Int,Nothing} = true)
     fig = Figure(size=(1000, 600))
     ax = Axis(fig[1, 1])
-    sediment_profile!(ax, header, data_slice; mode=mode, show_unconformities=show_unconformities)
+    sediment_profile!(ax, header, data_slice; show_unconformities=show_unconformities)
     return fig
 end
 
 """
-    sediment_proportion!(ax, header, data, facies_index;
-                         mode=:deposited, colorrange=(0,1), colormap=:viridis)
+    sediment_proportion!(ax, header, data, facies_index; colorrange=(0,1), colormap=:viridis)
 
 Plot the proportion of `facies_index` relative to total sediment at each
 location and time step, using the same stratigraphic mesh as `sediment_profile!`.
@@ -325,7 +324,7 @@ function sediment_proportion!(ax::Axis, header::Header, data::DataSlice, facies_
 
     plot = profile_plot!(ax, header, data; color=proportion,
         colorrange=colorrange, colormap=colormap)
-    ax.title = "proportion of facies $(facies_index) ($(mode))"
+    ax.title = "proportion of facies $(facies_index)"
     return plot
 end
 
@@ -345,7 +344,7 @@ function sediment_proportion(header::Header, data::DataSlice, facies_index::Int;
     ax  = Axis(fig[1, 1])
     plot = sediment_proportion!(ax, header, data, facies_index;
         colorrange=colorrange, colormap=colormap)
-    Colorbar(fig[1, 2], plot; label="facies $(facies_index) proportion ($(mode))")
+    Colorbar(fig[1, 2], plot; label="facies $(facies_index) proportion")
     return fig
 end
 

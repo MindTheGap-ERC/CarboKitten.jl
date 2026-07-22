@@ -92,6 +92,24 @@ makedocs(
             "Tabular Sea Levels" => "cases/tabular-sea-level.md",
             "Initial Topography" => "initial-topography.md",
         ],
+        "Interface" => [
+            "Wave fields" => "wavefield.md",
+        ],
+        "Input & Output" => [
+            "Input Methods" => "input-methods.md",
+            "Output" => "output/abstract.md",
+            "HDF5 Output" => "output/h5writer.md",
+            "Output to Memory" => "output/memory-writer.md",
+            "CSV Export" => "data-export.md",
+            "Trouble shooting and diagnostics" => "debugging.md"
+        ],
+        "Visualizations" => [
+            "Overview" => "visualization/overview.md",
+            "Profiles" => "visualization/profiles.md",
+            "Fence Diagram" => "visualization/fence-diagrams.md",
+            "Topography" => "visualization/topography.md",
+            "Other" => "visualization.md",
+        ],
         "Developer" => [
             "CONTRIBUTING.md",
             "architecture.md",
@@ -108,27 +126,13 @@ makedocs(
             "Production" => "components/production.md",
             "Sediment Buffers" => "components/sediment_buffer.md",
             "Active Layer Transport" => "active-layer-transport.md",
-            "Onshore Transport" => "onshore-transport.md"
-        ],
-        "Visualizations" => [
-            "Overview" => "visualization/overview.md",
-            "Profiles" => "visualization/profiles.md",
-            "Topography" => "visualization/topography.md",
-            "Other" => "visualization.md",
+            "Onshore Transport" => "onshore-transport.md",
         ],
         "Denudation" => [
             "Denudation" => "denudation/denudation.md",
             "Empirical Denudation" => "denudation/empirical.md",
             "Chemical Dissolution" => "denudation/chemical.md",
             "Physical Erosion" => "denudation/physical_erosion.md"
-        ],
-        "Input & Output" => [
-            "Input Methods" => "input-methods.md",
-            "Output" => "output/abstract.md",
-            "HDF5 Output" => "output/h5writer.md",
-            "Output to Memory" => "output/memory-writer.md",
-            "CSV Export" => "data-export.md",
-            "Trouble shooting and diagnostics" => "debugging.md"
         ],
         "Algorithms" => [
             "Overview" => "algorithms/overview.md",

@@ -2,6 +2,10 @@
 
 [![Entangled badge](https://img.shields.io/badge/entangled-Use%20the%20source!-%2300aeff)](https://entangled.github.io/)
 
+!!! note "The CarboKitten paper is out!"
+    The science paper on CarboKitten is published in Geoscientific Model Development.
+    You can find it at [doi.org/10.5194/gmd-19-6207-2026](https://doi.org/10.5194/gmd-19-6207-2026).
+
 ## About
 
 CarboKitten is a reimplementation of Peter Burgess' CarboCAT, a model for generating carbonate platform stratigraphies. CarboKitten is a three-dimensional model, having two spatial dimensions and one for stored stediment.

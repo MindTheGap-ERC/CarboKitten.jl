@@ -13,13 +13,27 @@ using CarboKitten.Visualization: map_view, map_view!
 function from_file_categorical()
     fig = map_view(
         "data/output/alcap-example.h5", :topography;
-        times = [0.2u"Myr", 0.5u"Myr", 1.0u"Myr"],
+        times = [1.0u"Myr"],
+        depth = 20.0u"m",
         show = :preserved,
         show_shoreline = true,
         layout = :row,
         color_by = :facies,
     )
     save("docs/src/_fig/map_view_file_cat.png", fig)
+    return fig
+end
+
+function from_file_model_categorical()
+    fig = map_view(
+        "data/output/alcap-example.h5",
+        :topography;
+        times = [0.5u"Myr"],
+        show = :model,
+        show_shoreline = true,
+        color_by = :facies,
+    )
+    save("docs/src/_fig/map_view_model_categorical.png", fig)
     return fig
 end
 
@@ -47,7 +61,8 @@ end
 function from_file_fraction()
     fig = map_view(
         "data/output/alcap-example.h5", :topography;
-        times = [0.2u"Myr", 0.5u"Myr", 1.0u"Myr"],
+        times = [1.0u"Myr"],
+        depth = 20.0u"m",
         show = :preserved,
         show_shoreline = true,
         layout = :row,
@@ -56,6 +71,21 @@ function from_file_fraction()
         colormap= :viridis
     )
     save("docs/src/fig/map_view_file_fraction.png", fig)
+    return fig
+end
+
+function from_file_model_fraction()
+    fig = map_view(
+        "data/output/alcap-example.h5",
+        :topography;
+        times = [0.5u"Myr"],
+        show = :model,
+        show_shoreline = true,
+        color_by = :facies_fraction,
+        facies = 2,
+        colormap = :viridis,
+    )
+    save("docs/src/_fig/map_view_model_fraction.png", fig)
     return fig
 end
 
@@ -73,8 +103,12 @@ function from_file_inplace_fraction()
         facies=2,
         colormap= :viridis)
 
-    n_facies = size(volume.production, 1)
-    Colorbar(fig[1, 2], hm; ticks = 1:n_facies, label = "dominant facies")
+    Colorbar(
+        fig[1, 2],
+        hm;
+        ticks = 0:0.25:1,
+        label = "proportion of facies 2",
+    )
     save("docs/src/_fig/map_view_file_inplace_fraction.png", fig)
     return fig
 end
@@ -104,4 +138,9 @@ end
 end  # module Script
 
 Script.from_file_categorical()
+Script.from_file_fraction()
+Script.from_file_model_categorical()
+Script.from_file_model_fraction()
+Script.from_file_inplace_categorical()
+Script.from_file_inplace_fraction()
 # ~/~ end

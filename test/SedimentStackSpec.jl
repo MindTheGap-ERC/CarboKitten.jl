@@ -89,5 +89,24 @@ end
     )
     @test present[1, 1]
     @test smoothed[:, 1, 1] ≈ [0.99, 0.01]
+
+    # Coverage must be nested with depth: once a preserved column is too thin
+    # at one depth, it must remain absent at every greater depth.
+    shallow, present_shallow = sediment_layer(
+        deposition,
+        disintegration,
+        3;
+        depth=3.0,
+    )
+    deep, present_deep = sediment_layer(
+        deposition,
+        disintegration,
+        3;
+        depth=5.0,
+    )
+    @test !present_shallow[1, 1]
+    @test !present_deep[1, 1]
+    @test iszero(sum(shallow))
+    @test iszero(sum(deep))
 end
 # ~/~ end

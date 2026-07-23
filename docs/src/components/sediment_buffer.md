@@ -119,6 +119,25 @@ end
     )
     @test present[1, 1]
     @test smoothed[:, 1, 1] ≈ [0.99, 0.01]
+
+    # Coverage must be nested with depth: once a preserved column is too thin
+    # at one depth, it must remain absent at every greater depth.
+    shallow, present_shallow = sediment_layer(
+        deposition,
+        disintegration,
+        3;
+        depth=3.0,
+    )
+    deep, present_deep = sediment_layer(
+        deposition,
+        disintegration,
+        3;
+        depth=5.0,
+    )
+    @test !present_shallow[1, 1]
+    @test !present_deep[1, 1]
+    @test iszero(sum(shallow))
+    @test iszero(sum(deep))
 end
 ```
 
@@ -305,7 +324,8 @@ Reconstruct the sediment stack through `time_index` and return a preserved
 interval below the sediment surface.
 
 `deposition` and `disintegration` have dimensions `(facies, x, y, time)`.
-`depth` and `thickness` are expressed in sediment-buffer cells.
+`depth` and `thickness` are expressed in sediment-buffer cells. `depth` is the
+thickness removed below the local top of every reconstructed preserved column.
 `amount_to_cells` converts one sediment amount to the same dimensionless units.
 The result is `(layer, present)`, where `layer` has dimensions
 `(facies, x, y)` and `present` marks cells that contain the requested interval.
@@ -440,8 +460,9 @@ end # module
 Map views reconstruct stratigraphy by replaying deposition and disintegration
 through the same sediment-stack operations used by the model. After the stack
 has been built to the requested time, `sediment_layer` removes the selected
-overburden and returns a finite interval. The finite thickness prevents a very
-small last sedimentation event from producing unstable facies fractions.
+depth below the local top of each preserved column and returns a finite
+interval. The finite thickness prevents a very small last sedimentation event
+from producing unstable facies fractions.
 
 The helper is unit-free, like the rest of `SedimentStack`. A caller working in
 physical lengths converts sediment amounts, depth, and layer thickness with the

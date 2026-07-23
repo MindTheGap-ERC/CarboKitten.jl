@@ -1,21 +1,27 @@
 # Map View
 
-The map-view visualization routine allows users to plot model output at selected stratigraphic positions or depths. This makes it possible to inspect 2D facies patterns, sediment distribution, and lateral organization across the platform at different stratigraphic levels.
-The user can select the stratigraphic position or depth to visualize, and the routine returns a horizontal map-view of the facies distribution. Maps can be coloured either categorically, by dominant facies, or continuously, by the proportion of one selected facies relative to the total sediment in each cell.
+The map-view visualization routine allows users to plot model output at selected
+times or depths below the local model surface. This makes it possible to inspect
+2D facies patterns, sediment distribution, and lateral organization across the
+platform. For a preserved map, the selected depth follows the morphology of the
+final model surface. Maps can be coloured either categorically, by dominant
+facies, or continuously, by the proportion of one selected facies relative to
+the total sediment in each cell.
 
 For preserved maps, the routine replays all saved deposition and disintegration
 through the existing sediment-buffer operations up to the selected time. It
-then samples a finite interval at the requested depth below the sediment
-surface. This separates stratigraphic reconstruction from plotting and prevents
-a very small last sedimentation event from dominating facies fractions.
+then pops the requested overburden from the top of every column and samples the
+next interval. Cells whose preserved column is not thick enough to reach the
+requested depth are left empty.
 
 For exact timestep-by-timestep reconstruction, use an output
 `write_interval = 1`. Larger intervals remain supported because CarboKitten
 aggregates deposition and disintegration within each saved interval.
 
-![Map View Categorical time](../fig/map_model_facies_time20.png)
-![Map View Categotical](../fig/map_facies_depth_20m.png)
-![Map View Proportion](../fig/map_fraction_type1_depth_20m.png)
+![Map View Categorical Depth](../_fig/map_view_file_cat.png)
+![Map View Fraction Depth](../_fig/map_view_file_fraction.png)
+![Map View Categorical Time](../_fig/map_view_model_categorical.png)
+![Map View Categorical Both](../_fig/map_view_inplace_cat.png)
 
 ### Test
 
@@ -24,6 +30,11 @@ Example 1 reproduces the map-view figure from `alcap-example.h5` using categoric
 Example 2 reproduces the same map views using continuous proportional colouring. In this mode, the colour scale represents the proportion of one selected facies relative to the total sediment in each cell.
 
 Example 3 shows how to plot map views directly from memory. Run it immediately after running the model. 
+
+To run the example and reproduce the above figures, run 
+```bash
+julia --project=workenv examples/visualization/map_view.jl
+```
 
 ```{.julia .task file=examples/visualization/map_view.jl}
 module Script
@@ -40,13 +51,27 @@ using CarboKitten.Visualization: map_view, map_view!
 function from_file_categorical()
     fig = map_view(
         "data/output/alcap-example.h5", :topography;
-        times = [0.2u"Myr", 0.5u"Myr", 1.0u"Myr"],
+        times = [1.0u"Myr"],
+        depth = 20.0u"m",
         show = :preserved,
         show_shoreline = true,
         layout = :row,
         color_by = :facies,
     )
     save("docs/src/_fig/map_view_file_cat.png", fig)
+    return fig
+end
+
+function from_file_model_categorical()
+    fig = map_view(
+        "data/output/alcap-example.h5",
+        :topography;
+        times = [0.5u"Myr"],
+        show = :model,
+        show_shoreline = true,
+        color_by = :facies,
+    )
+    save("docs/src/_fig/map_view_model_categorical.png", fig)
     return fig
 end
 
@@ -74,7 +99,8 @@ end
 function from_file_fraction()
     fig = map_view(
         "data/output/alcap-example.h5", :topography;
-        times = [0.2u"Myr", 0.5u"Myr", 1.0u"Myr"],
+        times = [1.0u"Myr"],
+        depth = 20.0u"m",
         show = :preserved,
         show_shoreline = true,
         layout = :row,
@@ -83,6 +109,21 @@ function from_file_fraction()
         colormap= :viridis
     )
     save("docs/src/fig/map_view_file_fraction.png", fig)
+    return fig
+end
+
+function from_file_model_fraction()
+    fig = map_view(
+        "data/output/alcap-example.h5",
+        :topography;
+        times = [0.5u"Myr"],
+        show = :model,
+        show_shoreline = true,
+        color_by = :facies_fraction,
+        facies = 2,
+        colormap = :viridis,
+    )
+    save("docs/src/_fig/map_view_model_fraction.png", fig)
     return fig
 end
 
@@ -100,8 +141,12 @@ function from_file_inplace_fraction()
         facies=2,
         colormap= :viridis)
 
-    n_facies = size(volume.production, 1)
-    Colorbar(fig[1, 2], hm; ticks = 1:n_facies, label = "dominant facies")
+    Colorbar(
+        fig[1, 2],
+        hm;
+        ticks = 0:0.25:1,
+        label = "proportion of facies 2",
+    )
     save("docs/src/_fig/map_view_file_inplace_fraction.png", fig)
     return fig
 end
@@ -131,6 +176,11 @@ end
 end  # module Script
 
 Script.from_file_categorical()
+Script.from_file_fraction()
+Script.from_file_model_categorical()
+Script.from_file_model_fraction()
+Script.from_file_inplace_categorical()
+Script.from_file_inplace_fraction()
 ```
 
 ### Implementation
@@ -156,11 +206,15 @@ _colormax(d::AbstractArray) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 function _facies_fraction(d::AbstractArray, facies::Integer)
     total = dropdims(sum(d; dims = 1); dims = 1)
     selected = d[facies, :, :]
-    return ifelse.(
-        iszero.(total),
-        missing,
-        Float64.(ustrip.(selected ./ total)),
+    valid = .!iszero.(total)
+
+    fraction = Matrix{Union{Missing,Float64}}(undef, size(total))
+    fill!(fraction, missing)
+    fraction[valid] .= Float64.(
+        ustrip.(selected[valid] ./ total[valid])
     )
+
+    return fraction
 end
 # Resolve a stratigraphic position into an index along the (write-interval
 # corrected) time axis. Integer indices are passed through; Unitful time
@@ -199,8 +253,10 @@ by the proportion of a selected facies using a continuous colour scale..
 - `time` — stratigraphic position. Either an integer write-frame index
   (1-based; defaults to the final frame) or a `Unitful.Quantity` time value
   such as `0.5u"Myr"`, in which case the nearest available frame is used.
-- `depth` — depth below the sediment surface at the selected time. The
-  default is `0u"m"`, i.e. the uppermost preserved sediment.
+- `depth` — depth below the local top of each reconstructed preserved column,
+  positive downward. For example, `20u"m"` removes the uppermost 20 m from
+  every column before sampling. It is used by `show = :preserved` and
+  `show = :both`.
 - `layer_thickness` — thickness of the sampled interval. The default is
   `1u"m"`, which reduces noise from very small sedimentation events.
 - `depositional_resolution` — vertical resolution used for the reconstructed
@@ -220,8 +276,9 @@ by the proportion of a selected facies using a continuous colour scale..
 - `colormap` — colormap used for plotting. If `color_by = :facies`, this
   overrides the categorical facies colormap. If `color_by = :facies_fraction`,
   this controls the continuous colour scale and defaults to `:viridis`.
-- `mask_emerged::Bool` — if `true`, cells that are emerged at the chosen frame
-  are masked white.
+- `mask_emerged::Bool` — if `true`, emerged cells are masked in the
+  depositional (`show = :model`) map. Preserved maps are controlled by whether
+  each reconstructed column reaches the requested local depth.
 - `show_shoreline::Bool` — if `true`, overlays a contour of the sea-level
   intersection (`water_depth = 0`) at the chosen frame.
 - `shoreline_kwargs` — named tuple forwarded to `contour!` for the shoreline.
@@ -260,7 +317,6 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
     resolution_m > 0.0u"m" ||
         error("`depositional_resolution` must be positive")
 
-    depth_cells = Float64(ustrip(depth_m / resolution_m))
     layer_thickness_cells = Float64(ustrip(layer_thickness_m / resolution_m))
     amount_to_cells = amount -> Float64(ustrip(amount / resolution_m))
     n_facies = size(data.production, 1)
@@ -319,6 +375,10 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
     end
     
     function preserved_values()
+        # `depth` is the overburden removed from the top of every reconstructed
+        # preserved column. The sampled surface therefore follows the final
+        # model surface at a constant local depth.
+        depth_cells = Float64(ustrip(depth_m / resolution_m))
         layer, present = sediment_layer(
             data.deposition,
             data.disintegration,
@@ -335,10 +395,6 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
         end
 
         m[.!present] .= missing
-        if mask_emerged
-            m[wd .< 0u"m"] .= missing
-        end
-
         return m
     end
     # Merge defaults with user kwargs so caller's keys cleanly override ours
@@ -416,7 +472,7 @@ Build a figure with one map-view panel per stratigraphic position in `times`.
   `color_by = :facies_fraction`.
 - `colormap` — optional colormap override. Defaults to categorical Wong colours
   for `color_by = :facies` and to `:viridis` for `color_by = :facies_fraction`.
-- All other `kwargs` are forwarded to `map_view!`. Notably: `show`,
+- All other `kwargs` are forwarded to `map_view!`. Notably: `show`, `depth`,
   `mask_emerged`, `show_shoreline`, `shoreline_kwargs`, and `colors`.
 """
 function map_view(header::Header, data::DataVolume;

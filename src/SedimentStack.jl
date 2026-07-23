@@ -139,7 +139,8 @@ Reconstruct the sediment stack through `time_index` and return a preserved
 interval below the sediment surface.
 
 `deposition` and `disintegration` have dimensions `(facies, x, y, time)`.
-`depth` and `thickness` are expressed in sediment-buffer cells.
+`depth` and `thickness` are expressed in sediment-buffer cells. `depth` is the
+thickness removed below the local top of every reconstructed preserved column.
 `amount_to_cells` converts one sediment amount to the same dimensionless units.
 The result is `(layer, present)`, where `layer` has dimensions
 `(facies, x, y)` and `present` marks cells that contain the requested interval.

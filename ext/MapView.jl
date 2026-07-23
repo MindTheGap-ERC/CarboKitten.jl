@@ -20,11 +20,15 @@ _colormax(d::AbstractArray) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 function _facies_fraction(d::AbstractArray, facies::Integer)
     total = dropdims(sum(d; dims = 1); dims = 1)
     selected = d[facies, :, :]
-    return ifelse.(
-        iszero.(total),
-        missing,
-        Float64.(ustrip.(selected ./ total)),
+    valid = .!iszero.(total)
+
+    fraction = Matrix{Union{Missing,Float64}}(undef, size(total))
+    fill!(fraction, missing)
+    fraction[valid] .= Float64.(
+        ustrip.(selected[valid] ./ total[valid])
     )
+
+    return fraction
 end
 # Resolve a stratigraphic position into an index along the (write-interval
 # corrected) time axis. Integer indices are passed through; Unitful time
@@ -63,8 +67,10 @@ by the proportion of a selected facies using a continuous colour scale..
 - `time` — stratigraphic position. Either an integer write-frame index
   (1-based; defaults to the final frame) or a `Unitful.Quantity` time value
   such as `0.5u"Myr"`, in which case the nearest available frame is used.
-- `depth` — depth below the sediment surface at the selected time. The
-  default is `0u"m"`, i.e. the uppermost preserved sediment.
+- `depth` — depth below the local top of each reconstructed preserved column,
+  positive downward. For example, `20u"m"` removes the uppermost 20 m from
+  every column before sampling. It is used by `show = :preserved` and
+  `show = :both`.
 - `layer_thickness` — thickness of the sampled interval. The default is
   `1u"m"`, which reduces noise from very small sedimentation events.
 - `depositional_resolution` — vertical resolution used for the reconstructed
@@ -84,8 +90,9 @@ by the proportion of a selected facies using a continuous colour scale..
 - `colormap` — colormap used for plotting. If `color_by = :facies`, this
   overrides the categorical facies colormap. If `color_by = :facies_fraction`,
   this controls the continuous colour scale and defaults to `:viridis`.
-- `mask_emerged::Bool` — if `true`, cells that are emerged at the chosen frame
-  are masked white.
+- `mask_emerged::Bool` — if `true`, emerged cells are masked in the
+  depositional (`show = :model`) map. Preserved maps are controlled by whether
+  each reconstructed column reaches the requested local depth.
 - `show_shoreline::Bool` — if `true`, overlays a contour of the sea-level
   intersection (`water_depth = 0`) at the chosen frame.
 - `shoreline_kwargs` — named tuple forwarded to `contour!` for the shoreline.
@@ -124,7 +131,6 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
     resolution_m > 0.0u"m" ||
         error("`depositional_resolution` must be positive")
 
-    depth_cells = Float64(ustrip(depth_m / resolution_m))
     layer_thickness_cells = Float64(ustrip(layer_thickness_m / resolution_m))
     amount_to_cells = amount -> Float64(ustrip(amount / resolution_m))
     n_facies = size(data.production, 1)
@@ -183,6 +189,10 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
     end
     
     function preserved_values()
+        # `depth` is the overburden removed from the top of every reconstructed
+        # preserved column. The sampled surface therefore follows the final
+        # model surface at a constant local depth.
+        depth_cells = Float64(ustrip(depth_m / resolution_m))
         layer, present = sediment_layer(
             data.deposition,
             data.disintegration,
@@ -199,10 +209,6 @@ function map_view!(ax::Makie.Axis, header::Header, data::DataVolume;
         end
 
         m[.!present] .= missing
-        if mask_emerged
-            m[wd .< 0u"m"] .= missing
-        end
-
         return m
     end
     # Merge defaults with user kwargs so caller's keys cleanly override ours
@@ -280,7 +286,7 @@ Build a figure with one map-view panel per stratigraphic position in `times`.
   `color_by = :facies_fraction`.
 - `colormap` — optional colormap override. Defaults to categorical Wong colours
   for `color_by = :facies` and to `:viridis` for `color_by = :facies_fraction`.
-- All other `kwargs` are forwarded to `map_view!`. Notably: `show`,
+- All other `kwargs` are forwarded to `map_view!`. Notably: `show`, `depth`,
   `mask_emerged`, `show_shoreline`, `shoreline_kwargs`, and `colors`.
 """
 function map_view(header::Header, data::DataVolume;

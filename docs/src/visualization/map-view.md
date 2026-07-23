@@ -21,7 +21,7 @@ aggregates deposition and disintegration within each saved interval.
 ![Map View Categorical Depth](../fig/map_view_file_cat.png)
 ![Map View Fraction Depth](../fig/map_view_file_fraction.png)
 ![Map View Categorical Time](../fig/map_view_model_categorical.png)
-![Map View Categorical Both](../fig/map_view_inplace_cat.png)
+![Map View Categorical Both](../fig/map_view_file_inplace_cat.png)
 
 ### Test
 

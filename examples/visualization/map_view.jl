@@ -20,7 +20,7 @@ function from_file_categorical()
         layout = :row,
         color_by = :facies,
     )
-    save("docs/src/_fig/map_view_file_cat.png", fig)
+    save("docs/src/fig/map_view_file_cat.png", fig)
     return fig
 end
 
@@ -33,7 +33,7 @@ function from_file_model_categorical()
         show_shoreline = true,
         color_by = :facies,
     )
-    save("docs/src/_fig/map_view_model_categorical.png", fig)
+    save("docs/src/fig/map_view_model_categorical.png", fig)
     return fig
 end
 
@@ -51,7 +51,7 @@ function from_file_inplace_categorical()
 
     n_facies = size(volume.production, 1)
     Colorbar(fig[1, 2], hm; ticks = 1:n_facies, label = "dominant facies")
-    save("docs/src/_fig/map_view_file_inplace_cat.png", fig)
+    save("docs/src/fig/map_view_file_inplace_cat.png", fig)
     return fig
 end
 
@@ -85,7 +85,7 @@ function from_file_model_fraction()
         facies = 2,
         colormap = :viridis,
     )
-    save("docs/src/_fig/map_view_model_fraction.png", fig)
+    save("docs/src/fig/map_view_model_fraction.png", fig)
     return fig
 end
 
@@ -109,7 +109,7 @@ function from_file_inplace_fraction()
         ticks = 0:0.25:1,
         label = "proportion of facies 2",
     )
-    save("docs/src/_fig/map_view_file_inplace_fraction.png", fig)
+    save("docs/src/fig/map_view_file_inplace_fraction.png", fig)
     return fig
 end
 

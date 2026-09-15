@@ -1902,7 +1902,7 @@ version = "1.1.8"
 
 [[deps.ModuleMixins]]
 deps = ["MacroTools"]
-git-tree-sha1 = "cd6906f31d502a7e44142c1a75c098e0b1fbeb93"
+git-tree-sha1 = "64c32ded982957970a70d970cbe19dbd77275438"
 repo-rev = "main"
 repo-url = "https://github.com/jhidding/ModuleMixins.jl"
 uuid = "2b5f0a26-aae2-5c4c-af55-bc6d20297121"

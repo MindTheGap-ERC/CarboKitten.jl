@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         julia-version: ['1.12', '1.13']
-        # julia-arch: [x64]
+        julia-arch: [default]
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:

@@ -3,6 +3,9 @@ uuid = "690c6d5c-626a-429f-a06b-981a1dae1c19"
 version = "0.6.1"
 authors = ["Johan Hidding <j.hidding@esciencecenter.nl>"]
 
+[workspace]
+projects = ["test", "docs", "workenv"]
+
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"
@@ -30,9 +33,6 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [extensions]
 VisualizationExt = ["Makie", "Statistics", "GeometryBasics"]
-
-[workspace]
-projects = ["test", "docs", "workenv"]
 
 [compat]
 CSV = "0.10"

@@ -39,6 +39,8 @@ function step!(input::Input)
     na = [CartesianIndex()]
     pf = lithification_factor(input)
     dtf = input.disintegration_transfer
+    push! = push_sediment(input)
+    subside! = subsider(input)
     
     slopefn = slope_function(input, input.box)
     slope = Array{Float64}(undef, input.box.grid_size...)
@@ -55,29 +57,31 @@ function step!(input::Input)
         state.active_layer .+= p
         state.active_layer .+= dtf(d)
         transport!(state)
-
+        
         deposit = pf .* state.active_layer
-        push_sediment!(state.sediment_buffer, deposit ./ input.depositional_resolution .|> NoUnits)
+        push!(state, deposit) 
+        pop! = pop_sediment!(input)
         state.active_layer .-= deposit
-        state.sediment_height .+= sum(deposit; dims=1)[1, :, :]
         
         # denudation and redistribution 
         denudation_mass = denudate(state, w, slope)
         if denudation_mass !== nothing
-            denudation_mass = denudation_mass |> x -> min.(x, state.sediment_height)
+            denudation_mass = denudation_mass |>
+                x -> sum(x, dims=1) |>
+                x -> dropdims(x, dims=1) |>
+                x -> min.(x, state.sediment_thickness)
+            pop!(state, denudation_mass, denuded_sediment)
 
-            state.sediment_height .-= denudation_mass
+            d .+= denuded_sediment
 
-            pop_sediment!(state.sediment_buffer, denudation_mass ./ input.depositional_resolution .|> NoUnits, denuded_sediment)
-
-            redistribution_mass = redistribute(state, w, denuded_sediment .* input.depositional_resolution)
+            redistribution_mass = redistribute(state, w, denuded_sediment)
             if redistribution_mass !== nothing
                 # redistribution returns a 3D facies array in meters
-                push_sediment!(state.sediment_buffer, redistribution_mass ./ input.depositional_resolution .|> NoUnits)
-                state.sediment_height .+= sum(redistribution_mass; dims=1)[1, :, :]
+                push!(state, redistribution_mass)
             end
         end
         
+        subside!(state)
         state.step += 1
 
         return Frame(

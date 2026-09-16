@@ -84,18 +84,16 @@ function denudation(::Box, p::PhysicalErosion, water_depth::Array{Float64}, slop
         # for now, look at the top 1m of sediment (if there is some)
         buffer_facies = peek_sediment(state.sediment_buffer[:,:,idx], 1.0)
 
-        # get the av. facies composition or the max?
 
         # try max to begin with
         max_f = findmax(buffer_facies)
-        f = max_f[2]
-
-        # if there's no sediment to denudate
-        if max_f[1] == 0.0
+        
+        # if there's no sediment to denudate, don't do denudation
+        if max_f[1] == 0.0 || isnan(max_f[1])
             continue
         end
         if water_depth[idx] <= 0
-            denudation_rate[idx[1], idx[2]] = physical_erosion.(slope[idx], facies[f].infiltration_coefficient, facies[f].erodibility)
+            denudation_rate[idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[max_f[2]])
         end
     end
 

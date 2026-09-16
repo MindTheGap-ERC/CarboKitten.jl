@@ -1,7 +1,7 @@
 # ~/~ begin <<docs/src/visualization/profiles.md#ext/SedimentProfile.jl>>[init]
 module SedimentProfile
 
-import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!
+import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!, sediment_proportion!, sediment_proportion
 
 using CarboKitten.Visualization
 using CarboKitten.Utility: in_units_of
@@ -22,6 +22,25 @@ const Time = typeof(1.0u"Myr")
 
 const na = [CartesianIndex()]
 
+
+# ~/~ begin <<docs/src/visualization/profiles.md#section-positions>>[init]
+"""
+    _section_positions(header, data)
+
+Return the physical positions along the spatial axis of a profile `data`.
+For a dip section (varying x, fixed y) this is `header.axes.x`; for a strike
+section (fixed x, varying y) this is `header.axes.y`. The distinction is made
+by inspecting `data.slice`: if `data.slice[1]` is an `Int`, x is fixed and the
+section runs along y.
+"""
+function _section_positions(header::Header, data::DataSlice)
+    if data.slice[1] isa Int
+        return header.axes.y |> in_units_of(u"km")
+    else
+        return header.axes.x |> in_units_of(u"km")
+    end
+end
+# ~/~ end
 # ~/~ begin <<docs/src/visualization/profiles.md#explode-vertices>>[init]
 """
     explode_quad_vertices(v)
@@ -72,7 +91,7 @@ function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwi
 end
 
 function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Int; kwargs...)
-    x = header.axes.x |> in_units_of(u"km")
+    x = _section_positions(header, data)
     wi = data.write_interval
     hiatus = skeleton(water_depth(header, data) .< 0.0u"m", minwidth=minwidth)
 
@@ -169,7 +188,7 @@ coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwar
     coeval_lines!(ax, header, data, age_depth_model(header, data), tics; kwargs...)
 
 function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Int}; kwargs...)
-    x = header.axes.x |> in_units_of(u"km")
+    x = _section_positions(header, data)
     h = adm |> in_units_of(u"m")
     for t in tics
         lines!(ax, x, h[:, t]; kwargs...)
@@ -191,7 +210,7 @@ function, plots the initial topography and the mesh by passing `mesh_args...`.
 The `color` array should have the same size as a single facies for `data.production`.
 """
 function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::AbstractArray, mesh_args...)
-    x = header.axes.x |> in_units_of(u"km")
+    x = _section_positions(header, data)
     t = header.axes.t |> in_units_of(u"Myr")
 
     n_facies, n_x, n_t = size(data.production)
@@ -229,24 +248,21 @@ colors from a function `f` over the deposition data. So `f` should have signatur
 Here the vector input has size of the number of facies.
 """
 function profile_plot!(f::F, ax::Axis, header::Header, data::DataSlice; mesh_args...) where {F}
-    color = f.(eachslice(data.deposition, dims=(2, 3)))
+    color = f.(eachslice(stratigraphic_column(data), dims=(2, 3)))
     profile_plot!(ax, header, data; color=color, mesh_args...)
 end
 
 """
     sediment_profile!(ax, header, data; show_unconformities)
 
-Plot the sediment profile, choosing colour by dominant facies type (argmax). Unconformaties
-are shown when the sediment is subaerially exposed (even if sediment is still deposited
-due to a set intertidal zone).
+Plot the sediment profile, choosing colour by dominant facies type (argmax).
+
+Unconformities are shown when the sediment is subaerially exposed.
 """
 function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
                            show_unconformities::Union{Nothing,Bool,Int} = true,
                            show_coeval_lines::Union{Bool,Tuple{Int, Int},Vector{Int},Vector{Time}} = true,
                            show_sealevel::Bool = true)
-    x = header.axes.x |> in_units_of(u"km")
-    t = header.axes.t |> in_units_of(u"Myr")
-
     n_facies, n_x, n_t = size(data.production)
     total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
     initial_topography = header.initial_topography[data.slice...]
@@ -274,15 +290,61 @@ end
 """
     sediment_profile(header, data_slice; show_unconformities=true)
 
-Plot the sediment profile from `data_slice`. This takes the deposited sediments and
-find the dominant facies at every point. By default unconformities are shown using
-dashed white lines. If this generates too much visual noise, you can increase the
-treshold (default 10).
+Plot the sediment profile from `data_slice`. Dominant facies colour is chosen
+by `argmax`. By default unconformities are shown using dashed white lines.
 """
-function sediment_profile(header::Header, data_slice::DataSlice; show_unconformities::Union{Bool,Int,Nothing} = true)
+function sediment_profile(header::Header, data_slice::DataSlice;
+                           show_unconformities::Union{Bool,Int,Nothing} = true)
     fig = Figure(size=(1000, 600))
     ax = Axis(fig[1, 1])
-    sediment_profile!(ax, header, data_slice; show_unconformities = show_unconformities)
+    sediment_profile!(ax, header, data_slice; show_unconformities=show_unconformities)
+    return fig
+end
+
+"""
+    sediment_proportion!(ax, header, data, facies_index; colorrange=(0,1), colormap=:viridis)
+
+Plot the proportion of `facies_index` relative to total sediment at each
+location and time step, using the same stratigraphic mesh as `sediment_profile!`.
+
+Returns the `mesh!` plot object (for attaching a `Colorbar`).
+"""
+function sediment_proportion!(ax::Axis, header::Header, data::DataSlice, facies_index::Int;
+                               colorrange::Tuple = (0.0, 1.0),
+                               colormap = :viridis)
+    n_facies = size(data.production, 1)
+    @assert 1 <= facies_index <= n_facies "facies_index $(facies_index) out of range 1:$(n_facies)"
+
+    source = stratigraphic_column(data)
+
+    proportion = map(eachslice(source, dims=(2, 3))) do col
+        total = sum(col)
+        total > zero(total) ? col[facies_index] / total : 0.0
+    end
+
+    plot = profile_plot!(ax, header, data; color=proportion,
+        colorrange=colorrange, colormap=colormap)
+    ax.title = "proportion of facies $(facies_index)"
+    return plot
+end
+
+"""
+    sediment_proportion(header, data, facies_index; kwargs...)
+
+Standalone proportion figure. Shows the fraction of `facies_index` relative to
+total sediment using the same mesh geometry as `sediment_profile`. A `Colorbar`
+is added automatically.
+
+See `sediment_proportion!` for keyword arguments.
+"""
+function sediment_proportion(header::Header, data::DataSlice, facies_index::Int;
+                              colorrange::Tuple = (0.0, 1.0),
+                              colormap = :viridis)
+    fig = Figure(size=(1000, 600))
+    ax  = Axis(fig[1, 1])
+    plot = sediment_proportion!(ax, header, data, facies_index;
+        colorrange=colorrange, colormap=colormap)
+    Colorbar(fig[1, 2], plot; label="facies $(facies_index) proportion")
     return fig
 end
 

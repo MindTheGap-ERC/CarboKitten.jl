@@ -31,30 +31,13 @@ module WheelerDiagram
 import CarboKitten.Visualization: wheeler_diagram, wheeler_diagram!
 using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
 using CarboKitten.Utility: in_units_of
-using CarboKitten.Output.Abstract: stratigraphic_column
+using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
 using Makie
 using Unitful
 using CarboKitten.BoundaryTrait
 using CarboKitten.Stencil: convolution
 
-
 const na = [CartesianIndex()]
-
-elevation(h::Header, d::DataSlice) =
-    let bl = h.initial_topography[d.slice..., na],
-        sr = h.axes.t[end] * h.subsidence_rate
-
-        bl .+ d.sediment_thickness .- sr
-    end
-
-water_depth(header::Header, data::DataSlice) =
-    let h = elevation(header, data),
-        wi = data.write_interval,
-        s = header.subsidence_rate .* (header.axes.t[1:wi:end] .- header.axes.t[end]),
-        l = header.sea_level[1:wi:end]
-
-        h .- (s.+l)[na, :]
-    end
 
 const Rate = typeof(1.0u"m/Myr")
 
@@ -91,6 +74,8 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
         error("expected argument `show` to be one of `:model`, `:preserved`, `:both`; got $(show)")
     end
 
+    prec = 10^-8 # prec. in m - below acc. is considered 0
+
     n_facies = size(data.production)[1]
     colormax(d) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 
@@ -108,29 +93,43 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
 
     ft = if show == :model
         dominant_facies = colormax(data.deposition)
+        dominant_facies = Matrix{Union{Missing, Int}}(dominant_facies)
+        dominant_facies[ wd .> 0] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies;
             colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5))
+            colorrange=(0.5, n_facies + 0.5),
+            nan_color=:white)
     elseif show == :preserved
         sc = stratigraphic_column(data)
         dominant_facies = colormax(sc)
+        dominant_facies = Matrix{Union{Missing, Int}}(dominant_facies)
+        combined_acc = dropdims(sum(sc, dims = 1), dims = 1) |> in_units_of(u"m")
+        dominant_facies[ combined_acc .< prec] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies;
             colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5))
+            colorrange=(0.5, n_facies + 0.5),
+            nan_color=:white)
     else
         sc = stratigraphic_column(data)
         dominant_facies_model = colormax(data.deposition)
+        dominant_facies_model = Matrix{Union{Missing, Int}}(dominant_facies_model)
+        dominant_facies_model[ wd .> 0] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies_model;
             colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5), alpha=0.3)
+            colorrange=(0.5, n_facies + 0.5), alpha=0.3,
+            nan_color=:white)
         dominant_facies_preserved = colormax(sc)
+        dominant_facies_preserved = Matrix{Union{Missing, Int}}(dominant_facies_preserved)
+        combined_acc = dropdims(sum(sc, dims = 1), dims = 1) |> in_units_of(u"m")
+        dominant_facies_preserved[ combined_acc .< prec] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies_preserved;
             colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5))
+            colorrange=(0.5, n_facies + 0.5),
+            nan_color=:transparent)
     end
 
-    contourf!(ax, xkm, tmyr, wd;
-        levels=[0.0, 10000.0], colormap=Reverse(:grays))
+    #contourf!(ax, xkm, tmyr, wd;
+    #    levels=[0.0, 10000.0], colormap=Reverse(:grays))
     #contour!(ax, xkm, tmyr, wd;
     #    levels=[0], color=:black, linewidth=2)
     return ft
@@ -269,7 +268,7 @@ using CarboKitten.Export: Header, DataColumn, stratigraphic_column, age_depth_mo
 
 function scdata(header::Header, data::DataColumn)
     n_facies = size(data.production)[1]
-    n_times = length(header.axes.t) - 1
+    n_times = length(header.axes.t) 
     sc = zeros(Float64, n_facies, n_times)
     for f = 1:n_facies
         sc[f, :] = stratigraphic_column(header, data, f) / u"m"
@@ -278,12 +277,13 @@ function scdata(header::Header, data::DataColumn)
     colormax(d) = getindex.(argmax(d; dims=1)[1, :], 1)
     adm = age_depth_model(data.sediment_thickness)
 
-    return (ys_low=adm[1:end-1] / u"m", ys_high=adm[2:end] / u"m", facies=colormax(sc)[1:end])
+    return (ys_low=adm[1:end-1] / u"m", ys_high=adm[2:end] / u"m", facies=colormax(sc)[1:end-1])
 end
 
 
 function stratigraphic_column!(ax::Axis, header::Header, data::DataColumn; color=Makie.wong_colors())
     (ys_low, ys_high, facies) = scdata(header, data)
+    @show size(ys_low), size(ys_high)
     hspan!(ax, ys_low, ys_high; color=color[facies])
 end
 

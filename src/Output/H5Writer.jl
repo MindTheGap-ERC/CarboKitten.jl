@@ -100,7 +100,7 @@ function add_data_set(out::H5Output, name::Symbol, spec::OutputSpec)
     HDF5.create_dataset(grp, "deposition", datatype(Float64),
         dataspace(nf, size..., nw + 1),
         chunk=(nf, size..., 1), deflate=3)
-    HDF5.create_dataset(grp, "sediment_thickness", datatype(Float64),
+    HDF5.create_dataset(grp, "bathymetry", datatype(Float64),
         dataspace(size..., nw + 1),
         chunk=(size..., 1), deflate=3)
 
@@ -148,10 +148,10 @@ function state_writer(input::AbstractInput, out::H5Output)
         for (k, v) in output_spec
             size = axis_size.(v.slice, grid_size)
             if mod(idx - 1, v.write_interval) == 0
-                fid[string(k)]["sediment_thickness"][:, :, div(idx - 1, v.write_interval)+1] =
+                fid[string(k)]["bathymetry"][:, :, div(idx - 1, v.write_interval)+1] =
                     (is_column(v.slice...) ?
-                     Float64[state.sediment_height[v.slice...] |> in_units_of(u"m");] :
-                     reshape(state.sediment_height[v.slice...], size) |> in_units_of(u"m"))
+                     Float64[state.bathymetry[v.slice...] |> in_units_of(u"m");] :
+                     reshape(state.bathymetry[v.slice...], size) |> in_units_of(u"m"))
 
                 if out.save_active_layer
                     fid[string(k)]["active_layer"][:, :, :, div(idx - 1, v.write_interval) + 1] =

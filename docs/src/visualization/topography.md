@@ -147,6 +147,7 @@ module GlamourView
 import CarboKitten.Visualization: glamour_view!
 using CarboKitten.Utility: in_units_of
 using CarboKitten.Export: Header, DataVolume
+using CarboKitten.Output.Abstract: sediment_thickness
 using Makie
 using HDF5
 using Unitful
@@ -159,7 +160,7 @@ function glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; colorm
     ax.aspect = (xy_aspect, 1, 1)
     ax.azimuth = -π/3
 
-    n_steps = size(data.sediment_thickness, 3)
+    n_steps = size(data.bathymetry, 3)
     grid_size = (length(x), length(y))
 
     steps_between = 2
@@ -171,8 +172,9 @@ function glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; colorm
 
     bedrock = header.initial_topography .- (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
     result = Array{Float64, 3}(undef, grid_size..., length(selected_steps))
+    st = sediment_thickness(data)
     for (i, j) in enumerate(selected_steps)
-        result[:, :, i] = (data.sediment_thickness[:,:,j] .+ bedrock) |> in_units_of(u"m")
+        result[:, :, i] = (st[:,:,j] .+ bedrock) |> in_units_of(u"m")
     end
 
     surface!(ax, x, y, result[:,:,1];

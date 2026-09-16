@@ -25,7 +25,7 @@ using ..Common
 using HDF5
 using ..TimeIntegration: time, time_axis
 
-export water_depth
+export water_depth, subsider, initial_topography
 
 @kwdef struct Input <: AbstractInput
     sea_level = t -> 0.0u"m"
@@ -34,11 +34,15 @@ export water_depth
 end
 
 @kwdef mutable struct State <: AbstractState
-    sediment_height::Matrix{Height}
+    bathymetry::Matrix{Height}
 end
 
+@constructor _initial_state(input)::State[bathymetry] =
+    (bathymetry = initial_topography(input),)
+
 function initial_state(input::AbstractInput)
-    return State(step=0, sediment_height=zeros(Height, input.box.grid_size...))
+    bathymetry = initial_topography(input)
+    return State(step=0, bathymetry=bathymetry)
 end
 
 function initial_topography(input::AbstractInput)
@@ -51,18 +55,21 @@ function initial_topography(input::AbstractInput)
     return input.initial_topography.(x, y')
 end
 
+function subsider(input::AbstractInput)
+    Δσ = input.subsidence_rate * input.time.Δt
+
+    function (state::AbstractState)
+        state.bathymetry .-= Δσ
+    end
+end
+
 function water_depth(input::AbstractInput)
-    x, y = box_axes(input.box)
-    eta0 = initial_topography(input)
     sea_level = input.sea_level
-    subsidence_rate = input.subsidence_rate
-    t0 = input.time.t0
     get_time = time(input)
 
     return function (state::AbstractState)
         t = get_time(state)
-        return sea_level(t) .- eta0 .+
-               (subsidence_rate * (t - t0)) .- state.sediment_height
+        return sea_level(t) .- state.bathymetry
     end
 end
 
@@ -74,5 +81,33 @@ function write_header(input::AbstractInput, output::AbstractOutput)
     set_attribute(output, "subsidence_rate", input.subsidence_rate |> in_units_of(u"m/Myr"))
 end
 
+end
+```
+
+## Tests
+
+``` {.julia file=test/Components/WaterDepthSpec.jl}
+using CarboKitten
+import CarboKitten.Components.WaterDepth as WD
+
+@testset "Components/WaterDepth" begin
+    input = WD.Input(
+        box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
+        time = TimeProperties(Δt=1.0u"Myr", steps=10),
+        sea_level = t -> 2.0u"m",
+        initial_topography = (x, y) -> -10.0u"m",
+        subsidence_rate = 5.0u"m/Myr"
+    )
+    state = WD._initial_state(input)
+
+
+    @test all(state.bathymetry .== WD.initial_topography(input))
+
+    sub! = WD.subsider(input)
+    sub!(state)
+    @test all(state.bathymetry.==-15.0u"m")
+
+    wd = WD.water_depth(input)
+    @test all(wd(state) .== 17.0u"m")
 end
 ```

@@ -87,7 +87,7 @@ function denudation(::Box, p::PhysicalErosion, water_depth::Array{Float64}, slop
         # find which facies has the most sediment
         max_f = findmax(buffer_facies)
         f = max_f[2]
-     
+
         # if there's no sediment to denudate, don't do denudation
         if max_f[1] == 0.0 || isnan(max_f[1])
             continue

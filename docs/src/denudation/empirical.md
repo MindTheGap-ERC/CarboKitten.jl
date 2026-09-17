@@ -105,21 +105,20 @@ module EmpiricalDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
 using ...Boxes: Box
+using CarboKitten.SedimentStack: peek_sediment
+
 using Unitful
 export slope_kernel
 <<empirical-denudation>>
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, state)
     precip = p.precip ./ u"m/yr"
-    denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(slope)...)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(slope)...)
 
-    for idx in CartesianIndices(state.ca)
-        f = state.ca[idx]
-        if f == 0
-            continue
-        end
+    for idx in CartesianIndices(state.active_layer[1,:,:])
+        # empirical has no facies dependence
         if water_depth[idx] <= 0
-            denudation_rate[f,idx] = empirical_denudation.(precip, slope[idx])
+            denudation_rate[idx] = empirical_denudation.(precip, slope[idx])
         end
     end
     return denudation_rate

@@ -59,12 +59,12 @@ function step!(input::Input)
     slopefn = slope_function(input, input.box)
     pf = lithification_factor(input)
     dtf = input.disintegration_transfer
-    pop! = pop_sediment!(input)
+    pop! = pop_sediment(input)
     push! = push_sediment(input)
     subside! = subsider(input)
 
     slope = Array{Float64}(undef, input.box.grid_size...)
-    denuded_sediment = Array{Amount}(undef, n_facies(input), input.box.grid_size...)
+    denuded_sediment = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
 
     function (state::State)
         if mod(state.step, input.ca_interval) == 0
@@ -91,8 +91,6 @@ function step!(input::Input)
         denudation_mass = denudate(state, w, slope)
         if denudation_mass !== nothing
             denudation_mass = denudation_mass |>
-                x -> sum(x, dims=1) |>
-                x -> dropdims(x, dims=1) |>
                 x -> min.(x, state.sediment_thickness)
             pop!(state, denudation_mass, denuded_sediment)
 

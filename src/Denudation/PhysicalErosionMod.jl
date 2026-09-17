@@ -93,7 +93,7 @@ function denudation(::Box, p::PhysicalErosion, water_depth::Array{Float64}, slop
             continue
         end
         if water_depth[idx] <= 0
-            denudation_rate[idx] = physical_erosion.(slope[idx], facies[f].infiltration_coefficient, facies[f].erodibility)
+            denudation_rate[idx[1], idx[2]] = physical_erosion.(slope[idx], facies[f].infiltration_coefficient, facies[f].erodibility)
         end
     end
 

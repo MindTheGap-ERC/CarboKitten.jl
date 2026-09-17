@@ -13,10 +13,15 @@ using ...Denudation.EmpiricalDenudationMod: slope_kernel
 export Input, Facies
 
 function initial_state(input::Input)
-    sediment_height = zeros(Height, input.box.grid_size...)
+    sediment_thickness = zeros(Height, input.box.grid_size...)
     sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
     active_layer = zeros(Amount, n_facies(input), input.box.grid_size...)
-    state = State(step=0, sediment_height=sediment_height, sediment_buffer=sediment_buffer, active_layer=active_layer)
+    state = State(
+        step=0,
+        bathymetry=initial_topography(input),
+        sediment_thickness=sediment_thickness,
+        sediment_buffer=sediment_buffer,
+        active_layer=active_layer)
     InitialSediment.push_initial_sediment!(input, state)
     return state
 end

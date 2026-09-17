@@ -40,19 +40,10 @@ function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, s
     precip = p.precip ./ u"m/yr"
     denudation_rate = zeros(typeof(1.0u"m/Myr"), size(slope)...)
 
-    # look at top of the sediment buffer
-    buffer_facies = peek_sediment(state.sediment_buffer, 1.0)
-
     for idx in CartesianIndices(state.active_layer[1,:,:])
-        # get the biggest facies and use its parameters
-        max_f = findmax(buffer_facies[:,idx])
-        
-        # if there's no sediment to denudate, don't do denudation
-        if max_f[1] == 0.0 || isnan(max_f[1])
-            continue
-        end
+        # empirical has no facies dependence
         if water_depth[idx] <= 0
-            denudation_rate[idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[max_f[2]])
+            denudation_rate[idx] = empirical_denudation.(precip, slope[idx])
         end
     end
     return denudation_rate

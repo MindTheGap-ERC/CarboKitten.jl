@@ -130,7 +130,7 @@ function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1), show_unconformities
     section_data = if length(data_groups[:slice]) == 0
         @warn "No profile data slice stored, taking section of volume data along x-axis."
 
-        y_slice = div(size(volume_data.sediment_thickness)[2], 2) + 1
+        y_slice = div(size(volume_data.bathymetry)[2], 2) + 1
         volume_data[:, y_slice]
     else
         read_slice(fid[data_groups[:slice][1]])

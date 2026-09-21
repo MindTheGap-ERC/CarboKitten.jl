@@ -68,6 +68,7 @@ module Abstract
 
 using ...BoundaryTrait: Boundary
 using ...Boxes: Box
+using ...SedimentStack: peek_sediment
 
 using Unitful
 
@@ -114,6 +115,20 @@ end
 
 function redistribution(box::Box, param::DenudationType, denudation_mass, water_depth)
     error("Abstract `redistribution` function called.")
+end
+
+# not sure this is the right place for this, but it's common to multiple modes of denudation
+function dominant_facies(state, i::CartesianIndex)
+    # look at top of the sediment buffer column, first two cells of buffer
+    buffer_facies = peek_sediment(state.sediment_buffer[:,:,i[1],i[2]], 2.0)
+    max_f = findmax(buffer_facies[:,i[1], i[2]])
+
+    # we shouldn't be calling this function with an empty sediment buffer
+    if max_f[1]==0.0 || isnan(max_f[1])
+        @error "maximum facies value is $(max_f[1]), cannot find dominant facies if there's no sediment in buffer"
+    else 
+        return max_f[2]
+    end
 end
 
 end  # module

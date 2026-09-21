@@ -75,11 +75,10 @@ The redistribution of sediments after physical erosion is based on [van_de_wiel_
 ``` {.julia file=src/Denudation/PhysicalErosionMod.jl}
 module PhysicalErosionMod
 
-import ..Abstract: DenudationType, denudation, redistribution
+import ..Abstract: DenudationType, denudation, redistribution, dominant_facies
 using ...Stencil: Boundary, Periodic, offset_value, offset_index, stencil
 using ...BoundaryTrait
 using ...Boxes: Box
-using CarboKitten.SedimentStack: peek_sediment
 
 using Unitful
 
@@ -149,20 +148,9 @@ end
 function denudation(::Box, p::PhysicalErosion, water_depth::Array{Float64}, slope, facies, state)
     denudation_rate = zeros(typeof(1.0u"m/Myr"), size(slope)...)
 
-    for idx in CartesianIndices(state.active_layer[1,:,:])
-
-        # for now, look at the top 1m of sediment (if there is some)
-        buffer_facies = peek_sediment(state.sediment_buffer[:,:,idx], 1.0)
-
-        # find which facies has the most sediment
-        max_f = findmax(buffer_facies)
-        f = max_f[2]
-
-        # if there's no sediment to denudate, don't do denudation
-        if max_f[1] == 0.0 || isnan(max_f[1])
-            continue
-        end
-        if water_depth[idx] <= 0
+    for idx in CartesianIndices(state.sediment_thickness[1,:,:])
+        if water_depth[idx] <= 0 && state.sediment_thickness[idx] > 0.0u"m"
+            f = dominant_facies(state, idx)
             denudation_rate[idx[1], idx[2]] = physical_erosion.(slope[idx], facies[f].infiltration_coefficient, facies[f].erodibility)
         end
     end

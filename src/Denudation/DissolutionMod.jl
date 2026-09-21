@@ -1,10 +1,9 @@
 # ~/~ begin <<docs/src/denudation/chemical.md#src/Denudation/DissolutionMod.jl>>[init]
 module DissolutionMod
 
-import ..Abstract: DenudationType, denudation, redistribution
+import ..Abstract: DenudationType, denudation, redistribution, dominant_facies
 using ...BoundaryTrait: Boundary
 using ...Boxes: Box
-using CarboKitten.SedimentStack: peek_sediment
 
 export Dissolution
 using Unitful
@@ -51,7 +50,6 @@ function dissolution(temp, precip, pco2, alpha, water_depth, facies)
 end
 # ~/~ end
 
-
 function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state) where {BT<:Boundary}
     temp = p.temp ./ u"K"
     precip = p.precip ./ u"m/yr"
@@ -59,18 +57,10 @@ function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state
     reactionrate = p.reactionrate ./u"m/yr"
     denudation_rate = zeros(typeof(1.0u"m/Myr"), size(state.active_layer[1,:,:])...)
 
-    # look at top of the sediment buffer
-    buffer_facies = peek_sediment(state.sediment_buffer, 1.0)
-
-    for idx in CartesianIndices(state.active_layer[1,:,:])
-        # get the biggest facies and use its parameters
-        max_f = findmax(buffer_facies[:,idx])
-
-        # if there's no sediment to denudate, don't do denudation
-        if max_f[1] == 0.0 || isnan(max_f[1])
-            continue
-        end
-        if water_depth[idx] <= 0
+    for idx in CartesianIndices(state.sediment_thickness[1,:,:])
+        # only apply denudation if exposed and sediment is present
+        if water_depth[idx] <= 0 && state.sediment_thickness[idx] > 0.0u"m"
+            f = dominant_facies(state, idx)
             denudation_rate[idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[max_f[2]])
         end
     end

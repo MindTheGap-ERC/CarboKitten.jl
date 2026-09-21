@@ -30,7 +30,7 @@ export water_depth, subsider, initial_topography
 @kwdef struct Input <: AbstractInput
     sea_level = t -> 0.0u"m"
     initial_topography = (x, y) -> 0.0u"m"
-    subsidence_rate::Rate = 0.0u"m/Myr"
+    subsidence_rate = (t, x, y) -> 0.0u"m/Myr"
 end
 
 @kwdef mutable struct State <: AbstractState
@@ -53,6 +53,23 @@ function initial_topography(input::AbstractInput)
 
     x, y = box_axes(input.box)
     return input.initial_topography.(x, y')
+end
+
+
+"""
+    subsidence_rate(input)
+
+Obtain a function that gives the subsidence rate, given time and
+space coordinates.
+"""
+function subsidence_rate end
+
+function subsidence_rate(input::Input)
+    if input.subsidence_rate isa Quantity
+        s = input.subsidence_rate
+        return (x, y, t) -> s
+    end
+    return input.subsidence_rate
 end
 
 function subsider(input::AbstractInput)

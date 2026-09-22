@@ -13,7 +13,7 @@ $$D_{phys} = -k_v \times (1 - I_f)^{1/3} |\nabla h|^{2/3}$$
 This equation for the physical dedundation rate, $D_{phys}$ is implemented in  code as follows:
 ``` {.julia #physical-erosion}
 function physical_erosion(slope::Float64, inf::Float64, erodibility::typeof(1.0u"m/yr"))
-    -1 * erodibility .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3)
+    erodibility .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3)
 end
 ```
 and the output of this function for a range of slope angles is plotted here:

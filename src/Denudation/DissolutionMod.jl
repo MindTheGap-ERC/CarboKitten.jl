@@ -61,7 +61,7 @@ function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state
         # only apply denudation if exposed and sediment is present
         if water_depth[idx] <= 0 && state.sediment_thickness[idx] > 0.0u"m"
             f = dominant_facies(state, idx)
-            denudation_rate[idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[max_f[2]])
+            denudation_rate[idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[f])
         end
     end
     return denudation_rate

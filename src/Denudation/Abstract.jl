@@ -56,7 +56,7 @@ end
 function dominant_facies(state, i::CartesianIndex)
     # look at top of the sediment buffer column, first two cells of buffer
     buffer_facies = peek_sediment(state.sediment_buffer[:,:,i[1],i[2]], 2.0)
-    max_f = findmax(buffer_facies[:,i[1], i[2]])
+    max_f = findmax(buffer_facies)
 
     # we shouldn't be calling this function with an empty sediment buffer
     if max_f[1]==0.0 || isnan(max_f[1])

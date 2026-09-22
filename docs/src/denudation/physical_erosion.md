@@ -146,12 +146,12 @@ function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth) w
 end
 
 function denudation(::Box, p::PhysicalErosion, water_depth::Array{Float64}, slope, facies, state)
-    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(slope)...)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(state.sediment_thickness[:,:])...)
 
-    for idx in CartesianIndices(state.sediment_thickness[1,:,:])
+    for idx in CartesianIndices(state.sediment_thickness[:,:])
         if water_depth[idx] <= 0 && state.sediment_thickness[idx] > 0.0u"m"
             f = dominant_facies(state, idx)
-            denudation_rate[idx[1], idx[2]] = physical_erosion.(slope[idx], facies[f].infiltration_coefficient, facies[f].erodibility)
+            denudation_rate[idx] = physical_erosion(slope[idx], facies[f].infiltration_coefficient, facies[f].erodibility)
         end
     end
 

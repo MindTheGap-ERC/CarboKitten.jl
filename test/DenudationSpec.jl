@@ -126,7 +126,6 @@ end
     INPUT_PHYS_SLOPE = denudation_test_input(DENUDATION_PHYS, water_depth)
     STATE_PHYS_SLOPE = WD.initial_state(INPUT_PHYS_SLOPE)
     denudation_mass_PHYS_SLOPE = denudation(INPUT_PHYS_SLOPE)(STATE_PHYS_SLOPE, water_depth, slope)
-   
     println(denudation_mass_PHYS_SLOPE)
 
     INPUT_PHYS_FLAT = denudation_test_input(DENUDATION_PHYS, water_depth_flat)
@@ -138,6 +137,9 @@ end
 
     # redistribution
     denuded_sediment = Array{Amount, 3}(undef, 3, INPUT_PHYS_SLOPE.box.grid_size...)
+    denudation_mass_PHYS_SLOPE = denudation_mass_PHYS_SLOPE |>
+                x -> min.(x, STATE_PHYS_SLOPE.sediment_thickness)
+    
     pop_sediment(INPUT_PHYS_SLOPE)(STATE_PHYS_SLOPE, denudation_mass_PHYS_SLOPE, denuded_sediment)
     redistribution_mass = redistribution(INPUT_PHYS_SLOPE)(STATE_PHYS_SLOPE, water_depth, denuded_sediment)
     
@@ -153,7 +155,7 @@ end
         sediment_buffer = zeros(Float64,10,3,3,3)
     )
     some_sed = zeros(Float64,3,3,3)
-    some_sed[1,:,:] .+= 1.0 # 1 is extactly enough to tip over into seocnd bucket, so first is empty!
+    some_sed[1,:,:] .+= 1.0
     push_sediment!(state.sediment_buffer, some_sed)
     @test dominant_facies(state, CartesianIndex(1,1)) == 1    
 

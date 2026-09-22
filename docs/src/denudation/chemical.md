@@ -263,9 +263,9 @@ function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state
     precip = p.precip ./ u"m/yr"
     pco2 = p.pco2 ./1.0u"atm"
     reactionrate = p.reactionrate ./u"m/yr"
-    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(state.active_layer[1,:,:])...)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(state.sediment_thickness[:,:])...)
 
-    for idx in CartesianIndices(state.sediment_thickness[1,:,:])
+    for idx in CartesianIndices(state.sediment_thickness[:,:])
         # only apply denudation if exposed and sediment is present
         if water_depth[idx] <= 0 && state.sediment_thickness[idx] > 0.0u"m"
             f = dominant_facies(state, idx)

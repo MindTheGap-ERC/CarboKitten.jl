@@ -5,7 +5,7 @@ using Makie
 using Unitful
 
 import CarboKitten.Visualization: stratigraphic_column!
-using CarboKitten.Export: Header, DataColumn, stratigraphic_column, age_depth_model
+using CarboKitten.Export: Header, DataColumn, stratigraphic_column, age_depth_model, sediment_thickness
 
 
 function scdata(header::Header, data::DataColumn)
@@ -17,7 +17,7 @@ function scdata(header::Header, data::DataColumn)
     end
 
     colormax(d) = getindex.(argmax(d; dims=1)[1, :], 1)
-    adm = age_depth_model(data.sediment_thickness)
+    adm = age_depth_model(sediment_thickness(data))
 
     return (ys_low=adm[1:end-1] / u"m", ys_high=adm[2:end] / u"m", facies=colormax(sc)[1:end-1])
 end

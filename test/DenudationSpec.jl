@@ -126,7 +126,6 @@ end
     INPUT_PHYS_SLOPE = denudation_test_input(DENUDATION_PHYS, water_depth)
     STATE_PHYS_SLOPE = WD.initial_state(INPUT_PHYS_SLOPE)
     denudation_mass_PHYS_SLOPE = denudation(INPUT_PHYS_SLOPE)(STATE_PHYS_SLOPE, water_depth, slope)
-    println(denudation_mass_PHYS_SLOPE)
 
     INPUT_PHYS_FLAT = denudation_test_input(DENUDATION_PHYS, water_depth_flat)
     STATE_PHYS_FLAT = WD.initial_state(INPUT_PHYS_FLAT)

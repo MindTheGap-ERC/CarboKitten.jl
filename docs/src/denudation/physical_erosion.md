@@ -82,7 +82,9 @@ using ...Boxes: Box
 
 using Unitful
 
-@kwdef struct PhysicalErosion <: DenudationType end
+@kwdef struct PhysicalErosion <: DenudationType 
+    peek_depth::Float64 = 2.0
+end
 
 const Amount = typeof(1.0u"m")
 
@@ -150,7 +152,7 @@ function denudation(::Box, p::PhysicalErosion, water_depth::Array{Float64}, slop
 
     for idx in CartesianIndices(state.sediment_thickness[:,:])
         if water_depth[idx] <= 0 && state.sediment_thickness[idx] > 0.0u"m"
-            f = dominant_facies(state, idx)
+            f = dominant_facies(state, idx, p.peek_depth)
             denudation_rate[idx] = physical_erosion(slope[idx], facies[f].infiltration_coefficient, facies[f].erodibility)
         end
     end

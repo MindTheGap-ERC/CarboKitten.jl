@@ -85,8 +85,8 @@ Returns denudation mass in units of meters.
 function denudation(input)
 
     function (state, water_depth, slope)
-        if denudation(input.box, input.denudation, water_depth, slope, input.facies,state) !== nothing
-        return denudation(input.box, input.denudation, water_depth, slope, input.facies,state) .* input.time.Δt
+        if denudation(input.box, input.denudation, water_depth, slope, input.facies, state) !== nothing
+        return denudation(input.box, input.denudation, water_depth, slope, input.facies, state) .* input.time.Δt
         else
         return nothing
         end
@@ -118,9 +118,9 @@ function redistribution(box::Box, param::DenudationType, denudation_mass, water_
 end
 
 # not sure this is the right place for this, but it's common to multiple modes of denudation
-function dominant_facies(state, i::CartesianIndex)
+function dominant_facies(state, i::CartesianIndex, peek_depth::Float64)
     # look at top of the sediment buffer column, first two cells of buffer
-    buffer_facies = peek_sediment(state.sediment_buffer[:,:,i[1],i[2]], 2.0)
+    buffer_facies = peek_sediment(state.sediment_buffer[:,:,i[1],i[2]], peek_depth)
     max_f = findmax(buffer_facies)
 
     # we shouldn't be calling this function with an empty sediment buffer

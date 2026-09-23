@@ -13,6 +13,7 @@ using Unitful
     precip::typeof(1.0u"m/yr")
     pco2::typeof(1.0u"atm")
     reactionrate::typeof(1.0u"m/yr")
+    peek_depth::Float64 = 2.0
 end
 
 # ~/~ begin <<docs/src/denudation/chemical.md#karst-parameter-function>>[init]
@@ -60,7 +61,7 @@ function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state
     for idx in CartesianIndices(state.sediment_thickness[:,:])
         # only apply denudation if exposed and sediment is present
         if water_depth[idx] <= 0 && state.sediment_thickness[idx] > 0.0u"m"
-            f = dominant_facies(state, idx)
+            f = dominant_facies(state, idx, p.peek_depth)
             denudation_rate[idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[f])
         end
     end

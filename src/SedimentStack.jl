@@ -116,8 +116,11 @@ function peek_sediment(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vect
   parcel .+= sum(col[2:n+1,:]; dims=1)'
   Δ -= n
 
-  last_bit = (Δ / sum(col[n+2,:])) .* col[n+2,:]
-  parcel .+= last_bit
+  last_bucket = sum(col[n+2,:])
+  if last_bucket > 0
+    last_bit = (Δ / last_bucket) .* col[n+2,:]
+    parcel .+= last_bit
+  end
 
   return parcel
 end

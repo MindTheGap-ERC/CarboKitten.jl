@@ -1,28 +1,4 @@
-# Interpolated Production
-
-Not all production curves follow the Bosscher & Schlager model. In some cases it is more natural to specify the curve directly, as a set of depth knots and multipliers applied to a peak rate. The `InterpolatedProduction` type supports this:
-
-$$g(t, w) = g_{\max} \cdot f(w),$$
-
-where $f(w)$ is a piecewise-linear function defined by `(depth_knots, multipliers)` pairs, with **flat extrapolation** outside the knot range.
-
-This curve is **independent of insolation** — the per-depth shape is fixed by the user. To vary the overall scale over time, wrap it in `MultiplyProduction`.
-
-## Example
-
-```julia
-using CarboKitten.Production: InterpolatedProduction
-
-# Shallow reef builder: peaks at 5–15 m, dies off by 50 m
-InterpolatedProduction(
-    maximum_production = 500.0u"m/Myr",
-    depth_knots  = [0.0u"m", 5.0u"m", 15.0u"m", 30.0u"m", 50.0u"m"],
-    multipliers  = [0.0,     1.0,     1.0,      0.4,      0.0])
-```
-
-## Implementation
-
-``` {.julia file=src/Production/Interpolated.jl}
+# ~/~ begin <<docs/src/production/interpolated.md#src/Production/Interpolated.jl>>[init]
 module Interpolated
   
 using Unitful
@@ -70,4 +46,4 @@ function production_profile(::AbstractInput, p::InterpolatedProduction)
 end
 
 end
-```
+# ~/~ end

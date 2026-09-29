@@ -92,6 +92,13 @@ makedocs(
             "Tabular Sea Levels" => "cases/tabular-sea-level.md",
             "Initial Topography" => "initial-topography.md",
         ],
+        "Production Model" => [
+            "Production" => "production/production.md",
+            "Benthic Production" => "production/benthic.md",
+            "Pelagic Production" => "production/pelagic.md",
+            "Interpolation" => "production/interpolated.md",
+            "Modifiers" => "production/modifiers.md"
+        ],
         "Interface" => [
             "Wave fields" => "wavefield.md",
         ],

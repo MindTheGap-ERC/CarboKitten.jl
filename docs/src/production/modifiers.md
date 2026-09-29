@@ -54,6 +54,7 @@ function production_profile(input::AbstractInput, p::MultiplyProduction)
     end
 end
 ```
+
 Because modifiers are baked into the production closure, `uniform_production`
 and `CAProduction` contain no modifier-related code — they simply call
 `capped_production(profile, t, wd, dt)`.
@@ -116,4 +117,15 @@ The implementation is smaller than the use case:
 end
 
 Base.:*(p::AbstractProduction, b::ProductionBoost) = MultiplyProduction(p, b.factor, b.t_range)
+```
+
+
+``` {.julia file=src/Production/Modifiers.jl}
+module Modifiers
+    import ..Abstract: AbstractProduction, production_profile
+
+    <<multiply-production>>
+    <<multiply-production-profile>>
+    <<production-boost>>
+end
 ```

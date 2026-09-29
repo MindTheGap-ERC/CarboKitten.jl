@@ -14,6 +14,65 @@ function pelagic_production(insolation, facies, water_depth)
 end
 ```
 
+Because the parameters for benthic and pelagic production have different units, we need different types to store them.
+
+``` {.julia file=src/Production/Pelagic.jl}
+module Pelagic
+
+using Unitful
+using Interpolations: linear_interpolation
+import ..Abstract: AbstractProduction, is_pelagic, production_profile, insolation_curve
+
+@kwdef struct PelagicProduction <: AbstractProduction
+    maximum_growth_rate::typeof(1.0u"1/Myr") = 0.0u"1/Myr"
+    extinction_coefficient::typeof(1.0u"m^-1") = 0.0u"m^-1"
+    saturation_intensity::typeof(1.0u"W/m^2") = 1.0u"W/m^2"
+    maximum_production_depth::typeof(1.0u"m") = 200.0u"m"
+    table_size::Tuple{Int, Int} = (1000, 1000)
+end
+
+is_pelagic(::PelagicProduction) = true
+
+production_profile(input::AbstractInput, p::PelagicProduction) = 
+    pelagic_production_lookup(input, p)
+
+end
+```
+
+## Lookup tables
+
+We use `linear_interpolation` from `Interpolations` to compute production profiles from look-up tables. `insolation_curve` provides a `time -> insolation` closure used to evaluate the lookup at the correct insolation for each time step.
+
+``` {.julia #production-lookup}
+function pelagic_production_lookup(input::AbstractInput, prod::PelagicProduction)
+    I_of_t = insolation_curve(input)
+    depth_grid = LinRange(0.0, prod.maximum_production_depth |> in_units_of(u"m"), prod.table_size[2])
+
+    if input.insolation isa Quantity
+        # Constant insolation — 1D depth lookup, time argument ignored
+        I0 = input.insolation
+        production_values = [pelagic_production(I0, prod, w * u"m") |> in_units_of(u"m/Myr")
+                             for w in depth_grid]
+        itp = linear_interpolation(depth_grid, production_values, extrapolation_bc=Line())
+        return (_, w) -> itp(w |> in_units_of(u"m")) * u"m/Myr"
+    end
+
+    # Variable insolation — 2D (insolation × depth) lookup
+    t_axis = time_axis(input)
+    I_vals = [I_of_t(t) |> in_units_of(u"W/m^2") for t in t_axis]
+    I_min, I_max = extrema(I_vals)
+
+    insolation_grid = LinRange(I_min, I_max, prod.table_size[1])
+    production_values = [
+        pelagic_production(I * u"W/m^2", prod, w * u"m") |> in_units_of(u"m/Myr")
+        for I in insolation_grid, w in depth_grid
+    ]
+    itp = linear_interpolation((collect(insolation_grid), collect(depth_grid)),
+                               production_values, extrapolation_bc=Line())
+    return (t, w) -> itp(I_of_t(t) |> in_units_of(u"W/m^2"), w |> in_units_of(u"m")) * u"m/Myr"
+end
+```
+
 ``` {.julia file=examples/production/pelagic.jl}
 module PelagicProductionPlot
 

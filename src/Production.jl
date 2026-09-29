@@ -10,7 +10,7 @@ using ..Utility: in_units_of
 
 export production_profile
 
-# ~/~ begin <<docs/src/components/production.md#component-production-rate>>[init]
+# ~/~ begin <<docs/src/production/benthic.md#component-production-rate>>[init]
 function production_rate(insolation, facies, water_depth)
     gₘ = facies.maximum_growth_rate
     I = insolation / facies.saturation_intensity
@@ -18,10 +18,10 @@ function production_rate(insolation, facies, water_depth)
     return x > 0.0 ? gₘ * tanh(I * exp(-x)) : zero(typeof(gₘ))
 end
 # ~/~ end
-# ~/~ begin <<docs/src/components/production.md#component-production-rate>>[1]
+# ~/~ begin <<docs/src/production/benthic.md#component-production-rate>>[1]
 benthic_production(i, f, w) = production_rate(i, f, w)
 # ~/~ end
-# ~/~ begin <<docs/src/components/production.md#component-production-rate>>[2]
+# ~/~ begin <<docs/src/production/benthic.md#component-production-rate>>[2]
 """
     capped_production(f, time, water_depth, dt)
 
@@ -34,7 +34,7 @@ function capped_production(f, time, water_depth, dt)
     return min(max(0.0u"m", water_depth), p * dt)
 end
 # ~/~ end
-# ~/~ begin <<docs/src/components/production.md#pelagic-production>>[init]
+# ~/~ begin <<docs/src/production/pelagic.md#pelagic-production>>[init]
 function pelagic_production(insolation, facies, water_depth)
     return quadgk(w -> production_rate(insolation, facies, w), 0.0u"m", water_depth)[1]
 end
@@ -177,7 +177,7 @@ function pelagic_production_lookup(input::AbstractInput, prod::PelagicProduction
     return (t, w) -> itp(I_of_t(t) |> in_units_of(u"W/m^2"), w |> in_units_of(u"m")) * u"m/Myr"
 end
 # ~/~ end
-# ~/~ begin <<docs/src/components/production.md#interpolated-production>>[init]
+# ~/~ begin <<docs/src/production/interpolated.md#interpolated-production>>[init]
 # =============================================================================
 # Interpolated (knot-based) production curve
 # =============================================================================
@@ -219,7 +219,7 @@ function production_profile(::AbstractInput, p::InterpolatedProduction)
     return (_, w) -> max_rate * itp(w |> in_units_of(u"m"))
 end
 # ~/~ end
-# ~/~ begin <<docs/src/components/production.md#multiply-production>>[init]
+# ~/~ begin <<docs/src/production/modifiers.md#multiply-production>>[init]
 # =============================================================================
 # Time-window modifier — AbstractProduction transformer
 # =============================================================================
@@ -250,7 +250,7 @@ is_benthic(p::MultiplyProduction)      = is_benthic(p.base)
 is_pelagic(p::MultiplyProduction)      = is_pelagic(p.base)
 is_interpolated(p::MultiplyProduction) = is_interpolated(p.base)
 
-# ~/~ begin <<docs/src/components/production.md#multiply-production-profile>>[init]
+# ~/~ begin <<docs/src/production/modifiers.md#multiply-production-profile>>[init]
 function production_profile(input::AbstractInput, p::MultiplyProduction)
     base_profile = production_profile(input, p.base)
     return function(t, w)

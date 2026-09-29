@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/components/production.md#examples/production/pelagic.jl>>[init]
+# ~/~ begin <<docs/src/production/pelagic.md#examples/production/pelagic.jl>>[init]
 module PelagicProductionPlot
 
 using CarboKitten

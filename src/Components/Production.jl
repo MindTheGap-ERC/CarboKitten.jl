@@ -50,6 +50,20 @@ function write_header(input::AbstractInput, output::AbstractOutput)
     end
 end
 
+# ~/~ begin <<docs/src/components/production.md#capped-production>>[init]
+"""
+    capped_production(f, time, water_depth, dt)
+
+Apply production function `f(time, water_depth) -> rate`, clip to non-negative,
+and cap by available accommodation. Returns the deposited thickness for `dt`.
+"""
+function capped_production(f, time, water_depth, dt)
+    clip_positive(x::T) where {T} = max(x, zero(T))
+    p = clip_positive(f(time, water_depth))
+    return min(max(0.0u"m", water_depth), p * dt)
+end
+# ~/~ end
+
 function uniform_production(input::AbstractInput)
     w = water_depth(input)
     na = [CartesianIndex()]

@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/production/interpolated.md#src/Production/Interpolated.jl>>[init]
 module Interpolated
-  
+
 using Unitful
 using Interpolations: linear_interpolation
 import ..Abstract: AbstractProduction, production_profile

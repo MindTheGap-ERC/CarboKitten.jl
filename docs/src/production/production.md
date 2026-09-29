@@ -52,7 +52,7 @@ end
 
 ``` {.julia file=src/Production/Abstract.jl}
 module Abstract
-    
+
 """
     production_profile(input::AbstractInput, p)
 
@@ -125,11 +125,15 @@ include("Production/Interpolated.jl")
 include("Production/Modifiers.jl")
 
 using Unitful
-using ..Utility: in_units_of
 
 import .Abstract: AbstractProduction, production_profile
+import .Benthic: BenthicProduction
+import .Pelagic: PelagicProduction
+import .Interpolated: InterpolatedProduction
+import .Modifiers: MultiplyProduction, ProductionBoost
 
-export AbstractProduction, production_profile
+export AbstractProduction, production_profile, BenthicProduction, PelagicProduction,
+    InterpolatedProduction, MultiplyProduction, ProductionBoost, EXAMPLE
 
 const EXAMPLE = Dict(
     :euphotic => BenthicProduction(

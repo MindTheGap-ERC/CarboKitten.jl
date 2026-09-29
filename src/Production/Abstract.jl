@@ -1,6 +1,6 @@
 # ~/~ begin <<docs/src/production/production.md#src/Production/Abstract.jl>>[init]
 module Abstract
-    
+
 """
     production_profile(input::AbstractInput, p)
 

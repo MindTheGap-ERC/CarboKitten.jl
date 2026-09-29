@@ -27,6 +27,24 @@ The `production_modifiers` field has been removed from `Input`. Time-dependent
 behaviour is now expressed by composing production specs directly in the `Facies`
 definition using `MultiplyProduction`.
 
+## Production cap
+
+Because we can only produce as much as keeps the factory submerged, we have to cap the total production in a single time step to the current water depth. This assumes we have production as a function of time and water depth.
+
+``` {.julia #capped-production}
+"""
+    capped_production(f, time, water_depth, dt)
+
+Apply production function `f(time, water_depth) -> rate`, clip to non-negative,
+and cap by available accommodation. Returns the deposited thickness for `dt`.
+"""
+function capped_production(f, time, water_depth, dt)
+    clip_positive(x::T) where {T} = max(x, zero(T))
+    p = clip_positive(f(time, water_depth))
+    return min(max(0.0u"m", water_depth), p * dt)
+end
+```
+
 ### HDF5 serialization
 
 Since `production_profile` is now fully generic, production is saved as a
@@ -84,6 +102,8 @@ function write_header(input::AbstractInput, output::AbstractOutput)
             t_write .|> in_units_of(u"Myr"))
     end
 end
+
+<<capped-production>>
 
 function uniform_production(input::AbstractInput)
     w = water_depth(input)

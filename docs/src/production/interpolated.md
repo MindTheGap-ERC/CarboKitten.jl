@@ -24,7 +24,7 @@ InterpolatedProduction(
 
 ``` {.julia file=src/Production/Interpolated.jl}
 module Interpolated
-  
+
 using Unitful
 using Interpolations: linear_interpolation
 import ..Abstract: AbstractProduction, production_profile

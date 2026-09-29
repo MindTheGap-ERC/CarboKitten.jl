@@ -22,22 +22,6 @@ We also have an alias for benthic production rates `benthic_production`, as we w
 benthic_production(i, f, w) = production_rate(i, f, w)
 ```
 
-Because we can only produce as much as keeps the factory submerged, we have to cap the total production in a single time step to the current water depth. This assumes we have production as a function of time and water depth.
-
-``` {.julia #benthic-production-rate}
-"""
-    capped_production(f, time, water_depth, dt)
-
-Apply production function `f(time, water_depth) -> rate`, clip to non-negative,
-and cap by available accommodation. Returns the deposited thickness for `dt`.
-"""
-function capped_production(f, time, water_depth, dt)
-    clip_positive(x::T) where {T} = max(x, zero(T))
-    p = clip_positive(f(time, water_depth))
-    return min(max(0.0u"m", water_depth), p * dt)
-end
-```
-
 Insolation is captured inside each production profile closure via `insolation_curve` — the model loop only needs to pass the current simulation time.
 
 From just this equation we can define a uniform production process. This requires that we have a `Facies` that defines the `maximum_growth_rate`, `extinction_coefficient` and `saturation_intensity`.
@@ -48,7 +32,7 @@ The `insolation` input may be given as a scalar quantity, say `400u"W/m^2"`, or 
 module Benthic
 
 using Unitful
-import .Abstract: is_benthic, insolation_curve, production_profile
+import ..Abstract: is_benthic, insolation_curve, production_profile
 
 <<benthic-production-rate>>
 

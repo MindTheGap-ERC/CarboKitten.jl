@@ -3,7 +3,7 @@
 Not all production curves follow the Bosscher & Schlager model. In some cases it is more natural to specify the curve directly, as a set of depth knots and multipliers applied to a peak rate. The `InterpolatedProduction` type supports this:
 
 ```math
-g(t, w) = g_{\max} \cdot f(w),
+g(t, w) = g_{\max} f(w),
 ```
 
 where $f(w)$ is a piecewise-linear function defined by `(depth_knots, multipliers)` pairs, with **flat extrapolation** outside the knot range.

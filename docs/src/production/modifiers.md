@@ -1,4 +1,4 @@
-# Production modifiers
+# Production Modifiers
 
 Instead of a separate `production_modifiers` list on `Input`, time-varying
 behaviour is expressed by wrapping any production spec in `MultiplyProduction`.

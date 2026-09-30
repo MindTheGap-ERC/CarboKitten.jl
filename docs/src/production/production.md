@@ -1,5 +1,41 @@
 # Production
 
+CarboKitten supports a variety of methods to model sediment production. In general a production model is a function of waterdepth and insolation giving a value in units of meters (of sediment) per million years. We provide two models based on Bosscher & Schlager 1992 [Bosscher1992](@cite): `BenthicProduction` and `PelagicProduction`.
+
+## Benthic and Pelagic production models
+
+The *benthic* production model supposes that organisms (like corals or bivalves) on the bottom of the sea are responsible for producing sediment, depending on how much sun light is able to reach the bottom. At a given saturation intensity, the organism is not able to produce any more sediment, due to other limiting factors. The growth rate is given as,
+
+```math
+g_b(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right).
+```
+
+In the case of *pelagic* production, the supposed organism (maybe algae) occupy the entire water column above the sea floor. In that case we need to integrate the benthic production profile over the water column to obtain the pelagic production profile,
+
+```math
+g_p(w) = \int_0^{w} g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right) \textrm{d}w.
+```
+
+Both these models have the same parameters, albeit that ``g_m`` has slightly different units:
+
+- ``g_m`` is the maximum production rate in units of ``{\rm m/Myr}`` (or ``{\rm 1/Myr}`` in case of pelagic production).
+- ``I_0`` is the given insolation in ``{\rm W}/{\rm m}^2`` (set as a separate global input paramater, possibly a function of time).
+- ``I_k`` is the saturation intensity in ``{\rm W}/{\rm m}^2``.
+- ``k`` is the extinction coefficient in ``1/{\rm m}``.
+- ``w`` is the water depth as obtained from CarboKitten's model state.
+
+The implementation of these models can be found in their respective sections: [Benthic Production](@ref) and [Pelagic Production](@ref).
+
+## Interpolated and modified production
+
+As stated before, a production model is a function of waterdepth and insolation giving a value in units of meters (of sediment) per million years. More abstractly, we can replace the insolation with a time dependency to allow more flexible time dependent production levels. We should warn that, in general, more flexibility does impact the predictive power of the model negatively.
+
+The [Interpolated Production](@ref) model lets the user provide a set of key values for production as a function of water depth, while a separate set of [Production Modifiers](@ref) can be used to modulate production amplitudes over time. These modifiers can be chained and applied to any other production model.
+
+## No production
+
+In some cases you may whish to disable production altogether. For that case we have defined the `NoProduction` model. This is the default setting for the `Facies` configuration.
+
 ## Mixing curve types
 
 Different facies in the same run can use different production types:
@@ -17,10 +53,30 @@ facies = [
 ]
 ```
 
-## Insolation curve
+## Custom production models
 
-Production profiles are now functions of `(time, water_depth)` rather than
-`(insolation, water_depth)`.
+If none of the above options provide what you need, you may choose to implement your own production model. Derive a new `struct` from `AbstractProduction`, and implement the `production_profile` method:
+
+```julia
+module MyProductionModel
+    
+import CarboKitten: production_profile, AbstractProduction, AbstractInput, insolation_curve
+
+struct MyProduction <: AbstractProduction
+    ...
+end
+
+production_profile(input::AbstractInput, production::MyProduction) =
+    I_of_t = insolation_curve(input)
+    function (time, water_depth)
+        I = I_of_t(time)
+        ...
+    end
+    
+end  # module MyProductionModel
+```
+
+### Insolation curve
 
 The `insolation_curve` helper captures insolation inside the closure returned by `production_profile`, so the model loop never needs to call an insolation function explicitly.
 
@@ -57,6 +113,8 @@ end
 ```
 
 ## Interface
+
+Every production model should adhere to the production interface outlined below.
 
 ``` {.julia file=src/Production/Abstract.jl}
 module Abstract
@@ -125,6 +183,10 @@ production_profile(::AbstractInput, ::NoProduction) = (_, _) -> 0.0u"m/Myr"
 
 end
 ```
+
+## Module
+
+The production module collects the different production models, and provides a list of example profiles.
 
 ``` {.julia file=src/Production.jl}
 module Production

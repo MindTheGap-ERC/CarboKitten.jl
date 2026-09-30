@@ -2,6 +2,7 @@
 module Production
 
 include("Production/Abstract.jl")
+include("Production/Insolation.jl")
 include("Production/Benthic.jl")
 include("Production/Pelagic.jl")
 include("Production/Interpolated.jl")
@@ -9,13 +10,14 @@ include("Production/Modifiers.jl")
 
 using Unitful
 
-import .Abstract: AbstractProduction, production_profile
+import .Abstract: AbstractProduction, NoProduction, production_profile, is_benthic, is_pelagic, is_interpolated
 import .Benthic: BenthicProduction
 import .Pelagic: PelagicProduction
 import .Interpolated: InterpolatedProduction
 import .Modifiers: MultiplyProduction, ProductionBoost
+import .Insolation: insolation_curve
 
-export AbstractProduction, production_profile, BenthicProduction, PelagicProduction,
+export AbstractProduction, production_profile, NoProduction, BenthicProduction, PelagicProduction,
     InterpolatedProduction, MultiplyProduction, ProductionBoost, EXAMPLE
 
 const EXAMPLE = Dict(

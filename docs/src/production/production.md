@@ -24,7 +24,13 @@ Production profiles are now functions of `(time, water_depth)` rather than
 
 The `insolation_curve` helper captures insolation inside the closure returned by `production_profile`, so the model loop never needs to call an insolation function explicitly.
 
-``` {.julia #insolation-curve}
+``` {.julia file=src/Production/Insolation.jl}
+module Insolation
+
+using Unitful
+
+import ..Abstract: AbstractInput
+
 """
     insolation_curve(input) -> function(time) -> insolation
 
@@ -46,12 +52,17 @@ function insolation_curve(input::AbstractInput)
         return t -> insolation_param(t)
     end
 end
+
+end
 ```
 
 ## Interface
 
 ``` {.julia file=src/Production/Abstract.jl}
 module Abstract
+
+using Unitful
+using ...CarboKitten: AbstractInput
 
 """
     production_profile(input::AbstractInput, p)
@@ -119,6 +130,7 @@ end
 module Production
 
 include("Production/Abstract.jl")
+include("Production/Insolation.jl")
 include("Production/Benthic.jl")
 include("Production/Pelagic.jl")
 include("Production/Interpolated.jl")
@@ -126,13 +138,14 @@ include("Production/Modifiers.jl")
 
 using Unitful
 
-import .Abstract: AbstractProduction, production_profile
+import .Abstract: AbstractProduction, NoProduction, production_profile, is_benthic, is_pelagic, is_interpolated
 import .Benthic: BenthicProduction
 import .Pelagic: PelagicProduction
 import .Interpolated: InterpolatedProduction
 import .Modifiers: MultiplyProduction, ProductionBoost
+import .Insolation: insolation_curve
 
-export AbstractProduction, production_profile, BenthicProduction, PelagicProduction,
+export AbstractProduction, production_profile, NoProduction, BenthicProduction, PelagicProduction,
     InterpolatedProduction, MultiplyProduction, ProductionBoost, EXAMPLE
 
 const EXAMPLE = Dict(

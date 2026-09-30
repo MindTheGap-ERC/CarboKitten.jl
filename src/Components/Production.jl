@@ -4,9 +4,8 @@
 using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
-using ...Production: NoProduction, InterpolatedProduction, MultiplyProduction
-import ...Production: production_profile, is_benthic, is_pelagic, is_interpolated,
-    capped_production, insolation_curve
+using ...Production: NoProduction, production_profile, insolation_curve
+import ...Production: is_benthic, is_pelagic, is_interpolated
 
 using HDF5
 using QuadGK
@@ -14,11 +13,10 @@ using Interpolations
 using Logging
 
 export uniform_production
-export MultiplyProduction, InterpolatedProduction, NoProduction
 
 # ~/~ begin <<docs/src/components/production.md#production-input>>[init]
 @kwdef struct Input <: AbstractInput
-    insolation
+    insolation = 400.0u"W/m^2"
 end
 
 @kwdef struct Facies <: AbstractFacies
@@ -27,6 +25,7 @@ end
 
 is_benthic(facies::AbstractFacies) = is_benthic(facies.production)
 is_pelagic(facies::AbstractFacies) = is_pelagic(facies.production)
+is_interpolated(facies::AbstractFacies) = is_interpolated(facies.production)
 # ~/~ end
 
 function write_header(input::AbstractInput, output::AbstractOutput)

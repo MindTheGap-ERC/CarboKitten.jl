@@ -18,7 +18,7 @@ end
 
 We also have an alias for benthic production rates `benthic_production`, as we will also allow for a `pelagic_production` function (see [Pelagic Production](@ref)).
 
-``` {.julia #component-production-rate}
+``` {.julia #benthic-production-rate}
 benthic_production(i, f, w) = production_rate(i, f, w)
 ```
 
@@ -32,7 +32,8 @@ The `insolation` input may be given as a scalar quantity, say `400u"W/m^2"`, or 
 module Benthic
 
 using Unitful
-import ..Abstract: is_benthic, insolation_curve, production_profile
+import ..Abstract: AbstractInput, AbstractProduction, is_benthic, production_profile
+import ..Insolation: insolation_curve
 
 <<benthic-production-rate>>
 

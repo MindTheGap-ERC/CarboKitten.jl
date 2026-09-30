@@ -12,7 +12,7 @@ CarboKitten.Components.Production
 
 ``` {.julia #production-input}
 @kwdef struct Input <: AbstractInput
-    insolation
+    insolation = 400.0u"W/m^2"
 end
 
 @kwdef struct Facies <: AbstractFacies
@@ -21,6 +21,7 @@ end
 
 is_benthic(facies::AbstractFacies) = is_benthic(facies.production)
 is_pelagic(facies::AbstractFacies) = is_pelagic(facies.production)
+is_interpolated(facies::AbstractFacies) = is_interpolated(facies.production)
 ```
 
 The `production_modifiers` field has been removed from `Input`. Time-dependent
@@ -68,9 +69,8 @@ We put the basic production equations in a separate module `CarboKitten.Producti
 using ..Common
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
-using ...Production: NoProduction, InterpolatedProduction, MultiplyProduction
-import ...Production: production_profile, is_benthic, is_pelagic, is_interpolated,
-    capped_production, insolation_curve
+using ...Production: NoProduction, production_profile, insolation_curve
+import ...Production: is_benthic, is_pelagic, is_interpolated
 
 using HDF5
 using QuadGK
@@ -78,7 +78,6 @@ using Interpolations
 using Logging
 
 export uniform_production
-export MultiplyProduction, InterpolatedProduction, NoProduction
 
 <<production-input>>
 
@@ -140,7 +139,7 @@ loop only needs the current time, not an insolation value.
     using ..Common
     using ..TimeIntegration: time
     using ..WaterDepth: water_depth
-    using ...Production: production_profile, capped_production
+    using ...Production: production_profile
     using Logging
 
     function production(input::AbstractInput)
@@ -150,7 +149,7 @@ loop only needs the current time, not an insolation value.
 
         facies = input.facies
         dt = input.time.Δt
-        production_specs = ((production_profile(input, f.production) for f in facies)...,)
+        production_specs = ((Production.production_profile(input, f.production) for f in facies)...,)
         get_time = time(input)
 
         function p(state::AbstractState, wd::AbstractMatrix)::Array{Amount,3}
@@ -160,10 +159,10 @@ loop only needs the current time, not an insolation value.
                 for f in eachindex(facies)
                     if facies[f].active
                         output[f, i[1], i[2]] = f != state.ca[i] ? 0.0u"m" :
-                            capped_production(production_specs[f], t, wd[i], dt)
+                            Production.capped_production(production_specs[f], t, wd[i], dt)
                     else
                         output[f, i[1], i[2]] =
-                            capped_production(production_specs[f], t, wd[i], dt)
+                            Production.capped_production(production_specs[f], t, wd[i], dt)
                     end
                 end
             end

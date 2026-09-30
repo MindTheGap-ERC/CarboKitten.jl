@@ -1,6 +1,8 @@
 # ~/~ begin <<docs/src/production/modifiers.md#src/Production/Modifiers.jl>>[init]
 module Modifiers
-    import ..Abstract: AbstractProduction, production_profile
+    using Unitful
+
+    import ..Abstract: AbstractInput, AbstractProduction, production_profile, is_benthic, is_pelagic, is_interpolated
 
     # ~/~ begin <<docs/src/production/modifiers.md#multiply-production>>[init]
     # =============================================================================
@@ -32,16 +34,6 @@ module Modifiers
     is_benthic(p::MultiplyProduction)      = is_benthic(p.base)
     is_pelagic(p::MultiplyProduction)      = is_pelagic(p.base)
     is_interpolated(p::MultiplyProduction) = is_interpolated(p.base)
-    
-    # ~/~ begin <<docs/src/production/modifiers.md#multiply-production-profile>>[init]
-    function production_profile(input::AbstractInput, p::MultiplyProduction)
-        base_profile = production_profile(input, p.base)
-        return function(t, w)
-            f = p.t_range isa Colon || (p.t_range[1] <= t <= p.t_range[2]) ? p.factor : 1.0
-            return base_profile(t, w) * f
-        end
-    end
-    # ~/~ end
     # ~/~ end
     # ~/~ begin <<docs/src/production/modifiers.md#multiply-production-profile>>[init]
     function production_profile(input::AbstractInput, p::MultiplyProduction)

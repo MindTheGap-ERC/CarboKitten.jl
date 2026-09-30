@@ -26,8 +26,10 @@ InterpolatedProduction(
 module Interpolated
 
 using Unitful
-using Interpolations: linear_interpolation
-import ..Abstract: AbstractProduction, production_profile
+using ...Utility: in_units_of
+
+using Interpolations
+import ..Abstract: AbstractInput, AbstractProduction, production_profile
 # =============================================================================
 # Interpolated (knot-based) production curve
 # =============================================================================

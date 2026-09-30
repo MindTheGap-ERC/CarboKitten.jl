@@ -1,6 +1,9 @@
 # ~/~ begin <<docs/src/production/production.md#src/Production/Abstract.jl>>[init]
 module Abstract
 
+using Unitful
+using ...CarboKitten: AbstractInput
+
 """
     production_profile(input::AbstractInput, p)
 

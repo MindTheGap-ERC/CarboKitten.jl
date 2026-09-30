@@ -71,6 +71,7 @@ export Model
 export @for_each
 export Size
 export n_steps
+export AbstractProduction, NoProduction, BenthicProduction, PelagicProduction, production_profile, InterpolatedProduction
 
 using ModuleMixins
 using Unitful
@@ -81,6 +82,7 @@ using ...BoundaryTrait
 using ...Config: TimeProperties
 using ...Boxes: Box, box_axes
 using ...Utility: in_units_of
+using ...Production
 
 const Amount = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")

@@ -20,8 +20,13 @@ Because the parameters for benthic and pelagic production have different units, 
 module Pelagic
 
 using Unitful
-using Interpolations: linear_interpolation
-import ..Abstract: AbstractProduction, is_pelagic, production_profile, insolation_curve
+using Interpolations
+using QuadGK
+
+using ...Utility: in_units_of
+import ..Abstract: AbstractInput, AbstractProduction, is_pelagic, production_profile
+import ..Insolation: insolation_curve
+import ..Benthic: production_rate
 
 @kwdef struct PelagicProduction <: AbstractProduction
     maximum_growth_rate::typeof(1.0u"1/Myr") = 0.0u"1/Myr"
@@ -33,7 +38,10 @@ end
 
 is_pelagic(::PelagicProduction) = true
 
-production_profile(input::AbstractInput, p::PelagicProduction) = 
+<<pelagic-production>>
+<<production-lookup>>
+
+production_profile(input::AbstractInput, p::PelagicProduction) =
     pelagic_production_lookup(input, p)
 
 end

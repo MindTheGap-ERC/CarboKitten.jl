@@ -89,8 +89,6 @@ MultiplyProduction(base, factor::Real; kwargs...) =
 is_benthic(p::MultiplyProduction)      = is_benthic(p.base)
 is_pelagic(p::MultiplyProduction)      = is_pelagic(p.base)
 is_interpolated(p::MultiplyProduction) = is_interpolated(p.base)
-
-<<multiply-production-profile>>
 ```
 
 ### `ProductionBoost`
@@ -122,7 +120,9 @@ Base.:*(p::AbstractProduction, b::ProductionBoost) = MultiplyProduction(p, b.fac
 
 ``` {.julia file=src/Production/Modifiers.jl}
 module Modifiers
-    import ..Abstract: AbstractProduction, production_profile
+    using Unitful
+
+    import ..Abstract: AbstractInput, AbstractProduction, production_profile, is_benthic, is_pelagic, is_interpolated
 
     <<multiply-production>>
     <<multiply-production-profile>>

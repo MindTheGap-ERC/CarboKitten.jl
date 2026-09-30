@@ -5,7 +5,7 @@
 The sediment profile is probably the most important visualization that we provide. By default it allows us to study the sediment composition of a section, by plotting the `argmax` of the deposition. In cases where significant amounts of sediment is eroded, all deposition is plotted, and it is assumed that newest depositions are shown on top of possible older ones.
 
 ``` {.julia .task file=examples/visualization/sediment_profile.jl}
-#| creates: docs/src/fig/sediment_profile.png
+#| creates: docs/src/_fig/sediment_profile.png
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
@@ -15,7 +15,7 @@ using CarboKitten.Export: read_slice
 using CarboKitten.Visualization: sediment_profile
 
 function main()
-    save("docs/src/fig/sediment_profile.png",
+    save("docs/src/_fig/sediment_profile.png",
         sediment_profile(read_slice("data/output/alcap-example.h5", :profile)...))
 end
 end
@@ -28,7 +28,7 @@ If you want to visualize something other than the `argmax` of the deposition, yo
 ![](../fig/profile_fraction.png)
 
 ``` {.julia .task file=examples/visualization/profile_fraction.jl}
-#| creates: docs/src/fig/profile_fraction.png
+#| creates: docs/src/_fig/profile_fraction.png
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
@@ -48,21 +48,13 @@ function main()
     plot = profile_plot!(x -> x[2]/sum(x), ax, header, slice; colorrange=(0, 1))
     Colorbar(fig[1, 2], plot; label=L"f_2 / f_{total}")
 
-    save("docs/src/fig/profile_fraction.png", fig)
+    save("docs/src/_fig/profile_fraction.png", fig)
     fig
 end
 end
 
 Script.main()
 ```
-
-By default, `sediment_profile` shows the **deposited** record — raw deposition at each time step, including material that may later be eroded. To show only the **preserved** record (what survives after erosion, as computed by the stratigraphic column algorithm), pass `mode=:preserved`:
-
-```julia
-sediment_profile(header, data; mode=:preserved)
-```
-
-The default `mode=:deposited` is fully backward compatible with all existing call sites.
 
 ## Cross-section direction
 
@@ -101,7 +93,7 @@ Beyond the dominant-facies categorical view, it is useful to see the proportion 
 ![Proportion plot](../fig/profile_fraction.png)
 
 ``` {.julia .task file=examples/visualization/profile_proportion.jl}
-#| creates: docs/src/fig/profile_proportion.png
+#| creates: docs/src/_fig/profile_proportion.png
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
@@ -112,18 +104,13 @@ using CarboKitten.Visualization: sediment_proportion
 
 function main()
     header, data = read_slice("data/output/alcap-example.h5", :profile)
-    save("docs/src/fig/profile_proportion.png",
-         sediment_proportion(header, data, 1; mode=:preserved))
+    save("docs/src/_fig/profile_proportion.png",
+         sediment_proportion(header, data, 1))
 end
 end
 
 Script.main()
 ```
-
-The `mode` keyword selects the sediment record:
-
-- `:deposited` — proportion of raw deposition at each time step (default, consistent with the categorical `sediment_profile!`).
-- `:preserved` — proportion of net preserved sediment after applying the stratigraphic column algorithm.
 
 ## Cross-section examples
 
@@ -133,10 +120,10 @@ It takes one dip section and one strike section from the mid-grid position, then
 plots all four combinations of section direction × proportion mode.
 
 ``` {.julia .task file=examples/visualization/cross_sections.jl}
-#| creates: docs/src/fig/xsec_dip.png
-#|          docs/src/fig/xsec_strike.png
-#|          docs/src/fig/xsec_proportion_deposited.png
-#|          docs/src/fig/xsec_proportion_preserved.png
+#| creates: docs/src/_fig/xsec_dip.png
+#|          docs/src/_fig/xsec_strike.png
+#|          docs/src/_fig/xsec_proportion_deposited.png
+#|          docs/src/_fig/xsec_proportion_preserved.png
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
@@ -153,17 +140,14 @@ function main()
     dip    = vol[:, div(ny, 2) + 1]   # dip section at mid-y
     strike = vol[div(nx, 2) + 1, :]   # strike section at mid-x
 
-    save("docs/src/fig/xsec_dip.png",
+    save("docs/src/_fig/xsec_dip.png",
          sediment_profile(header, dip))
 
-    save("docs/src/fig/xsec_strike.png",
+    save("docs/src/_fig/xsec_strike.png",
          sediment_profile(header, strike))
 
-    save("docs/src/fig/xsec_proportion_deposited.png",
-         sediment_proportion(header, dip, 1; mode=:deposited))
-
-    save("docs/src/fig/xsec_proportion_preserved.png",
-         sediment_proportion(header, dip, 1; mode=:preserved))
+    save("docs/src/_fig/xsec_proportion.png",
+         sediment_proportion(header, dip, 1))
 end
 
 end
@@ -179,23 +163,9 @@ Strike section (parallel to platform margin), dominant deposited facies:
 
 ![Strike cross section](../fig/xsec_strike.png)
 
-Proportion of facies 1 — deposited record:
+Proportion of facies 1:
 
-![Proportion deposited](../fig/xsec_proportion_deposited.png)
-
-Proportion of facies 1 — preserved record only:
-
-![Proportion preserved](../fig/xsec_proportion_preserved.png)
-
-## Implementation
-
-Before we plot anything, we need to make sure that only net positive sediment is still present in our data. We use the [`stratigraphic_column` algorithm](../algorithms/stratigraphic_column.md) to remove sediment from the record that is later disintegrated.
-
-``` {.julia #profile-strat-column}
-
-
-
-```
+![Proportion deposited](../fig/xsec_proportion.png)
 
 ### Exploding Vertices
 
@@ -497,7 +467,7 @@ Plot the sediment profile from `data_slice`. Dominant facies colour is chosen
 by `argmax`. By default unconformities are shown using dashed white lines.
 """
 function sediment_profile(header::Header, data_slice::DataSlice;
-                           show_unconformities::Union{Bool,Int,Nothing} = true)
+                          show_unconformities::Union{Bool,Int,Nothing} = true)
     fig = Figure(size=(1000, 600))
     ax = Axis(fig[1, 1])
     sediment_profile!(ax, header, data_slice; show_unconformities=show_unconformities)

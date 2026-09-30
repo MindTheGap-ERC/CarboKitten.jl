@@ -41,9 +41,9 @@ println("\nMulti-directional at 10m: v=$(v)  shear=$(s)")
 input = ALCAP.Input(
     tag = "airy-wave-test",
     box = Box{Coast}(grid_size=(50, 25), phys_scale=150.0u"m"),
-    time = TimeProperties(Δt=0.0002u"Myr", steps=1000),
+    time = TimeProperties(Δt=0.02u"Myr", steps=10),
     output = Dict(
-        :profile => OutputSpec(slice=(:, 13), write_interval=1)),
+        :profile => OutputSpec(slice=(:, 13), write_interval=10)),
     ca_interval = 1,
     initial_topography = (x, y) -> -x / 300.0,
     sea_level = t -> 4.0u"m" * sin(2π * t / 0.2u"Myr"),

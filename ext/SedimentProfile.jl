@@ -294,7 +294,7 @@ Plot the sediment profile from `data_slice`. Dominant facies colour is chosen
 by `argmax`. By default unconformities are shown using dashed white lines.
 """
 function sediment_profile(header::Header, data_slice::DataSlice;
-                           show_unconformities::Union{Bool,Int,Nothing} = true)
+                          show_unconformities::Union{Bool,Int,Nothing} = true)
     fig = Figure(size=(1000, 600))
     ax = Axis(fig[1, 1])
     sediment_profile!(ax, header, data_slice; show_unconformities=show_unconformities)

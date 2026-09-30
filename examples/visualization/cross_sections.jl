@@ -13,17 +13,14 @@ function main()
     dip    = vol[:, div(ny, 2) + 1]   # dip section at mid-y
     strike = vol[div(nx, 2) + 1, :]   # strike section at mid-x
 
-    save("docs/src/fig/xsec_dip.png",
+    save("docs/src/_fig/xsec_dip.png",
          sediment_profile(header, dip))
 
-    save("docs/src/fig/xsec_strike.png",
+    save("docs/src/_fig/xsec_strike.png",
          sediment_profile(header, strike))
 
-    save("docs/src/fig/xsec_proportion_deposited.png",
-         sediment_proportion(header, dip, 1; mode=:deposited))
-
-    save("docs/src/fig/xsec_proportion_preserved.png",
-         sediment_proportion(header, dip, 1; mode=:preserved))
+    save("docs/src/_fig/xsec_proportion.png",
+         sediment_proportion(header, dip, 1))
 end
 
 end

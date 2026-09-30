@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/components/production.md#examples/production/pelagic.jl>>[init]
+# ~/~ begin <<docs/src/production/pelagic.md#examples/production/pelagic.jl>>[init]
 module PelagicProductionPlot
 
 using CarboKitten
@@ -17,7 +17,7 @@ function main()
     ax = Axis(fig[1, 1], yreversed=true, ylabel="depth [m]", xlabel="production [m/Myr]")
     for (k, prod) in pairs(Production.EXAMPLE)
         f = production_profile(input, prod)
-        p = water_depth .|> (w -> f(input.insolation, w))
+        p = water_depth .|> (w -> f(input.time.t0, w))
         lines!(ax, p |> in_units_of(u"m/Myr"),
             water_depth |> in_units_of(u"m"), label = string(k))
     end

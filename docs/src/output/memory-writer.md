@@ -209,7 +209,8 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::OutputSpec)
             zeros(Amount, n_facies, size..., n_steps + 1),
             zeros(Amount, n_facies, size..., n_steps + 1),
             zeros(Amount, size..., n_steps + 1),
-            out.save_active_layer ? zeros(Amount, n_facies, size..., n_steps + 1) : nothing)
+            out.save_active_layer ? zeros(Amount, n_facies, size..., n_steps + 1) : nothing,
+            nothing)  # stratigraphic_column
     elseif h.kind == :slice
         size = axis_size.(slice, full_size)
         slice_size = size[1] == 1 ? size[2] : size[1]
@@ -219,7 +220,8 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::OutputSpec)
             zeros(Amount, n_facies, slice_size, n_steps + 1),
             zeros(Amount, n_facies, slice_size, n_steps + 1),
             zeros(Amount, slice_size, n_steps + 1),
-            out.save_active_layer ? zeros(Amount, n_facies, slice_size, n_steps + 1) : nothing)
+            out.save_active_layer ? zeros(Amount, n_facies, slice_size, n_steps + 1) : nothing,
+            nothing)  # stratigraphic_column
     elseif h.kind == :column
         out.data_columns[label] = DataColumn(
             slice, write_interval,
@@ -227,7 +229,8 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::OutputSpec)
             zeros(Amount, n_facies, n_steps + 1),
             zeros(Amount, n_facies, n_steps + 1),
             zeros(Amount, n_steps + 1),
-            out.save_active_layer ? zeros(Amount, n_facies, n_steps + 1) : nothing)
+            out.save_active_layer ? zeros(Amount, n_facies, n_steps + 1) : nothing,
+            nothing)  # stratigraphic_column
     end
 end
 

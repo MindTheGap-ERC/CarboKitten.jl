@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Other · CarboKitten</title><meta name="title" content="Other · CarboKitten"/><meta property="og:title" content="Other · CarboKitten"/><meta property="twitter:title" content="Other · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../getting-started/">Getting started</a></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../initial-topography/">Initial Topography</a></li></ul></li><li><span class="tocitem">Interface</span><ul><li><a class="tocitem" href="../wavefield/">Wave fields</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../output/abstract/">Output</a></li><li><a class="tocitem" href="../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../output/memory-writer/">Output to Memory</a></li><li><a class="tocitem" href="../data-export/">CSV Export</a></li><li><a class="tocitem" href="../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="overview/">Overview</a></li><li><a class="tocitem" href="profiles/">Profiles</a></li><li><a class="tocitem" href="fence-diagrams/">Fence Diagram</a></li><li><a class="tocitem" href="topography/">Topography</a></li><li class="is-active"><a class="tocitem" href>Other</a><ul class="internal"><li><a class="tocitem" href="#Wheeler-diagram"><span>Wheeler diagram</span></a></li><li><a class="tocitem" href="#Production-curve"><span>Production curve</span></a></li><li><a class="tocitem" href="#Stratigraphic-Column"><span>Stratigraphic Column</span></a></li></ul></li></ul></li><li><span class="tocitem">Developer</span><ul><li><a class="tocitem" href="../CONTRIBUTING/">Contributing to this repository</a></li><li><a class="tocitem" href="../architecture/">Architecture</a></li></ul></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/output/">Output</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li><li><a class="tocitem" href="../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../algorithms/stratigraphic_column/">Stratigraphic Column</a></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Visualizations</a></li><li class="is-active"><a href>Other</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Other</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/visualization.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h2 id="Wheeler-diagram"><a class="docs-heading-anchor" href="#Wheeler-diagram">Wheeler diagram</a><a id="Wheeler-diagram-1"></a><a class="docs-heading-anchor-permalink" href="#Wheeler-diagram" title="Permalink"></a></h2><p><img src="../fig/wheeler_diagram.png" alt="Wheeler diagram"/></p><div class="noweb-label">file:<i>examples/visualization/wheeler_diagram.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/wheeler_diagram.png
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Other · CarboKitten</title><meta name="title" content="Other · CarboKitten"/><meta property="og:title" content="Other · CarboKitten"/><meta property="twitter:title" content="Other · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/documentercitations/citations-hover.css" rel="stylesheet" type="text/css"/><link href="../assets/documentercitations/citations.css" rel="stylesheet" type="text/css"/><script src="../assets/documentercitations/citations-data.js"></script><script src="../assets/documentercitations/citations-hover.js"></script><script src="../assets/documentercitations/citations-backlinks.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../getting-started/">Getting started</a></li><li><span class="tocitem">User Manual</span><ul><li><a class="tocitem" href="../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../production/production/">Production</a></li><li><a class="tocitem" href="../output/abstract/">Output</a></li><li><a class="tocitem" href="../data-export/">Data Export</a></li><li><a class="tocitem" href="overview/">Visualization</a></li><li><a class="tocitem" href="../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../initial-topography/">Initial Topography</a></li></ul></li><li><span class="tocitem">Production Models</span><ul><li><a class="tocitem" href="../production/benthic/">Benthic Production</a></li><li><a class="tocitem" href="../production/pelagic/">Pelagic Production</a></li><li><a class="tocitem" href="../production/interpolated/">Interpolation</a></li><li><a class="tocitem" href="../production/modifiers/">Modifiers</a></li></ul></li><li><span class="tocitem">Interface</span><ul><li><a class="tocitem" href="../wavefield/">Wave fields</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../output/memory-writer/">Output to Memory</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="profiles/">Profiles</a></li><li><a class="tocitem" href="fence-diagrams/">Fence Diagram</a></li><li><a class="tocitem" href="topography/">Topography</a></li><li class="is-active"><a class="tocitem" href>Other</a><ul class="internal"><li><a class="tocitem" href="#Wheeler-diagram"><span>Wheeler diagram</span></a></li><li><a class="tocitem" href="#Production-curve"><span>Production curve</span></a></li><li><a class="tocitem" href="#Stratigraphic-Column"><span>Stratigraphic Column</span></a></li></ul></li></ul></li><li><span class="tocitem">Developer</span><ul><li><a class="tocitem" href="../CONTRIBUTING/">Contributing to this repository</a></li><li><a class="tocitem" href="../architecture/">Architecture</a></li></ul></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/components/">Components</a></li><li><a class="tocitem" href="../components/tag/">Tags</a></li><li><a class="tocitem" href="../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../components/time/">Time</a></li><li><a class="tocitem" href="../components/output/">Output</a></li><li><a class="tocitem" href="../components/facies/">Facies</a></li><li><a class="tocitem" href="../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../components/production/">Production</a></li><li><a class="tocitem" href="../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../unitful/">Unitful</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../stencils/">Stencils</a></li><li><a class="tocitem" href="../utility/">Utility</a></li><li><a class="tocitem" href="../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../algorithms/stratigraphic_column/">Stratigraphic Column</a></li></ul></li><li><a class="tocitem" href="../api/">API Documentation</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Visualizations</a></li><li class="is-active"><a href>Other</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Other</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/visualization.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h2 id="Wheeler-diagram"><a class="docs-heading-anchor" href="#Wheeler-diagram">Wheeler diagram</a><a id="Wheeler-diagram-1"></a><a class="docs-heading-anchor-permalink" href="#Wheeler-diagram" title="Permalink"></a></h2><p><img src="../fig/wheeler_diagram.png" alt="Wheeler diagram"/></p><div class="noweb-label">file:<i>examples/visualization/wheeler_diagram.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/wheeler_diagram.png
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
@@ -165,68 +165,106 @@ save(&quot;docs/src/_fig/production_curve.svg&quot;, production_curve(&quot;data
 using Makie
 using Unitful
 using HDF5
+using Interpolations
 
 import CarboKitten.Components.Common: AbstractInput
 import CarboKitten.Visualization: production_curve!, production_curve
-using CarboKitten.Production: BenthicProduction, benthic_production, PelagicProduction, pelagic_production
 
-function production_curve!(ax, input::I) where I &lt;: AbstractInput
-    ax.title = &quot;production at $(sprint(show, input.insolation; context=:fancy_exponent=&gt;true))&quot;
+using CarboKitten.Production: production_profile
+using CarboKitten.Utility: in_units_of
+
+# ---------------------------------------------------------------------------
+# In-memory form: evaluate production_profile directly
+# ---------------------------------------------------------------------------
+
+&quot;&quot;&quot;
+    production_curve!(ax, input)
+
+Plot production rate vs depth for each facies in `input`. The production
+profile `(t, w) -&gt; rate` is evaluated at the initial time (t=0) over a depth
+range determined by the facies definitions.
+&quot;&quot;&quot;
+function production_curve!(ax::Axis, input::I) where {I &lt;: AbstractInput}
     ax.xlabel = &quot;production [m/Myr]&quot;
     ax.ylabel = &quot;depth [m]&quot;
     ax.yreversed = true
 
+    t0 = input.time.t0
+
+    max_d = 50.0u&quot;m&quot;
     for f in input.facies
-        depth = (0.1:0.1:50.0)u&quot;m&quot;
-        prod = [production_rate(input.insolation, f, d) for d in depth]
-        lines!(ax, prod / u&quot;m/Myr&quot;, depth / u&quot;m&quot;)
+        p = f.production
+        if hasproperty(p, :depth_knots) &amp;&amp; !isempty(p.depth_knots)
+            max_d = max(max_d, maximum(p.depth_knots))
+        end
+    end
+
+    depth = (0.1u&quot;m&quot;:0.1u&quot;m&quot;:max_d)
+
+    for (i, f) in enumerate(input.facies)
+        profile = production_profile(input, f.production)
+        prod = [profile(t0, d) for d in depth]
+        lines!(ax, prod .|&gt; in_units_of(u&quot;m/Myr&quot;), depth .|&gt; in_units_of(u&quot;m&quot;);
+               label = &quot;facies $(i)&quot;)
     end
 end
 
-function production_curve(input::I) where I &lt;: AbstractInput
+function production_curve(input::I) where {I &lt;: AbstractInput}
     fig = Figure()
-    ax = Axis(fig[1, 1])
+    ax  = Axis(fig[1, 1])
     production_curve!(ax, input)
-    fig
+    Legend(fig[1, 2], ax)
+    return fig
 end
 
-function production_curve(filename::AbstractString)
-    h5open(filename, &quot;r&quot;) do fid
-        fig = Figure()
-        ax = Axis(fig[1, 1])
-        production_curve!(ax, fid[&quot;input&quot;])
-        fig
-    end
-end
+# ---------------------------------------------------------------------------
+# HDF5 form: read the generic 2D production table
+# ---------------------------------------------------------------------------
 
-function production_curve!(ax, g::HDF5.Group; max_depth=-50.0u&quot;m&quot;)
-    a = HDF5.attributes(g)
-    insolation = 400.0u&quot;W/m^2&quot;  # a[&quot;insolation&quot;][] * u&quot;W/m^2&quot;
+&quot;&quot;&quot;
+    production_curve!(ax, g::HDF5.Group; n_time_samples=5)
 
-    ax.title = &quot;production at $(sprint(show, insolation; context=:fancy_exponent=&gt;true))&quot;
+Plot production rate vs depth from the 2D production table saved in the HDF5
+`input` group. Each facies is shown as a family of `n_time_samples` curves
+at representative times (darker = later). No knowledge of the underlying
+production type is required.
+&quot;&quot;&quot;
+function production_curve!(ax, g::HDF5.Group; n_time_samples::Int = 5)
     ax.xlabel = &quot;production [m/Myr]&quot;
     ax.ylabel = &quot;depth [m]&quot;
+    ax.yreversed = true
 
-    for i in 1:a[&quot;n_facies&quot;][]
-        fa = HDF5.attributes(g[&quot;facies$(i)&quot;])
-        if fa[&quot;type&quot;][] == &quot;benthic&quot;
-            f = BenthicProduction(
-                maximum_growth_rate = fa[&quot;maximum_growth_rate&quot;][] * u&quot;m/Myr&quot;,
-                extinction_coefficient = fa[&quot;extinction_coefficient&quot;][] * u&quot;m^-1&quot;,
-                saturation_intensity = fa[&quot;saturation_intensity&quot;][] * u&quot;W/m^2&quot;)
-            depth = (0.1u&quot;m&quot;:0.1u&quot;m&quot;:-max_depth)
-            prod = [benthic_production(insolation, f, d) for d in depth]
-            lines!(ax, prod / u&quot;m/Myr&quot;, - depth / u&quot;m&quot;)
+    a = HDF5.attributes(g)
+    n_facies = a[&quot;n_facies&quot;][]
+
+    for i in 1:n_facies
+        key = &quot;facies$(i)&quot;
+        haskey(g, key) || continue
+        fg = g[key]
+        haskey(fg, &quot;production_table&quot;) || continue
+
+        table      = read(fg[&quot;production_table&quot;])      # (n_depth, n_time)
+        depth_axis = read(fg[&quot;production_depth_axis&quot;]) # m
+        n_d, n_t   = size(table)
+
+        t_idx = unique(round.(Int, LinRange(1, n_t, min(n_time_samples, n_t))))
+
+        for (k, ti) in enumerate(t_idx)
+            alpha = 0.3 + 0.7 * k / length(t_idx)
+            label = k == 1 ? &quot;facies $(i)&quot; : nothing
+            lines!(ax, table[:, ti], depth_axis;
+                   label = label, alpha = alpha)
         end
-        if fa[&quot;type&quot;][] == &quot;pelagic&quot;
-            f = PelagicProduction(
-                maximum_growth_rate = fa[&quot;maximum_growth_rate&quot;][] * u&quot;1/Myr&quot;,
-                extinction_coefficient = fa[&quot;extinction_coefficient&quot;][] * u&quot;m^-1&quot;,
-                saturation_intensity = fa[&quot;saturation_intensity&quot;][] * u&quot;W/m^2&quot;)
-            depth = (0.1u&quot;m&quot;:0.1u&quot;m&quot;:-max_depth)
-            prod = [pelagic_production(insolation, f, d) for d in depth]
-            lines!(ax, prod / u&quot;m/Myr&quot;, - depth / u&quot;m&quot;)
-        end
+    end
+end
+
+function production_curve(filename::AbstractString; kwargs...)
+    h5open(filename, &quot;r&quot;) do fid
+        fig = Figure()
+        ax  = Axis(fig[1, 1])
+        production_curve!(ax, fid[&quot;input&quot;]; kwargs...)
+        Legend(fig[1, 2], ax)
+        return fig
     end
 end
 
@@ -273,4 +311,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="topography/">« Topography</a><a class="docs-footer-nextpage" href="../CONTRIBUTING/">Contributing to this repository »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 21 September 2026 11:28">Monday 21 September 2026</span>. Using Julia version 1.13.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="topography/">« Topography</a><a class="docs-footer-nextpage" href="../CONTRIBUTING/">Contributing to this repository »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 30 September 2026 14:26">Wednesday 30 September 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

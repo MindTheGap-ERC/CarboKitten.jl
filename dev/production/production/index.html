@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Production · CarboKitten</title><meta name="title" content="Production · CarboKitten"/><meta property="og:title" content="Production · CarboKitten"/><meta property="twitter:title" content="Production · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/documentercitations/citations-hover.css" rel="stylesheet" type="text/css"/><link href="../../assets/documentercitations/citations.css" rel="stylesheet" type="text/css"/><script src="../../assets/documentercitations/citations-data.js"></script><script src="../../assets/documentercitations/citations-hover.js"></script><script src="../../assets/documentercitations/citations-backlinks.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><a class="tocitem" href="../../getting-started/">Getting started</a></li><li><span class="tocitem">User Manual</span><ul><li><a class="tocitem" href="../../input-methods/">Input Methods</a></li><li class="is-active"><a class="tocitem" href>Production</a><ul class="internal"><li><a class="tocitem" href="#Benthic-and-Pelagic-production-models"><span>Benthic and Pelagic production models</span></a></li><li><a class="tocitem" href="#Interpolated-and-modified-production"><span>Interpolated and modified production</span></a></li><li><a class="tocitem" href="#No-production"><span>No production</span></a></li><li><a class="tocitem" href="#Mixing-curve-types"><span>Mixing curve types</span></a></li><li><a class="tocitem" href="#Custom-production-models"><span>Custom production models</span></a></li><li><a class="tocitem" href="#Interface"><span>Interface</span></a></li><li><a class="tocitem" href="#Module"><span>Module</span></a></li></ul></li><li><a class="tocitem" href="../../output/abstract/">Output</a></li><li><a class="tocitem" href="../../data-export/">Data Export</a></li><li><a class="tocitem" href="../../visualization/overview/">Visualization</a></li><li><a class="tocitem" href="../../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../../initial-topography/">Initial Topography</a></li></ul></li><li><span class="tocitem">Production Models</span><ul><li><a class="tocitem" href="../benthic/">Benthic Production</a></li><li><a class="tocitem" href="../pelagic/">Pelagic Production</a></li><li><a class="tocitem" href="../interpolated/">Interpolation</a></li><li><a class="tocitem" href="../modifiers/">Modifiers</a></li></ul></li><li><span class="tocitem">Interface</span><ul><li><a class="tocitem" href="../../wavefield/">Wave fields</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../../output/h5writer/">HDF5 Output</a></li><li><a class="tocitem" href="../../output/memory-writer/">Output to Memory</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="../../visualization/profiles/">Profiles</a></li><li><a class="tocitem" href="../../visualization/fence-diagrams/">Fence Diagram</a></li><li><a class="tocitem" href="../../visualization/topography/">Topography</a></li><li><a class="tocitem" href="../../visualization/">Other</a></li></ul></li><li><span class="tocitem">Developer</span><ul><li><a class="tocitem" href="../../CONTRIBUTING/">Contributing to this repository</a></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li></ul></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../../components/components/">Components</a></li><li><a class="tocitem" href="../../components/tag/">Tags</a></li><li><a class="tocitem" href="../../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../../components/time/">Time</a></li><li><a class="tocitem" href="../../components/output/">Output</a></li><li><a class="tocitem" href="../../components/facies/">Facies</a></li><li><a class="tocitem" href="../../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../../components/production/">Production</a></li><li><a class="tocitem" href="../../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li><li><a class="tocitem" href="../../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../../algorithms/stratigraphic_column/">Stratigraphic Column</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">User Manual</a></li><li class="is-active"><a href>Production</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Production</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/production/production.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Production"><a class="docs-heading-anchor" href="#Production">Production</a><a id="Production-1"></a><a class="docs-heading-anchor-permalink" href="#Production" title="Permalink"></a></h1><p>CarboKitten supports a variety of methods to model sediment production. In general a production model is a function of waterdepth and insolation giving a value in units of meters (of sediment) per million years. We provide two models based on Bosscher &amp; Schlager 1992 [<a href="../../references/#Bosscher1992" id="Bosscher1992-cite-1">1</a>]: <code>BenthicProduction</code> and <code>PelagicProduction</code>.</p><h2 id="Benthic-and-Pelagic-production-models"><a class="docs-heading-anchor" href="#Benthic-and-Pelagic-production-models">Benthic and Pelagic production models</a><a id="Benthic-and-Pelagic-production-models-1"></a><a class="docs-heading-anchor-permalink" href="#Benthic-and-Pelagic-production-models" title="Permalink"></a></h2><p>The <em>benthic</em> production model supposes that organisms (like corals or bivalves) on the bottom of the sea are responsible for producing sediment, depending on how much sun light is able to reach the bottom. At a given saturation intensity, the organism is not able to produce any more sediment, due to other limiting factors. The growth rate is given as,</p><p class="math-container">\[g_b(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right).\]</p><p>In the case of <em>pelagic</em> production, the supposed organism (maybe algae) occupy the entire water column above the sea floor. In that case we need to integrate the benthic production profile over the water column to obtain the pelagic production profile,</p><p class="math-container">\[g_p(w) = \int_0^{w} g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right) \textrm{d}w.\]</p><p>Both these models have the same parameters, albeit that <span>$g_m$</span> has slightly different units:</p><ul><li><span>$g_m$</span> is the maximum production rate in units of <span>${\rm m/Myr}$</span> (or <span>${\rm 1/Myr}$</span> in case of pelagic production).</li><li><span>$I_0$</span> is the given insolation in <span>${\rm W}/{\rm m}^2$</span> (set as a separate global input paramater, possibly a function of time).</li><li><span>$I_k$</span> is the saturation intensity in <span>${\rm W}/{\rm m}^2$</span>.</li><li><span>$k$</span> is the extinction coefficient in <span>$1/{\rm m}$</span>.</li><li><span>$w$</span> is the water depth as obtained from CarboKitten&#39;s model state.</li></ul><p>The implementation of these models can be found in their respective sections: <a href="../benthic/#Benthic-Production">Benthic Production</a> and <a href="../pelagic/#Pelagic-Production">Pelagic Production</a>.</p><h2 id="Interpolated-and-modified-production"><a class="docs-heading-anchor" href="#Interpolated-and-modified-production">Interpolated and modified production</a><a id="Interpolated-and-modified-production-1"></a><a class="docs-heading-anchor-permalink" href="#Interpolated-and-modified-production" title="Permalink"></a></h2><p>As stated before, a production model is a function of waterdepth and insolation giving a value in units of meters (of sediment) per million years. More abstractly, we can replace the insolation with a time dependency to allow more flexible time dependent production levels. We should warn that, in general, more flexibility does impact the predictive power of the model negatively.</p><p>The <a href="../interpolated/#Interpolated-Production">Interpolated Production</a> model lets the user provide a set of key values for production as a function of water depth, while a separate set of <a href="../modifiers/#Production-Modifiers">Production Modifiers</a> can be used to modulate production amplitudes over time. These modifiers can be chained and applied to any other production model.</p><h2 id="No-production"><a class="docs-heading-anchor" href="#No-production">No production</a><a id="No-production-1"></a><a class="docs-heading-anchor-permalink" href="#No-production" title="Permalink"></a></h2><p>In some cases you may whish to disable production altogether. For that case we have defined the <code>NoProduction</code> model. This is the default setting for the <code>Facies</code> configuration.</p><h2 id="Mixing-curve-types"><a class="docs-heading-anchor" href="#Mixing-curve-types">Mixing curve types</a><a id="Mixing-curve-types-1"></a><a class="docs-heading-anchor-permalink" href="#Mixing-curve-types" title="Permalink"></a></h2><p>Different facies in the same run can use different production types:</p><pre><code class="language-julia hljs">facies = [
+    ALCAP.Facies(production = BenthicProduction(
+        maximum_growth_rate=500u&quot;m/Myr&quot;,
+        extinction_coefficient=0.8u&quot;m^-1&quot;,
+        saturation_intensity=60u&quot;W/m^2&quot;)),
+    ALCAP.Facies(production = InterpolatedProduction(
+        maximum_production=350.0u&quot;m/Myr&quot;,
+        depth_knots=[0.0u&quot;m&quot;, 10.0u&quot;m&quot;, 40.0u&quot;m&quot;, 60.0u&quot;m&quot;],
+        multipliers=[0.0, 0.5, 1.0, 0.0])),
+]</code></pre><h2 id="Custom-production-models"><a class="docs-heading-anchor" href="#Custom-production-models">Custom production models</a><a id="Custom-production-models-1"></a><a class="docs-heading-anchor-permalink" href="#Custom-production-models" title="Permalink"></a></h2><p>If none of the above options provide what you need, you may choose to implement your own production model. Derive a new <code>struct</code> from <code>AbstractProduction</code>, and implement the <code>production_profile</code> method:</p><pre><code class="language-julia hljs">module MyProductionModel
+    
+import CarboKitten: production_profile, AbstractProduction, AbstractInput, insolation_curve
+
+struct MyProduction &lt;: AbstractProduction
+    ...
+end
+
+production_profile(input::AbstractInput, production::MyProduction) =
+    I_of_t = insolation_curve(input)
+    function (time, water_depth)
+        I = I_of_t(time)
+        ...
+    end
+    
+end  # module MyProductionModel</code></pre><h3 id="Insolation-curve"><a class="docs-heading-anchor" href="#Insolation-curve">Insolation curve</a><a id="Insolation-curve-1"></a><a class="docs-heading-anchor-permalink" href="#Insolation-curve" title="Permalink"></a></h3><p>The <code>insolation_curve</code> helper captures insolation inside the closure returned by <code>production_profile</code>, so the model loop never needs to call an insolation function explicitly.</p><div class="noweb-label">file:<i>src/Production/Insolation.jl</i></div><pre><code class="language- julia hljs">module Insolation
+
+using Unitful
+
+import ..Abstract: AbstractInput
+
+&quot;&quot;&quot;
+    insolation_curve(input) -&gt; function(time) -&gt; insolation
+
+Build a closure mapping time to insolation from the input specification.
+Handles constant (`Quantity`), tabular (`AbstractVector`), and functional
+insolation inputs.
+&quot;&quot;&quot;
+function insolation_curve(input::AbstractInput)
+    insolation_param = input.insolation
+    if insolation_param isa Quantity
+        return _ -&gt; insolation_param
+    elseif insolation_param isa AbstractVector
+        t_axis = time_axis(input)
+        t_vals = ustrip.(u&quot;Myr&quot;, t_axis)
+        I_vals = ustrip.(u&quot;W/m^2&quot;, insolation_param)
+        itp = linear_interpolation(t_vals, I_vals, extrapolation_bc=Flat())
+        return t -&gt; itp(ustrip(u&quot;Myr&quot;, t)) * u&quot;W/m^2&quot;
+    else
+        return t -&gt; insolation_param(t)
+    end
+end
+
+end</code></pre><h2 id="Interface"><a class="docs-heading-anchor" href="#Interface">Interface</a><a id="Interface-1"></a><a class="docs-heading-anchor-permalink" href="#Interface" title="Permalink"></a></h2><p>Every production model should adhere to the production interface outlined below.</p><div class="noweb-label">file:<i>src/Production/Abstract.jl</i></div><pre><code class="language- julia hljs">module Abstract
+
+using Unitful
+using ...CarboKitten: AbstractInput
+
+&quot;&quot;&quot;
+    production_profile(input::AbstractInput, p)
+
+Given an input and a production configuration, returns a function
+`(time, water_depth) -&gt; production_rate`.
+
+Insolation is read from `input` and composed into the returned closure via
+`insolation_curve` — the caller does not need to pass insolation at each
+time step.
+
+The default implementation assumes `p` is already a callable
+`(time, water_depth) -&gt; rate`.
+
+## Example
+
+    struct MyProduction &lt;: AbstractProduction
+        ...
+    end
+
+    import CarboKitten.Production: production_profile
+
+    production_profile(input::AbstractInput, p::MyProduction) =
+        function (time, water_depth)
+            ...
+        end
+&quot;&quot;&quot;
+production_profile(input::AbstractInput, p) = p
+
+&quot;&quot;&quot;
+    is_benthic(obj)
+
+Predicate to determine if a facies or production spec is benthic.
+Defaults to `false`.
+&quot;&quot;&quot;
+is_benthic(p) = false
+
+&quot;&quot;&quot;
+    is_pelagic(obj)
+
+Predicate to determine if a facies or production spec is pelagic.
+Defaults to `false`.
+&quot;&quot;&quot;
+is_pelagic(p) = false
+
+&quot;&quot;&quot;
+    is_interpolated(obj)
+
+Predicate to determine if a facies or production spec is interpolation-based.
+Defaults to `false`.
+&quot;&quot;&quot;
+is_interpolated(p) = false
+
+abstract type AbstractProduction end
+
+struct NoProduction &lt;: AbstractProduction
+end
+
+production_profile(::AbstractInput, ::NoProduction) = (_, _) -&gt; 0.0u&quot;m/Myr&quot;
+
+end</code></pre><h2 id="Module"><a class="docs-heading-anchor" href="#Module">Module</a><a id="Module-1"></a><a class="docs-heading-anchor-permalink" href="#Module" title="Permalink"></a></h2><p>The production module collects the different production models, and provides a list of example profiles.</p><div class="noweb-label">file:<i>src/Production.jl</i></div><pre><code class="language- julia hljs">module Production
+
+include(&quot;Production/Abstract.jl&quot;)
+include(&quot;Production/Insolation.jl&quot;)
+include(&quot;Production/Benthic.jl&quot;)
+include(&quot;Production/Pelagic.jl&quot;)
+include(&quot;Production/Interpolated.jl&quot;)
+include(&quot;Production/Modifiers.jl&quot;)
+
+using Unitful
+
+import .Abstract: AbstractProduction, NoProduction, production_profile, is_benthic, is_pelagic, is_interpolated
+import .Benthic: BenthicProduction
+import .Pelagic: PelagicProduction
+import .Interpolated: InterpolatedProduction
+import .Modifiers: MultiplyProduction, ProductionBoost
+import .Insolation: insolation_curve
+
+export AbstractProduction, production_profile, NoProduction, BenthicProduction, PelagicProduction,
+    InterpolatedProduction, MultiplyProduction, ProductionBoost, EXAMPLE
+
+const EXAMPLE = Dict(
+    :euphotic =&gt; BenthicProduction(
+        maximum_growth_rate=500u&quot;m/Myr&quot;,
+        extinction_coefficient=0.8u&quot;m^-1&quot;,
+        saturation_intensity=60u&quot;W/m^2&quot;),
+    :oligophotic =&gt; BenthicProduction(
+        maximum_growth_rate=400u&quot;m/Myr&quot;,
+        extinction_coefficient=0.1u&quot;m^-1&quot;,
+        saturation_intensity=60u&quot;W/m^2&quot;),
+    :aphotic =&gt; BenthicProduction(
+        maximum_growth_rate=100u&quot;m/Myr&quot;,
+        extinction_coefficient=0.005u&quot;m^-1&quot;,
+        saturation_intensity=60u&quot;W/m^2&quot;),
+    :pelagic =&gt; PelagicProduction(
+        maximum_growth_rate=7.0u&quot;1/Myr&quot;,
+        extinction_coefficient=0.1u&quot;m^-1&quot;,
+        saturation_intensity=60u&quot;W/m^2&quot;),
+    :interpolated =&gt; InterpolatedProduction(
+        maximum_production=500u&quot;m/Myr&quot;,
+        depth_knots=[0.0u&quot;m&quot;, 5.0u&quot;m&quot;, 15.0u&quot;m&quot;, 30.0u&quot;m&quot;, 50.0u&quot;m&quot;],
+        multipliers=[0.0, 1.0, 1.0, 0.4, 0.0]),
+    :time_varying =&gt; MultiplyProduction(
+        BenthicProduction(
+            maximum_growth_rate=500u&quot;m/Myr&quot;,
+            extinction_coefficient=0.8u&quot;m^-1&quot;,
+            saturation_intensity=60u&quot;W/m^2&quot;),
+        0.5;
+        t_range=(0.5u&quot;Myr&quot;, 1.0u&quot;Myr&quot;))
+)
+
+end</code></pre><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../input-methods/">« Input Methods</a><a class="docs-footer-nextpage" href="../../output/abstract/">Output »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 30 September 2026 14:26">Wednesday 30 September 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

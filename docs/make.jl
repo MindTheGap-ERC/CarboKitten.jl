@@ -80,6 +80,14 @@ makedocs(
     pages=[
         "Introduction" => "index.md",
         "Getting started" => "getting-started.md",
+        "User Manual" => [
+            "Input Methods" => "input-methods.md",
+            "Production" => "production/production.md",
+            "Output" => "output/abstract.md",
+            "Data Export" => "data-export.md",
+            "Visualization" => "visualization/overview.md",
+            "Trouble shooting and diagnostics" => "debugging.md"
+        ],
         "Models" => [
             "Bosscher and Schlager 1992" => "bosscher-1992.md",
             "Model with CA and Production" => "models/ca-with-production.md",
@@ -92,19 +100,20 @@ makedocs(
             "Tabular Sea Levels" => "cases/tabular-sea-level.md",
             "Initial Topography" => "initial-topography.md",
         ],
+        "Production Models" => [
+            "Benthic Production" => "production/benthic.md",
+            "Pelagic Production" => "production/pelagic.md",
+            "Interpolation" => "production/interpolated.md",
+            "Modifiers" => "production/modifiers.md"
+        ],
         "Interface" => [
             "Wave fields" => "wavefield.md",
         ],
         "Input & Output" => [
-            "Input Methods" => "input-methods.md",
-            "Output" => "output/abstract.md",
             "HDF5 Output" => "output/h5writer.md",
             "Output to Memory" => "output/memory-writer.md",
-            "CSV Export" => "data-export.md",
-            "Trouble shooting and diagnostics" => "debugging.md"
         ],
         "Visualizations" => [
-            "Overview" => "visualization/overview.md",
             "Profiles" => "visualization/profiles.md",
             "Fence Diagram" => "visualization/fence-diagrams.md",
             "Topography" => "visualization/topography.md",

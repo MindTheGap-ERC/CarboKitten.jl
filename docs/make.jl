@@ -163,5 +163,6 @@ makedocs(
 cp(joinpath(@__DIR__, "notebooks/first_tutorial.html"), joinpath(@__DIR__, "build/first_tutorial/index.html"), force=true)
 
 deploydocs(
-    repo="github.com/MindTheGap-ERC/CarboKitten.jl"
+    repo="github.com/MindTheGap-ERC/CarboKitten.jl",
+    versions=["stable" => "v^", "v#.#"],
 )

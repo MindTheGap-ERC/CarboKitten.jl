@@ -52,11 +52,10 @@ end
 abstract type AbstractTimeProperties end
 
 """
-    TimeProperties(t0, Δt, steps, write_interval)
+    TimeProperties(t0, Δt, steps)
 
 Stores properties of the time integration. Here, `t0` and `Δt` should be a
-`Quantity`, `steps` is the number of integration steps, and `write_interval` the
-number of steps between writing output.
+`Quantity`, `steps` is the number of integration steps.
 """
 @kwdef struct TimeProperties <: AbstractTimeProperties
     t0::typeof(1.0u"Myr") = 0.0u"Myr"

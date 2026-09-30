@@ -164,5 +164,5 @@ cp(joinpath(@__DIR__, "notebooks/first_tutorial.html"), joinpath(@__DIR__, "buil
 
 deploydocs(
     repo="github.com/MindTheGap-ERC/CarboKitten.jl",
-    versions=["stable" => "v^", "v#.#"],
+    versions=["stable" => "v^", "v#.#", "dev" => "dev"],
 )

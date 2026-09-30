@@ -89,7 +89,7 @@ end
     deposition::Array{Amount,F}
     bathymetry::Array{Amount,D}
     active_layer::Union{Array{Amount,F}, Nothing} = nothing
-    stratigraphic_column::Union{Array{Amount,F}, Nothing} = nothing
+    stratigraphic_column::Ref{Union{Array{Amount,F}, Nothing}} = Ref(nothing)
 end
 
 const DataVolume = Data{4,3}
@@ -152,14 +152,14 @@ Given a data set, compute the stratigraphic column. Result is memoised in
 `data.stratigraphic_column` so repeated calls are free.
 """
 function stratigraphic_column(data::Data{F, D}) where {F, D}
-    if data.stratigraphic_column === nothing
+    if data.stratigraphic_column[] === nothing
         net_deposition = data.deposition .- data.disintegration
         for c in eachslice(net_deposition, dims=(1:D...,))
             stratigraphic_column!(c)
         end
-        data.stratigraphic_column = net_deposition
+        data.stratigraphic_column[] = net_deposition
     end
-    return data.stratigraphic_column
+    return data.stratigraphic_column[]
 end
 
 """

@@ -12,7 +12,7 @@ n_steps
 ## Production
 
 ```@autodocs
-Modules = [CarboKitten.Production]
+Modules = [CarboKitten.Production, CarboKitten.Production.Abstract, CarboKitten.Production.Interpolated, CarboKitten.Production.Insolation, CarboKitten.Production.Modifiers]
 ```
 
 ## Transport

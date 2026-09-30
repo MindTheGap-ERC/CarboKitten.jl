@@ -3,7 +3,9 @@
 The `Production` module specifies the production rate following the model by Bosscher & Schlager 1992 [Bosscher1992](@cite).
 The growth rate is given as
 
-$$g(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right).$$
+```math
+g(w) = g_m \tanh\left({{I_0 e^{-kw}} \over {I_k}}\right).
+```
 
 This can be understood as a smooth transition between the maximum growth rate under saturated conditions, and exponential decay due to light intensity dropping with greater water depth.
 

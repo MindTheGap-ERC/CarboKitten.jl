@@ -355,13 +355,13 @@ using CarboKitten.Models: WithoutCA as M
 function test_model_input()
     facies = [
         M.Facies(
-            production=CarboKitten.Production.EXAMPLE[:euphotic],
+            production=CarboKitten.Production.EXAMPLE[:euphotic] * ProductionBoost(factor=0.25),
             transport_coefficient=50.0u"m/Myr"),
         M.Facies(
-            production=CarboKitten.Production.EXAMPLE[:oligophotic],
+            production=CarboKitten.Production.EXAMPLE[:oligophotic] * ProductionBoost(factor=0.25),
             transport_coefficient=25.0u"m/Myr"),
         M.Facies(
-            production=CarboKitten.Production.EXAMPLE[:aphotic],
+            production=CarboKitten.Production.EXAMPLE[:aphotic] * ProductionBoost(factor=0.25),
             transport_coefficient=12.5u"m/Myr"),
     ]
 
@@ -383,9 +383,32 @@ function test_model()
     input = test_model_input()
     output = MemoryOutput(input)
     run_model(Model{M}, input, output)
+
 end
 
 @testset "CarboKitten.Visualization" begin
+    na = [CartesianIndex()]
+    output = test_model()
+    section = output.data_volumes[:full][:, 1]
+    wd = water_depth(output.header, section)
+    sc = stratigraphic_column(section)
+    st_preserved = dropdims(cumsum(sum(sc; dims=1); dims=3), dims=1)
+    st = dropdims(
+        cumsum(sum(section.deposition .- section.disintegration; dims=1), dims=3),
+        dims=1)
+
+    @test st_preserved[:, end] ≈ st[:, end]
+
+    initial_bathymetry = output.header.initial_topography[:, na]
+    subsidence = output.header.subsidence_rate .* output.header.axes.t[na, :]
+    reconstructed_bathymetry = initial_bathymetry .+ st .- subsidence
+
+    @test reconstructed_bathymetry ≈ section.bathymetry
+
+    sea_level = output.header.sea_level[na, :]
+    reconstructed_wd = sea_level .- reconstructed_bathymetry
+
+    @test reconstructed_wd ≈ wd
 end
 ```
 

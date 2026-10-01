@@ -135,8 +135,8 @@ end
 Compute the water depth function for the given data set.
 """
 function water_depth(header::Header, data::Data{F, D}) where {F, D}
-    na = [CartesianIndex()]
-    return header.sea_level[repeated(na, D-1)...,1:data.write_interval:end] .- data.bathymetry
+    sl = reshape(header.sea_level[1:data.write_interval:end], (repeated(1, D-1)..., :))
+    return sl .- data.bathymetry
 end
 
 """

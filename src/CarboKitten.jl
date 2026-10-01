@@ -150,11 +150,11 @@ include("./Visualization.jl")
 include("./Testing.jl")
 
 using .Components.Common: in_units_of, @u_str
-using .Output.Abstract: OutputSpec, new_output
+using .Output.Abstract: OutputSpec, new_output, water_depth, stratigraphic_column
 using .Output.MemoryWriter: MemoryOutput
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
-using .Production: BenthicProduction, PelagicProduction
+using .Production: BenthicProduction, PelagicProduction, InterpolatedProduction, ProductionBoost
 using GeometryBasics: Vec2
 using .WaveField
 
@@ -162,6 +162,7 @@ export run_model, Box, box_axes, TimeProperties, time_axis,
     Model, BS92, CAP, ALCAP, in_units_of, @u_str,
     AbstractBox, Boundary, Coast, Periodic, Reflected,
     Vec2, OutputSpec, MemoryOutput, new_output, n_steps,
-    BenthicProduction, PelagicProduction
+    BenthicProduction, PelagicProduction, InterpolatedProduction, ProductionBoost,
+    water_depth, stratigraphic_column
 
 end # module CarboKitten

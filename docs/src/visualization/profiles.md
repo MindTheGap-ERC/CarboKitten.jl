@@ -344,6 +344,8 @@ function plot_sealevel!(ax::Axis, header::Header)
 end
 ```
 
+## Module
+
 ```{.julia file=ext/SedimentProfile.jl}
 module SedimentProfile
 

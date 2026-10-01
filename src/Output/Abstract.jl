@@ -56,7 +56,7 @@ end
     deposition::Array{Amount,F}
     bathymetry::Array{Amount,D}
     active_layer::Union{Array{Amount,F}, Nothing} = nothing
-    stratigraphic_column::Ref{Union{Array{Amount,F}, Nothing}} = Ref(nothing)
+    stratigraphic_column::Ref{Union{Array{Amount,F}, Nothing}} = nothing
 end
 
 const DataVolume = Data{4,3}

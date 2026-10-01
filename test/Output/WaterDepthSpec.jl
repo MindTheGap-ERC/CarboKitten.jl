@@ -1,4 +1,4 @@
-# ~/~ begin <<docs/src/visualization/profiles.md#test/Visualization/UnconformitiesSpec.jl>>[init]
+# ~/~ begin <<docs/src/output/abstract.md#test/Output/WaterDepthSpec.jl>>[init]
 using CarboKitten
 using CarboKitten.Models: WithoutCA as M
 
@@ -36,7 +36,7 @@ function test_model()
 
 end
 
-@testset "CarboKitten.Visualization" begin
+@testset "Output.Abstract.water_depth" begin
     na = [CartesianIndex()]
     output = test_model()
     section = output.data_volumes[:full][:, 1]

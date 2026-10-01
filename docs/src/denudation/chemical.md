@@ -237,9 +237,10 @@ The dedudation rates calculated from this function for varying temperature and w
 ``` {.julia file=src/Denudation/DissolutionMod.jl}
 module DissolutionMod
 
-import ..Abstract: DenudationType, denudation, redistribution
+import ..Abstract: DenudationType, denudation, redistribution, dominant_facies
 using ...BoundaryTrait: Boundary
 using ...Boxes: Box
+
 export Dissolution
 using Unitful
 
@@ -248,6 +249,7 @@ using Unitful
     precip::typeof(1.0u"m/yr")
     pco2::typeof(1.0u"atm")
     reactionrate::typeof(1.0u"m/yr")
+    peek_depth::Float64 = 2.0
 end
 
 <<karst-parameter-function>>
@@ -257,21 +259,18 @@ end
 
 <<karst-dissolution-function>>
 
-
 function denudation(::Box{BT}, p::Dissolution, water_depth, slope, facies, state) where {BT<:Boundary}
     temp = p.temp ./ u"K"
     precip = p.precip ./ u"m/yr"
     pco2 = p.pco2 ./1.0u"atm"
     reactionrate = p.reactionrate ./u"m/yr"
-    denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(state.ca)...)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(state.sediment_thickness[:,:])...)
 
-    for idx in CartesianIndices(state.ca)
-        f = state.ca[idx]
-        if f == 0
-            continue
-        end
-        if water_depth[idx] <= 0
-            denudation_rate[f, idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[f])
+    for idx in CartesianIndices(state.sediment_thickness[:,:])
+        # only apply denudation if exposed and sediment is present
+        if water_depth[idx] <= 0 && state.sediment_thickness[idx] > 0.0u"m"
+            f = dominant_facies(state, idx, p.peek_depth)
+            denudation_rate[idx] = dissolution(temp, precip, pco2, reactionrate, water_depth[idx], facies[f])
         end
     end
     return denudation_rate

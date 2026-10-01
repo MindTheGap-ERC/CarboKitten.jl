@@ -143,6 +143,7 @@ include("./Models/CAP.jl")
 include("./Models/ALCAP.jl")
 include("./Models/WithDenudation.jl")
 include("./Models/WithoutCA.jl")
+include("./Models/WithoutCADenudation.jl")
 end
 
 include("./Export.jl")

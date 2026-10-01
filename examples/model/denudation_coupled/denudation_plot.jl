@@ -1,6 +1,7 @@
 using CairoMakie
 using CarboKitten.Visualization: sediment_profile, summary_plot, stratigraphic_column!
-using CarboKitten.Export: read_slice, Header, DataSlice, read_column, DataColumn
+using CarboKitten.Export: read_slice, Header, DataSlice, read_column, DataColumn, sediment_thickness
+
 using Unitful
 
 const HDF5_file = "data/output/denudation.h5"
@@ -17,12 +18,12 @@ end
 
 function plot_sediment_accumulation(header::Header, data::DataSlice, location::Int; ax::Axis)
     time_interval = (header.axes.t[end] - header.axes.t[1]) /
-                     (size(data.sediment_thickness, 2) - 1)
+                     (size(data.bathymetry, 2) - 1)
     times_range = header.axes.t[1]:time_interval:header.axes.t[end]
     times = collect(times_range)
     times = Float64.(vec(times) ./ u"Myr")
 
-    thickness = Float64.(vec(data.sediment_thickness[location, :]) ./ u"m")
+    thickness = Float64.(vec(sediment_thickness(data)[location, :]) ./ u"m")
 
     lines!(ax, times, thickness, color = :black)
 end
@@ -58,3 +59,4 @@ end
 
 plot_barrel(header, data, location)
 plot_sediment_profile(HDF5_file)
+save("docs/src/_fig/denudation_summary.png", summary_plot(HDF5_file))

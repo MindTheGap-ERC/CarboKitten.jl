@@ -22,7 +22,7 @@
         denudation::DenudationType
     end
 
-    function slope_function(input,box::Box{BT}) where {BT<:Boundary}
+    function slope_function(input::AbstractInput, box::Box{BT}) where {BT<:Boundary}
         return stencil(Float64, BT, (3, 3), slope_kernel) 
     end
 end

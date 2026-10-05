@@ -54,6 +54,7 @@ TEST_PATH = mktempdir()
 
     include("ExportSpec.jl")
     include("Output/DataSpec.jl")
+    include("Output/WaterDepthSpec.jl")
     include("Output/H5WriterSpec.jl")
 
     include("Models/CAPSpec.jl")

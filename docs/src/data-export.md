@@ -426,7 +426,7 @@ function read_data(::Type{Val{dim}}, gid::Union{HDF5.File, HDF5.Group}) where {d
 		gid["bathymetry"][reduce.(slice)..., :] * u"m",
 		"active_layer" in keys(gid) ?
 		    gid["active_layer"][:, reduce.(slice)..., :] * u"m" :
-			nothing)
+			nothing, nothing)
 end
 
 function read_data(D::Type{Val{dim}}, filename::AbstractString, group) where {dim}
@@ -451,6 +451,7 @@ end
 
 ``` {.julia file=test/ExportSpec.jl}
 using CarboKitten
+using CarboKitten.Components.Common: Amount
 using CarboKitten.Export: Axes, Header, DataVolume, data_export, CSVExportTrait,
     age_depth_model, extract_sac, extract_sc, CSV, read_data, extract_sac, extract_wd,
     read_column

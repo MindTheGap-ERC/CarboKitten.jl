@@ -1,5 +1,6 @@
 # ~/~ begin <<docs/src/data-export.md#test/ExportSpec.jl>>[init]
 using CarboKitten
+using CarboKitten.Components.Common: Amount
 using CarboKitten.Export: Axes, Header, DataVolume, data_export, CSVExportTrait,
     age_depth_model, extract_sac, extract_sc, CSV, read_data, extract_sac, extract_wd,
     read_column

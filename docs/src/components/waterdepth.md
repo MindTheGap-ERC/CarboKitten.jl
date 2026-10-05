@@ -55,31 +55,9 @@ function initial_topography(input::AbstractInput)
     return input.initial_topography.(x, y')
 end
 
-<<<<<<< Updated upstream
-
-"""
-    subsidence_rate(input)
-
-Obtain a function that gives the subsidence rate, given time and
-space coordinates.
-"""
-function subsidence_rate end
-
-function subsidence_rate(input::Input)
-    if input.subsidence_rate isa Quantity
-        s = input.subsidence_rate
-        return (x, y, t) -> s
-    end
-    return input.subsidence_rate
-end
-
-function subsider(input::AbstractInput)
-    Δσ = input.subsidence_rate * input.time.Δt
-=======
 struct TimeVariableSubsidenceRate
     f
 end
->>>>>>> Stashed changes
 
 struct SpaceTimeVariableSubsidenceRate
     f
@@ -91,7 +69,7 @@ function subsider(input::AbstractInput, s::SpaceTimeVariableSubsidenceRate)
     get_time = time(input)
     x, y = box_axes(input.box)
     dt = input.time.Δt
-    
+
     return function (state::AbstractState)
         t = get_time(state)
         Δσ = input.subsidence_rate.f.(x, y', t) * dt
@@ -102,7 +80,7 @@ end
 function subsider(input::AbstractInput, s::TimeVariableSubsidenceRate)
     get_time = time(input)
     dt = input.time.Δt
-    
+
     return function (state::AbstractState)
         t = get_time(state)
         Δσ = s.f(t) * dt
@@ -112,7 +90,7 @@ end
 
 function subsider(input::AbstractInput, s::Quantity)
     Δσ = input.subsidence_rate * input.time.Δt
-    
+
     return function (state::AbstractState)
         state.bathymetry .-= Δσ
     end

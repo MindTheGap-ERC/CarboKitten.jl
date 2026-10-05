@@ -55,6 +55,7 @@ function initial_topography(input::AbstractInput)
     return input.initial_topography.(x, y')
 end
 
+<<<<<<< Updated upstream
 
 """
     subsidence_rate(input)
@@ -74,8 +75,45 @@ end
 
 function subsider(input::AbstractInput)
     Δσ = input.subsidence_rate * input.time.Δt
+=======
+struct TimeVariableSubsidenceRate
+    f
+end
+>>>>>>> Stashed changes
 
-    function (state::AbstractState)
+struct SpaceTimeVariableSubsidenceRate
+    f
+end
+
+subsider(input::AbstractInput) = subsider(input, input.subsidence_rate)
+
+function subsider(input::AbstractInput, s::SpaceTimeVariableSubsidenceRate)
+    get_time = time(input)
+    x, y = box_axes(input.box)
+    dt = input.time.Δt
+    
+    return function (state::AbstractState)
+        t = get_time(state)
+        Δσ = input.subsidence_rate.f.(x, y', t) * dt
+        state.bathymetry .-= Δσ
+    end
+end
+
+function subsider(input::AbstractInput, s::TimeVariableSubsidenceRate)
+    get_time = time(input)
+    dt = input.time.Δt
+    
+    return function (state::AbstractState)
+        t = get_time(state)
+        Δσ = s.f(t) * dt
+        state.bathymetry .-= Δσ
+    end
+end
+
+function subsider(input::AbstractInput, s::Quantity)
+    Δσ = input.subsidence_rate * input.time.Δt
+    
+    return function (state::AbstractState)
         state.bathymetry .-= Δσ
     end
 end

@@ -10,7 +10,7 @@ export water_depth, subsider, initial_topography
 @kwdef struct Input <: AbstractInput
     sea_level = t -> 0.0u"m"
     initial_topography = (x, y) -> 0.0u"m"
-    subsidence_rate = (t, x, y) -> 0.0u"m/Myr"
+    subsidence_rate = 0.0u"m/Myr"
 end
 
 @kwdef mutable struct State <: AbstractState

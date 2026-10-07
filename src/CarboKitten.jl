@@ -124,8 +124,10 @@ include("./Components.jl")
 module Output
 
 include("./Output/Abstract.jl")
+include("./Output/Storage.jl")
 include("./Output/RunModel.jl")
 include("./Output/H5Writer.jl")
+include("./Output/H5Reader.jl")
 include("./Output/MemoryWriter.jl")
 
 using .Abstract: Frame, frame_writer, state_writer

@@ -5,8 +5,12 @@ Reading HDF5 files
 module H5Reader
 
 using HDF5
-import ..Abstract: AbstractBundle
-import ..Storage: data_kind, Header, DataHeader, Data, Pack, data_sets, data_volumes, data_slices, data_columns
+using Unitful
+using ..Storage
+
+import ..Abstract: AbstractBundle, load, load_volume, load_slice, load_column
+import ..Storage: data_kind, Header, DataHeader, Data, Pack, parse_multi_slice,
+    data_sets, data_volumes, data_slices, data_columns
 
 function data_kind(gid::HDF5.Group)
 	slice = parse_multi_slice(attrs(gid)["slice"])
@@ -121,7 +125,7 @@ function load(filename::AbstractString)
     return bundle
 end
 
-function load_group(::Val{D}, bundle::H5Bundle, group) where {D}
+function load_group(D::Type{Val{dim}}, bundle::H5Bundle, group) where {dim}
     gid = bundle.fid[string(group)]
 	data = read_data(D, gid)
     return Pack(bundle.header, data)

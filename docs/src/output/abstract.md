@@ -224,16 +224,14 @@ Module
 ``` {.julia file=src/Output/Abstract.jl}
 module Abstract
 
-import ...CarboKitten: set_attribute
-import ...Algorithms: stratigraphic_column!
+import ...CarboKitten: set_attribute  # TODO: get rid of this
 
-export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
-export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer, surface_heights
-export sediment_thickness, water_depth
+export Frame, new_output, add_data_set, set_attribute, state_writer, frame_writer
+export write_bathymetry, write_active_layer, write_production, write_deposition, write_disintegration
+export AbstractBundle, load, load_volume, load_slice, load_column, header
 
 using Unitful
-using ...CarboKitten: OutputSpec, AbstractInput, AbstractState
-using .Iterators: repeated
+using ...CarboKitten: AbstractInput, AbstractState
 
 <<abstract-writer>>
 <<abstract-reader>>

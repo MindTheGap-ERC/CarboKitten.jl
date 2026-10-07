@@ -2,11 +2,12 @@
 module MemoryWriter
 
 using ..Abstract
+using ..Storage
+
 import ..Abstract:
     new_output, add_data_set, set_attribute, write_bathymetry,
     write_production, write_disintegration, write_deposition, write_active_layer,
-    load, load_volume, load_slice, load_column, AbstractBundle,
-    header
+    load, load_volume, load_slice, load_column, AbstractBundle, header
 using ...Components.Common
 using ...Components.WaterDepth: initial_topography
 using ...CarboKitten: time_axis, box_axes, OutputSpec, AbstractOutput, AbstractInput, AbstractState

@@ -80,6 +80,12 @@ end
 const DataVolume = Data{4,3}
 const DataSlice = Data{3,2}
 const DataColumn = Data{2,1}
+
+disintegration(v::Data) = v.disintegration
+production(v::Data) = v.production
+deposition(v::Data) = v.deposition
+active_layer(v::Data) = v.active_layer
+bathymetry(v::Data) = v.bathymetry
 ```
 
 Note, that the `stratigraphic_column` field is there for caching computations. We make this field mutable by using a `Ref`. We can further slice data using the index operator.
@@ -108,6 +114,12 @@ struct Pack{F, D}
     header::Header
     data::Data{F, D}
 end
+
+bathymetry(v::Pack) = bathymetry(v.data)
+production(v::Pack) = production(v.data)
+deposition(v::Pack) = deposition(v.data)
+active_layer(v::Pack) = active_layer(v.data)
+disintegration(v::Pack) = disintegration(v.data)
 ```
 
 ### Bundle
@@ -190,7 +202,17 @@ Module
 ``` {.julia file=src/Output/Storage.jl}
 module Storage
 
+using Unitful
+using .Iterators: repeated
+
+import ...CarboKitten: time_axis, box_axes, OutputSpec, AbstractOutput, AbstractInput, AbstractState
 import ..Abstract: AbstractBundle, header
+
+using ...Algorithms.StratigraphicColumn: stratigraphic_column!
+
+export Header, Data, DataVolume, DataSlice, DataColumn, Pack, Axes, DataHeader
+export data_kind, data_sets, data_volumes, data_slices, data_columns
+export sediment_thickness, water_depth, surface_heights, stratigraphic_column
 
 const Length = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
@@ -202,6 +224,7 @@ const Rate = typeof(1.0u"m/Myr")
 <<slice-helpers>>
 <<data-header>>
 <<data-data>>
+<<data-pack>>
 
 """
     stratigraphic_column(data)

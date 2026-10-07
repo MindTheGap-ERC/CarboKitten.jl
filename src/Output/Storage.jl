@@ -1,7 +1,17 @@
 # ~/~ begin <<docs/src/output/data.md#src/Output/Storage.jl>>[init]
 module Storage
 
+using Unitful
+using .Iterators: repeated
+
+import ...CarboKitten: time_axis, box_axes, OutputSpec, AbstractOutput, AbstractInput, AbstractState
 import ..Abstract: AbstractBundle, header
+
+using ...Algorithms.StratigraphicColumn: stratigraphic_column!
+
+export Header, Data, DataVolume, DataSlice, DataColumn, Pack, Axes, DataHeader
+export data_kind, data_sets, data_volumes, data_slices, data_columns
+export sediment_thickness, water_depth, surface_heights, stratigraphic_column
 
 const Length = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
@@ -99,6 +109,12 @@ end
 const DataVolume = Data{4,3}
 const DataSlice = Data{3,2}
 const DataColumn = Data{2,1}
+
+disintegration(v::Data) = v.disintegration
+production(v::Data) = v.production
+deposition(v::Data) = v.deposition
+active_layer(v::Data) = v.active_layer
+bathymetry(v::Data) = v.bathymetry
 # ~/~ end
 # ~/~ begin <<docs/src/output/data.md#data-data>>[1]
 Base.getindex(v::Data{F,D}, args...) where {F,D} =
@@ -113,6 +129,18 @@ Base.getindex(v::Data{F,D}, args...) where {F,D} =
             v.active_layer == nothing ? nothing : v.active_layer[:, args..., :],
             nothing)  # stratigraphic_column: reset so it is recomputed for the slice
     end
+# ~/~ end
+# ~/~ begin <<docs/src/output/data.md#data-pack>>[init]
+struct Pack{F, D}
+    header::Header
+    data::Data{F, D}
+end
+
+bathymetry(v::Pack) = bathymetry(v.data)
+production(v::Pack) = production(v.data)
+deposition(v::Pack) = deposition(v.data)
+active_layer(v::Pack) = active_layer(v.data)
+disintegration(v::Pack) = disintegration(v.data)
 # ~/~ end
 
 """

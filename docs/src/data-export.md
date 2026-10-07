@@ -332,14 +332,16 @@ using DataFrames
 using .Iterators: flatten
 
 using ..Output.Abstract
-import ..Output.Abstract: data_kind
+using ..Output.Storage
+
+# Re-exports H5Reader functions for convenience of old API
+# these should be deprecated in favour of the new `load_*` functions
+using ..Output.H5Reader: read_data, read_volume, read_slice, read_column
 
 const Rate = typeof(1.0u"m/Myr")
 const Amount = typeof(1.0u"m")
 const Length = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
-
-const na = [CartesianIndex()]
 
 <<export-specification>>
 
@@ -353,7 +355,8 @@ end
 ``` {.julia file=test/ExportSpec.jl}
 using CarboKitten
 using CarboKitten.Components.Common: Amount
-using CarboKitten.Export: Axes, Header, DataVolume, data_export, CSVExportTrait,
+using CarboKitten.Output.Storage: Axes, Header, DataVolume
+using CarboKitten.Export: data_export, CSVExportTrait,
     age_depth_model, extract_sac, extract_sc, CSV, read_data, extract_sac, extract_wd,
     read_column
 using CSV: read as read_csv

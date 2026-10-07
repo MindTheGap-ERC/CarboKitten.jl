@@ -11,14 +11,16 @@ using DataFrames
 using .Iterators: flatten
 
 using ..Output.Abstract
-import ..Output.Abstract: data_kind
+using ..Output.Storage
+
+# Re-exports H5Reader functions for convenience of old API
+# these should be deprecated in favour of the new `load_*` functions
+using ..Output.H5Reader: read_data, read_volume, read_slice, read_column
 
 const Rate = typeof(1.0u"m/Myr")
 const Amount = typeof(1.0u"m")
 const Length = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
-
-const na = [CartesianIndex()]
 
 # ~/~ begin <<docs/src/data-export.md#export-specification>>[init]
 abstract type ExportSpecification end

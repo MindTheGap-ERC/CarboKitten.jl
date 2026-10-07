@@ -124,12 +124,18 @@ include("./Components.jl")
 module Output
 
 include("./Output/Abstract.jl")
+include("./Output/Storage.jl")
 include("./Output/RunModel.jl")
 include("./Output/H5Writer.jl")
+include("./Output/H5Reader.jl")
 include("./Output/MemoryWriter.jl")
 
 using .Abstract: Frame, frame_writer, state_writer
 export Frame, frame_writer, state_writer
+
+using .Abstract: load, load_volume, load_slice, load_column
+using .Storage: water_depth, stratigraphic_column, sediment_thickness, surface_heights,
+    production, deposition, disintegration, active_layer, bathymetry
 
 end
 
@@ -150,7 +156,8 @@ include("./Visualization.jl")
 include("./Testing.jl")
 
 using .Components.Common: in_units_of, @u_str
-using .Output.Abstract: OutputSpec, new_output, water_depth, stratigraphic_column
+using .Output.Abstract: new_output
+using .Output.Storage: water_depth, stratigraphic_column
 using .Output.MemoryWriter: MemoryOutput
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected

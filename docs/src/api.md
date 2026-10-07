@@ -41,7 +41,7 @@ Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.Acti
 ## Output
 
 ```@autodocs
-Modules = [CarboKitten.Output.Abstract, CarboKitten.Output.H5Writer, CarboKitten.Output.MemoryWriter]
+Modules = [CarboKitten.Output.Abstract, CarboKitten.Output.H5Reader, CarboKitten.Output.H5Writer, CarboKitten.Output.MemoryWriter, CarboKitten.Output.Storage]
 ```
 
 ## Utility

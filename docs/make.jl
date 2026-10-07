@@ -84,6 +84,7 @@ makedocs(
             "Input Methods" => "input-methods.md",
             "Production" => "production/production.md",
             "Output" => "output/abstract.md",
+            "Analysis and Visualization" => "analysis.md",
             "Data Export" => "data-export.md",
             "Visualization" => "visualization/overview.md",
             "Trouble shooting and diagnostics" => "debugging.md"

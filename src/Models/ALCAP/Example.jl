@@ -6,7 +6,7 @@ using ..ALCAP: ALCAP
 using CarboKitten.Production: BenthicProduction
 using CarboKitten.Boxes: Box, Coast
 using CarboKitten.Config: TimeProperties
-using CarboKitten.Output.Abstract: OutputSpec
+using CarboKitten: OutputSpec
 
 # ~/~ begin <<docs/src/models/alcap.md#alcap-example-input>>[init]
 const TAG = "alcap-example"

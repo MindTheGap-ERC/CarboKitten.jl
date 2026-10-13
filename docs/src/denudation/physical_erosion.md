@@ -12,8 +12,8 @@ $$D_{phys} = -k_v \times (1 - I_f)^{1/3} |\nabla h|^{2/3}$$
 
 This equation for the physical dedundation rate, $D_{phys}$ is implemented in  code as follows:
 ``` {.julia #physical-erosion}
-function physical_erosion(slope::Float64, inf::Float64, erodibility::Any)
-    -1 * -erodibility .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3)
+function physical_erosion(slope::Float64, inf::Float64, erodibility::typeof(1.0u"m/yr"))
+    erodibility .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3)
 end
 ```
 and the output of this function for a range of slope angles is plotted here:
@@ -75,14 +75,16 @@ The redistribution of sediments after physical erosion is based on [van_de_wiel_
 ``` {.julia file=src/Denudation/PhysicalErosionMod.jl}
 module PhysicalErosionMod
 
-import ..Abstract: DenudationType, denudation, redistribution
+import ..Abstract: DenudationType, denudation, redistribution, dominant_facies
 using ...Stencil: Boundary, Periodic, offset_value, offset_index, stencil
 using ...BoundaryTrait
 using ...Boxes: Box
 
 using Unitful
 
-@kwdef struct PhysicalErosion <: DenudationType end
+@kwdef struct PhysicalErosion <: DenudationType 
+    peek_depth::Float64 = 2.0
+end
 
 const Amount = typeof(1.0u"m")
 
@@ -145,16 +147,13 @@ function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth) w
 
 end
 
-function denudation(::Box, p::PhysicalErosion, water_depth::Any, slope, facies, state)
-    denudation_rate = zeros(typeof(1.0u"m/Myr"), length(facies), size(slope)...)
+function denudation(::Box, p::PhysicalErosion, water_depth::Array{Float64}, slope, facies, state)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(state.sediment_thickness[:,:])...)
 
-    for idx in CartesianIndices(state.ca)
-        f = state.ca[idx]
-        if f == 0
-            continue
-        end
-        if water_depth[idx] <= 0
-            denudation_rate[f, idx[1], idx[2]] = physical_erosion.(slope[idx], facies[f].infiltration_coefficient, facies[f].erodibility)
+    for idx in CartesianIndices(state.sediment_thickness[:,:])
+        if water_depth[idx] <= 0 && state.sediment_thickness[idx] > 0.0u"m"
+            f = dominant_facies(state, idx, p.peek_depth)
+            denudation_rate[idx] = physical_erosion(slope[idx], facies[f].infiltration_coefficient, facies[f].erodibility)
         end
     end
 

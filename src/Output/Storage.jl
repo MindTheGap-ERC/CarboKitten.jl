@@ -141,6 +141,8 @@ production(v::Pack) = production(v.data)
 deposition(v::Pack) = deposition(v.data)
 active_layer(v::Pack) = active_layer(v.data)
 disintegration(v::Pack) = disintegration(v.data)
+
+Base.getindex(p::Pack, args...) = Pack(p.header, getindex(p.data, args...))
 # ~/~ end
 
 """

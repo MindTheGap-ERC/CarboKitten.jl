@@ -5,8 +5,24 @@ Our data is principally four dimensional: $x$, $y$, time and facies. Nevertheles
 
 Principally, we'd like to be able to do post-processing independent from knowing the input. In more complex scenarios (like variable subsidence) this poses a bit of a challenge on the data being stored.
 
+!!! note "API stability"
+
+    It is of utmost importance to keep this API stable. User scripts will largely depend on the correct functioning of this. If you make any changes here, make sure to keep things backwards compatible.
+
 Data Hierarchy
 --------------
+
+```mermaid
+---
+title: Concept hierarchy
+---
+flowchart LR
+    Bundle --> Pack --> Data --> DataHeader
+    Bundle --> Header --> Axes
+    Pack --> Header
+```
+
+Most functions for obtaining reduced or transformed data are defined on the level of a `Pack`.
 
 ### Header
 
@@ -120,6 +136,8 @@ production(v::Pack) = production(v.data)
 deposition(v::Pack) = deposition(v.data)
 active_layer(v::Pack) = active_layer(v.data)
 disintegration(v::Pack) = disintegration(v.data)
+
+Base.getindex(p::Pack, args...) = Pack(p.header, getindex(p.data, args...))
 ```
 
 ### Bundle

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Data Implementation · CarboKitten</title><meta name="title" content="Data Implementation · CarboKitten"/><meta property="og:title" content="Data Implementation · CarboKitten"/><meta property="twitter:title" content="Data Implementation · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/documentercitations/citations-hover.css" rel="stylesheet" type="text/css"/><link href="../../assets/documentercitations/citations.css" rel="stylesheet" type="text/css"/><script src="../../assets/documentercitations/citations-data.js"></script><script src="../../assets/documentercitations/citations-hover.js"></script><script src="../../assets/documentercitations/citations-backlinks.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><a class="tocitem" href="../../getting-started/">Getting started</a></li><li><span class="tocitem">User Manual</span><ul><li><a class="tocitem" href="../../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../../production/production/">Production</a></li><li><a class="tocitem" href="../../analysis/">Analysis and Visualization</a></li><li><a class="tocitem" href="../../data-export/">Data Export</a></li><li><a class="tocitem" href="../../visualization/overview/">Visualization</a></li><li><a class="tocitem" href="../../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../../initial-topography/">Initial Topography</a></li></ul></li><li><span class="tocitem">Production Models</span><ul><li><a class="tocitem" href="../../production/benthic/">Benthic Production</a></li><li><a class="tocitem" href="../../production/pelagic/">Pelagic Production</a></li><li><a class="tocitem" href="../../production/interpolated/">Interpolation</a></li><li><a class="tocitem" href="../../production/modifiers/">Modifiers</a></li></ul></li><li><span class="tocitem">Interface</span><ul><li><a class="tocitem" href="../../wavefield/">Wave fields</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../abstract/">Data API</a></li><li class="is-active"><a class="tocitem" href>Data Implementation</a><ul class="internal"><li><a class="tocitem" href="#Data-Hierarchy"><span>Data Hierarchy</span></a></li><li><a class="tocitem" href="#Slices"><span>Slices</span></a></li><li><a class="tocitem" href="#Module"><span>Module</span></a></li></ul></li><li><a class="tocitem" href="../h5reader/">HDF5 Reader</a></li><li><a class="tocitem" href="../h5writer/">HDF5 Writer</a></li><li><a class="tocitem" href="../memory-writer/">Output to Memory</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="../../visualization/profiles/">Profiles</a></li><li><a class="tocitem" href="../../visualization/fence-diagrams/">Fence Diagram</a></li><li><a class="tocitem" href="../../visualization/topography/">Topography</a></li><li><a class="tocitem" href="../../visualization/">Other</a></li></ul></li><li><span class="tocitem">Developer</span><ul><li><a class="tocitem" href="../../CONTRIBUTING/">Contributing to this repository</a></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li></ul></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../../components/components/">Components</a></li><li><a class="tocitem" href="../../components/tag/">Tags</a></li><li><a class="tocitem" href="../../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../../components/time/">Time</a></li><li><a class="tocitem" href="../../components/output/">Output</a></li><li><a class="tocitem" href="../../components/facies/">Facies</a></li><li><a class="tocitem" href="../../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../../components/production/">Production</a></li><li><a class="tocitem" href="../../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li><li><a class="tocitem" href="../../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../../algorithms/stratigraphic_column/">Stratigraphic Column</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Input &amp; Output</a></li><li class="is-active"><a href>Data Implementation</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Data Implementation</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/output/data.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Data-API"><a class="docs-heading-anchor" href="#Data-API">Data API</a><a id="Data-API-1"></a><a class="docs-heading-anchor-permalink" href="#Data-API" title="Permalink"></a></h1><p>Our data is principally four dimensional: <span>$x$</span>, <span>$y$</span>, time and facies. Nevertheless, in our naming we drop the facies dimension, so a full data set is reffered to as a <code>DataVolume</code> and a section is reffered to as a <code>DataSlice</code>.</p><p>Principally, we&#39;d like to be able to do post-processing independent from knowing the input. In more complex scenarios (like variable subsidence) this poses a bit of a challenge on the data being stored.</p><div class="admonition is-info" id="API-stability-97d0e4dbd3d30462"><header class="admonition-header">API stability<a class="admonition-anchor" href="#API-stability-97d0e4dbd3d30462" title="Permalink"></a></header><div class="admonition-body"><p>It is of utmost importance to keep this API stable. User scripts will largely depend on the correct functioning of this. If you make any changes here, make sure to keep things backwards compatible.</p></div></div><h2 id="Data-Hierarchy"><a class="docs-heading-anchor" href="#Data-Hierarchy">Data Hierarchy</a><a id="Data-Hierarchy-1"></a><a class="docs-heading-anchor-permalink" href="#Data-Hierarchy" title="Permalink"></a></h2><pre><code class="language-mermaid hljs">---
+title: Concept hierarchy
+---
+flowchart LR
+    Bundle --&gt; Pack --&gt; Data --&gt; DataHeader
+    Bundle --&gt; Header --&gt; Axes
+    Pack --&gt; Header</code></pre><p>Most functions for obtaining reduced or transformed data are defined on the level of a <code>Pack</code>.</p><h3 id="Header"><a class="docs-heading-anchor" href="#Header">Header</a><a id="Header-1"></a><a class="docs-heading-anchor-permalink" href="#Header" title="Permalink"></a></h3><p>We store the different axes in a <code>Vector</code>.</p><div class="noweb-label">⪡data-header⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Axes
+    x::Vector{Length}
+    y::Vector{Length}
+    t::Vector{Time}
+end</code></pre><p>The <code>Header</code> struct contains an index of all data sets contained in a bundle.</p><div class="noweb-label">⪡data-header⪢≣</div><pre><code class="language- julia hljs">@kwdef struct DataHeader
+    kind::Symbol
+    slice::Slice2
+    write_interval::Int
+end</code></pre><div class="noweb-label">⪡data-header⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Header
+    tag::String
+    axes::Axes
+
+    Δt::Time
+    time_steps::Int
+    grid_size::NTuple{2,Int}
+    n_facies::Int
+
+    initial_topography::Matrix{Amount}
+    sea_level::Vector{Length}
+    subsidence_rate::Rate
+    data_sets::Dict{Symbol,DataHeader}
+    attributes::Dict{String,Any} = Dict()
+end
+
+data_sets(header::Header) = header.data_sets
+data_volumes(header::Header) = [s for (s, h) in header.data_sets if h.kind == :volume]
+data_slices(header::Header) = [s for (s, h) in header.data_sets if h.kind == :slice]
+data_columns(header::Header) = [s for (s, h) in header.data_sets if h.kind == :column]
+
+data_sets(bundle::AbstractBundle) = bundle |&gt; header |&gt; data_sets
+data_volumes(bundle::AbstractBundle) = bundle |&gt; header |&gt; data_volumes
+data_slices(bundle::AbstractBundle) = bundle |&gt; header |&gt; data_slices
+data_columns(bundle::AbstractBundle) = bundle |&gt; header |&gt; data_columns</code></pre><h3 id="Data"><a class="docs-heading-anchor" href="#Data">Data</a><a id="Data-1"></a><a class="docs-heading-anchor-permalink" href="#Data" title="Permalink"></a></h3><p>The principle task for the <code>Data</code> struct is to hold the simulation data as written for each time step (modulo write interval). We also store the <code>slice</code> and <code>write_interval</code> so that the dimensions of a <code>Data</code> object are understood with respect to the full run.</p><p>In this definition, <code>D</code> is the dimensionality of the data, 1 for column, 2 for slice and 3 for volume. Because many members also have a facies dimension, <code>F</code> should always be <code>D+1</code>.</p><div class="noweb-label">⪡data-data⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Data{F,D}
+    slice::Slice2
+    write_interval::Int
+    # Julia doesn&#39;t allow to say Array{Amount,D+1} here
+    disintegration::Array{Amount,F}
+    production::Array{Amount,F}
+    deposition::Array{Amount,F}
+    bathymetry::Array{Amount,D}
+    active_layer::Union{Array{Amount,F}, Nothing} = nothing
+    stratigraphic_column::Ref{Union{Array{Amount,F}, Nothing}} = nothing
+end
+
+const DataVolume = Data{4,3}
+const DataSlice = Data{3,2}
+const DataColumn = Data{2,1}
+
+disintegration(v::Data) = v.disintegration
+production(v::Data) = v.production
+deposition(v::Data) = v.deposition
+active_layer(v::Data) = v.active_layer
+bathymetry(v::Data) = v.bathymetry</code></pre><p>Note, that the <code>stratigraphic_column</code> field is there for caching computations. We make this field mutable by using a <code>Ref</code>. We can further slice data using the index operator.</p><div class="noweb-label">⪡data-data⪢≣</div><pre><code class="language- julia hljs">Base.getindex(v::Data{F,D}, args...) where {F,D} =
+    let k = count_ints(args...)
+        Data{F - k,D - k}(
+            reduce_slice(v.slice, args...),
+            v.write_interval,
+            v.disintegration[:, args..., :],
+            v.production[:, args..., :],
+            v.deposition[:, args..., :],
+            v.bathymetry[args..., :],
+            v.active_layer == nothing ? nothing : v.active_layer[:, args..., :],
+            nothing)  # stratigraphic_column: reset so it is recomputed for the slice
+    end</code></pre><h3 id="Pack"><a class="docs-heading-anchor" href="#Pack">Pack</a><a id="Pack-1"></a><a class="docs-heading-anchor-permalink" href="#Pack" title="Permalink"></a></h3><p>A <code>Pack</code> is the combination of a <code>Header</code> and <code>Data</code> field.</p><div class="noweb-label">⪡data-pack⪢≣</div><pre><code class="language- julia hljs">struct Pack{F, D}
+    header::Header
+    data::Data{F, D}
+end
+
+bathymetry(v::Pack) = bathymetry(v.data)
+production(v::Pack) = production(v.data)
+deposition(v::Pack) = deposition(v.data)
+active_layer(v::Pack) = active_layer(v.data)
+disintegration(v::Pack) = disintegration(v.data)
+
+Base.getindex(p::Pack, args...) = Pack(p.header, getindex(p.data, args...))</code></pre><h3 id="Bundle"><a class="docs-heading-anchor" href="#Bundle">Bundle</a><a id="Bundle-1"></a><a class="docs-heading-anchor-permalink" href="#Bundle" title="Permalink"></a></h3><p>A <code>Bundle</code> combines multiple data sets. It should support listing all data sets, and obtaining a header and obtaining a data set by key-value association.</p><h2 id="Slices"><a class="docs-heading-anchor" href="#Slices">Slices</a><a id="Slices-1"></a><a class="docs-heading-anchor-permalink" href="#Slices" title="Permalink"></a></h2><p>In the <code>Input</code> struct the user can specify a dictionary of <code>OutputSpec</code>, specifying how much and at which interval to write output. Typically, you&#39;d want a full topographic output with lower time resolution, and choose a transect with full time resolution. For example, on the ALCAP model:</p><pre><code class="language-julia hljs">const INPUT = ALCAP.Input(
+    box = Box{Coast}(grid_size = (300, 150), phys_scale = 50.0u&quot;m&quot;),
+    time = TimeProperties(Δt = 50.0u&quot;yr&quot;, steps = 20_000),
+    output = Dict(
+        :topography =&gt; OutputSpec(write_interval = 200),
+        :profile =&gt; OutputSpec(slice = (:, 75))),
+
+    ...)  # add more options</code></pre><p>Saving the full output of this simulation would take several hundreds of gigabytes, not gargantuan, but a bit unwieldy if you want to save many simulation runs. With this output specification, we cut down on this significantly.</p><div class="noweb-label">⪡hdf5-output-spec⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Input &lt;: AbstractInput
+    output = Dict(:full =&gt; OutputSpec((:,:), 1))
+end</code></pre><p>The default is to write all output, which is fine for smaller runs. The <code>slice</code> argument of <code>OutputSpec</code> will accept three different forms:</p><ul><li><code>(:, :)</code> (default) output the full area of the model.</li><li><code>(&lt;n&gt;, :)</code> or <code>(:, &lt;n&gt;)</code> output a slice of the model, either with a fixed <span>$x$</span> or a fixed <span>$y$</span> coordinate. In our examples we always have the <span>$x$</span> axis orthogonal to the shoreline, so slicing with a fixed <span>$y$</span> (the second form) is what we use.</li><li><code>(&lt;m&gt;, &lt;n&gt;)</code>, output a column of the model. If you have a very precise experiment workflow, this could be of use. You&#39;ll have to specify each column as a separate output. Most of the time though, we can extract columns from slice data in a post-processing stage, so if all your columns have the same <span>$y$</span> coordinate, taking a slice is the preferred option.</li></ul><p>If an output with a <code>write_interval</code> that does not divide the total number of timesteps is specified, the output array will contain <code>div(time.steps, write_interval)</code> values and the value for the remainder of the steps at the end of the model will not be recorded (since this will not cover an equal interval of time as the rest of the values).</p><p>Slices refer to the way the full <code>DataVolume</code> is sliced into smaller <code>DataSlice</code> and <code>DataColumn</code> objects. If a slice is <code>(:, :)</code> we are dealing with the full volume. If one of the members of the pair is an integer, we have a data slice and with two integers we are dealing with a column. We have some helper functions to deal with these distinctions:</p><div class="noweb-label">⪡slice-helpers⪢≣</div><pre><code class="language- julia hljs">count_ints(::Int, args...) = 1 + count_ints(args...)
+count_ints(_, args...) = count_ints(args...)
+count_ints() = 0
+
+reduce_slice(s::Tuple{Colon,Colon}, x, y) = (x, y)
+reduce_slice(s::Tuple{Int,Colon}, y::Int) = (s[1], y)
+reduce_slice(s::Tuple{Colon,Int}, x::Int) = (x, s[2])</code></pre><p>The slice information is heterogenous, so it is stored as a string in the HDF5 file. We need to be able to parse it back.</p><div class="noweb-label">⪡slice-helpers⪢≣</div><pre><code class="language- julia hljs">function parse_slice(s::AbstractString)
+    if s == &quot;:&quot;
+        return (:)
+    end
+
+    elements = split(s, &quot;:&quot;)
+    if length(elements) == 1
+        return parse(Int, s)
+    end
+
+    a, b = elements
+    return parse(Int, a):parse(Int, b)
+end
+
+parse_multi_slice(s::AbstractString) = Slice2(parse_slice.(split(s, &quot;,&quot;)))
+
+data_kind(::Int, ::Int) = :column
+data_kind(::Int, _) = :slice
+data_kind(_, ::Int) = :slice
+data_kind(_, _) = :volume
+data_kind(spec::OutputSpec) = data_kind(spec.slice...)</code></pre><h2 id="Module"><a class="docs-heading-anchor" href="#Module">Module</a><a id="Module-1"></a><a class="docs-heading-anchor-permalink" href="#Module" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Output/Storage.jl</i></div><pre><code class="language- julia hljs">module Storage
+
+using Unitful
+using .Iterators: repeated
+
+import ...CarboKitten: time_axis, box_axes, OutputSpec, AbstractOutput, AbstractInput, AbstractState
+import ..Abstract: AbstractBundle, header
+
+using ...Algorithms.StratigraphicColumn: stratigraphic_column!
+
+export Header, Data, DataVolume, DataSlice, DataColumn, Pack, Axes, DataHeader
+export data_kind, data_sets, data_volumes, data_slices, data_columns
+export sediment_thickness, water_depth, surface_heights, stratigraphic_column
+
+const Length = typeof(1.0u&quot;m&quot;)
+const Time = typeof(1.0u&quot;Myr&quot;)
+const Slice2 = NTuple{2,Union{Int,Colon,UnitRange{Int}}}
+const Amount = typeof(1.0u&quot;m&quot;)
+const Sediment = typeof(1.0u&quot;m&quot;)
+const Rate = typeof(1.0u&quot;m/Myr&quot;)
+
+&lt;&lt;slice-helpers&gt;&gt;
+&lt;&lt;data-header&gt;&gt;
+&lt;&lt;data-data&gt;&gt;
+&lt;&lt;data-pack&gt;&gt;
+
+&quot;&quot;&quot;
+    stratigraphic_column(data)
+
+Given a data set, compute the stratigraphic column. Result is memoised in
+`data.stratigraphic_column` so repeated calls are free.
+&quot;&quot;&quot;
+function stratigraphic_column(data::Data{F, D}) where {F, D}
+    if data.stratigraphic_column[] === nothing
+        net_deposition = data.deposition .- data.disintegration
+        for c in eachslice(net_deposition, dims=(1:D...,))
+            stratigraphic_column!(c)
+        end
+        data.stratigraphic_column[] = net_deposition
+    end
+    return data.stratigraphic_column[]
+end
+
+stratigraphic_column(p::Pack{F, D}) where {F, D} = stratigraphic_column(p.data)
+
+&quot;&quot;&quot;
+    water_depth(header, data)
+
+Compute the water depth function for the given data set.
+&quot;&quot;&quot;
+function water_depth(header::Header, data::Data{F, D}) where {F, D}
+    sl = reshape(header.sea_level[1:data.write_interval:end], (repeated(1, D-1)..., :))
+    return sl .- data.bathymetry
+end
+
+water_depth(p::Pack{F, D}) where {F, D} = water_depth(p.header, p.data)
+
+&quot;&quot;&quot;
+    sediment_thickness(data)
+
+Compute the sediment thickness at each moment in the run by taking the cumulative
+sum of the net deposition (deposition - disintegration) at each moment.
+&quot;&quot;&quot;
+function sediment_thickness(data::Data{F, D}) where {F, D}
+    net_deposition = dropdims(sum(data.deposition .- data.disintegration, dims=1), dims=1)
+    for c in eachslice(net_deposition, dims=(1:D-1...,))
+        for i in 2:length(c)
+            c[i] += c[i-1]
+        end
+    end
+    return net_deposition
+end
+
+sediment_thickness(p::Pack{F, D}) where {F, D} = sediment_thickness(p.data)
+
+&quot;&quot;&quot;
+    surface_heights(header, data)
+
+Compute the sediment surface height at every `(spatial..., time)` cell,
+accounting for subsidence and net deposition. Returns an array of shape
+`(spatial..., n_t+1)` where the first time entry is the initial topography
+minus total subsidence and subsequent entries accumulate the preserved
+sediment column.
+
+Works with `DataColumn`, `DataSlice`, and `DataVolume`.
+&quot;&quot;&quot;
+function surface_heights(header::Header, data::Data{F, D}) where {F, D}
+    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    initial_topography = header.initial_topography[data.slice...]
+    sc = stratigraphic_column(data)
+    # Sum over the facies dimension (dim 1), yielding (spatial..., n_t)
+    sc_sum = dropdims(sum(sc, dims=1), dims=1)
+    # Cumulative sediment accumulation along the time axis (last dim)
+    accumulated = cumsum(sc_sum, dims=ndims(sc_sum))
+    n_t = size(sc_sum, ndims(sc_sum))
+    h0 = initial_topography .- total_subsidence
+    # Build result array: shape (spatial..., n_t+1)
+    sz = (size(sc_sum)[1:end-1]..., n_t + 1)
+    h = Array{eltype(h0)}(undef, sz...)
+    selectdim(h, ndims(h), 1) .= h0
+    selectdim(h, ndims(h), 2:n_t+1) .= h0 .+ accumulated
+    return h
+end
+
+surface_heights(p::Pack{F, D}) where {F, D} = surface_heights(p.header, p.data)
+
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../abstract/">« Data API</a><a class="docs-footer-nextpage" href="../h5reader/">HDF5 Reader »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Tuesday 13 October 2026 09:20">Tuesday 13 October 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

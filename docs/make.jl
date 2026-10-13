@@ -1,6 +1,6 @@
 using Documenter
 using DocumenterCitations
-using DocumenterMermaid
+# using DocumenterMermaid
 
 using CarboKitten
 
@@ -83,7 +83,7 @@ makedocs(
         "User Manual" => [
             "Input Methods" => "input-methods.md",
             "Production" => "production/production.md",
-            "Output" => "output/abstract.md",
+            "Analysis and Visualization" => "analysis.md",
             "Data Export" => "data-export.md",
             "Visualization" => "visualization/overview.md",
             "Trouble shooting and diagnostics" => "debugging.md"
@@ -110,7 +110,10 @@ makedocs(
             "Wave fields" => "wavefield.md",
         ],
         "Input & Output" => [
-            "HDF5 Output" => "output/h5writer.md",
+            "Data API" => "output/abstract.md",
+            "Data Implementation" => "output/data.md",
+            "HDF5 Reader" => "output/h5reader.md",
+            "HDF5 Writer" => "output/h5writer.md",
             "Output to Memory" => "output/memory-writer.md",
         ],
         "Visualizations" => [

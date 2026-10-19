@@ -40,7 +40,7 @@ function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, s
     precip = p.precip ./ u"m/yr"
     denudation_rate = zeros(typeof(1.0u"m/Myr"), size(slope)...)
 
-    for idx in CartesianIndices(state.sediment_thickness[:,:])
+    for idx in CartesianIndices(state.sediment_thickness)
         # empirical has no facies dependence
         if water_depth[idx] <= 0 && state.sediment_thickness[idx] > 0.0u"m"
             denudation_rate[idx] = empirical_denudation.(precip, slope[idx])

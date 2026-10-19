@@ -15,7 +15,7 @@ end
 const Amount = typeof(1.0u"m")
 
 # ~/~ begin <<docs/src/denudation/physical_erosion.md#physical-erosion>>[init]
-function physical_erosion(slope::Float64, inf::Float64, erodibility::typeof(1.0u"m/yr"))
+function physical_erosion(slope::Real, inf::Real, erodibility::Unitful.Velocity)
     erodibility .* (1 - inf) .^ (1 / 3) .* slope .^ (2 / 3)
 end
 # ~/~ end
@@ -78,9 +78,9 @@ function total_mass_redistribution(box::Box{BT}, denudation_mass, water_depth) w
 end
 
 function denudation(::Box, p::PhysicalErosion, water_depth::Array{Float64}, slope, facies, state)
-    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(state.sediment_thickness[:,:])...)
+    denudation_rate = zeros(typeof(1.0u"m/Myr"), size(state.sediment_thickness)...)
 
-    for idx in CartesianIndices(state.sediment_thickness[:,:])
+    for idx in CartesianIndices(state.sediment_thickness)
         if water_depth[idx] <= 0 && state.sediment_thickness[idx] > 0.0u"m"
             f = dominant_facies(state, idx, p.peek_depth)
             denudation_rate[idx] = physical_erosion(slope[idx], facies[f].infiltration_coefficient, facies[f].erodibility)

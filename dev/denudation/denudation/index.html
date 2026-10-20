@@ -3,6 +3,7 @@
 
 using ...BoundaryTrait: Boundary
 using ...Boxes: Box
+using ...SedimentStack: peek_sediment
 
 using Unitful
 
@@ -19,8 +20,8 @@ Returns denudation mass in units of meters.
 function denudation(input)
 
     function (state, water_depth, slope)
-        if denudation(input.box, input.denudation, water_depth, slope, input.facies,state) !== nothing
-        return denudation(input.box, input.denudation, water_depth, slope, input.facies,state) .* input.time.Δt
+        if denudation(input.box, input.denudation, water_depth, slope, input.facies, state) !== nothing
+        return denudation(input.box, input.denudation, water_depth, slope, input.facies, state) .* input.time.Δt
         else
         return nothing
         end
@@ -51,6 +52,20 @@ function redistribution(box::Box, param::DenudationType, denudation_mass, water_
     error(&quot;Abstract `redistribution` function called.&quot;)
 end
 
+# not sure this is the right place for this, but it&#39;s common to multiple modes of denudation
+function dominant_facies(state, i::CartesianIndex, peek_depth::Float64)
+    # look at top of the sediment buffer column, first two cells of buffer
+    buffer_facies = peek_sediment(state.sediment_buffer[:,:,i[1],i[2]], peek_depth)
+    max_f = findmax(buffer_facies)
+
+    # we shouldn&#39;t be calling this function with an empty sediment buffer
+    if max_f[1]==0.0 || isnan(max_f[1])
+        @error &quot;maximum facies value is $(max_f[1]), cannot find dominant facies if there&#39;s no sediment in buffer&quot;
+    else 
+        return max_f[2]
+    end
+end
+
 end  # module</code></pre><h3 id="No-Denudation"><a class="docs-heading-anchor" href="#No-Denudation">No Denudation</a><a id="No-Denudation-1"></a><a class="docs-heading-anchor-permalink" href="#No-Denudation" title="Permalink"></a></h3><div class="noweb-label">file:<i>src/Denudation/NoDenudationMod.jl</i></div><pre><code class="language- julia hljs">&quot;&quot;&quot;
     module NoDenudation
 
@@ -72,4 +87,4 @@ function redistribution(box::Box, p::NoDenudation, denudation_mass, water_depth)
     return nothing
 end
 
-end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../onshore-transport/">« Onshore Transport</a><a class="docs-footer-nextpage" href="../empirical/">Empirical Denudation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Tuesday 13 October 2026 09:20">Tuesday 13 October 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../onshore-transport/">« Onshore Transport</a><a class="docs-footer-nextpage" href="../empirical/">Empirical Denudation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Tuesday 20 October 2026 08:20">Tuesday 20 October 2026</span>. Using Julia version 1.13.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

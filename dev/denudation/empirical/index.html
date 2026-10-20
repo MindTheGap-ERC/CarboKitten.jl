@@ -53,21 +53,20 @@ end</code></pre><p>Note that this mode only considers the destruction of mass an
 
 import ..Abstract: DenudationType, denudation, redistribution
 using ...Boxes: Box
+using CarboKitten.SedimentStack: peek_sediment
+
 using Unitful
 export slope_kernel
 &lt;&lt;empirical-denudation&gt;&gt;
 
 function denudation(::Box, p::EmpiricalDenudation, water_depth, slope, facies, state)
     precip = p.precip ./ u&quot;m/yr&quot;
-    denudation_rate = zeros(typeof(1.0u&quot;m/Myr&quot;), length(facies), size(slope)...)
+    denudation_rate = zeros(typeof(1.0u&quot;m/Myr&quot;), size(slope)...)
 
-    for idx in CartesianIndices(state.ca)
-        f = state.ca[idx]
-        if f == 0
-            continue
-        end
-        if water_depth[idx] &lt;= 0
-            denudation_rate[f,idx] = empirical_denudation.(precip, slope[idx])
+    for idx in CartesianIndices(state.sediment_thickness)
+        # empirical has no facies dependence
+        if water_depth[idx] &lt;= 0 &amp;&amp; state.sediment_thickness[idx] &gt; 0.0u&quot;m&quot;
+            denudation_rate[idx] = empirical_denudation.(precip, slope[idx])
         end
     end
     return denudation_rate
@@ -77,4 +76,4 @@ function redistribution(::Box, p::EmpiricalDenudation, denudation_mass, water_de
     return nothing
 end
 
-end</code></pre><h2 id="Result-example"><a class="docs-heading-anchor" href="#Result-example">Result example</a><a id="Result-example-1"></a><a class="docs-heading-anchor-permalink" href="#Result-example" title="Permalink"></a></h2><p>The resultant figures of empirical denudation are presented below: <img src="../../fig/empirical_barrel_location_25.png" alt="CEmpirical example barrel plot"/></p><p>We can clearly see the sediments were removed as their thickness decreases with each regression cycle.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../denudation/">« Denudation</a><a class="docs-footer-nextpage" href="../chemical/">Chemical Dissolution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Tuesday 13 October 2026 09:20">Tuesday 13 October 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><h2 id="Result-example"><a class="docs-heading-anchor" href="#Result-example">Result example</a><a id="Result-example-1"></a><a class="docs-heading-anchor-permalink" href="#Result-example" title="Permalink"></a></h2><p>The resultant figures of empirical denudation are presented below: <img src="../../fig/empirical_barrel_location_25.png" alt="CEmpirical example barrel plot"/></p><p>We can clearly see the sediments were removed as their thickness decreases with each regression cycle.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../denudation/">« Denudation</a><a class="docs-footer-nextpage" href="../chemical/">Chemical Dissolution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Tuesday 20 October 2026 08:20">Tuesday 20 October 2026</span>. Using Julia version 1.13.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

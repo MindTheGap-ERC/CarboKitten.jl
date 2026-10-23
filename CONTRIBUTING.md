@@ -33,10 +33,6 @@ If you are unsure if your feature would fit into the codebase, please use GitHub
 
 While this is not a criterion for code inclusion, we strongly encourage that each new feature includes tests that ensure that the feature works as intended and integrates with the existing codebase seamlessly.
 
-#### API Stability
-
-As CarboKitten is maturing towards a 1.0 release, certain parts of the API should already be considered stable. Most importantly, the API outlined in the `CarboKitten.Output.Abstract` and `CarboKitten.Output.Storage` modules. When you write routines for visualization or data extraction, make sure that you use the stable API and refrain from using data member lookup (e.g. use `deposition(pack)` instead of `pack.data.deposition`). In general, one should favour the use of abstract methods throughout the code, as this makes it easier to refactor and modify internals without breaking other code.
-
 #### Wishlist for The Perfect Contributor (be it you or me) 
 
 1. **issue first** Before contributing a new feature, it is best to always open an issue before opening a PR. This way we can discuss viability, API choices and even implementation details before you put in too much work up front. Don't be afraid to contact us early in the process. Public discussion of features is part of the Open Source process and helps avoid duplicate requests.

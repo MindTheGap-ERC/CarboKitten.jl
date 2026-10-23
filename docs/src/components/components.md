@@ -2,11 +2,50 @@
 
 Each model in CarboKitten is composed out of elementary parts. These form a hierarchy of modules that inherit from each other.
 
-<!-- FIXME: auto-generate this graph
+<!-- FIXME: auto-generate this graph -->
 
-Mermaid is broken...
+```mermaid
+graph TD;
+    classDef nyi fill:#888;
 
--->
+    time[Time Integration]
+    facies[Facies Base]
+    box[Box]
+    water_depth[Water Depth]
+    uniform_production[Production]
+    cellular_automaton[Cellular Automaton]
+    ca_production[CA Production]
+    h5writer[HDF5 Writer]
+    tag[Tagged Output]
+
+    sediment_buffer[Sediment Buffer]
+    active_layer_transport[Active Layer Transport]
+    denudation[Denudation]
+    class denudation nyi;
+
+    time --> water_depth
+    box --> water_depth
+
+    water_depth --> uniform_production
+    facies --> uniform_production
+
+    box --> cellular_automaton
+    facies --> cellular_automaton
+
+    cellular_automaton --> ca_production
+    uniform_production --> ca_production
+
+    box --> sediment_buffer
+    sediment_buffer --> active_layer_transport
+    water_depth --> active_layer_transport
+    sediment_buffer --> denudation
+    water_depth --> denudation
+
+    box --> h5writer
+    facies --> h5writer
+    time --> h5writer
+    water_depth --> h5writer
+```
 
 Not all of these are equally important. The `H5Writer` implements the core simulation loop and writing a simulation to HDF5 files. For a `Model` to work with `H5Writer` it needs to have `initial_state`, `step!`, and `write_header` functions implemented. Each component can have its own `write_header` implementation. Those are joined together with a special `@for_each(P->P.write_header(fid, input), PARENTS)` call.
 
@@ -32,7 +71,6 @@ export Model
 export @for_each
 export Size
 export n_steps
-export AbstractProduction, NoProduction, BenthicProduction, PelagicProduction, production_profile, InterpolatedProduction
 
 using ModuleMixins
 using Unitful
@@ -43,7 +81,6 @@ using ...BoundaryTrait
 using ...Config: TimeProperties
 using ...Boxes: Box, box_axes
 using ...Utility: in_units_of
-using ...Production
 
 const Amount = typeof(1.0u"m")
 const Time = typeof(1.0u"Myr")
@@ -92,3 +129,4 @@ list_components() = filter(
 
 end
 ```
+

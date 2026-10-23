@@ -12,7 +12,7 @@ n_steps
 ## Production
 
 ```@autodocs
-Modules = [CarboKitten.Production, CarboKitten.Production.Abstract, CarboKitten.Production.Interpolated, CarboKitten.Production.Insolation, CarboKitten.Production.Modifiers]
+Modules = [CarboKitten.Production]
 ```
 
 ## Transport
@@ -35,13 +35,13 @@ Modules = [CarboKitten.Export]
 ## Components
 
 ```@autodocs
-Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer, CarboKitten.Components.Production]
+Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer]
 ```
 
 ## Output
 
 ```@autodocs
-Modules = [CarboKitten.Output.Abstract, CarboKitten.Output.H5Reader, CarboKitten.Output.H5Writer, CarboKitten.Output.MemoryWriter, CarboKitten.Output.Storage]
+Modules = [CarboKitten.Output.Abstract, CarboKitten.Output.H5Writer, CarboKitten.Output.MemoryWriter]
 ```
 
 ## Utility

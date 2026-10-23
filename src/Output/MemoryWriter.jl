@@ -2,12 +2,9 @@
 module MemoryWriter
 
 using ..Abstract
-using ..Storage
-
 import ..Abstract:
     new_output, add_data_set, set_attribute, write_bathymetry,
-    write_production, write_disintegration, write_deposition, write_active_layer,
-    load, load_volume, load_slice, load_column, AbstractBundle, header
+    write_production, write_disintegration, write_deposition, write_active_layer
 using ...Components.Common
 using ...Components.WaterDepth: initial_topography
 using ...CarboKitten: time_axis, box_axes, OutputSpec, AbstractOutput, AbstractInput, AbstractState
@@ -19,18 +16,6 @@ struct MemoryOutput <: AbstractOutput
     data_slices::Dict{Symbol,DataSlice}
     data_columns::Dict{Symbol,DataColumn}
 end
-
-struct MemoryBundle <: AbstractBundle
-    output::MemoryOutput
-end
-
-header(bundle::MemoryBundle) = bundle.output.header
-Base.close(bundle::MemoryBundle) = nothing
-
-load(m::MemoryOutput) = MemoryBundle(m)
-load_volume(m::MemoryBundle, label::Symbol) = Pack(m.output.header, m.output.data_volumes[label])
-load_slice(m::MemoryBundle, label::Symbol) = Pack(m.output.header, m.output.data_slices[label])
-load_column(m::MemoryBundle, label::Symbol) = Pack(m.output.header, m.output.data_columns[label])
 
 MemoryOutput(input::AbstractInput) = new_output(MemoryOutput, input)
 
@@ -82,8 +67,7 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::OutputSpec)
             zeros(Amount, n_facies, size..., n_steps + 1),
             zeros(Amount, n_facies, size..., n_steps + 1),
             zeros(Amount, size..., n_steps + 1),
-            out.save_active_layer ? zeros(Amount, n_facies, size..., n_steps + 1) : nothing,
-            nothing)  # stratigraphic_column
+            out.save_active_layer ? zeros(Amount, n_facies, size..., n_steps + 1) : nothing)
     elseif h.kind == :slice
         size = axis_size.(slice, full_size)
         slice_size = size[1] == 1 ? size[2] : size[1]
@@ -93,8 +77,7 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::OutputSpec)
             zeros(Amount, n_facies, slice_size, n_steps + 1),
             zeros(Amount, n_facies, slice_size, n_steps + 1),
             zeros(Amount, slice_size, n_steps + 1),
-            out.save_active_layer ? zeros(Amount, n_facies, slice_size, n_steps + 1) : nothing,
-            nothing)  # stratigraphic_column
+            out.save_active_layer ? zeros(Amount, n_facies, slice_size, n_steps + 1) : nothing)
     elseif h.kind == :column
         out.data_columns[label] = DataColumn(
             slice, write_interval,
@@ -102,8 +85,7 @@ function add_data_set(out::MemoryOutput, label::Symbol, spec::OutputSpec)
             zeros(Amount, n_facies, n_steps + 1),
             zeros(Amount, n_facies, n_steps + 1),
             zeros(Amount, n_steps + 1),
-            out.save_active_layer ? zeros(Amount, n_facies, n_steps + 1) : nothing,
-            nothing)  # stratigraphic_column
+            out.save_active_layer ? zeros(Amount, n_facies, n_steps + 1) : nothing)
     end
 end
 

@@ -1,18 +1,214 @@
-IO Interface
-============
+# Output
 
-Writers
--------
+In the `Input` struct the user can specify a dictionary of `OutputSpec`, specifying how much and at which interval to write output. Typically, you'd want a full topographic output with lower time resolution, and choose a transect with full time resolution. For example, on the ALCAP model:
 
-The following defines the abstract writer interface. There are currently two implementations: `H5Writer` and `MemoryOutput`.
+```julia
+const INPUT = ALCAP.Input(
+    box = Box{Coast}(grid_size = (300, 150), phys_scale = 50.0u"m"),
+    time = TimeProperties(Δt = 50.0u"yr", steps = 20_000),
+    output = Dict(
+        :topography => OutputSpec(write_interval = 200),
+        :profile => OutputSpec(slice = (:, 75))),
 
-``` {.julia #abstract-writer}
+    ...)  # add more options
+```
+
+Saving the full output of this simulation would take several hundreds of gigabytes, not gargantuan, but a bit unwieldy if you want to save many simulation runs. With this output specification, we cut down on this significantly.
+
+``` {.julia #hdf5-output-spec}
+@kwdef struct Input <: AbstractInput
+    output = Dict(:full => OutputSpec((:,:), 1))
+end
+```
+
+The default is to write all output, which is fine for smaller runs. The `slice` argument of `OutputSpec` will accept three different forms:
+
+- `(:, :)` (default) output the full area of the model.
+- `(<n>, :)` or `(:, <n>)` output a slice of the model, either with a fixed $x$ or a fixed $y$ coordinate. In our examples we always have the $x$ axis orthogonal to the shoreline, so slicing with a fixed $y$ (the second form) is what we use.
+- `(<m>, <n>)`, output a column of the model. If you have a very precise experiment workflow, this could be of use. You'll have to specify each column as a separate output. Most of the time though, we can extract columns from slice data in a post-processing stage, so if all your columns have the same $y$ coordinate, taking a slice is the preferred option.
+
+If an output with a `write_interval` that does not divide the total number of timesteps is specified, the output array will contain `div(time.steps, write_interval)` values and the value for the remainder of the steps at the end of the model will not be recorded (since this will not cover an equal interval of time as the rest of the values).
+
+## Interface
+
+``` {.julia file=src/Output/Abstract.jl}
+module Abstract
+
+import ...CarboKitten: set_attribute
+import ...Algorithms: stratigraphic_column!
+
+export Data, DataColumn, DataSlice, DataVolume, Slice2, Header, DataHeader, Axes, AbstractOutput, Frame
+export parse_multi_slice, data_kind, new_output, add_data_set, set_attribute, state_writer, frame_writer, surface_heights
+export sediment_thickness, water_depth
+
+using Unitful
+using ...CarboKitten: OutputSpec, AbstractInput, AbstractState
+using .Iterators: repeated
+
+const Length = typeof(1.0u"m")
+const Time = typeof(1.0u"Myr")
+const Slice2 = NTuple{2,Union{Int,Colon,UnitRange{Int}}}
+const Amount = typeof(1.0u"m")
 const Sediment = typeof(1.0u"m")
+const Rate = typeof(1.0u"m/Myr")
+
+@kwdef struct Axes
+    x::Vector{Length}
+    y::Vector{Length}
+    t::Vector{Time}
+end
+
+@kwdef struct DataHeader
+    kind::Symbol
+    slice::Slice2
+    write_interval::Int
+end
+
+@kwdef struct Header
+    tag::String
+    axes::Axes
+
+    Δt::Time
+    time_steps::Int
+    grid_size::NTuple{2,Int}
+    n_facies::Int
+
+    initial_topography::Matrix{Amount}
+    sea_level::Vector{Length}
+    subsidence_rate::Rate
+    data_sets::Dict{Symbol,DataHeader}
+    attributes::Dict{String,Any} = Dict()
+end
+
+@kwdef struct Data{F,D}
+    slice::Slice2
+    write_interval::Int
+    # Julia doesn't allow to say Array{Amount,D+1} here
+    disintegration::Array{Amount,F}
+    production::Array{Amount,F}
+    deposition::Array{Amount,F}
+    bathymetry::Array{Amount,D}
+    active_layer::Union{Array{Amount,F}, Nothing} = nothing
+end
+
+const DataVolume = Data{4,3}
+const DataSlice = Data{3,2}
+const DataColumn = Data{2,1}
 
 @kwdef struct Frame
     disintegration::Union{Array{Sediment,3},Nothing} = nothing   # facies, x, y
     production::Union{Array{Sediment,3},Nothing} = nothing
     deposition::Union{Array{Sediment,3},Nothing} = nothing
+end
+
+count_ints(::Int, args...) = 1 + count_ints(args...)
+count_ints(_, args...) = count_ints(args...)
+count_ints() = 0
+
+reduce_slice(s::Tuple{Colon,Colon}, x, y) = (x, y)
+reduce_slice(s::Tuple{Int,Colon}, y::Int) = (s[1], y)
+reduce_slice(s::Tuple{Colon,Int}, x::Int) = (x, s[2])
+
+Base.getindex(v::Data{F,D}, args...) where {F,D} =
+    let k = count_ints(args...)
+        Data{F - k,D - k}(
+            reduce_slice(v.slice, args...),
+            v.write_interval,
+            v.disintegration[:, args..., :],
+            v.production[:, args..., :],
+            v.deposition[:, args..., :],
+            v.bathymetry[args..., :],
+            v.active_layer == nothing ? nothing : v.active_layer[:, args..., :])
+    end
+
+function parse_slice(s::AbstractString)
+    if s == ":"
+        return (:)
+    end
+
+    elements = split(s, ":")
+    if length(elements) == 1
+        return parse(Int, s)
+    end
+
+    a, b = elements
+    return parse(Int, a):parse(Int, b)
+end
+
+parse_multi_slice(s::AbstractString) = Slice2(parse_slice.(split(s, ",")))
+
+data_kind(::Int, ::Int) = :column
+data_kind(::Int, _) = :slice
+data_kind(_, ::Int) = :slice
+data_kind(_, _) = :volume
+data_kind(spec::OutputSpec) = data_kind(spec.slice...)
+
+"""
+    stratigraphic_column(data)
+
+Given a data set, compute the stratigrahpic column.
+"""
+function stratigraphic_column(data::Data{F, D}) where {F, D}
+    net_deposition = data.deposition .- data.disintegration
+    for c in eachslice(net_deposition, dims=(1:D...,))
+        stratigraphic_column!(c)
+    end
+    return net_deposition
+end
+
+"""
+    water_depth(header, data)
+
+Compute the water depth function for the given data set.
+"""
+function water_depth(header::Header, data::Data{F, D}) where {F, D}
+    na = [CartesianIndex()]
+    return header.sea_level[repeated(na, D-1)...,1:data.write_interval:end] .- data.bathymetry
+end
+
+"""
+    sediment_thickness(data)
+
+Compute the sediment thickness at each moment in the run by taking the cumulative
+sum of the net deposition (deposition - disintegration) at each moment.
+"""
+function sediment_thickness(data::Data{F, D}) where {F, D}
+    net_deposition = dropdims(sum(data.deposition .- data.disintegration, dims=1), dims=1)
+    for c in eachslice(net_deposition, dims=(1:D-1...,))
+        for i in 2:length(c)
+            c[i] += c[i-1]
+        end
+    end
+    return net_deposition
+end
+
+"""
+    surface_heights(header, data)
+
+Compute the sediment surface height at every `(spatial..., time)` cell,
+accounting for subsidence and net deposition. Returns an array of shape
+`(spatial..., n_t+1)` where the first time entry is the initial topography
+minus total subsidence and subsequent entries accumulate the preserved
+sediment column.
+
+Works with `DataColumn`, `DataSlice`, and `DataVolume`.
+"""
+function surface_heights(header::Header, data::Data{F, D}) where {F, D}
+    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    initial_topography = header.initial_topography[data.slice...]
+    sc = stratigraphic_column(data)
+    # Sum over the facies dimension (dim 1), yielding (spatial..., n_t)
+    sc_sum = dropdims(sum(sc, dims=1), dims=1)
+    # Cumulative sediment accumulation along the time axis (last dim)
+    accumulated = cumsum(sc_sum, dims=ndims(sc_sum))
+    n_t = size(sc_sum, ndims(sc_sum))
+    h0 = initial_topography .- total_subsidence
+    # Build result array: shape (spatial..., n_t+1)
+    sz = (size(sc_sum)[1:end-1]..., n_t + 1)
+    h = Array{eltype(h0)}(undef, sz...)
+    selectdim(h, ndims(h), 1) .= h0
+    selectdim(h, ndims(h), 2:n_t+1) .= h0 .+ accumulated
+    return h
 end
 
 """
@@ -153,94 +349,11 @@ function frame_writer(input::AbstractInput, out)
         end
     end
 end
-```
-
-Readers
--------
-
-The following defines the abstract reader interface. An implementation of `AbstractBundle` should also implement `Base.close`.
-
-``` {.julia #abstract-reader}
-"""
-    load(filename::AbstractString)
-
-Load data from `filename`. Returns a `H5Bundle`.
-
-    load(output::AbstractOutput)
-
-Load data from `output`. Returns an `AbstractBundle`.
-
-    load(f::Function, args...)
-
-Load data using `f` and `args`, and close the bundle after use. Use this
-with a `do` block.
-"""
-function load end
-
-function load(f::Function, args...)
-    bundle = load(args...)
-    try
-        result = f(bundle)
-        return result
-    finally
-        close(bundle)
-    end
-end
-
-"""
-    load_volume(bundle, sym)
-
-Load a volume from `bundle`.
-"""
-function load_volume end
-
-"""
-    load_slice(bundle, sym)
-
-Load a slice from `bundle`.
-"""
-function load_slice end
-
-"""
-    load_column(bundle, sym)
-
-Load a column from `bundle`.
-"""
-function load_column end
-
-abstract type AbstractBundle end
-
-"""
-    header(bundle)
-
-Get the header of `bundle`.
-"""
-function header end
-```
-
-Module
-------
-
-``` {.julia file=src/Output/Abstract.jl}
-module Abstract
-
-import ...CarboKitten: set_attribute  # TODO: get rid of this
-
-export Frame, new_output, add_data_set, set_attribute, state_writer, frame_writer
-export write_bathymetry, write_active_layer, write_production, write_deposition, write_disintegration
-export AbstractBundle, load, load_volume, load_slice, load_column, header
-
-using Unitful
-using ...CarboKitten: AbstractInput, AbstractState
-
-<<abstract-writer>>
-<<abstract-reader>>
 
 end
 ```
 
-Run model
----------
+## Run model
 
 On top of this we have defined a `run_model` method that writes output in some form.
 
@@ -278,6 +391,7 @@ function run_model(::Type{Model{M}}, input::AbstractInput, output::AbstractOutpu
 end
 ```
 
+
 ``` {.julia file=src/Output/RunModel.jl}
 module RunModel
 
@@ -287,73 +401,5 @@ using ..Abstract
 
 <<run-model-output>>
 
-end
-```
-
-## Tests
-
-We had a recurring bug where unconformities are plotted wrong in cases of extreme erosion. It turned out, the function that computes water depth contained a subtle bug. The following test runs a model with extreme erosion and verifies that the bathymetry and water depth is computed correctly.
-
-``` {.julia file=test/Output/WaterDepthSpec.jl}
-using CarboKitten
-using CarboKitten.Models: WithoutCA as M
-
-function test_model_input()
-    facies = [
-        M.Facies(
-            production=CarboKitten.Production.EXAMPLE[:euphotic] * ProductionBoost(factor=0.25),
-            transport_coefficient=50.0u"m/Myr"),
-        M.Facies(
-            production=CarboKitten.Production.EXAMPLE[:oligophotic] * ProductionBoost(factor=0.25),
-            transport_coefficient=25.0u"m/Myr"),
-        M.Facies(
-            production=CarboKitten.Production.EXAMPLE[:aphotic] * ProductionBoost(factor=0.25),
-            transport_coefficient=12.5u"m/Myr"),
-    ]
-
-    M.Input(
-        box = CarboKitten.Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
-        time = TimeProperties(Δt=0.0002u"Myr", steps=5000),
-        facies = facies,
-        initial_topography = (x, y) -> -x / 300.0,
-
-        sea_level = t -> 5.5u"m" * sin(2π * t / 0.18u"Myr"),
-        subsidence_rate = 38.0u"m/Myr",
-        disintegration_rate = 80.0u"m/Myr",
-        lithification_time = 100.0u"yr",
-        insolation = 400.0u"W/m^2",
-    )
-end
-
-function test_model()
-    input = test_model_input()
-    output = MemoryOutput(input)
-    run_model(Model{M}, input, output)
-
-end
-
-@testset "Output.Abstract.water_depth" begin
-    na = [CartesianIndex()]
-    output = test_model()
-    section = output.data_volumes[:full][:, 1]
-    wd = water_depth(output.header, section)
-    sc = stratigraphic_column(section)
-    st_preserved = dropdims(cumsum(sum(sc; dims=1); dims=3), dims=1)
-    st = dropdims(
-        cumsum(sum(section.deposition .- section.disintegration; dims=1), dims=3),
-        dims=1)
-
-    @test st_preserved[:, end] ≈ st[:, end]
-
-    initial_bathymetry = output.header.initial_topography[:, na]
-    subsidence = output.header.subsidence_rate .* output.header.axes.t[na, :]
-    reconstructed_bathymetry = initial_bathymetry .+ st .- subsidence
-
-    @test reconstructed_bathymetry ≈ section.bathymetry
-
-    sea_level = output.header.sea_level[na, :]
-    reconstructed_wd = sea_level .- reconstructed_bathymetry
-
-    @test reconstructed_wd ≈ wd
 end
 ```

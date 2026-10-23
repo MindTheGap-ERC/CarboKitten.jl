@@ -2,6 +2,10 @@
 
 The following model is similar to the ALCAP model, with the exception that production is not managed by the cellular automaton, rather each facies produces in all grid cells according to their own production curves.
 
+```component-dag
+CarboKitten.Models.WithoutCA
+```
+
 ``` {.julia file=src/Models/WithoutCA.jl}
 @compose module WithoutCA
 @mixin Tag, Diagnostics, Output, Production, ActiveLayer, InitialSediment

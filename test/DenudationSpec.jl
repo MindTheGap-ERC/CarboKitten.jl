@@ -1,4 +1,5 @@
 module DenudationSpec
+module DenudationSpec
 using Test
 using Unitful
 
@@ -35,6 +36,7 @@ FACIES1 = [
         initial_sediment=0.1u"m"),
 
         WD.Facies(viability_range = (4, 10),
+        WD.Facies(viability_range = (4, 10),
         activation_range = (6, 10),
         production = BenthicProduction(
             maximum_growth_rate = 400u"m/Myr",
@@ -47,6 +49,7 @@ FACIES1 = [
         erodibility = 0.03u"m/yr",
         initial_sediment=0.1u"m"),
 
+        WD.Facies(viability_range = (4, 10),
         WD.Facies(viability_range = (4, 10),
         activation_range = (6, 10),
         production = BenthicProduction(
@@ -102,7 +105,18 @@ end
     INPUT_HCO2 = denudation_test_input(DENUDATION_HIGH_CO2, water_depth)
 
     slope = rand(Float64, 5, 5)
+
+    water_depth_flat = -0.5 .* ones(5,5)
+    
+
+    # Dissolution
+    INPUT_HCO2 = denudation_test_input(DENUDATION_HIGH_CO2, water_depth)
+
+    slope = rand(Float64, 5, 5)
     slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
+    slopefn(water_depth, slope, INPUT_HCO2.box.phys_scale ./u"m")
+    slope_flat = zeros(Float64,5,5)
+    slopefn(water_depth_flat, slope_flat, INPUT_HCO2.box.phys_scale ./u"m")
     slopefn(water_depth, slope, INPUT_HCO2.box.phys_scale ./u"m")
     slope_flat = zeros(Float64,5,5)
     slopefn(water_depth_flat, slope_flat, INPUT_HCO2.box.phys_scale ./u"m")

@@ -19,6 +19,7 @@ using CarboKitten.Models.WithDenudation: Input, State, initial_state, step!, ini
 using CarboKitten.Denudation.EmpiricalDenudationMod: slope_kernel
 using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpiricalDenudation
 
+# I now change the initial sediment to be 0.1 m for all facies, so that the initial sediment is not zero and the denudation can be tested properly.
 FACIES1 = [
         WD.Facies(viability_range = (4, 10),
         activation_range = (6, 10),
@@ -171,9 +172,6 @@ end
         facies=no_production_facies)
     state = WD.initial_state(input)
 
-    # A dry, sloping profile causes erosion and sends sediment downslope.
-    # With no production, active-layer transport, or subsidence, redistribution
-    # should preserve the sediment inventory.
     for j in axes(state.bathymetry, 2)
         state.bathymetry[:, j] .-= (j - 1) * 2.0u"m" + 0.1u"m" * randn()
     end
@@ -187,9 +185,7 @@ end
     @test sum(state.sediment_thickness) ≈ initial_sediment
     @test state.bathymetry .- state.sediment_thickness ≈ initial_bedrock
 
-    # This expected behavior diagnoses the output-accounting issue: currently
-    # step! pushes redistributed sediment into state but omits it from the
-    # returned Frame.deposition, so this assertion should fail.
+    # the mass should be conserved here
     @test sum(test_frame.deposition) ≈ eroded
 end
 

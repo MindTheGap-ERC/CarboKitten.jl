@@ -11,7 +11,7 @@ time = TimeProperties(
 	steps = 2000
 )
 ```
-To retrieve the range of times which will be written as the model output, one can use the [time_axis()](@ref) function.
+To retrieve the range of times which will be written as the model output, one can use the `time_axis()` function.
 
 ### Sea level from file
 

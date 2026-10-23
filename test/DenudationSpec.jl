@@ -218,3 +218,32 @@ end
 end
 
 end
+
+@testset "dominant_facies" begin
+    state = D.State(
+        step=0,
+        bathymetry=zeros(Height, 3,3),
+        sediment_thickness=zeros(Height, 3,3),
+        sediment_buffer = zeros(Float64,10,3,3,3)
+    )
+    some_sed = zeros(Float64,3,3,3)
+    some_sed[1,:,:] .+= 1.0
+    push_sediment!(state.sediment_buffer, some_sed)
+    @test dominant_facies(state, CartesianIndex(1,1), 2.0) == 1    
+
+    some_sed[2,:,:] .+= 2.0 
+    push_sediment!(state.sediment_buffer, some_sed)
+    @test dominant_facies(state, CartesianIndex(1,1), 2.0) == 2
+
+    some_sed[3,:,:] .+= 3.0 
+    push_sediment!(state.sediment_buffer, some_sed)
+    @test dominant_facies(state, CartesianIndex(1,1), 2.0) == 3
+
+    # if there's no maximum, takes the first index
+    same_sed = ones(Float64,3,3,3)
+    push_sediment!(state.sediment_buffer, same_sed)
+    @test dominant_facies(state, CartesianIndex(1,1), 2.0) == 1
+
+end
+
+end

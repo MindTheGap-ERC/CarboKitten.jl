@@ -52,10 +52,11 @@ end
 abstract type AbstractTimeProperties end
 
 """
-    TimeProperties(t0, Δt, steps)
+    TimeProperties(t0, Δt, steps, write_interval)
 
 Stores properties of the time integration. Here, `t0` and `Δt` should be a
-`Quantity`, `steps` is the number of integration steps.
+`Quantity`, `steps` is the number of integration steps, and `write_interval` the
+number of steps between writing output.
 """
 @kwdef struct TimeProperties <: AbstractTimeProperties
     t0::typeof(1.0u"Myr") = 0.0u"Myr"
@@ -124,18 +125,12 @@ include("./Components.jl")
 module Output
 
 include("./Output/Abstract.jl")
-include("./Output/Storage.jl")
 include("./Output/RunModel.jl")
 include("./Output/H5Writer.jl")
-include("./Output/H5Reader.jl")
 include("./Output/MemoryWriter.jl")
 
 using .Abstract: Frame, frame_writer, state_writer
 export Frame, frame_writer, state_writer
-
-using .Abstract: load, load_volume, load_slice, load_column
-using .Storage: water_depth, stratigraphic_column, sediment_thickness, surface_heights,
-    production, deposition, disintegration, active_layer, bathymetry
 
 end
 
@@ -157,12 +152,11 @@ include("./Visualization.jl")
 include("./Testing.jl")
 
 using .Components.Common: in_units_of, @u_str
-using .Output.Abstract: new_output
-using .Output.Storage: water_depth, stratigraphic_column
+using .Output.Abstract: OutputSpec, new_output
 using .Output.MemoryWriter: MemoryOutput
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
-using .Production: BenthicProduction, PelagicProduction, InterpolatedProduction, ProductionBoost
+using .Production: BenthicProduction, PelagicProduction
 using GeometryBasics: Vec2
 using .WaveField
 
@@ -170,7 +164,6 @@ export run_model, Box, box_axes, TimeProperties, time_axis,
     Model, BS92, CAP, ALCAP, in_units_of, @u_str,
     AbstractBox, Boundary, Coast, Periodic, Reflected,
     Vec2, OutputSpec, MemoryOutput, new_output, n_steps,
-    BenthicProduction, PelagicProduction, InterpolatedProduction, ProductionBoost,
-    water_depth, stratigraphic_column
+    BenthicProduction, PelagicProduction
 
 end # module CarboKitten

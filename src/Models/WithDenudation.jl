@@ -96,6 +96,7 @@ function step!(input::Input)
             if redistribution_mass !== nothing
                 # redistribution returns a 3D facies array in meters
                 push!(state, redistribution_mass)
+                deposit .+= redistribution_mass
             end
         end
 

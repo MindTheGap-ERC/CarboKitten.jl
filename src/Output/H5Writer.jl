@@ -10,9 +10,7 @@ using ...CarboKitten: time_axis, box_axes
 using ...Components.WaterDepth: initial_topography
 
 using ...Utility: in_units_of
-
 using ..Abstract
-using ..Storage
 import ..Abstract: add_data_set, set_attribute, frame_writer, state_writer
 
 mutable struct H5Output <: AbstractOutput
@@ -20,6 +18,7 @@ mutable struct H5Output <: AbstractOutput
     save_active_layer::Bool
     fid::HDF5.File
 end
+
 
 function make_header(input::AbstractInput)
     t_axis = time_axis(input.time)

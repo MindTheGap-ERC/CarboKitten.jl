@@ -8,15 +8,18 @@ using CarboKitten.SedimentStack: push_sediment!, peek_sediment
 using CarboKitten.Components.SedimentBuffer: pop_sediment
 using CarboKitten.Components.Common
 using CarboKitten.Components: Denudation as D
+using CarboKitten.Production: NoProduction
 
 
 using CarboKitten.Stencil: Periodic, Reflected, stencil
 using CarboKitten.Config: Vectors, TimeProperties
 using CarboKitten.Boxes: Box
 using CarboKitten.Models: WithDenudation as WD
+using CarboKitten.Models.WithDenudation: Input, State, initial_state, step!, initial_frame
 using CarboKitten.Denudation.EmpiricalDenudationMod: slope_kernel
 using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpiricalDenudation
 
+# I now change the initial sediment to be 0.1 m for all facies, so that the initial sediment is not zero and the denudation can be tested properly.
 FACIES1 = [
         WD.Facies(viability_range = (4, 10),
         activation_range = (6, 10),
@@ -28,8 +31,8 @@ FACIES1 = [
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5,
-        erodibility = 0.23u"m/yr",
-        initial_sediment=5.0u"m"),
+        erodibility = 0.03u"m/yr",
+        initial_sediment=0.1u"m"),
 
         WD.Facies(viability_range = (4, 10),
         activation_range = (6, 10),
@@ -41,8 +44,8 @@ FACIES1 = [
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5,
-        erodibility = 0.23u"m/yr",
-        initial_sediment=5.0u"m"),
+        erodibility = 0.03u"m/yr",
+        initial_sediment=0.1u"m"),
 
         WD.Facies(viability_range = (4, 10),
         activation_range = (6, 10),
@@ -54,12 +57,13 @@ FACIES1 = [
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5,
-        erodibility = 0.23u"m/yr",
-        initial_sediment=5.0u"m"
+        erodibility = 0.03u"m/yr",
+        initial_sediment=0.1u"m"
         )
     ]
 
-function denudation_test_input(denudation_type, sea_level)
+function denudation_test_input(denudation_type, sea_level;
+        subsidence_rate=0.0u"m/Myr", facies=FACIES1)
     input = WD.Input(
         tag="den_test",
         box=Box{Periodic{2}}(grid_size=(5, 5), phys_scale=1.0u"km"),
@@ -69,8 +73,9 @@ function denudation_test_input(denudation_type, sea_level)
         output=Dict(:profile => OutputSpec(slice=(:, 2), write_interval=1)),
         ca_interval=1,
         initial_topography=(x,y) -> -15.0u"m",
-        sea_level=sea_level, # make this into an array and pass as arg?
-        facies=FACIES1, # also arg?
+        sea_level=sea_level, 
+        subsidence_rate=subsidence_rate,
+        facies=facies,
         insolation=400.0u"W/m^2",
         denudation=denudation_type
     )
@@ -141,10 +146,49 @@ end
     
     pop_sediment(INPUT_PHYS_SLOPE)(STATE_PHYS_SLOPE, denudation_mass_PHYS_SLOPE, denuded_sediment)
     redistribution_mass = redistribution(INPUT_PHYS_SLOPE)(STATE_PHYS_SLOPE, water_depth, denuded_sediment)
-    
+    @show sum(denuded_sediment)
+    @show sum(redistribution_mass)
     @test sum(denuded_sediment) ≈ sum(redistribution_mass)
 
 end
+
+@testset "step!_physical_erosion" begin
+    no_production_facies = [
+        WD.Facies(
+            viability_range=f.viability_range,
+            activation_range=f.activation_range,
+            production=NoProduction(),
+            transport_coefficient=f.transport_coefficient,
+            reactive_surface=f.reactive_surface,
+            mass_density=f.mass_density,
+            infiltration_coefficient=f.infiltration_coefficient,
+            erodibility=f.erodibility,
+            initial_sediment=f.initial_sediment)
+        for f in FACIES1
+    ]
+    @show no_production_facies
+    input = denudation_test_input(
+        PhysicalErosion(), t -> -100.0u"m";
+        facies=no_production_facies)
+    state = WD.initial_state(input)
+
+    for j in axes(state.bathymetry, 2)
+        state.bathymetry[:, j] .-= (j - 1) * 2.0u"m" + 0.1u"m" * randn()
+    end
+    initial_sediment = sum(state.sediment_thickness)
+    initial_bedrock = state.bathymetry .- state.sediment_thickness
+
+    test_frame = WD.step!(input)(state)
+    eroded = sum(test_frame.disintegration)
+
+    @test eroded > 0.0u"m"
+    @test sum(state.sediment_thickness) ≈ initial_sediment
+    @test state.bathymetry .- state.sediment_thickness ≈ initial_bedrock
+
+    # the mass should be conserved here
+    @test sum(test_frame.deposition) ≈ eroded
+end
+
 
 @testset "dominant_facies" begin
     state = D.State(

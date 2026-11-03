@@ -146,21 +146,20 @@ module GlamourView
 
 import CarboKitten.Visualization: glamour_view!
 using CarboKitten.Utility: in_units_of
-using CarboKitten.Export: Header, DataVolume
-using CarboKitten.Output.Abstract: sediment_thickness
+using CarboKitten.Output.Storage: Header, DataVolume, Pack, PackVolume,
+    sediment_thickness, x_axis, y_axis, time_axis, bedrock
 using Makie
-using HDF5
 using Unitful
 
-function glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; colormap=Reverse(:speed))
-    x = header.axes.x[data.slice[1]] |> in_units_of(u"km")
-    y = header.axes.y[data.slice[2]] |> in_units_of(u"km")
+function glamour_view!(ax::Makie.Axis3, p::PackVolume; colormap=Reverse(:speed))
+    x = x_axis(p) |> in_units_of(u"km")
+    y = y_axis(p) |> in_units_of(u"km")
     xy_aspect = x[end] / y[end]
 
     ax.aspect = (xy_aspect, 1, 1)
     ax.azimuth = -π/3
 
-    n_steps = size(data.bathymetry, 3)
+    n_steps = length(time_axis(p))
     grid_size = (length(x), length(y))
 
     steps_between = 2
@@ -170,11 +169,11 @@ function glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; colorm
         collect(1:n_steps)
     end
 
-    bedrock = header.initial_topography .- (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    base = bedrock(p)
     result = Array{Float64, 3}(undef, grid_size..., length(selected_steps))
-    st = sediment_thickness(data)
+    st = sediment_thickness(p)
     for (i, j) in enumerate(selected_steps)
-        result[:, :, i] = (st[:,:,j] .+ bedrock) |> in_units_of(u"m")
+        result[:, :, i] = (st[:,:,j] .+ base) |> in_units_of(u"m")
     end
 
     surface!(ax, x, y, result[:,:,1];
@@ -191,12 +190,18 @@ function glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; colorm
     lines!(ax, fill(x[end], grid_size[2]), y, result[end, :, end]; color=(:white, 0.5), linewidth=1)
 end
 
-function glamour_view(header::Header, data::DataVolume; colormap=Reverse(:speed))
+function glamour_view(p::PackVolume; colormap=Reverse(:speed))
     fig = Figure()
     ax = Axis3(fig[1, 1])
-    glamour_view!(ax, header, data, colormap=colormap)
+    glamour_view!(ax, p, colormap=colormap)
     return fig, ax
 end
+
+# Methods accepting a `Header`, `DataVolume` pair, kept for backward compatibility.
+glamour_view!(ax::Makie.Axis3, header::Header, data::DataVolume; kwargs...) =
+    glamour_view!(ax, Pack(header, data); kwargs...)
+glamour_view(header::Header, data::DataVolume; kwargs...) =
+    glamour_view(Pack(header, data); kwargs...)
 
 end
 ```

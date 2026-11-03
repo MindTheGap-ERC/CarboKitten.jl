@@ -5,7 +5,7 @@ using HDF5
 using Unitful
 using ..Storage
 
-import ..Abstract: AbstractBundle, load, load_volume, load_slice, load_column
+import ..Abstract: AbstractBundle, load, load_volume, load_slice, load_column, header
 import ..Storage: data_kind, Header, DataHeader, Data, Pack, parse_multi_slice,
     data_sets, data_volumes, data_slices, data_columns
 

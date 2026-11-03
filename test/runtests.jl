@@ -59,4 +59,5 @@ TEST_PATH = mktempdir()
 
     include("Models/CAPSpec.jl")
     include("Models/BS92Spec.jl")
+    include("Models/WithoutCADenudationSpec.jl")
 end

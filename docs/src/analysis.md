@@ -41,8 +41,38 @@ The following methods are defined on `Pack`s and/or `Header`/`Data` pairs.
 | `water_depth` | Historic water depth over time. |
 | `stratigraphic_column` | Preserved deposition over time. |
 | `surface_heights` | Computes the height of preserved surfaces at $t_{\rm end}$. |
+| `net_deposition` | Deposition minus disintegration at each time step. |
 
 Some of these may be cached in the `Data` object for efficiency.
+
+The following methods give information on the layout of a `Pack`, without needing to access the members of `Header` or `Data`. Methods marked with (H) are also defined on a `Header`, in which case they refer to the entire model domain and every time step.
+
+| Method | Description |
+|---|---|
+| `header` | The `Header` of a `Pack`. |
+| `n_facies` (H) | Number of facies. |
+| `slice` | The slice specification, e.g. `(:, 25)`. |
+| `write_interval` | Number of model time steps between writes. |
+| `write_time_step` | Time between two writes. |
+| `time_axis` (H) | Times at which data was written. |
+| `x_axis`, `y_axis` (H) | Coordinates covered by the data; a single coordinate along a sliced axis. |
+| `section_axis` | For a slice, the coordinates along which the section runs. |
+| `sea_level` (H) | Sea level at each write. |
+| `total_subsidence` (H only) | Total subsidence over the run. |
+| `bedrock` (H) | Initial topography, corrected for total subsidence. |
+
+The `PackVolume`, `PackSlice` and `PackColumn` type aliases can be used for dispatch, similar to `DataVolume`, `DataSlice` and `DataColumn`.
+
+All visualization functions accept a `Pack`, as well as a `Header`/`Data` pair for backward compatibility. For example:
+
+```julia
+using CarboKitten.Output: load, load_slice
+using CarboKitten.Visualization: sediment_profile
+
+load("data/output/alcap-example.h5") do bundle
+    sediment_profile(load_slice(bundle, :profile))
+end
+```
 
 Visualization
 -------------

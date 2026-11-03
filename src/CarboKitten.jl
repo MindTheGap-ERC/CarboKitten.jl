@@ -135,7 +135,10 @@ export Frame, frame_writer, state_writer
 
 using .Abstract: load, load_volume, load_slice, load_column
 using .Storage: water_depth, stratigraphic_column, sediment_thickness, surface_heights,
-    production, deposition, disintegration, active_layer, bathymetry
+    production, deposition, disintegration, active_layer, bathymetry,
+    net_deposition, write_interval, slice, time_axis, write_time_step, x_axis, y_axis,
+    section_axis, sea_level, bedrock, total_subsidence, n_facies,
+    Pack, PackVolume, PackSlice, PackColumn
 
 end
 

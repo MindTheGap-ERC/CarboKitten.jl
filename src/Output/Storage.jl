@@ -10,6 +10,7 @@ import ..Abstract: AbstractBundle, header
 using ...Algorithms.StratigraphicColumn: stratigraphic_column!
 
 export Header, Data, DataVolume, DataSlice, DataColumn, Pack, Axes, DataHeader
+export PackVolume, PackSlice, PackColumn
 export data_kind, data_sets, data_volumes, data_slices, data_columns
 export sediment_thickness, water_depth, surface_heights, stratigraphic_column
 
@@ -88,6 +89,28 @@ data_volumes(header::Header) = [s for (s, h) in header.data_sets if h.kind == :v
 data_slices(header::Header) = [s for (s, h) in header.data_sets if h.kind == :slice]
 data_columns(header::Header) = [s for (s, h) in header.data_sets if h.kind == :column]
 
+x_axis(header::Header) = header.axes.x
+y_axis(header::Header) = header.axes.y
+time_axis(header::Header) = header.axes.t
+sea_level(header::Header) = header.sea_level
+n_facies(header::Header) = header.n_facies
+
+"""
+    total_subsidence(header)
+
+Total amount of subsidence over the entire run.
+"""
+total_subsidence(header::Header) =
+    (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+
+"""
+    bedrock(header)
+
+Height of the initial topography at the end of the run, i.e. corrected for
+total subsidence.
+"""
+bedrock(header::Header) = header.initial_topography .- total_subsidence(header)
+
 data_sets(bundle::AbstractBundle) = bundle |> header |> data_sets
 data_volumes(bundle::AbstractBundle) = bundle |> header |> data_volumes
 data_slices(bundle::AbstractBundle) = bundle |> header |> data_slices
@@ -115,6 +138,9 @@ production(v::Data) = v.production
 deposition(v::Data) = v.deposition
 active_layer(v::Data) = v.active_layer
 bathymetry(v::Data) = v.bathymetry
+write_interval(v::Data) = v.write_interval
+slice(v::Data) = v.slice
+net_deposition(v::Data) = v.deposition .- v.disintegration
 # ~/~ end
 # ~/~ begin <<docs/src/output/data.md#data-data>>[1]
 Base.getindex(v::Data{F,D}, args...) where {F,D} =
@@ -141,8 +167,64 @@ production(v::Pack) = production(v.data)
 deposition(v::Pack) = deposition(v.data)
 active_layer(v::Pack) = active_layer(v.data)
 disintegration(v::Pack) = disintegration(v.data)
+net_deposition(v::Pack) = net_deposition(v.data)
+write_interval(v::Pack) = write_interval(v.data)
+slice(v::Pack) = slice(v.data)
+
+const PackVolume = Pack{4,3}
+const PackSlice = Pack{3,2}
+const PackColumn = Pack{2,1}
 
 Base.getindex(p::Pack, args...) = Pack(p.header, getindex(p.data, args...))
+
+header(p::Pack) = p.header
+n_facies(p::Pack) = n_facies(p.header)
+
+"""
+    time_axis(pack)
+
+Times at which the data in `pack` was written, i.e. the time axis of the
+header, sampled at the write interval of the data set.
+"""
+time_axis(p::Pack) = time_axis(p.header)[1:write_interval(p):end]
+
+"""
+    write_time_step(pack)
+
+Time between two consecutive writes in `pack`.
+"""
+write_time_step(p::Pack) = p.header.Δt * write_interval(p)
+
+"""
+    x_axis(pack), y_axis(pack)
+
+The x and y coordinates covered by `pack`. For an axis along which the data
+set was sliced at a fixed index, this returns a single coordinate.
+"""
+x_axis(p::Pack) = x_axis(p.header)[slice(p)[1]]
+y_axis(p::Pack) = y_axis(p.header)[slice(p)[2]]
+
+"""
+    section_axis(pack::PackSlice)
+
+The spatial coordinates along which a `DataSlice` runs: the y axis for a
+section at fixed x, the x axis otherwise.
+"""
+section_axis(p::PackSlice) = slice(p)[1] isa Int ? y_axis(p) : x_axis(p)
+
+"""
+    sea_level(pack)
+
+Sea level at each write of `pack`.
+"""
+sea_level(p::Pack) = sea_level(p.header)[1:write_interval(p):end]
+
+"""
+    bedrock(pack)
+
+Initial topography covered by `pack`, corrected for total subsidence.
+"""
+bedrock(p::Pack) = bedrock(p.header)[slice(p)...]
 # ~/~ end
 
 """
@@ -165,16 +247,17 @@ end
 stratigraphic_column(p::Pack{F, D}) where {F, D} = stratigraphic_column(p.data)
 
 """
+    water_depth(pack)
     water_depth(header, data)
 
 Compute the water depth function for the given data set.
 """
-function water_depth(header::Header, data::Data{F, D}) where {F, D}
-    sl = reshape(header.sea_level[1:data.write_interval:end], (repeated(1, D-1)..., :))
-    return sl .- data.bathymetry
+function water_depth(p::Pack{F, D}) where {F, D}
+    sl = reshape(sea_level(p), (repeated(1, D-1)..., :))
+    return sl .- bathymetry(p)
 end
 
-water_depth(p::Pack{F, D}) where {F, D} = water_depth(p.header, p.data)
+water_depth(header::Header, data::Data) = water_depth(Pack(header, data))
 
 """
     sediment_thickness(data)
@@ -195,6 +278,7 @@ end
 sediment_thickness(p::Pack{F, D}) where {F, D} = sediment_thickness(p.data)
 
 """
+    surface_heights(pack)
     surface_heights(header, data)
 
 Compute the sediment surface height at every `(spatial..., time)` cell,
@@ -205,16 +289,14 @@ sediment column.
 
 Works with `DataColumn`, `DataSlice`, and `DataVolume`.
 """
-function surface_heights(header::Header, data::Data{F, D}) where {F, D}
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
-    initial_topography = header.initial_topography[data.slice...]
-    sc = stratigraphic_column(data)
+function surface_heights(p::Pack{F, D}) where {F, D}
+    sc = stratigraphic_column(p)
     # Sum over the facies dimension (dim 1), yielding (spatial..., n_t)
     sc_sum = dropdims(sum(sc, dims=1), dims=1)
     # Cumulative sediment accumulation along the time axis (last dim)
     accumulated = cumsum(sc_sum, dims=ndims(sc_sum))
     n_t = size(sc_sum, ndims(sc_sum))
-    h0 = initial_topography .- total_subsidence
+    h0 = bedrock(p)
     # Build result array: shape (spatial..., n_t+1)
     sz = (size(sc_sum)[1:end-1]..., n_t + 1)
     h = Array{eltype(h0)}(undef, sz...)
@@ -223,7 +305,7 @@ function surface_heights(header::Header, data::Data{F, D}) where {F, D}
     return h
 end
 
-surface_heights(p::Pack{F, D}) where {F, D} = surface_heights(p.header, p.data)
+surface_heights(header::Header, data::Data) = surface_heights(Pack(header, data))
 
 end
 # ~/~ end

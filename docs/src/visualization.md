@@ -28,44 +28,38 @@ Script.main()
 ``` {.julia file=ext/WheelerDiagram.jl}
 module WheelerDiagram
 
-import CarboKitten.Visualization: wheeler_diagram, wheeler_diagram!
-using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
+import CarboKitten.Visualization: wheeler_diagram, wheeler_diagram!, sediment_accumulation!, dominant_facies!
 using CarboKitten.Utility: in_units_of
-using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
+using CarboKitten.Output.Storage: Header, DataSlice, Pack, PackSlice,
+    stratigraphic_column, water_depth, deposition, net_deposition, n_facies,
+    time_axis, write_time_step, section_axis
 using Makie
 using Unitful
 using CarboKitten.BoundaryTrait
 using CarboKitten.Stencil: convolution
 
-const na = [CartesianIndex()]
-
 const Rate = typeof(1.0u"m/Myr")
 
-function sediment_accumulation!(ax::Axis, header::Header, data::DataSlice;
+function sediment_accumulation!(ax::Axis, p::PackSlice;
     smooth_size::NTuple{2,Int}=(3, 11),
     colormap=Reverse(:curl),
     range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
-    wi = data.write_interval
-    magnitude = sum(data.deposition .- data.disintegration; dims=1)[1, :, :] ./ (header.Δt * wi)
+    magnitude = dropdims(sum(net_deposition(p); dims=1), dims=1) ./ write_time_step(p)
     blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
-    wd = zeros(Float64, length(header.axes.x), length(header.axes.t[1:wi:end]))
-    blur(water_depth(header, data) / u"m", wd)
-    mag = zeros(Float64, length(header.axes.x), length(header.axes.t[1:wi:end]))
+    mag = zeros(Float64, size(magnitude))
     blur(magnitude / u"m/Myr", mag)
 
     ax.ylabel = "time [Myr]"
     ax.xlabel = "position [km]"
-    xkm = header.axes.x |> in_units_of(u"km")
-    tmyr = header.axes.t[1:wi:end] |> in_units_of(u"Myr")
+    xkm = section_axis(p) |> in_units_of(u"km")
+    tmyr = time_axis(p) |> in_units_of(u"Myr")
 
     sa = heatmap!(ax, xkm, tmyr, mag;
         colormap=colormap, colorrange=range ./ u"m/Myr")
-    #contour!(ax, xkm, tmyr, wd;
-    #    levels=[0], color=:red, linewidth=2, linestyle=:dash)
     return sa
 end
 
-function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
+function dominant_facies!(ax::Axis, p::PackSlice;
     show::Symbol = :both,
     smooth_size::NTuple{2,Int} = (3, 11),
     colors = Makie.wong_colors())
@@ -76,78 +70,73 @@ function dominant_facies!(ax::Axis, header::Header, data::DataSlice;
 
     prec = 10^-8 # prec. in m - below acc. is considered 0
 
-    n_facies = size(data.production)[1]
+    n_f = n_facies(p)
     colormax(d) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 
-    wi = data.write_interval
     blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
-    wd = zeros(Float64, length(header.axes.x), length(header.axes.t[1:wi:end]))
-    blur(water_depth(header, data) / u"m", wd)
+    wd_raw = water_depth(p) / u"m"
+    wd = zeros(Float64, size(wd_raw))
+    blur(wd_raw, wd)
 
     ax.ylabel = "time [Myr]"
     ax.xlabel = "position [km]"
 
-    xkm = header.axes.x |> in_units_of(u"km")
-    tmyr = header.axes.t[1:wi:end] |> in_units_of(u"Myr")
-
+    xkm = section_axis(p) |> in_units_of(u"km")
+    tmyr = time_axis(p) |> in_units_of(u"Myr")
 
     ft = if show == :model
-        dominant_facies = colormax(data.deposition)
+        dominant_facies = colormax(deposition(p))
         dominant_facies = Matrix{Union{Missing, Int}}(dominant_facies)
         dominant_facies[ wd .> 0] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies;
-            colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5),
+            colormap=cgrad(colors[1:n_f], n_f, categorical=true),
+            colorrange=(0.5, n_f + 0.5),
             nan_color=:white)
     elseif show == :preserved
-        sc = stratigraphic_column(data)
+        sc = stratigraphic_column(p)
         dominant_facies = colormax(sc)
         dominant_facies = Matrix{Union{Missing, Int}}(dominant_facies)
         combined_acc = dropdims(sum(sc, dims = 1), dims = 1) |> in_units_of(u"m")
         dominant_facies[ combined_acc .< prec] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies;
-            colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5),
+            colormap=cgrad(colors[1:n_f], n_f, categorical=true),
+            colorrange=(0.5, n_f + 0.5),
             nan_color=:white)
     else
-        sc = stratigraphic_column(data)
-        dominant_facies_model = colormax(data.deposition)
+        sc = stratigraphic_column(p)
+        dominant_facies_model = colormax(deposition(p))
         dominant_facies_model = Matrix{Union{Missing, Int}}(dominant_facies_model)
         dominant_facies_model[ wd .> 0] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies_model;
-            colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5), alpha=0.3,
+            colormap=cgrad(colors[1:n_f], n_f, categorical=true),
+            colorrange=(0.5, n_f + 0.5), alpha=0.3,
             nan_color=:white)
         dominant_facies_preserved = colormax(sc)
         dominant_facies_preserved = Matrix{Union{Missing, Int}}(dominant_facies_preserved)
         combined_acc = dropdims(sum(sc, dims = 1), dims = 1) |> in_units_of(u"m")
         dominant_facies_preserved[ combined_acc .< prec] .= missing
         heatmap!(ax, xkm, tmyr, dominant_facies_preserved;
-            colormap=cgrad(colors[1:n_facies], n_facies, categorical=true),
-            colorrange=(0.5, n_facies + 0.5),
+            colormap=cgrad(colors[1:n_f], n_f, categorical=true),
+            colorrange=(0.5, n_f + 0.5),
             nan_color=:transparent)
     end
 
-    #contourf!(ax, xkm, tmyr, wd;
-    #    levels=[0.0, 10000.0], colormap=Reverse(:grays))
-    #contour!(ax, xkm, tmyr, wd;
-    #    levels=[0], color=:black, linewidth=2)
     return ft
 end
 
-function wheeler_diagram!(ax1::Axis, ax2::Axis, header::Header, data::DataSlice;
+function wheeler_diagram!(ax1::Axis, ax2::Axis, p::PackSlice;
     smooth_size::NTuple{2,Int}=(3, 11),
     range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
 
     linkyaxes!(ax1, ax2)
-    sa = sediment_accumulation!(ax1, header, data; smooth_size=smooth_size, range=range)
-    ft = dominant_facies!(ax2, header, data; smooth_size=smooth_size)
+    sa = sediment_accumulation!(ax1, p; smooth_size=smooth_size, range=range)
+    ft = dominant_facies!(ax2, p; smooth_size=smooth_size)
     ax2.ylabel = ""
 
     return sa, ft
 end
 
-function wheeler_diagram(header::Header, data::DataSlice;
+function wheeler_diagram(p::PackSlice;
     smooth_size::NTuple{2,Int}=(3, 11),
     range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
 
@@ -155,12 +144,22 @@ function wheeler_diagram(header::Header, data::DataSlice;
     ax1 = Axis(fig[2, 1])
     ax2 = Axis(fig[2, 2])
 
-    sa, ft = wheeler_diagram!(ax1, ax2, header, data; smooth_size=smooth_size, range=range)
+    sa, ft = wheeler_diagram!(ax1, ax2, p; smooth_size=smooth_size, range=range)
 
     Colorbar(fig[1, 1], sa; vertical=false, label="sediment accumulation [m/Myr]")
-    Colorbar(fig[1, 2], ft; vertical=false, ticks=1:3, label="dominant facies")
+    Colorbar(fig[1, 2], ft; vertical=false, ticks=1:n_facies(p), label="dominant facies")
     fig
 end
+
+# Methods accepting a `Header`, `DataSlice` pair, kept for backward compatibility.
+sediment_accumulation!(ax::Axis, header::Header, data::DataSlice; kwargs...) =
+    sediment_accumulation!(ax, Pack(header, data); kwargs...)
+dominant_facies!(ax::Axis, header::Header, data::DataSlice; kwargs...) =
+    dominant_facies!(ax, Pack(header, data); kwargs...)
+wheeler_diagram!(ax1::Axis, ax2::Axis, header::Header, data::DataSlice; kwargs...) =
+    wheeler_diagram!(ax1, ax2, Pack(header, data); kwargs...)
+wheeler_diagram(header::Header, data::DataSlice; kwargs...) =
+    wheeler_diagram(Pack(header, data); kwargs...)
 
 end
 ```
@@ -301,37 +300,39 @@ using Makie
 using Unitful
 
 import CarboKitten.Visualization: stratigraphic_column!
-using CarboKitten.Export: Header, DataColumn, stratigraphic_column, age_depth_model, sediment_thickness
+using CarboKitten.Export: age_depth_model
+using CarboKitten.Output.Storage: Header, DataColumn, Pack, PackColumn,
+    stratigraphic_column, sediment_thickness
 
 
-function scdata(header::Header, data::DataColumn)
-    n_facies = size(data.production)[1]
-    n_times = length(header.axes.t) 
-    sc = zeros(Float64, n_facies, n_times)
-    for f = 1:n_facies
-        sc[f, :] = stratigraphic_column(header, data, f) / u"m"
-    end
+function scdata(p::PackColumn)
+    sc = stratigraphic_column(p) / u"m"
 
     colormax(d) = getindex.(argmax(d; dims=1)[1, :], 1)
-    adm = age_depth_model(sediment_thickness(data))
+    adm = age_depth_model(sediment_thickness(p))
 
     return (ys_low=adm[1:end-1] / u"m", ys_high=adm[2:end] / u"m", facies=colormax(sc)[1:end-1])
 end
 
 
-function stratigraphic_column!(ax::Axis, header::Header, data::DataColumn; color=Makie.wong_colors())
-    (ys_low, ys_high, facies) = scdata(header, data)
-    @show size(ys_low), size(ys_high)
+function stratigraphic_column!(ax::Axis, p::PackColumn; color=Makie.wong_colors())
+    (ys_low, ys_high, facies) = scdata(p)
     hspan!(ax, ys_low, ys_high; color=color[facies])
 end
 
-function stratigraphic_column!(ax::Axis, header::Header, data::Observable{DataColumn}; color=Makie.wong_colors())
-    _scdata = lift(d -> scdata(header, d), data)
+function stratigraphic_column!(ax::Axis, p::Observable{<:PackColumn}; color=Makie.wong_colors())
+    _scdata = lift(scdata, p)
     _ys_low = lift(d -> d.ys_low, _scdata)
     _ys_high = lift(d -> d.ys_high, _scdata)
     _color = lift(d -> color[d.facies], _scdata)
     hspan!(ax, _ys_low, _ys_high; color=_color)
 end
+
+# Methods accepting a `Header`, `DataColumn` pair, kept for backward compatibility.
+stratigraphic_column!(ax::Axis, header::Header, data::DataColumn; kwargs...) =
+    stratigraphic_column!(ax, Pack(header, data); kwargs...)
+stratigraphic_column!(ax::Axis, header::Header, data::Observable{DataColumn}; kwargs...) =
+    stratigraphic_column!(ax, lift(d -> Pack(header, d), data); kwargs...)
 
 end
 ```

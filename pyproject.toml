@@ -13,9 +13,6 @@ dependencies = [
 [tool.uv]
 package = false
 
-[tool.uv.sources]
-entangled-cli = { git = "https://github.com/entangled/entangled.py" }
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

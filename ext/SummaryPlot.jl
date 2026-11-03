@@ -5,7 +5,7 @@ using CarboKitten.Visualization
 import CarboKitten.Visualization: summary_plot
 using CarboKitten.Output.Abstract: AbstractBundle, load, load_volume, load_slice
 using CarboKitten.Output.Storage: header, data_volumes, data_slices, n_facies,
-    time_axis, y_axis, sea_level
+    time_axis, y_axis, sea_level, water_depth
 using CarboKitten.Output.H5Reader: H5Bundle, read_header
 using CarboKitten.Output.MemoryWriter: MemoryOutput
 using CarboKitten.Utility: in_units_of
@@ -19,9 +19,9 @@ summary_plot(output::MemoryOutput; kwargs...) = summary_plot(load(output); kwarg
 
 # The production curve is read from the `input` group of an HDF5 file.
 # Other bundles don't store this information.
-_production_curve!(fig, bundle::H5Bundle) =
-    production_curve!(Axis(fig[2,3]), bundle.fid["input"])
-_production_curve!(fig, bundle::AbstractBundle) = nothing
+_production_curve!(fig, bundle::H5Bundle; kwargs...) =
+    production_curve!(Axis(fig[2,3]), bundle.fid["input"]; kwargs...)
+_production_curve!(fig, bundle::AbstractBundle; kwargs...) = nothing
 
 function summary_plot(bundle::AbstractBundle; wheeler_smooth=(1, 1), show_unconformities=true)
     hdr = header(bundle)
@@ -74,7 +74,9 @@ function summary_plot(bundle::AbstractBundle; wheeler_smooth=(1, 1), show_unconf
                                  last(time_axis(section_data)) |> in_units_of(u"Myr"))))
     lines!(ax4, sea_level(hdr) |> in_units_of(u"m"), time_axis(hdr) |> in_units_of(u"Myr"))
 
-    _production_curve!(fig, bundle)
+    # Limit the production curve to the depths that actually occur in the run.
+    max_depth = maximum(water_depth(something(volume_data, section_data)))
+    _production_curve!(fig, bundle; max_depth=max_depth)
 
     linkyaxes!(ax2, ax3, ax4)
 

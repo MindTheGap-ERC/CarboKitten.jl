@@ -40,22 +40,14 @@ end
 end
 
 Script.main()</code></pre><h2 id="Cross-section-direction"><a class="docs-heading-anchor" href="#Cross-section-direction">Cross-section direction</a><a id="Cross-section-direction-1"></a><a class="docs-heading-anchor-permalink" href="#Cross-section-direction" title="Permalink"></a></h2><p>A profile <code>DataSlice</code> can represent either a <strong>dip section</strong> (varying along x, fixed y index) or a <strong>strike section</strong> (fixed x index, varying along y). Both are produced by the same <code>DataVolume</code> indexing:</p><pre><code class="language-julia hljs">vol[:, j]   # dip section at y = j
-vol[i, :]   # strike section at x = i</code></pre><p>The correct spatial positions and axis label are inferred automatically from <code>data.slice</code> — no direction argument is needed. If <code>data.slice[1]</code> is an <code>Int</code>, the section is fixed in x and varies along y (strike); otherwise it varies along x (dip).</p><div class="noweb-label">⪡section-positions⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
-    _section_positions(header, data)
+vol[i, :]   # strike section at x = i</code></pre><p>The correct spatial positions are inferred automatically from the slice specification (see <code>section_axis</code>) — no direction argument is needed. If <code>slice(pack)[1]</code> is an <code>Int</code>, the section is fixed in x and varies along y (strike); otherwise it varies along x (dip).</p><div class="noweb-label">⪡section-positions⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
+    _section_positions(pack)
 
-Return the physical positions along the spatial axis of a profile `data`.
-For a dip section (varying x, fixed y) this is `header.axes.x`; for a strike
-section (fixed x, varying y) this is `header.axes.y`. The distinction is made
-by inspecting `data.slice`: if `data.slice[1]` is an `Int`, x is fixed and the
-section runs along y.
+Return the physical positions (in km) along the spatial axis of a profile.
+For a dip section (varying x, fixed y) this is the x axis; for a strike
+section (fixed x, varying y) this is the y axis. See `section_axis`.
 &quot;&quot;&quot;
-function _section_positions(header::Header, data::DataSlice)
-    if data.slice[1] isa Int
-        return header.axes.y |&gt; in_units_of(u&quot;km&quot;)
-    else
-        return header.axes.x |&gt; in_units_of(u&quot;km&quot;)
-    end
-end</code></pre><h2 id="Proportion-plot"><a class="docs-heading-anchor" href="#Proportion-plot">Proportion plot</a><a id="Proportion-plot-1"></a><a class="docs-heading-anchor-permalink" href="#Proportion-plot" title="Permalink"></a></h2><p>Beyond the dominant-facies categorical view, it is useful to see the proportion of a specific facies relative to total sediment at each location and time step. The <code>sediment_proportion!</code> function provides this using the same mesh geometry as <code>sediment_profile!</code>.</p><p><img src="../../fig/profile_fraction.png" alt="Proportion plot"/></p><div class="noweb-label">file:<i>examples/visualization/profile_proportion.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/profile_proportion.png
+_section_positions(p::PackSlice) = section_axis(p) |&gt; in_units_of(u&quot;km&quot;)</code></pre><h2 id="Proportion-plot"><a class="docs-heading-anchor" href="#Proportion-plot">Proportion plot</a><a id="Proportion-plot-1"></a><a class="docs-heading-anchor-permalink" href="#Proportion-plot" title="Permalink"></a></h2><p>Beyond the dominant-facies categorical view, it is useful to see the proportion of a specific facies relative to total sediment at each location and time step. The <code>sediment_proportion!</code> function provides this using the same mesh geometry as <code>sediment_profile!</code>.</p><p><img src="../../fig/profile_fraction.png" alt="Proportion plot"/></p><div class="noweb-label">file:<i>examples/visualization/profile_proportion.jl</i></div><pre><code class="language- julia hljs">#| creates: docs/src/_fig/profile_proportion.png
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
@@ -127,100 +119,89 @@ function explode_quad_vertices(v::Array{Float64,3})
     return reshape(points, n_vertices, d),
            vcat(hcat(vtx1, vtx2, vtx3), hcat(vtx1, vtx3, vtx4))
 end</code></pre><p>To map colours onto the returned mesh, we need to take care to duplicate each row in the input.</p><h3 id="Plotting-Unconformities"><a class="docs-heading-anchor" href="#Plotting-Unconformities">Plotting Unconformities</a><a id="Plotting-Unconformities-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-Unconformities" title="Permalink"></a></h3><p>To indicate unconformities in profile plots, we need to do two things:</p><ol><li>Find those times and locations where the platform is exposed. To reduce noise we can set a minimum time span for which the platform needs to be exposed before showing up in this visualization.</li><li>Reduce the detected unconformities to line segments (see <a href="../../algorithms/skeleton/">the Skeleton Algorithm</a>). </li></ol><div class="noweb-label">⪡plot-unconformities⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
-    plot_unconformities(ax, header, data_slice, minwidth; kwargs...)
-    plot_unconformities(ax, header, data_slice, minwidth::Bool; kwargs...)
-    plot_unconformities(ax, header, data_slice, minwidth::Int; kwargs...)
+    plot_unconformities(ax, pack, h, minwidth; kwargs...)
+    plot_unconformities(ax, pack, h, minwidth::Bool; kwargs...)
+    plot_unconformities(ax, pack, h, minwidth::Int; kwargs...)
 
-Scans the given `data_slice` for unconformities, and plots those using
+Scans the given slice for unconformities, and plots those using
 Makie `linesegments`. The `minwidth` argument controls for how many time
 steps the platform needs to be exposed before we plot it. For `minwidth = true`
-the default width of 10 time steps is taken.
+the default width of 10 time steps is taken. The `h` argument should contain
+the surface heights of the slice (see `surface_heights`).
 
 Additional keyword arguments are forwarded to the `linesegments!` call.
 &quot;&quot;&quot;
-function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Nothing; kwargs...)
+function plot_unconformities(ax::Axis, p::PackSlice, h, minwidth::Nothing; kwargs...)
     @info &quot;Not plotting unconformities, got minwidth: $(minwidth)&quot;
 end
 
-function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Bool; kwargs...)
+function plot_unconformities(ax::Axis, p::PackSlice, h, minwidth::Bool; kwargs...)
     if minwidth
-        plot_unconformities(ax, header, data, h, 10; kwargs...)
+        plot_unconformities(ax, p, h, 10; kwargs...)
     end
 end
 
-function plot_unconformities(ax::Axis, header::Header, data::DataSlice, h, minwidth::Int; kwargs...)
-    x = _section_positions(header, data)
-    wi = data.write_interval
-    hiatus = skeleton(water_depth(header, data) .&lt; 0.0u&quot;m&quot;, minwidth=minwidth)
+function plot_unconformities(ax::Axis, p::PackSlice, h, minwidth::Int; kwargs...)
+    x = _section_positions(p)
+    hiatus = skeleton(water_depth(p) .&lt; 0.0u&quot;m&quot;, minwidth=minwidth)
 
     if !isempty(hiatus[1])
         verts = [(x[pt[1]], h[pt...] |&gt; in_units_of(u&quot;m&quot;)) for pt in hiatus[1]]
         linesegments!(ax, vec(permutedims(verts[hiatus[2]])); kwargs...)
     end
-end</code></pre><h3 id="Plotting-Co-eval-Lines"><a class="docs-heading-anchor" href="#Plotting-Co-eval-Lines">Plotting Co-eval Lines</a><a id="Plotting-Co-eval-Lines-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-Co-eval-Lines" title="Permalink"></a></h3><div class="noweb-label">⪡plot-coeval-lines⪢≣</div><pre><code class="language- julia hljs">function age_depth_model(header::Header, data::DataSlice)
-    x = header.axes.x |&gt; in_units_of(u&quot;km&quot;)
-    t = header.axes.t |&gt; in_units_of(u&quot;Myr&quot;)
-
-    n_facies, n_x, n_t = size(data.production)
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
-    initial_topography = header.initial_topography[data.slice...]
-    sc = stratigraphic_column(data)
-    h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
-    @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
-    return h
-end
-
-&quot;&quot;&quot;
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Bool)
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, tics::Bool)
+end</code></pre><h3 id="Plotting-Co-eval-Lines"><a class="docs-heading-anchor" href="#Plotting-Co-eval-Lines">Plotting Co-eval Lines</a><a id="Plotting-Co-eval-Lines-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-Co-eval-Lines" title="Permalink"></a></h3><div class="noweb-label">⪡plot-coeval-lines⪢≣</div><pre><code class="language- julia hljs">&quot;&quot;&quot;
+    coeval_lines!(ax::Axis, pack::PackSlice, tics::Bool)
+    coeval_lines!(ax::Axis, pack::PackSlice, adm::AbstractMatrix, tics::Bool)
 
 Plot coeval lines using default settings. If `tics` is false, nothing is done.
 
 The `adm` argument should contain the age-depth model for the entire slice in
-units of m. This can be computed by getting the `cumsum` of the
-`stratigraphic_column` of the `data` argument. If the `adm` argument is left
-out, the stratigraphic column will be computed from `data` first.
-&quot;&quot;&quot;
-coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Bool) =
-    coeval_lines!(ax, header, data, age_depth_model(header, data), n_tics)
+units of m, as computed by `surface_heights`. If the `adm` argument is left
+out, it will be computed from `pack` first.
 
-function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, n_tics::Bool)
+All `coeval_lines!` methods also accept a `header, data` pair instead of a
+`Pack`.
+&quot;&quot;&quot;
+coeval_lines!(ax::Axis, p::PackSlice, n_tics::Bool) =
+    coeval_lines!(ax, p, surface_heights(p), n_tics)
+
+function coeval_lines!(ax::Axis, p::PackSlice, adm::AbstractMatrix{Amount}, n_tics::Bool)
     if !n_tics
         return
     else
-        coeval_lines!(ax, header, data, adm)
+        coeval_lines!(ax, p, adm)
     end
 end
 
 &quot;&quot;&quot;
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...)
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, tics::Vector{Time}; kwargs...)
+    coeval_lines!(ax::Axis, pack::PackSlice, tics::Vector{Time}; kwargs...)
+    coeval_lines!(ax::Axis, pack::PackSlice, adm::AbstractMatrix, tics::Vector{Time}; kwargs...)
 
-Plot coeval lines for given times. The times in `tics` are looked up in `header.axes.t`
-to find which indices to plot.
+Plot coeval lines for given times. The times in `tics` are looked up in the
+time axis of `pack` to find which indices to plot.
 &quot;&quot;&quot;
-coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Time}; kwargs...) =
-    coeval_lines!(ax, header, data, age_depth_model(header, data), tics; kwargs...)
+coeval_lines!(ax::Axis, p::PackSlice, tics::Vector{Time}; kwargs...) =
+    coeval_lines!(ax, p, surface_heights(p), tics; kwargs...)
 
-function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Time}; kwargs...)
-    t = header.axes.t[1:data.write_interval:end]
+function coeval_lines!(ax::Axis, p::PackSlice, adm::AbstractMatrix{Amount}, tics::Vector{Time}; kwargs...)
+    t = time_axis(p)
     indices::Vector{Int} = [searchsortedfirst(t, i) for i in tics]
-    coeval_lines!(ax, header, data, adm, indices; kwargs...)
+    coeval_lines!(ax, p, adm, indices; kwargs...)
 end
 
 &quot;&quot;&quot;
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int})
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, n_tics::Tuple{Int, Int})
+    coeval_lines!(ax::Axis, pack::PackSlice, n_tics::Tuple{Int, Int})
+    coeval_lines!(ax::Axis, pack::PackSlice, adm::AbstractMatrix, n_tics::Tuple{Int, Int})
 
 Plot coeval lines on regular intervals given by `n_tics`. The tuple gives the number of intervals
 for both minor and major tics, plotted as dotted and solid black lines respectively.
 If you need more control over the aestetics of these lines, use the other `coeval_lines!` methods.
 &quot;&quot;&quot;
-coeval_lines!(ax::Axis, header::Header, data::DataSlice, n_tics::Tuple{Int, Int}; kwargs...) =
-    coeval_lines!(ax, header, data, age_depth_model(header, data), n_tics; kwargs...)
+coeval_lines!(ax::Axis, p::PackSlice, n_tics::Tuple{Int, Int}; kwargs...) =
+    coeval_lines!(ax, p, surface_heights(p), n_tics; kwargs...)
 
-function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, n_tics::Tuple{Int, Int} = (4, 8))
-    n_steps = div(header.time_steps, data.write_interval)
+function coeval_lines!(ax::Axis, p::PackSlice, adm::AbstractMatrix{Amount}, n_tics::Tuple{Int, Int} = (4, 8))
+    n_steps = length(time_axis(p)) - 1
     n_major_tics, n_minor_tics = n_tics
 
     major_tics = div.(n_steps:n_steps:n_steps*n_major_tics, n_major_tics) .+ 1
@@ -228,53 +209,51 @@ function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractM
         t-&gt;!(t in major_tics),
         div.(n_steps:n_steps:n_steps*n_minor_tics, n_minor_tics) .+ 1) |&gt; collect
 
-    coeval_lines!(ax, header, data, adm, minor_tics, color=:black, linewidth=1, linestyle=:dot)
-    coeval_lines!(ax, header, data, adm, major_tics, color=:black, linewidth=1, linestyle=:solid)
+    coeval_lines!(ax, p, adm, minor_tics, color=:black, linewidth=1, linestyle=:dot)
+    coeval_lines!(ax, p, adm, major_tics, color=:black, linewidth=1, linestyle=:solid)
 end
 
 &quot;&quot;&quot;
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...)
-    coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix, tics::Vector{Int}; kwargs...)
+    coeval_lines!(ax::Axis, pack::PackSlice, tics::Vector{Int}; kwargs...)
+    coeval_lines!(ax::Axis, pack::PackSlice, adm::AbstractMatrix, tics::Vector{Int}; kwargs...)
 
 Plot coeval lines for the given indices. The `kwargs...` are forwarded to a call to Makie&#39;s
 `lines!` procedure.
 &quot;&quot;&quot;
-coeval_lines!(ax::Axis, header::Header, data::DataSlice, tics::Vector{Int}; kwargs...) =
-    coeval_lines!(ax, header, data, age_depth_model(header, data), tics; kwargs...)
+coeval_lines!(ax::Axis, p::PackSlice, tics::Vector{Int}; kwargs...) =
+    coeval_lines!(ax, p, surface_heights(p), tics; kwargs...)
 
-function coeval_lines!(ax::Axis, header::Header, data::DataSlice, adm::AbstractMatrix{Amount}, tics::Vector{Int}; kwargs...)
-    x = _section_positions(header, data)
+function coeval_lines!(ax::Axis, p::PackSlice, adm::AbstractMatrix{Amount}, tics::Vector{Int}; kwargs...)
+    x = _section_positions(p)
     h = adm |&gt; in_units_of(u&quot;m&quot;)
     for t in tics
         lines!(ax, x, h[:, t]; kwargs...)
     end
 end
 
-function plot_sealevel!(ax::Axis, header::Header)
-    sea_level = header.sea_level[end] |&gt; in_units_of(u&quot;m&quot;)
-    hlines!(ax, sea_level, color=:lightblue, linewidth=5, label=&quot;end sea level&quot;)
+coeval_lines!(ax::Axis, header::Header, data::DataSlice, args...; kwargs...) =
+    coeval_lines!(ax, Pack(header, data), args...; kwargs...)
+
+function plot_sealevel!(ax::Axis, p::Pack)
+    sl_end = last(sea_level(header(p))) |&gt; in_units_of(u&quot;m&quot;)
+    hlines!(ax, sl_end, color=:lightblue, linewidth=5, label=&quot;end sea level&quot;)
 end</code></pre><h2 id="Module"><a class="docs-heading-anchor" href="#Module">Module</a><a id="Module-1"></a><a class="docs-heading-anchor-permalink" href="#Module" title="Permalink"></a></h2><div class="noweb-label">file:<i>ext/SedimentProfile.jl</i></div><pre><code class="language- julia hljs">module SedimentProfile
 
 import CarboKitten.Visualization: sediment_profile, sediment_profile!, profile_plot!, coeval_lines!, sediment_proportion!, sediment_proportion
 
 using CarboKitten.Visualization
 using CarboKitten.Utility: in_units_of
-using CarboKitten.Export: Header, Data, DataSlice, read_data, read_slice
 using CarboKitten.Algorithms: skeleton
-using CarboKitten.Output.Abstract: stratigraphic_column, water_depth
+using CarboKitten.Output.Storage: Header, DataSlice, Pack, PackSlice, header,
+    stratigraphic_column, water_depth, surface_heights, n_facies, time_axis,
+    section_axis, sea_level, bedrock
 
 using Makie
 using GeometryBasics
 using Unitful
 
-using Statistics: mean
-
-const Rate = typeof(1.0u&quot;m/Myr&quot;)
 const Amount = typeof(1.0u&quot;m&quot;)
-const Length = typeof(1.0u&quot;m&quot;)
 const Time = typeof(1.0u&quot;Myr&quot;)
-
-const na = [CartesianIndex()]
 
 
 &lt;&lt;section-positions&gt;&gt;
@@ -283,133 +262,141 @@ const na = [CartesianIndex()]
 &lt;&lt;plot-coeval-lines&gt;&gt;
 
 &quot;&quot;&quot;
-    profile_plot!(ax, header, data_slice; mesh_args...)
+    profile_plot!(ax, pack; color, mesh_args...)
+    profile_plot!(ax, header, data_slice; color, mesh_args...)
 
 Generic profile plot. This sets up a mesh for plotting with the Makie `mesh!`
 function, plots the initial topography and the mesh by passing `mesh_args...`.
 
-The `color` array should have the same size as a single facies for `data.production`.
+The `color` array should have the size `(n_x, n_t)`, the same as a single
+facies of `production(pack)`.
 &quot;&quot;&quot;
-function profile_plot!(ax::Axis, header::Header, data::DataSlice; color::AbstractArray, mesh_args...)
-    x = _section_positions(header, data)
-    t = header.axes.t |&gt; in_units_of(u&quot;Myr&quot;)
+function profile_plot!(ax::Axis, p::PackSlice; color::AbstractArray, mesh_args...)
+    x = _section_positions(p)
+    h = surface_heights(p) |&gt; in_units_of(u&quot;m&quot;)
 
-    n_facies, n_x, n_t = size(data.production)
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
-    initial_topography = header.initial_topography[data.slice...]
-    sc = stratigraphic_column(data)
-    h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
-    @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
-
-    verts = zeros(Float64, n_x, n_t+1, 2)
+    verts = zeros(Float64, size(h)..., 2)
     @views verts[:, :, 1] .= x
-    @views verts[:, :, 2] .= h |&gt; in_units_of(u&quot;m&quot;)
+    @views verts[:, :, 2] .= h
     v, f = explode_quad_vertices(verts)
 
-    total_subsidence = header.subsidence_rate * (header.axes.t[end] - header.axes.t[1])
-    bedrock = (header.initial_topography[data.slice...] .- total_subsidence) |&gt; in_units_of(u&quot;m&quot;)
-    lower_limit = minimum(bedrock) - 20
-    band!(ax, x, lower_limit, bedrock; color=:gray, label=&quot;initial topography&quot;)
-    lines!(ax, x, bedrock; color=:black, label=&quot;initial topography&quot;)
+    base = bedrock(p) |&gt; in_units_of(u&quot;m&quot;)
+    lower_limit = minimum(base) - 20
+    band!(ax, x, lower_limit, base; color=:gray, label=&quot;initial topography&quot;)
+    lines!(ax, x, base; color=:black, label=&quot;initial topography&quot;)
     ylims!(ax, lower_limit + 10, nothing)
     xlims!(ax, x[1], x[end])
     ax.xlabel = &quot;position [km]&quot;
     ax.ylabel = &quot;depth [m]&quot;
 
-    c = reshape(color, n_x * n_t)
+    c = vec(color)
     mesh!(ax, v, f; color=vcat(c, c), mesh_args...)
 end
 
 &quot;&quot;&quot;
+    profile_plot!(f, ax, pack; mesh_args...)
     profile_plot!(f, ax, header, data_slice; mesh_args...)
 
 Instead of explicitely passing the color data as an array, this generates the
-colors from a function `f` over the deposition data. So `f` should have signature
-`AbstractVector -&gt; Float` or possibly `AbstractVector -&gt; RGB` (whatever Makie accepts).
-Here the vector input has size of the number of facies.
+colors from a function `f` over the preserved sediment (stratigraphic column).
+So `f` should have signature `AbstractVector -&gt; Float` or possibly
+`AbstractVector -&gt; RGB` (whatever Makie accepts). Here the vector input has
+size of the number of facies.
 &quot;&quot;&quot;
-function profile_plot!(f::F, ax::Axis, header::Header, data::DataSlice; mesh_args...) where {F}
-    color = f.(eachslice(stratigraphic_column(data), dims=(2, 3)))
-    profile_plot!(ax, header, data; color=color, mesh_args...)
+function profile_plot!(f::F, ax::Axis, p::PackSlice; mesh_args...) where {F}
+    color = f.(eachslice(stratigraphic_column(p), dims=(2, 3)))
+    profile_plot!(ax, p; color=color, mesh_args...)
 end
 
+profile_plot!(ax::Axis, header::Header, data::DataSlice; kwargs...) =
+    profile_plot!(ax, Pack(header, data); kwargs...)
+profile_plot!(f::F, ax::Axis, header::Header, data::DataSlice; kwargs...) where {F} =
+    profile_plot!(f, ax, Pack(header, data); kwargs...)
+
 &quot;&quot;&quot;
-    sediment_profile!(ax, header, data; show_unconformities)
+    sediment_profile!(ax, pack; show_unconformities, show_coeval_lines, show_sealevel)
+    sediment_profile!(ax, header, data_slice; ...)
 
 Plot the sediment profile, choosing colour by dominant facies type (argmax).
 
 Unconformities are shown when the sediment is subaerially exposed.
 &quot;&quot;&quot;
-function sediment_profile!(ax::Axis, header::Header, data::DataSlice;
+function sediment_profile!(ax::Axis, p::PackSlice;
                            show_unconformities::Union{Nothing,Bool,Int} = true,
                            show_coeval_lines::Union{Bool,Tuple{Int, Int},Vector{Int},Vector{Time}} = true,
                            show_sealevel::Bool = true)
-    n_facies, n_x, n_t = size(data.production)
-    total_subsidence = (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
-    initial_topography = header.initial_topography[data.slice...]
-    sc = stratigraphic_column(data)
-    h = repeat(initial_topography .- total_subsidence, 1, n_t+1)
-    @views h[:, 2:end] .+= cumsum(sum(sc, dims=1)[1,:,:], dims=2)
+    n_f = n_facies(p)
+    h = surface_heights(p)
 
     if show_sealevel
-        plot_sealevel!(ax, header)
+        plot_sealevel!(ax, p)
     end
 
-    plot = profile_plot!(argmax, ax, header, data; alpha=1.0,
-        colormap=cgrad(Makie.wong_colors()[1:n_facies], n_facies, categorical=true))
+    plot = profile_plot!(argmax, ax, p; alpha=1.0,
+        colormap=cgrad(Makie.wong_colors()[1:n_f], n_f, categorical=true))
 
-    coeval_lines!(ax, header, data, h, show_coeval_lines)
+    coeval_lines!(ax, p, h, show_coeval_lines)
 
     minwidth = show_unconformities
-    plot_unconformities(ax, header, data, h, minwidth; label = &quot;unconformities&quot;,
+    plot_unconformities(ax, p, h, minwidth; label = &quot;unconformities&quot;,
                         color=:white, linestyle=:dash, linewidth=1)
 
     ax.title = &quot;sediment profile&quot;
     return plot
 end
 
+sediment_profile!(ax::Axis, header::Header, data::DataSlice; kwargs...) =
+    sediment_profile!(ax, Pack(header, data); kwargs...)
+
 &quot;&quot;&quot;
+    sediment_profile(pack; show_unconformities=true)
     sediment_profile(header, data_slice; show_unconformities=true)
 
-Plot the sediment profile from `data_slice`. Dominant facies colour is chosen
+Plot the sediment profile from a slice. Dominant facies colour is chosen
 by `argmax`. By default unconformities are shown using dashed white lines.
 &quot;&quot;&quot;
-function sediment_profile(header::Header, data_slice::DataSlice;
+function sediment_profile(p::PackSlice;
                           show_unconformities::Union{Bool,Int,Nothing} = true)
     fig = Figure(size=(1000, 600))
     ax = Axis(fig[1, 1])
-    sediment_profile!(ax, header, data_slice; show_unconformities=show_unconformities)
+    sediment_profile!(ax, p; show_unconformities=show_unconformities)
     return fig
 end
 
+sediment_profile(header::Header, data::DataSlice; kwargs...) =
+    sediment_profile(Pack(header, data); kwargs...)
+
 &quot;&quot;&quot;
-    sediment_proportion!(ax, header, data, facies_index; colorrange=(0,1), colormap=:viridis)
+    sediment_proportion!(ax, pack, facies_index; colorrange=(0,1), colormap=:viridis)
+    sediment_proportion!(ax, header, data, facies_index; ...)
 
 Plot the proportion of `facies_index` relative to total sediment at each
 location and time step, using the same stratigraphic mesh as `sediment_profile!`.
 
 Returns the `mesh!` plot object (for attaching a `Colorbar`).
 &quot;&quot;&quot;
-function sediment_proportion!(ax::Axis, header::Header, data::DataSlice, facies_index::Int;
+function sediment_proportion!(ax::Axis, p::PackSlice, facies_index::Int;
                                colorrange::Tuple = (0.0, 1.0),
                                colormap = :viridis)
-    n_facies = size(data.production, 1)
-    @assert 1 &lt;= facies_index &lt;= n_facies &quot;facies_index $(facies_index) out of range 1:$(n_facies)&quot;
+    n_f = n_facies(p)
+    @assert 1 &lt;= facies_index &lt;= n_f &quot;facies_index $(facies_index) out of range 1:$(n_f)&quot;
 
-    source = stratigraphic_column(data)
-
-    proportion = map(eachslice(source, dims=(2, 3))) do col
+    proportion = map(eachslice(stratigraphic_column(p), dims=(2, 3))) do col
         total = sum(col)
         total &gt; zero(total) ? col[facies_index] / total : 0.0
     end
 
-    plot = profile_plot!(ax, header, data; color=proportion,
+    plot = profile_plot!(ax, p; color=proportion,
         colorrange=colorrange, colormap=colormap)
     ax.title = &quot;proportion of facies $(facies_index)&quot;
     return plot
 end
 
+sediment_proportion!(ax::Axis, header::Header, data::DataSlice, facies_index::Int; kwargs...) =
+    sediment_proportion!(ax, Pack(header, data), facies_index; kwargs...)
+
 &quot;&quot;&quot;
+    sediment_proportion(pack, facies_index; kwargs...)
     sediment_proportion(header, data, facies_index; kwargs...)
 
 Standalone proportion figure. Shows the fraction of `facies_index` relative to
@@ -418,15 +405,18 @@ is added automatically.
 
 See `sediment_proportion!` for keyword arguments.
 &quot;&quot;&quot;
-function sediment_proportion(header::Header, data::DataSlice, facies_index::Int;
+function sediment_proportion(p::PackSlice, facies_index::Int;
                               colorrange::Tuple = (0.0, 1.0),
                               colormap = :viridis)
     fig = Figure(size=(1000, 600))
     ax  = Axis(fig[1, 1])
-    plot = sediment_proportion!(ax, header, data, facies_index;
+    plot = sediment_proportion!(ax, p, facies_index;
         colorrange=colorrange, colormap=colormap)
     Colorbar(fig[1, 2], plot; label=&quot;facies $(facies_index) proportion&quot;)
     return fig
 end
 
-end  # module</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../output/memory-writer/">« Output to Memory</a><a class="docs-footer-nextpage" href="../fence-diagrams/">Fence Diagram »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Tuesday 20 October 2026 08:20">Tuesday 20 October 2026</span>. Using Julia version 1.13.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+sediment_proportion(header::Header, data::DataSlice, facies_index::Int; kwargs...) =
+    sediment_proportion(Pack(header, data), facies_index; kwargs...)
+
+end  # module</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../output/memory-writer/">« Output to Memory</a><a class="docs-footer-nextpage" href="../fence-diagrams/">Fence Diagram »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Monday 9 November 2026 15:15">Monday 9 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

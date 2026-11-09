@@ -41,72 +41,84 @@ end</code></pre><h2 id="Summary-collage"><a class="docs-heading-anchor" href="#S
 
 using CarboKitten.Visualization
 import CarboKitten.Visualization: summary_plot
-using CarboKitten.Export: read_header, read_volume, read_slice, group_datasets
+using CarboKitten.Output.Abstract: AbstractBundle, load, load_volume, load_slice
+using CarboKitten.Output.Storage: header, data_volumes, data_slices, n_facies,
+    time_axis, y_axis, sea_level, water_depth
+using CarboKitten.Output.H5Reader: H5Bundle, read_header
+using CarboKitten.Output.MemoryWriter: MemoryOutput
 using CarboKitten.Utility: in_units_of
 using HDF5
 using Unitful
 using Makie
 
-summary_plot(filename::AbstractString; kwargs...) = h5open(fid-&gt;summary_plot(fid; kwargs...), filename, &quot;r&quot;)
+summary_plot(filename::AbstractString; kwargs...) = load(b -&gt; summary_plot(b; kwargs...), filename)
+summary_plot(fid::HDF5.File; kwargs...) = summary_plot(H5Bundle(fid, read_header(fid)); kwargs...)
+summary_plot(output::MemoryOutput; kwargs...) = summary_plot(load(output); kwargs...)
 
-function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1), show_unconformities=true)
-    header = read_header(fid)
-    data_groups = group_datasets(fid)
+# The production curve is read from the `input` group of an HDF5 file.
+# Other bundles don&#39;t store this information.
+_production_curve!(fig, bundle::H5Bundle; kwargs...) =
+    production_curve!(Axis(fig[2,3]), bundle.fid[&quot;input&quot;]; kwargs...)
+_production_curve!(fig, bundle::AbstractBundle; kwargs...) = nothing
 
-    if length(data_groups[:slice]) == 0 &amp;&amp; length(data_groups[:volume]) == 0
+function summary_plot(bundle::AbstractBundle; wheeler_smooth=(1, 1), show_unconformities=true)
+    hdr = header(bundle)
+    volumes = sort(data_volumes(bundle))
+    slices = sort(data_slices(bundle))
+
+    if isempty(slices) &amp;&amp; isempty(volumes)
         @warn &quot;No volume data or slice data stored. Cannot produce summary view.&quot;
         return nothing
     end
 
     fig = Figure(size=(1200, 1000), backgroundcolor=:gray80)
 
-    volume_data = if length(data_groups[:volume]) == 0
+    volume_data = if isempty(volumes)
         @warn &quot;No volume data stored, skipping topographic plots.&quot;
         nothing
     else
-        if length(data_groups[:volume]) &gt; 1
+        if length(volumes) &gt; 1
             @warn &quot;Multiple volume data sets, picking first one.&quot;
         end
 
-        volume_data = read_volume(fid[data_groups[:volume][1]])
+        volume_data = load_volume(bundle, volumes[1])
         ax = Axis3(fig[1, 3]; title=&quot;topography&quot;, zlabel=&quot;depth [m]&quot;, xlabel=&quot;x [km]&quot;, ylabel=&quot;y [km]&quot;)
-        glamour_view!(ax, header, volume_data)
+        glamour_view!(ax, volume_data)
         volume_data
     end
 
-    section_data = if length(data_groups[:slice]) == 0
+    section_data = if isempty(slices)
         @warn &quot;No profile data slice stored, taking section of volume data along x-axis.&quot;
 
-        y_slice = div(size(volume_data.bathymetry)[2], 2) + 1
+        y_slice = div(length(y_axis(volume_data)), 2) + 1
         volume_data[:, y_slice]
     else
-        read_slice(fid[data_groups[:slice][1]])
+        load_slice(bundle, slices[1])
     end
 
-    n_facies = size(section_data.production)[1]
+    n_f = n_facies(section_data)
 
     ax1 = Axis(fig[1:2,1:2])
-    sediment_profile!(ax1, header, section_data; show_unconformities = show_unconformities)
+    sediment_profile!(ax1, section_data; show_unconformities = show_unconformities)
     axislegend(ax1; merge=true, backgroundcolor=:gray80)
 
     ax2 = Axis(fig[4,1])
     ax3 = Axis(fig[4,2])
-    sm, df = wheeler_diagram!(ax2, ax3, header, section_data; smooth_size=wheeler_smooth)
+    sm, df = wheeler_diagram!(ax2, ax3, section_data; smooth_size=wheeler_smooth)
     Colorbar(fig[3,1], sm; vertical=false, label=&quot;sedimentation rate [m/Myr]&quot;)
-    Colorbar(fig[3,2], df; vertical=false, label=&quot;dominant facies&quot;, ticks=1:n_facies)
-    wi = section_data.write_interval
+    Colorbar(fig[3,2], df; vertical=false, label=&quot;dominant facies&quot;, ticks=1:n_f)
     ax4 = Axis(fig[4,3], title=&quot;sealevel curve&quot;, xlabel=&quot;sealevel [m]&quot;,
-               limits=(nothing, (header.axes.t[1] |&gt; in_units_of(u&quot;Myr&quot;),
-                                 header.axes.t[1:wi:end][end] |&gt; in_units_of(u&quot;Myr&quot;))))
-    lines!(ax4, header.sea_level |&gt; in_units_of(u&quot;m&quot;), header.axes.t |&gt; in_units_of(u&quot;Myr&quot;))
+               limits=(nothing, (first(time_axis(section_data)) |&gt; in_units_of(u&quot;Myr&quot;),
+                                 last(time_axis(section_data)) |&gt; in_units_of(u&quot;Myr&quot;))))
+    lines!(ax4, sea_level(hdr) |&gt; in_units_of(u&quot;m&quot;), time_axis(hdr) |&gt; in_units_of(u&quot;Myr&quot;))
 
-    ax5 = Axis(fig[2,3])
-    max_depth = minimum(header.initial_topography)
-    production_curve!(ax5, fid[&quot;input&quot;], max_depth=max_depth)
+    # Limit the production curve to the depths that actually occur in the run.
+    max_depth = maximum(water_depth(something(volume_data, section_data)))
+    _production_curve!(fig, bundle; max_depth=max_depth)
 
     linkyaxes!(ax2, ax3, ax4)
 
     fig
 end
 
-end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../data-export/">« Data Export</a><a class="docs-footer-nextpage" href="../../debugging/">Trouble shooting and diagnostics »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Tuesday 20 October 2026 08:20">Tuesday 20 October 2026</span>. Using Julia version 1.13.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../data-export/">« Data Export</a><a class="docs-footer-nextpage" href="../../debugging/">Trouble shooting and diagnostics »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Monday 9 November 2026 15:15">Monday 9 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

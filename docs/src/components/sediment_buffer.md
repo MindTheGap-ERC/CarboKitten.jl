@@ -28,7 +28,7 @@ We define two functions `push_sediment!` and `pop_sediment!`. Given a $s \times 
 
 ``` {.julia file=test/SedimentStackSpec.jl}
 @testset "SedimentStack" begin
-  using CarboKitten.SedimentStack: push_sediment!, pop_sediment!
+  using CarboKitten.SedimentStack: push_sediment!, pop_sediment!, peek_sediment
   stack = zeros(Float64, 10, 3)
   @test pop_sediment!(stack, 0.0) == [0.0, 0.0, 0.0]
   push_sediment!(stack, [5.0, 0, 0])
@@ -37,6 +37,10 @@ We define two functions `push_sediment!` and `pop_sediment!`. Given a $s \times 
   @test pop_sediment!(stack, 2.0) == [0.25, 1.75, 0.0]
   @test pop_sediment!(stack, 1.5) == [1.25, 0.25, 0.0]
   @test pop_sediment!(stack, 0.0) == [0.0, 0.0, 0.0]
+
+  stack2 = zeros(Float64, 10, 3)
+  push_sediment!(stack2, [1.0, 0.0, 0.0])
+  @test peek_sediment(stack2, 1.0) == [1.0, 0.0, 0.0]
 end
 
 @testset "SedimentArray" begin
@@ -211,8 +215,11 @@ function peek_sediment(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vect
   parcel .+= sum(col[2:n+1,:]; dims=1)'
   Δ -= n
 
-  last_bit = (Δ / sum(col[n+2,:])) .* col[n+2,:]
-  parcel .+= last_bit
+  last_bucket = sum(col[n+2,:])
+  if last_bucket > 0
+    last_bit = (Δ / last_bucket) .* col[n+2,:]
+    parcel .+= last_bit
+  end
 
   return parcel
 end

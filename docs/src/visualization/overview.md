@@ -1,38 +1,5 @@
 # Visualization
 
-The visualization of CarboKitten output is implemented in a Julia [package extension](https://pkgdocs.julialang.org/v1/creating-packages/#Conditional-loading-of-code-in-packages-(Extensions)). This is done so that `CarboKitten.jl` itself doesn't have to depend on `Makie.jl` (our main visualization tool), which has a large transient dependency stack. To make the `Visualization` extension of CarboKitten available, make sure to activate a Julia project where `Makie` is installed.
-
-## Makie primer
-
-`Makie.jl` is a visualization package that creates exceptionally good looking (publication quality) plots in both 2D and 3D. There are three back-ends for Makie:
-
-- `CairoMakie` for publication quality vector graphics, writing to `SVG`, `PDF` or `PNG`.
-- `GLMakie` has better run-time performance than `CairoMakie`, especially when dealing with larger datasets and/or 3D visualizations. However, `GLMakie` can only produce rasterized images, so `PNG`, `JPEG` or directly to screen for interactive use.
-- `WGLMakie` for online publication using WebGL. If you want interactive plots, like 3D plots that you can rotate in the browser, this is the one to use. Fair warning: this is also the least stable back-end for Makie.
-
-To work with Makie, you need to import one of the three back-end packages. In general, every plot available in Makie has two variants. One is a direct function for plotting:
-
-```julia
-using CairoMakie
-
-x = randn(10)
-y = randn(10)
-
-scatter(x, y)
-```
-
-The other requires a bit more prep, but gives you more control.
-
-```julia
-fig = Figure()
-ax = Axis(fig[1,1])
-scatter!(ax, x, y)
-```
-
-Here, we create a figure explicitly, then create a new set of axes somewhere on the grid in the figure, and then plot on that set of axes. The plotting functions accepting an `Axis` argument actually modify an existing context, which is why these functions always end with an exclamation mark, in this case `scatter!`.
-
-If you like to know more about Makie, their ["Getting started"](https://docs.makie.org/stable/tutorials/getting-started) is a good place to start.
-
 ## Colours
 
 We like to use colorblind safe pallete of colours as described on [Paul Tol's website](https://personal.sron.nl/~pault/): '#4477AA', '#EE6677', '#228833', '#CCBB44', '#66CCEE', '#AA3377', '#BBBBBB'.
@@ -96,68 +63,80 @@ module SummaryPlot
 
 using CarboKitten.Visualization
 import CarboKitten.Visualization: summary_plot
-using CarboKitten.Export: read_header, read_volume, read_slice, group_datasets
+using CarboKitten.Output.Abstract: AbstractBundle, load, load_volume, load_slice
+using CarboKitten.Output.Storage: header, data_volumes, data_slices, n_facies,
+    time_axis, y_axis, sea_level, water_depth
+using CarboKitten.Output.H5Reader: H5Bundle, read_header
+using CarboKitten.Output.MemoryWriter: MemoryOutput
 using CarboKitten.Utility: in_units_of
 using HDF5
 using Unitful
 using Makie
 
-summary_plot(filename::AbstractString; kwargs...) = h5open(fid->summary_plot(fid; kwargs...), filename, "r")
+summary_plot(filename::AbstractString; kwargs...) = load(b -> summary_plot(b; kwargs...), filename)
+summary_plot(fid::HDF5.File; kwargs...) = summary_plot(H5Bundle(fid, read_header(fid)); kwargs...)
+summary_plot(output::MemoryOutput; kwargs...) = summary_plot(load(output); kwargs...)
 
-function summary_plot(fid::HDF5.File; wheeler_smooth=(1, 1), show_unconformities=true)
-    header = read_header(fid)
-    data_groups = group_datasets(fid)
+# The production curve is read from the `input` group of an HDF5 file.
+# Other bundles don't store this information.
+_production_curve!(fig, bundle::H5Bundle; kwargs...) =
+    production_curve!(Axis(fig[2,3]), bundle.fid["input"]; kwargs...)
+_production_curve!(fig, bundle::AbstractBundle; kwargs...) = nothing
 
-    if length(data_groups[:slice]) == 0 && length(data_groups[:volume]) == 0
+function summary_plot(bundle::AbstractBundle; wheeler_smooth=(1, 1), show_unconformities=true)
+    hdr = header(bundle)
+    volumes = sort(data_volumes(bundle))
+    slices = sort(data_slices(bundle))
+
+    if isempty(slices) && isempty(volumes)
         @warn "No volume data or slice data stored. Cannot produce summary view."
         return nothing
     end
 
     fig = Figure(size=(1200, 1000), backgroundcolor=:gray80)
 
-    volume_data = if length(data_groups[:volume]) == 0
+    volume_data = if isempty(volumes)
         @warn "No volume data stored, skipping topographic plots."
         nothing
     else
-        if length(data_groups[:volume]) > 1
+        if length(volumes) > 1
             @warn "Multiple volume data sets, picking first one."
         end
 
-        volume_data = read_volume(fid[data_groups[:volume][1]])
+        volume_data = load_volume(bundle, volumes[1])
         ax = Axis3(fig[1, 3]; title="topography", zlabel="depth [m]", xlabel="x [km]", ylabel="y [km]")
-        glamour_view!(ax, header, volume_data)
+        glamour_view!(ax, volume_data)
         volume_data
     end
 
-    section_data = if length(data_groups[:slice]) == 0
+    section_data = if isempty(slices)
         @warn "No profile data slice stored, taking section of volume data along x-axis."
 
-        y_slice = div(size(volume_data.sediment_thickness)[2], 2) + 1
+        y_slice = div(length(y_axis(volume_data)), 2) + 1
         volume_data[:, y_slice]
     else
-        read_slice(fid[data_groups[:slice][1]])
+        load_slice(bundle, slices[1])
     end
 
-    n_facies = size(section_data.production)[1]
+    n_f = n_facies(section_data)
 
     ax1 = Axis(fig[1:2,1:2])
-    sediment_profile!(ax1, header, section_data; show_unconformities = show_unconformities)
+    sediment_profile!(ax1, section_data; show_unconformities = show_unconformities)
     axislegend(ax1; merge=true, backgroundcolor=:gray80)
 
     ax2 = Axis(fig[4,1])
     ax3 = Axis(fig[4,2])
-    sm, df = wheeler_diagram!(ax2, ax3, header, section_data; smooth_size=wheeler_smooth)
+    sm, df = wheeler_diagram!(ax2, ax3, section_data; smooth_size=wheeler_smooth)
     Colorbar(fig[3,1], sm; vertical=false, label="sedimentation rate [m/Myr]")
-    Colorbar(fig[3,2], df; vertical=false, label="dominant facies", ticks=1:n_facies)
-    wi = section_data.write_interval
+    Colorbar(fig[3,2], df; vertical=false, label="dominant facies", ticks=1:n_f)
     ax4 = Axis(fig[4,3], title="sealevel curve", xlabel="sealevel [m]",
-               limits=(nothing, (header.axes.t[1] |> in_units_of(u"Myr"),
-                                 header.axes.t[1:wi:end][end] |> in_units_of(u"Myr"))))
-    lines!(ax4, header.sea_level |> in_units_of(u"m"), header.axes.t |> in_units_of(u"Myr"))
+               limits=(nothing, (first(time_axis(section_data)) |> in_units_of(u"Myr"),
+                                 last(time_axis(section_data)) |> in_units_of(u"Myr"))))
+    lines!(ax4, sea_level(hdr) |> in_units_of(u"m"), time_axis(hdr) |> in_units_of(u"Myr"))
 
-    ax5 = Axis(fig[2,3])
-    max_depth = minimum(header.initial_topography)
-    production_curve!(ax5, fid["input"], max_depth=max_depth)
+    # Limit the production curve to the depths that actually occur in the run.
+    max_depth = maximum(water_depth(something(volume_data, section_data)))
+    _production_curve!(fig, bundle; max_depth=max_depth)
 
     linkyaxes!(ax2, ax3, ax4)
 

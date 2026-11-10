@@ -1,24 +1,24 @@
+module DenudationSpec
 using Test
 using Unitful
 
-@testset "DenudationTST" begin
-    import CarboKitten.Denudation.DissolutionMod: dissolution
-    import CarboKitten.Denudation.EmpiricalDenudationMod: empirical_denudation, slope_kernel
-    import CarboKitten.Denudation.PhysicalErosionMod: physical_erosion, mass_erosion, total_mass_redistribution
-    using CarboKitten.Stencil: Periodic, Reflected, stencil
-    using CarboKitten.Config: Vectors, TimeProperties
-    using CarboKitten.Boxes: Box
-    using CarboKitten.Models.WithDenudation: Input, Facies
-    using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpiricalDenudation
+using CarboKitten
+using CarboKitten.Denudation.DissolutionMod: dissolution, dominant_facies
+using CarboKitten.SedimentStack: push_sediment!, peek_sediment 
+using CarboKitten.Components.SedimentBuffer: pop_sediment
+using CarboKitten.Components.Common
+using CarboKitten.Components: Denudation as D
 
 
-    DENUDATION_HIGH_CO2 = Dissolution(temp = 293.0u"K",precip = 1.0u"m/yr", pco2 = 10^(-1.5)*u"atm",reactionrate = 2e-3u"m/yr")
-    DENUDATION_LOW_CO2 = Dissolution(temp = 293.0u"K",precip = 1.0u"m/yr", pco2 = 10^(-2.5)*u"atm",reactionrate = 2e-3u"m/yr")
-    DENUDATION_LOW_P = EmpiricalDenudation(precip = 0.8u"m/yr")
-    DENUDATION_HIGH_P = EmpiricalDenudation(precip = 1.0u"m/yr")
-    DENUDATION_PHYS = PhysicalErosion()
-    MODEL1 = [
-        Facies(viability_range = (4, 10),
+using CarboKitten.Stencil: Periodic, Reflected, stencil
+using CarboKitten.Config: Vectors, TimeProperties
+using CarboKitten.Boxes: Box
+using CarboKitten.Models: WithDenudation as WD
+using CarboKitten.Denudation.EmpiricalDenudationMod: slope_kernel
+using CarboKitten.Denudation: denudation, redistribution, Dissolution, NoDenudation, PhysicalErosion, EmpiricalDenudation
+
+FACIES1 = [
+        WD.Facies(viability_range = (4, 10),
         activation_range = (6, 10),
         production = BenthicProduction(
             maximum_growth_rate = 500u"m/Myr",
@@ -28,9 +28,10 @@ using Unitful
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5,
-        erodibility = 0.23u"m/yr"),
+        erodibility = 0.23u"m/yr",
+        initial_sediment=5.0u"m"),
 
-        Facies(viability_range = (4, 10),
+        WD.Facies(viability_range = (4, 10),
         activation_range = (6, 10),
         production = BenthicProduction(
             maximum_growth_rate = 400u"m/Myr",
@@ -40,9 +41,10 @@ using Unitful
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5,
-        erodibility = 0.23u"m/yr"),
+        erodibility = 0.23u"m/yr",
+        initial_sediment=5.0u"m"),
 
-        Facies(viability_range = (4, 10),
+        WD.Facies(viability_range = (4, 10),
         activation_range = (6, 10),
         production = BenthicProduction(
             maximum_growth_rate = 100u"m/Myr",
@@ -52,70 +54,123 @@ using Unitful
         reactive_surface = 1000u"m^2/m^3",
         mass_density = 2730u"kg/m^3",
         infiltration_coefficient= 0.5,
-        erodibility = 0.23u"m/yr")
+        erodibility = 0.23u"m/yr",
+        initial_sediment=5.0u"m"
+        )
     ]
 
-    box = Box{Periodic{2}}(grid_size=(5, 5), phys_scale=1.0u"km")
-    n_facies = length(MODEL1)
-    ca_init = [ 0  0  1  3  3
-                0  1  3  2  1
-                2  0  1  0  1
-                1  3  3  3  0
-                1  3  2  3  2]
+function denudation_test_input(denudation_type, sea_level)
+    input = WD.Input(
+        tag="den_test",
+        box=Box{Periodic{2}}(grid_size=(5, 5), phys_scale=1.0u"km"),
+        time=TimeProperties(
+			Δt = 200.0u"yr",
+			steps = 10),
+        output=Dict(:profile => OutputSpec(slice=(:, 2), write_interval=1)),
+        ca_interval=1,
+        initial_topography=(x,y) -> -15.0u"m",
+        sea_level=sea_level, # make this into an array and pass as arg?
+        facies=FACIES1, # also arg?
+        insolation=400.0u"W/m^2",
+        denudation=denudation_type
+    )
+end
 
-    struct test_state
-        ca::Array{Int}
-    end
-
-    STATE1 = test_state(ca_init)
-
-    denudation_mass_HIGH_CO2 = zeros(typeof(0.0u"m/kyr"),n_facies,box.grid_size...)
-    denudation_mass_LOW_CO2 = zeros(typeof(0.0u"m/kyr"),n_facies,box.grid_size...)
-    denudation_mass_LOW_P = zeros(typeof(0.0u"m/kyr"),n_facies,box.grid_size...)
-    denudation_mass_HIGH_P = zeros(typeof(0.0u"m/kyr"),n_facies,box.grid_size...)
-    denudation_mass_phys = zeros(typeof(0.0u"m/kyr"),n_facies,box.grid_size...)
-    denudation_mass_phys_flat = zeros(typeof(0.0u"m/kyr"),n_facies,box.grid_size...)
-    redistribution_mass = zeros(typeof(0.0u"m"),n_facies,box.grid_size...)
-
-    water_depth = -100 .* [ 0.989943  0.48076   0.518983  0.997996   0.895681
-                    0.872733  0.208779  0.882917  0.550494   0.674066
-                    0.57987   0.619433  0.769506  0.593786   0.856186
-                    0.407728  0.469545  0.896348  0.473817   0.797112
+@testset "DenudationTST" begin
+ 
+    DENUDATION_HIGH_CO2 = Dissolution(temp = 293.0u"K",precip = 1.0u"m/yr", pco2 = 10^(-1.5)*u"atm",reactionrate = 2e-3u"m/yr")
+    DENUDATION_LOW_CO2 = Dissolution(temp = 293.0u"K",precip = 1.0u"m/yr", pco2 = 10^(-2.5)*u"atm",reactionrate = 2e-3u"m/yr")
+    DENUDATION_LOW_P = EmpiricalDenudation(precip = 0.8u"m/yr")
+    DENUDATION_HIGH_P = EmpiricalDenudation(precip = 1.0u"m/yr")
+    DENUDATION_PHYS = PhysicalErosion()
+    
+    water_depth = -100 .* [ 0.989943  0.48076   0.518983  0.997996   0.895681;
+                    0.872733  0.208779  0.882917  0.550494   0.674066;
+                    0.57987   0.619433  0.769506  0.593786   0.856186;
+                    0.407728  0.469545  0.896348  0.473817   0.797112;
                     0.610194  0.921632  0.322729  0.0103646  0.691191]
-    water_depth_flat = -0.5 .* ones(box.grid_size...)
-    inf_map = ones(box.grid_size...)
-    slope = rand(Float64, box.grid_size...)
+
+    water_depth_flat = -0.5 .* ones(5,5)
+    
+
+    # Dissolution
+    INPUT_HCO2 = denudation_test_input(DENUDATION_HIGH_CO2, water_depth)
+
+    slope = rand(Float64, 5, 5)
     slopefn = stencil(Float64, Periodic{2}, (3, 3), slope_kernel)
-    slopefn(water_depth, slope, box.phys_scale ./u"m")
-    slope_flat = zeros(box.grid_size...)
-    slopefn(water_depth_flat, slope_flat, box.phys_scale ./u"m")
+    slopefn(water_depth, slope, INPUT_HCO2.box.phys_scale ./u"m")
+    slope_flat = zeros(Float64,5,5)
+    slopefn(water_depth_flat, slope_flat, INPUT_HCO2.box.phys_scale ./u"m")
 
-    (denudation_mass_HIGH_CO2) = denudation(box, DENUDATION_HIGH_CO2, water_depth, slope,MODEL1,STATE1)
-    (denudation_mass_LOW_CO2) = denudation(box, DENUDATION_LOW_CO2, water_depth, slope,MODEL1,STATE1)
-    (denudation_mass_LOW_P) = denudation(box, DENUDATION_LOW_P, water_depth, slope,MODEL1,STATE1)
-    (denudation_mass_HIGH_P) = denudation(box, DENUDATION_HIGH_P, water_depth, slope,MODEL1,STATE1)
+    STATE_HCO2 = WD.initial_state(INPUT_HCO2)
+    denudation_mass_HCO2 = denudation(INPUT_HCO2)(STATE_HCO2, water_depth, slope)
 
-    (denudation_mass_phys) = denudation(box, DENUDATION_PHYS, water_depth, slope,MODEL1,STATE1)
-    (denudation_mass_phys_flat) = denudation(box, DENUDATION_PHYS, water_depth_flat, slope_flat,MODEL1,STATE1)
-    for idx in CartesianIndices(STATE1.ca)
-        f = STATE1.ca[idx]
-        if f == 0
-            continue
-        end
+    INPUT_LCO2 = denudation_test_input(DENUDATION_LOW_CO2, water_depth)
+    STATE_LCO2 = WD.initial_state(INPUT_LCO2)
+    denudation_mass_LCO2 = denudation(INPUT_LCO2)(STATE_LCO2, water_depth, slope)
 
-    inf_map[idx] = MODEL1[f].infiltration_coefficient
-    end
+    @test sum(denudation_mass_HCO2) > sum(denudation_mass_LCO2)
 
-    (redistribution_mass) = redistribution(box,DENUDATION_PHYS,denudation_mass_phys .*1.0u"Myr",water_depth)
+    # Empirical 
+    INPUT_HP = denudation_test_input(DENUDATION_HIGH_P, water_depth)
+    STATE_HP = WD.initial_state(INPUT_HP)
+    denudation_mass_HP = denudation(INPUT_HP)(STATE_HP, water_depth, slope)
+    
+    INPUT_LP = denudation_test_input(DENUDATION_LOW_P, water_depth)
+    STATE_LP = WD.initial_state(INPUT_LP)
+    denudation_mass_LP = denudation(INPUT_LP)(STATE_LP, water_depth, slope)
 
-    @test sum(denudation_mass_HIGH_CO2) > sum(denudation_mass_LOW_CO2)
-    @test sum(denudation_mass_LOW_P) < sum(denudation_mass_HIGH_P)
-    @test sum(denudation_mass_phys) > sum(denudation_mass_phys_flat)
-    @test sum(denudation_mass_phys .*1.0u"Myr") ≈ sum(redistribution_mass)
+    @test sum(denudation_mass_LP) < sum(denudation_mass_HP)
 
-    #regression_test
-    #@test 1.8*0.95 < abs.(sum(denudation_mass_HIGH_CO2)) ./u"m/kyr" < 1.8 *1.05
-    #@test 477*0.95 < abs.(sum(denudation_mass_LOW_P)) ./u"m/kyr" < 477*1.05
-    #@test 0.15* 0.7115 < sum(denudation_mass_phys) ./u"m/kyr" < 0.15*1.05
+    # physical
+    INPUT_PHYS_SLOPE = denudation_test_input(DENUDATION_PHYS, water_depth)
+    STATE_PHYS_SLOPE = WD.initial_state(INPUT_PHYS_SLOPE)
+    denudation_mass_PHYS_SLOPE = denudation(INPUT_PHYS_SLOPE)(STATE_PHYS_SLOPE, water_depth, slope)
+
+    INPUT_PHYS_FLAT = denudation_test_input(DENUDATION_PHYS, water_depth_flat)
+    STATE_PHYS_FLAT = WD.initial_state(INPUT_PHYS_FLAT)
+    denudation_mass_PHYS_FLAT = denudation(INPUT_PHYS_FLAT)(STATE_PHYS_FLAT, water_depth_flat, slope_flat)
+
+    @test sum(denudation_mass_PHYS_SLOPE) > sum(denudation_mass_PHYS_FLAT)
+    @test sum(denudation_mass_PHYS_FLAT) ≈ 0.0u"m"
+
+    # redistribution
+    denuded_sediment = Array{Amount, 3}(undef, 3, INPUT_PHYS_SLOPE.box.grid_size...)
+    denudation_mass_PHYS_SLOPE = denudation_mass_PHYS_SLOPE |>
+                x -> min.(x, STATE_PHYS_SLOPE.sediment_thickness)
+    
+    pop_sediment(INPUT_PHYS_SLOPE)(STATE_PHYS_SLOPE, denudation_mass_PHYS_SLOPE, denuded_sediment)
+    redistribution_mass = redistribution(INPUT_PHYS_SLOPE)(STATE_PHYS_SLOPE, water_depth, denuded_sediment)
+    
+    @test sum(denuded_sediment) ≈ sum(redistribution_mass)
+
+end
+
+@testset "dominant_facies" begin
+    state = D.State(
+        step=0,
+        bathymetry=zeros(Height, 3,3),
+        sediment_thickness=zeros(Height, 3,3),
+        sediment_buffer = zeros(Float64,10,3,3,3)
+    )
+    some_sed = zeros(Float64,3,3,3)
+    some_sed[1,:,:] .+= 1.0
+    push_sediment!(state.sediment_buffer, some_sed)
+    @test dominant_facies(state, CartesianIndex(1,1), 2.0) == 1    
+
+    some_sed[2,:,:] .+= 2.0 
+    push_sediment!(state.sediment_buffer, some_sed)
+    @test dominant_facies(state, CartesianIndex(1,1), 2.0) == 2
+
+    some_sed[3,:,:] .+= 3.0 
+    push_sediment!(state.sediment_buffer, some_sed)
+    @test dominant_facies(state, CartesianIndex(1,1), 2.0) == 3
+
+    # if there's no maximum, takes the first index
+    same_sed = ones(Float64,3,3,3)
+    push_sediment!(state.sediment_buffer, same_sed)
+    @test dominant_facies(state, CartesianIndex(1,1), 2.0) == 1
+
+end
 
 end

@@ -124,12 +124,21 @@ include("./Components.jl")
 module Output
 
 include("./Output/Abstract.jl")
+include("./Output/Storage.jl")
 include("./Output/RunModel.jl")
 include("./Output/H5Writer.jl")
+include("./Output/H5Reader.jl")
 include("./Output/MemoryWriter.jl")
 
 using .Abstract: Frame, frame_writer, state_writer
 export Frame, frame_writer, state_writer
+
+using .Abstract: load, load_volume, load_slice, load_column
+using .Storage: water_depth, stratigraphic_column, sediment_thickness, surface_heights,
+    production, deposition, disintegration, active_layer, bathymetry,
+    net_deposition, write_interval, slice, time_axis, write_time_step, x_axis, y_axis,
+    section_axis, sea_level, bedrock, total_subsidence, n_facies,
+    Pack, PackVolume, PackSlice, PackColumn
 
 end
 
@@ -143,6 +152,7 @@ include("./Models/CAP.jl")
 include("./Models/ALCAP.jl")
 include("./Models/WithDenudation.jl")
 include("./Models/WithoutCA.jl")
+include("./Models/WithoutCADenudation.jl")
 end
 
 include("./Export.jl")
@@ -150,7 +160,8 @@ include("./Visualization.jl")
 include("./Testing.jl")
 
 using .Components.Common: in_units_of, @u_str
-using .Output.Abstract: OutputSpec, new_output, water_depth, stratigraphic_column
+using .Output.Abstract: new_output, load, load_volume, load_slice, load_column
+using .Output.Storage: water_depth, stratigraphic_column
 using .Output.MemoryWriter: MemoryOutput
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
@@ -163,6 +174,6 @@ export run_model, Box, box_axes, TimeProperties, time_axis,
     AbstractBox, Boundary, Coast, Periodic, Reflected,
     Vec2, OutputSpec, MemoryOutput, new_output, n_steps,
     BenthicProduction, PelagicProduction, InterpolatedProduction, ProductionBoost,
-    water_depth, stratigraphic_column
+    water_depth, stratigraphic_column, load, load_volume, load_slice, load_column
 
 end # module CarboKitten

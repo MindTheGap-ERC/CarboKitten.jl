@@ -23,12 +23,13 @@ using CarboKitten
     run_model(Model{BS92}, BS92_TEST_INPUT, joinpath(TEST_PATH, "bs92_spm.h5"))
 
     @testset "Water depth signs" begin
-        using CarboKitten.Export: extract_wd, extract_sac, read_column
+        using CarboKitten.Output: load_column
+        using CarboKitten.Export: extract_wd, extract_sac
 
         test_path::String = TEST_PATH
-        header, data = read_column(joinpath(test_path, "bs92_spm.h5"), :full)
-        wd = extract_wd(header, data, 1)
-        sac = extract_sac(header, data, 1)
+        pack = load_column(joinpath(test_path, "bs92_spm.h5"), :full)
+        wd = extract_wd(pack.header, pack.data, 1)
+        sac = extract_sac(pack.header, pack.data, 1)
         submerged = wd.wd_1 .> -1.0u"m"
         growing = (sac.sac_1[2:end] .- sac.sac_1[1:end-1]) .> 0.5u"m"
         @test all(growing .&& (submerged[1:end-1] .|| submerged[2:end]) .|| .!growing)

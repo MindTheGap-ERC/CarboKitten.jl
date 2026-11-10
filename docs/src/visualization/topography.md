@@ -17,7 +17,7 @@ function topography!(ax, header, data; colormap=:nuuk, levels=[-10, -5, 0, 5, 10
 
     h = header
     s = data.sediment_thickness[:, :, end]
-    t = h.initial_topography .+ s .- ((h.axes.t[end] - h.axes.t[1]) * h.subsidence_rate)
+    t = bedrock(h) .+ s
     
     hm = contourf!(
         ax,

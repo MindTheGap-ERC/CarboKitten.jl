@@ -5,7 +5,8 @@ using ..Common
 using HDF5
 using ..TimeIntegration: time, time_axis
 
-export water_depth, subsider, initial_topography
+export water_depth, subsider, initial_topography, cumulative_subsidence
+export TimeVariableSubsidenceRate, SpaceTimeVariableSubsidenceRate
 
 @kwdef struct Input <: AbstractInput
     sea_level = t -> 0.0u"m"
@@ -52,7 +53,7 @@ function subsider(input::AbstractInput, s::SpaceTimeVariableSubsidenceRate)
 
     return function (state::AbstractState)
         t = get_time(state)
-        Δσ = input.subsidence_rate.f.(x, y', t) * dt
+        Δσ = s.f.(x, y', t) * dt
         state.bathymetry .-= Δσ
     end
 end
@@ -76,6 +77,21 @@ function subsider(input::AbstractInput, s::Quantity)
     end
 end
 
+"""
+    cumulative_subsidence(input)
+
+Total amount of subsidence over the entire run, for each grid cell.
+"""
+function cumulative_subsidence(input::AbstractInput)
+    state = State(step=0, bathymetry=zeros(Amount, input.box.grid_size...))
+    subside! = subsider(input)
+    for _ in 1:input.time.steps
+        subside!(state)
+        state.step += 1
+    end
+    return .-state.bathymetry
+end
+
 function water_depth(input::AbstractInput)
     sea_level = input.sea_level
     get_time = time(input)
@@ -91,7 +107,10 @@ function write_header(input::AbstractInput, output::AbstractOutput)
     t = time_axis(input)
     set_attribute(output, "initial_topography", initial_topography(input) |> in_units_of(u"m"))
     set_attribute(output, "sea_level", input.sea_level.(t) .|> in_units_of(u"m"))
-    set_attribute(output, "subsidence_rate", input.subsidence_rate |> in_units_of(u"m/Myr"))
+    set_attribute(output, "total_subsidence", cumulative_subsidence(input) |> in_units_of(u"m"))
+    if input.subsidence_rate isa Quantity
+        set_attribute(output, "subsidence_rate", input.subsidence_rate |> in_units_of(u"m/Myr"))
+    end
 end
 
 end

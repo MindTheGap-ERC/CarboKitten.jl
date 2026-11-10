@@ -12,6 +12,7 @@ using .Iterators: flatten
 
 using ..Output.Abstract
 using ..Output.Storage
+using ..Output.Storage: total_subsidence
 
 # Re-exports H5Reader functions for convenience of old API
 # these should be deprecated in favour of the new `load_*` functions
@@ -123,17 +124,22 @@ of `DataColumn`.
 function data_export(spec::CSV, header::Header, data)
     for (key, filename) in spec.output_files
         if key == :metadata
+            global_md = Dict(
+                "tag" => header.tag,
+                "time_steps" => header.time_steps,
+                "delta_t" => header.Δt)
+            if header.subsidence_rate !== nothing
+                global_md["subsidence_rate"] = header.subsidence_rate
+            end
+            σ = total_subsidence(header)
             md = Dict(
-                "global" => Dict(
-                    "tag" => header.tag,
-                    "subsidence_rate" => header.subsidence_rate,
-                    "time_steps" => header.time_steps,
-                    "delta_t" => header.Δt),
+                "global" => global_md,
                 "locations" => [Dict(
                     "label" => string(label),
                     "x" => header.axes.x[col.slice[1]],
                     "y" => header.axes.y[col.slice[2]],
-                    "initial_topography" => header.initial_topography[col.slice...])
+                    "initial_topography" => header.initial_topography[col.slice...],
+                    "total_subsidence" => σ isa AbstractMatrix ? σ[col.slice...] : σ)
                     for (label, col) in pairs(data)],
                 "files" => spec.output_files)
             open(filename, "w") do io

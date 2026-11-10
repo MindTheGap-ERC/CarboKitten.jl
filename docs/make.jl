@@ -98,6 +98,7 @@ makedocs(
         "Examples" => [
             "Tutorial (Pluto notebook)" => "first_tutorial.md",
             "Tabular Sea Levels" => "cases/tabular-sea-level.md",
+            "Variable Subsidence" => "cases/variable-subsidence.md",
             "Initial Topography" => "initial-topography.md",
         ],
         "Production Models" => [

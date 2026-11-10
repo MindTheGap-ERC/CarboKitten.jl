@@ -3,6 +3,7 @@ module Prerun
 
 using CarboKitten
 using CarboKitten.Export: read_volume
+using CarboKitten.Output: bedrock
 
 using Tables
 using CSV: write as write_csv
@@ -59,11 +60,8 @@ end
 function save_final_topography(prerun_filename)
     header, data = read_volume(prerun_filename, :topography)
 
-    t = header.axes.t
-    h0 = header.initial_topography
-    subsidence = header.subsidence_rate * (t[end] - t[1])
     delta_h = data.sediment_thickness[:, :, end]
-    h = h0 .+ delta_h .- subsidence
+    h = bedrock(header) .+ delta_h
 
     write_csv(DATAFILE, h |> in_units_of(u"m") |> Tables.table)
 end

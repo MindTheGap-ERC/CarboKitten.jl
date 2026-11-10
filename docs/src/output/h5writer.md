@@ -34,7 +34,7 @@ using Unitful
 import ...CarboKitten: run_model, Model, AbstractOutput, AbstractInput, OutputSpec, AbstractState
 
 using ...CarboKitten: time_axis, box_axes
-using ...Components.WaterDepth: initial_topography
+using ...Components.WaterDepth: initial_topography, cumulative_subsidence
 
 using ...Utility: in_units_of
 
@@ -64,7 +64,8 @@ function make_header(input::AbstractInput)
         n_facies=length(input.facies),
         initial_topography=h0,
         sea_level=sl,
-        subsidence_rate=input.subsidence_rate,
+        subsidence_rate=input.subsidence_rate isa Quantity ? input.subsidence_rate : nothing,
+        total_subsidence=cumulative_subsidence(input),
         data_sets=Dict(),
         attributes=Dict())
 end

@@ -1,22 +1,21 @@
 # ~/~ begin <<docs/src/components/time.md#src/Components/TimeIntegration.jl>>[init]
-@compose module TimeIntegration
+@component module TimeIntegration
 using ..Common
+import ..Common: write_header
 import ...CarboKitten: time_axis, n_writes, n_steps
 
 using HDF5
 export time, n_writes, time_axis
 
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     time::TimeProperties
 end
 
-@kwdef mutable struct State <: AbstractState
+@kwdef mutable struct State <: StatePart
     step::Int
 end
 
 State(_::AbstractInput) = State(0)
-
-@constructor _initial_state(input)::State[step] = (step = 0,)
 
 """
     time(input, state)
@@ -37,7 +36,7 @@ time_axis(input::AbstractInput) = time_axis(input.time)
 n_writes(input::AbstractInput) = n_writes(input.time)
 n_steps(input::AbstractInput) = input.time.steps
 
-function write_header(input::AbstractInput, output::AbstractOutput)
+function write_header(::Input, input::AbstractInput, output::AbstractOutput)
     set_attribute(output, "t", write_times(input) .|> in_units_of(u"Myr"))
     set_attribute(output, "t0", input.time.t0 |> in_units_of(u"Myr"))
     set_attribute(output, "delta_t", input.time.Δt |> in_units_of(u"Myr"))

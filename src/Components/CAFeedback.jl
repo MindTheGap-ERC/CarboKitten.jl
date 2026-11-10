@@ -1,8 +1,8 @@
 # ~/~ begin <<docs/src/components/cellular-automata.md#src/Components/CAFeedback.jl>>[init]
-@compose module CAFeedback
+@component module CAFeedback
 using ..Common
 
-@kwdef struct Facies
+@kwdef struct Facies <: FaciesPart
     minimum_production::Union{typeof(0.0u"m/Myr"),Nothing} = nothing
 end
 

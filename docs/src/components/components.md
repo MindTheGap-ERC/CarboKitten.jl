@@ -8,7 +8,7 @@ Mermaid is broken...
 
 -->
 
-Not all of these are equally important. The `H5Writer` implements the core simulation loop and writing a simulation to HDF5 files. For a `Model` to work with `H5Writer` it needs to have `initial_state`, `step!`, and `write_header` functions implemented. Each component can have its own `write_header` implementation. Those are joined together with a special `@for_each(P->P.write_header(fid, input), PARENTS)` call.
+Not all of these are equally important. The `H5Writer` implements the core simulation loop and writing a simulation to HDF5 files. For a `Model` to work with `H5Writer` it needs to have `initial_state`, `step!`, and `write_header` functions implemented. Each component can have its own `write_header(::Input, input, output)` implementation, dispatching on its own `Input` part. The generic `write_header(input, output)` calls it for every part of the input.
 
 ## Contents
 
@@ -25,20 +25,22 @@ Depth = 1
 module Common
 export @u_str, Quantity, Amount, Time, Location, Rate, Intensity, Height, Sediment
 export AbstractFacies, AbstractInput, AbstractState, AbstractOutput, set_attribute
+export InputPart, StatePart, FaciesPart, write_header
 export OutputSpec
 export Box, box_axes, Boundary, Coast, Periodic, Reflected, TimeProperties
 export in_units_of
 export Model
-export @for_each
+export record_type
 export Size
 export n_steps
 export AbstractProduction, NoProduction, BenthicProduction, PelagicProduction, production_profile, InterpolatedProduction
 
-using ModuleMixins
+using ModuleMixins.Procedural: record_type, parts
 using Unitful
 using StaticArrays
 
-using ...CarboKitten: Model, AbstractInput, AbstractState, AbstractOutput, OutputSpec, set_attribute, n_steps
+using ...CarboKitten: Model, AbstractInput, AbstractState, AbstractFacies, AbstractOutput, OutputSpec, set_attribute, n_steps
+using ...CarboKitten: InputPart, StatePart, FaciesPart
 using ...BoundaryTrait
 using ...Config: TimeProperties
 using ...Boxes: Box, box_axes
@@ -53,7 +55,21 @@ const Rate = typeof(1.0u"m/Myr")
 const Intensity = typeof(1.0u"W/m^2")
 const Sediment = typeof(1.0u"m")
 
-abstract type AbstractFacies end
+"""
+    write_header(part, input, output)
+
+Write the attributes of a single component to the output header. Components
+extend this method for their own `Input` part.
+"""
+write_header(part, input::AbstractInput, output::AbstractOutput) = nothing
+
+"""
+    write_header(input, output)
+
+Write the header for all components of a model.
+"""
+write_header(input::AbstractInput, output::AbstractOutput) =
+    foreach(p -> write_header(p, input, output), parts(input))
 
 end
 ```
@@ -65,7 +81,7 @@ export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
     CAProduction, CAFeedback, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
     ActiveLayerOnshore, Denudation, InitialSediment, Output, Diagnostics
 
-using ModuleMixins: @compose
+using ModuleMixins.Syntactic: @component
 
 include("Components/Common.jl")
 include("Components/Tag.jl")
@@ -87,7 +103,7 @@ include("Components/Denudation.jl")
 include("Components/Output.jl")
 
 list_components() = filter(
-    c -> :AST in names(c, all=true),
+    c -> c isa Module && c !== Components && c !== Common,
     map(eval, names(Components)))
 
 end

@@ -2,13 +2,14 @@
 module Script
 using CarboKitten
 using CarboKitten.Components: CellularAutomaton as CA
+using CarboKitten.Components.Common: record_type
 using CairoMakie
 
 function main()
-  input = CA.Input(
+  input = record_type(:Input, CA)(
       box = CarboKitten.Box{Periodic{2}}(
         grid_size=(50, 50), phys_scale=1.0u"m"),
-      facies = fill(CA.Facies(), 3)
+      facies = fill(record_type(:Facies, CA)(), 3)
   )
 
   state = CA.initial_state(input)

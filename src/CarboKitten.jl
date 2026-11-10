@@ -3,6 +3,7 @@ module CarboKitten
 using TerminalLoggers: TerminalLogger
 using Logging
 using Unitful
+using ModuleMixins.Procedural: Composite
 
 function init()
     global_logger(TerminalLogger(right_justify=80))
@@ -16,9 +17,17 @@ function run_model end
 function get_logger end
 
 abstract type AbstractBox{BT} end
-abstract type AbstractInput end
 abstract type AbstractOutput end
-abstract type AbstractState end
+
+# Components contribute parts to the `Input`, `State` and `Facies` records of a
+# model. The records themselves are `Composite`s of those parts.
+abstract type InputPart end
+abstract type StatePart end
+abstract type FaciesPart end
+
+const AbstractInput = Composite{<:Tuple{Vararg{InputPart}}}
+const AbstractState = Composite{<:Tuple{Vararg{StatePart}}}
+const AbstractFacies = Composite{<:Tuple{Vararg{FaciesPart}}}
 
 const Slice2 = NTuple{2,Union{Int,Colon,UnitRange{Int}}}
 

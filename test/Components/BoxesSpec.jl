@@ -6,7 +6,7 @@ module BoxesSpec
 
     @testset "Components/Boxes" begin
         let box = Box{Periodic{2}}(grid_size=(10, 10), phys_scale=2.0u"m"),
-            input = Boxes.Input(box=box)
+            input = record_type(:Input, Boxes)(box=box)
             @test input.box.grid_size == (10, 10)
             @test input.box.phys_scale == 2.0u"m"
         end

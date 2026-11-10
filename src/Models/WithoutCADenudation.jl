@@ -1,16 +1,28 @@
 # ~/~ begin <<docs/src/models/without-ca.md#src/Models/WithoutCA.jl>>[init]
-@compose module WithoutCADenudation
-@mixin Tag, Diagnostics, Output, Production, ActiveLayer, Denudation, InitialSediment
+module WithoutCADenudation
+import ModuleMixins.Procedural: requires
+import ..Tag, ..Diagnostics, ..Output, ..Production, ..ActiveLayer, ..Denudation, ..InitialSediment
 
 using ..Common
+using ..FaciesBase: n_facies
+using ..SedimentBuffer: push_sediment, pop_sediment
+using ..ActiveLayer: lithification_factor
+using ..Denudation: slope_function, denudation, redistribution
 using ..Production: uniform_production
 using ..TimeIntegration
 using ..WaterDepth
-using ModuleMixins: @for_each
 using ...Stencil
 using ...BoundaryTrait
 using ...Output: Frame
 using ...Denudation.EmpiricalDenudationMod: slope_kernel
+
+# The model composes the records of its components. These are defined in the
+# model module itself, so `requires` is defined first, instead of using
+# `@component`, which defines it at the end of the module.
+requires(::Val{WithoutCADenudation}) = (Tag, Diagnostics, Output, Production, ActiveLayer, Denudation, InitialSediment)
+const Input = record_type(:Input, WithoutCADenudation)
+const State = record_type(:State, WithoutCADenudation)
+const Facies = record_type(:Facies, WithoutCADenudation)
 
 export Input, Facies
 
@@ -95,10 +107,6 @@ function step!(input::Input)
             disintegration=d,
             deposition=deposit)
     end
-end
-
-function write_header(input::AbstractInput, output::AbstractOutput)
-    @for_each(P -> P.write_header(input, output), PARENTS)
 end
 
 end

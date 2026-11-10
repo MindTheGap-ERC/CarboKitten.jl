@@ -5,7 +5,7 @@ export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
     CAProduction, CAFeedback, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
     ActiveLayerOnshore, Denudation, InitialSediment, Output, Diagnostics
 
-using ModuleMixins: @compose
+using ModuleMixins.Syntactic: @component
 
 include("Components/Common.jl")
 include("Components/Tag.jl")
@@ -27,7 +27,7 @@ include("Components/Denudation.jl")
 include("Components/Output.jl")
 
 list_components() = filter(
-    c -> :AST in names(c, all=true),
+    c -> c isa Module && c !== Components && c !== Common,
     map(eval, names(Components)))
 
 end

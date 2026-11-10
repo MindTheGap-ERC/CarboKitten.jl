@@ -5,13 +5,20 @@ CarboKitten.Components.InitialSediment
 ```
 
 ``` {.julia file=src/Components/InitialSediment.jl}
-@compose module InitialSediment
+@component module InitialSediment
     @mixin FaciesBase, WaterDepth, SedimentBuffer
+    using ..Common
+    import ..Common: write_header
+    using ..SedimentBuffer: push_sediment
     using Unitful: dimension, NoUnits
+
+    # InitialSediment has no input parameters of its own, but needs a part to
+    # dispatch `write_header` on.
+    struct Input <: InputPart end
 
     <<initial-sediment>>
 
-    function write_header(input::AbstractInput, output::AbstractOutput)
+    function write_header(::Input, input::AbstractInput, output::AbstractOutput)
         for (i,f) in enumerate(input.facies)
             set_attribute(output, "facies$(i)/initial_sediment", initial_sediment(input.box, f) |> in_units_of(u"m"))
         end
@@ -22,7 +29,7 @@ end
 Mostly for debugging and testing purposes it can be convenient to specify an initial layer of sediment. This component adds the `initial_sediment` parameter to the facies definition.
 
 ``` {.julia #initial-sediment}
-@kwdef struct Facies <: AbstractFacies
+@kwdef struct Facies <: FaciesPart
     initial_sediment = 0.0u"m"
 end
 ```
@@ -61,11 +68,12 @@ end
 using Unitful
 using CarboKitten.Components.Common
 using CarboKitten.Components.WaterDepth: initial_topography
+using CarboKitten.Components.FaciesBase: n_facies
 using CarboKitten.Components: InitialSediment as IS
 
 function initial_state(input::AbstractInput)
-    sediment_buffer = zeros(Float64, input.sediment_buffer_size, IS.n_facies(input), input.box.grid_size...)
-    state = IS.State(
+    sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
+    state = record_type(:State, IS)(
         step = 0,
         bathymetry = initial_topography(input),
         sediment_thickness = zeros(IS.Sediment, input.box.grid_size...),
@@ -75,10 +83,10 @@ function initial_state(input::AbstractInput)
 end
 
 let box = Box{Periodic}(grid_size=(50, 50), phys_scale=100.0u"m"),
-    input = IS.Input(
+    input = record_type(:Input, IS)(
         time = TimeProperties(steps=0, Δt=1.0u"yr"),
         box = box,
-        facies = [ IS.Facies(initial_sediment=30.0u"m") ] ),
+        facies = [ record_type(:Facies, IS)(initial_sediment=30.0u"m") ] ),
     state = initial_state(input)
 
     @test all(isapprox.(state.sediment_thickness, 30.0u"m"))

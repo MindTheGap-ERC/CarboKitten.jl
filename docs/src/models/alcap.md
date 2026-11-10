@@ -141,15 +141,27 @@ end
 ```
 
 ``` {.julia file=src/Models/ALCAP.jl}
-@compose module ALCAP
-@mixin Tag, Output, CAProduction, CAFeedback, ActiveLayer, InitialSediment, Diagnostics
+module ALCAP
+import ModuleMixins.Procedural: requires
+import ..Tag, ..Output, ..CAProduction, ..CAFeedback, ..ActiveLayer, ..InitialSediment, ..Diagnostics
 
 using ..Common
+using ..FaciesBase: n_facies
+using ..SedimentBuffer: push_sediment, pop_sediment
+using ..ActiveLayer: lithification_factor
+import ..CellularAutomaton
 using ..CAProduction: production
 using ..TimeIntegration
-using ..WaterDepth: water_depth
+using ..WaterDepth
 using ...Output: Frame
-using ModuleMixins: @for_each
+
+# The model composes the records of its components. These are defined in the
+# model module itself, so `requires` is defined first, instead of using
+# `@component`, which defines it at the end of the module.
+requires(::Val{ALCAP}) = (Tag, Output, CAProduction, CAFeedback, ActiveLayer, InitialSediment, Diagnostics)
+const Input = record_type(:Input, ALCAP)
+const State = record_type(:State, ALCAP)
+const Facies = record_type(:Facies, ALCAP)
 
 export Input, Facies, BenthicProduction, PelagicProduction
 
@@ -237,10 +249,6 @@ function step!(input::Input)
             disintegration=d,
             deposition=deposit)
     end
-end
-
-function write_header(input::AbstractInput, output::AbstractOutput)
-    @for_each(P -> P.write_header(input, output), PARENTS)
 end
 
 include("ALCAP/Example.jl")

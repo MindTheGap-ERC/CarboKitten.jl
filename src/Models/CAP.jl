@@ -1,13 +1,23 @@
 # ~/~ begin <<docs/src/models/ca-with-production.md#src/Models/CAP.jl>>[init]
-@compose module CAP
-@mixin Tag, Diagnostics, Output, CAProduction
+module CAP
+import ModuleMixins.Procedural: requires
+import ..Tag, ..Diagnostics, ..Output, ..CAProduction
 
 using ..Common
+using ..FaciesBase: n_facies
+import ..CellularAutomaton
 using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
 using ...Output: Frame
-using ModuleMixins: @for_each
+
+# The model composes the records of its components. These are defined in the
+# model module itself, so `requires` is defined first, instead of using
+# `@component`, which defines it at the end of the module.
+requires(::Val{CAP}) = (Tag, Diagnostics, Output, CAProduction)
+const Input = record_type(:Input, CAP)
+const State = record_type(:State, CAP)
+const Facies = record_type(:Facies, CAP)
 
 export Input, Facies
 
@@ -49,10 +59,6 @@ function step!(input::Input)
             production=prod,
             deposition=prod)
     end
-end
-
-function write_header(input::AbstractInput, output::AbstractOutput)
-    @for_each(P -> P.write_header(input, output), PARENTS)
 end
 end
 # ~/~ end

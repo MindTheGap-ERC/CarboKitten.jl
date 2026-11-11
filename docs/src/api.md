@@ -32,10 +32,16 @@ Modules = [CarboKitten.WaveField]
 Modules = [CarboKitten.Export]
 ```
 
+## Interfaces
+
+```@autodocs
+Modules = [CarboKitten.SedimentBuffers]
+```
+
 ## Components
 
 ```@autodocs
-Modules = [CarboKitten.Components.Common, CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer, CarboKitten.Components.Production, CarboKitten.Components.WaterDepth]
+Modules = [CarboKitten.Components, CarboKitten.Components.Common, CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer, CarboKitten.Components.Production, CarboKitten.Components.WaterDepth]
 ```
 
 ## Output

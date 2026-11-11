@@ -10,6 +10,12 @@ Mermaid is broken...
 
 Not all of these are equally important. The `H5Writer` implements the core simulation loop and writing a simulation to HDF5 files. For a `Model` to work with `H5Writer` it needs to have `initial_state`, `step!`, and `write_header` functions implemented. Each component can have its own `write_header(::Input, input, output)` implementation, dispatching on its own `Input` part. The generic `write_header(input, output)` calls it for every part of the input.
 
+The initial state is composed in the same way. Each component that has a `State` part implements `initial_state(::Input, input)`, returning its part of the state. The generic `initial_state(input)` collects these parts using `map_components` from ModuleMixins. The resulting state is composed of the same components as the input, so a model that is composed with a different implementation of a role, gets the matching state. When a component needs the complete state to initialize, for instance to push the initial sediment onto the sediment buffer, it implements `initialize!(::Input, input, state)`, which is called after all parts are created. A model's `initial_state` is then a one-liner:
+
+```julia
+initial_state(input::AbstractInput) = Common.initial_state(input)
+```
+
 ## Contents
 
 ```@contents
@@ -35,7 +41,7 @@ export Size
 export n_steps
 export AbstractProduction, NoProduction, BenthicProduction, PelagicProduction, production_profile, InterpolatedProduction
 
-using ModuleMixins.Procedural: record_type, parts
+using ModuleMixins.Procedural: record_type, parts, map_components
 using Unitful
 using StaticArrays
 
@@ -71,6 +77,36 @@ Write the header for all components of a model.
 write_header(input::AbstractInput, output::AbstractOutput) =
     foreach(p -> write_header(p, input, output), parts(input))
 
+"""
+    initial_state(part, input)
+
+The initial `State` part of a single component, or `nothing` if the component
+has no state. Components extend this method for their own `Input` part.
+"""
+initial_state(part::InputPart, input::AbstractInput) = nothing
+
+"""
+    initialize!(part, input, state)
+
+Finish initializing the `state`, once all its parts are created. Components
+that need the complete state to initialize, extend this method for their own
+`Input` part.
+"""
+initialize!(part::InputPart, input::AbstractInput, state::AbstractState) = nothing
+
+"""
+    initial_state(input)
+
+The initial state for a model. The parts of the state are collected from all
+components, after which `initialize!` is called for each component, in
+dependency order.
+"""
+function initial_state(input::AbstractInput)
+    state = map_components(p -> initial_state(p, input), input)
+    foreach(p -> initialize!(p, input, state), parts(input))
+    return state
+end
+
 end
 ```
 
@@ -78,8 +114,9 @@ end
 module Components
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
-    CAProduction, CAFeedback, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
-    ActiveLayerOnshore, Denudation, InitialSediment, Output, Diagnostics
+    CAProduction, CAFeedback, CellularAutomaton, ActiveLayer, SedimentBuffer,
+    CopyingSedimentBuffer, CircularSedimentBuffer,
+    Denudation, InitialSediment, Output, Diagnostics
 
 using ModuleMixins.Syntactic: @component
 
@@ -96,15 +133,42 @@ include("Components/CAProduction.jl")
 include("Components/CAFeedback.jl")
 
 include("Components/SedimentBuffer.jl")
+include("Components/CopyingSedimentBuffer.jl")
+include("Components/CircularSedimentBuffer.jl")
 include("Components/InitialSediment.jl")
 include("Components/ActiveLayer.jl")
 include("Components/Denudation.jl")
 
 include("Components/Output.jl")
 
-list_components() = filter(
-    c -> c isa Module && c !== Components && c !== Common,
-    map(eval, names(Components)))
+"""
+    list_components()
 
+All components, being the modules defined in `Components`, except `Common`.
+"""
+list_components() = [
+    getfield(Components, n) for n in names(Components; all=true)
+    if is_component(getfield(Components, n))]
+
+is_component(m) = m isa Module && m !== Components && m !== Common &&
+    parentmodule(m) === Components
+
+end
+```
+
+``` {.julia file=test/Components/ComponentsSpec.jl}
+@testset "Components" begin
+    using CarboKitten.Components: Components, list_components
+
+    # every exported name exists
+    @test all(n -> isdefined(Components, n), names(Components))
+
+    components = list_components()
+    @test all(c -> c isa Module, components)
+    @test Components.SedimentBuffer in components
+    @test Components.CircularSedimentBuffer in components
+    @test Components.Common ∉ components
+    # every component is exported
+    @test all(c -> nameof(c) in names(Components), components)
 end
 ```

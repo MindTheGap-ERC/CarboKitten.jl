@@ -405,5 +405,16 @@ end
     function step!(input::AbstractInput)
         return step_ca(input.box, input.facies)
     end
+
+    # As part of a model, the CA is given 20 steps to settle from its random
+    # initial state.
+    function Common.initial_state(::Input, input::AbstractInput)
+        state = initial_state(input)
+        step_ca! = step!(input)
+        for _ in 1:20
+            step_ca!(state)
+        end
+        return state
+    end
 end
 ```

@@ -9,7 +9,7 @@ using Documenter.HTMLWriter: DCtx
 
 using GraphvizDotLang: digraph, node, edge, HTML
 using MacroTools: @capture
-using ModuleMixins.Procedural: requires, closure, record_part
+using ModuleMixins.Procedural: requires, closure, record_part, resolve
 
 struct ZipDefault{T,D}
 	its::T
@@ -103,7 +103,7 @@ transient_dependencies(t, n) = isempty(t[n]) ?
 
 function dependency_graph(m)
 	components = closure(m)
-	t = Dict(nameof(c) => [nameof(r) for r in requires(c) if r isa Module] for c in components)
+	t = Dict(nameof(c) => [nameof(resolve(r, (m,))) for r in requires(c)] for c in components)
 	g = digraph(rankdir="TD")
 	for c in components
 		n = nameof(c)

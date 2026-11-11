@@ -1,12 +1,13 @@
 # ~/~ begin <<docs/src/components/sediment_buffer.md#src/Components/SedimentBuffer.jl>>[init]
 @component module SedimentBuffer
 @mixin Boxes, FaciesBase, WaterDepth
+@requires AbstractSedimentBuffer
 
 using Unitful
 
 using ..Common
 using ..FaciesBase: n_facies
-using CarboKitten.SedimentStack: pop_sediment!, push_sediment!, peek_sediment
+using ...SedimentBuffers: AbstractSedimentBuffer, push_sediment!, pop_sediment!
 
 export pop_sediment, push_sediment
 
@@ -16,9 +17,11 @@ export pop_sediment, push_sediment
 end
 
 @kwdef mutable struct State <: StatePart
-    sediment_buffer::Array{Float64,4}
     sediment_thickness::Array{Height, 2}
 end
+
+Common.initial_state(::Input, input::AbstractInput) =
+    State(sediment_thickness=zeros(Height, input.box.grid_size...))
 
 function push_sediment(input::AbstractInput)
     res = input.depositional_resolution
@@ -32,7 +35,7 @@ function push_sediment(input::AbstractInput)
             state.sediment_thickness[i] += total
             state.bathymetry[i] += total
             parcel .= @view(sediment[:, i[1], i[2]]) ./ res .|> NoUnits
-            push_sediment!(view(state.sediment_buffer, :, :, i[1], i[2]), parcel)
+            push_sediment!(state, i, parcel)
         end
     end
 end
@@ -47,7 +50,7 @@ function pop_sediment(input::AbstractInput)
         for i in CartesianIndices(n_g)
             state.sediment_thickness[i] -= amount[i]
             state.bathymetry[i] -= amount[i]
-            pop_sediment!(@view(state.sediment_buffer[:, :, i[1], i[2]]), amount[i] / res |> NoUnits, parcel)
+            pop_sediment!(state, i, amount[i] / res |> NoUnits, parcel)
             view(out, :, i[1], i[2]) .= parcel .* res
         end
     end

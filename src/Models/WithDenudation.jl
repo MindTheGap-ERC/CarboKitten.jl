@@ -27,29 +27,7 @@ const Facies = record_type(:Facies, WithDenudation)
 
 export Input, Facies, BenthicProduction, PelagicProduction
 
-function initial_state(input::AbstractInput)
-    ca_state = CellularAutomaton.initial_state(input)
-    for _ in 1:20
-        CellularAutomaton.step!(input)(ca_state)
-    end
-
-    bathymetry = initial_topography(input)
-    sediment_thickness = zeros(Height, input.box.grid_size...)
-    sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
-    active_layer = zeros(Amount, n_facies(input), input.box.grid_size...)
-
-    state = State(
-        step=0,
-        bathymetry=bathymetry,
-        sediment_thickness=sediment_thickness,
-        sediment_buffer=sediment_buffer,
-        active_layer=active_layer,
-        ca=ca_state.ca, ca_priority=ca_state.ca_priority)
-
-    InitialSediment.push_initial_sediment!(input, state)
-
-    return state
-end
+initial_state(input::AbstractInput) = Common.initial_state(input)
 
 function initial_frame(input::Input)
     dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)

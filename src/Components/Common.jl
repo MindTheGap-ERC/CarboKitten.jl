@@ -12,7 +12,7 @@ export Size
 export n_steps
 export AbstractProduction, NoProduction, BenthicProduction, PelagicProduction, production_profile, InterpolatedProduction
 
-using ModuleMixins.Procedural: record_type, parts
+using ModuleMixins.Procedural: record_type, parts, map_components
 using Unitful
 using StaticArrays
 
@@ -47,6 +47,36 @@ Write the header for all components of a model.
 """
 write_header(input::AbstractInput, output::AbstractOutput) =
     foreach(p -> write_header(p, input, output), parts(input))
+
+"""
+    initial_state(part, input)
+
+The initial `State` part of a single component, or `nothing` if the component
+has no state. Components extend this method for their own `Input` part.
+"""
+initial_state(part::InputPart, input::AbstractInput) = nothing
+
+"""
+    initialize!(part, input, state)
+
+Finish initializing the `state`, once all its parts are created. Components
+that need the complete state to initialize, extend this method for their own
+`Input` part.
+"""
+initialize!(part::InputPart, input::AbstractInput, state::AbstractState) = nothing
+
+"""
+    initial_state(input)
+
+The initial state for a model. The parts of the state are collected from all
+components, after which `initialize!` is called for each component, in
+dependency order.
+"""
+function initial_state(input::AbstractInput)
+    state = map_components(p -> initial_state(p, input), input)
+    foreach(p -> initialize!(p, input, state), parts(input))
+    return state
+end
 
 end
 # ~/~ end

@@ -19,10 +19,10 @@ end
     bathymetry::Matrix{Height}
 end
 
-function initial_state(input::AbstractInput)
-    bathymetry = initial_topography(input)
-    return record_type(:State, WaterDepth)(step=0, bathymetry=bathymetry)
-end
+Common.initial_state(::Input, input::AbstractInput) =
+    State(bathymetry=initial_topography(input))
+
+initial_state(input::AbstractInput) = Common.initial_state(input)
 
 function initial_topography(input::AbstractInput)
     if input.initial_topography isa AbstractMatrix

@@ -5,7 +5,7 @@ import ..Tag, ..Output, ..CAProduction, ..CAFeedback, ..ActiveLayer, ..InitialSe
 
 using ..Common
 using ..FaciesBase: n_facies
-using ..SedimentBuffer: push_sediment, pop_sediment
+using ..SedimentBuffer: push_sediment, pop_sediment, initial_sediment_buffer
 using ..ActiveLayer: lithification_factor
 import ..CellularAutomaton
 using ..CAProduction: production
@@ -23,18 +23,20 @@ const Facies = record_type(:Facies, ALCAP)
 
 export Input, Facies, BenthicProduction, PelagicProduction
 
-function initial_state(input::AbstractInput)
+# The optional state type `S` allows the same model to be run with a different
+# composition, for instance `record_type(:State, ALCAP, CircularSedimentBuffer)`.
+function initial_state(input::AbstractInput, ::Type{S}=State) where {S <: AbstractState}
     ca_state = CellularAutomaton.initial_state(input)
     for _ in 1:20
         CellularAutomaton.step!(input)(ca_state)
     end
 
     bathymetry = initial_topography(input)
-    sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
+    sediment_buffer = initial_sediment_buffer(input)
     sediment_thickness = zeros(Height, input.box.grid_size...)
     active_layer = zeros(Amount, n_facies(input), input.box.grid_size...)
 
-    state = State(
+    state = S(
         step=0,
         bathymetry=bathymetry,
         sediment_thickness=sediment_thickness,
@@ -46,14 +48,14 @@ function initial_state(input::AbstractInput)
     return state
 end
 
-function initial_frame(input::Input)
+function initial_frame(input::AbstractInput)
     dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
     return Frame(production=zeros(Sediment,size(dep)),
                   disintegration=zeros(Sediment,size(dep)),
                   deposition=dep)
 end
 
-function step!(input::Input)
+function step!(input::AbstractInput)
     step_ca! = CellularAutomaton.step!(input)
     subside! = subsider(input)
     disintegrate! = ActiveLayer.disintegrator(input)
@@ -68,7 +70,7 @@ function step!(input::Input)
     push! = push_sediment(input)
     pop! = pop_sediment(input)
 
-    function (state::State)
+    function (state::AbstractState)
         if debug
             @debug "step: " state.step
             @debug "   current active layer ambitus: " extrema(state.active_layer)

@@ -1,10 +1,7 @@
 # ~/~ begin <<docs/src/components/waterdepth.md#test/Components/WaterDepthSpec.jl>>[init]
 using CarboKitten
 import CarboKitten.Components.WaterDepth as WD
-<<<<<<< HEAD
 using CarboKitten.Components.Common: record_type
-=======
->>>>>>> main
 using CarboKitten.Components.WaterDepth:
     TimeVariableSubsidenceRate, SpaceTimeVariableSubsidenceRate
 
@@ -37,11 +34,7 @@ end
     x, y = box_axes(box)
 
     function run_subsider(input)
-<<<<<<< HEAD
         state = record_type(:State, WD)(step=0, bathymetry=zeros(typeof(1.0u"m"), box.grid_size...))
-=======
-        state = WD.State(step=0, bathymetry=zeros(typeof(1.0u"m"), box.grid_size...))
->>>>>>> main
         sub! = WD.subsider(input)
         for _ in 1:input.time.steps
             sub!(state)

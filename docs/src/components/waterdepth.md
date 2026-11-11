@@ -117,11 +117,7 @@ end
 Total amount of subsidence over the entire run, for each grid cell.
 """
 function cumulative_subsidence(input::AbstractInput)
-<<<<<<< HEAD
     state = record_type(:State, WaterDepth)(step=0, bathymetry=zeros(Amount, input.box.grid_size...))
-=======
-    state = State(step=0, bathymetry=zeros(Amount, input.box.grid_size...))
->>>>>>> main
     subside! = subsider(input)
     for _ in 1:input.time.steps
         subside!(state)

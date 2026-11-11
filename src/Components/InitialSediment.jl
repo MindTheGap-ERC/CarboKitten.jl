@@ -37,6 +37,9 @@
         s = stack(initial_sediment(input.box, f) for f in input.facies; dims=1)
         push_sediment(input)(state, s)
     end
+    
+    Common.initialize!(::Input, input::AbstractInput, state::AbstractState) =
+        push_initial_sediment!(input, state)
     # ~/~ end
 
     function write_header(::Input, input::AbstractInput, output::AbstractOutput)

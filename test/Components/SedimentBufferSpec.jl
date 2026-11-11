@@ -4,7 +4,8 @@ using Test
 using Unitful
 using CarboKitten
 using CarboKitten.Components.Common: Amount, record_type
-using CarboKitten.SedimentBuffers: initial_sediment_buffer, peek_sediment
+using CarboKitten.Components.Common: initial_state
+using CarboKitten.SedimentBuffers: peek_sediment
 import CarboKitten.Components.SedimentBuffer as SB
 import CarboKitten.Components: CopyingSedimentBuffer, CircularSedimentBuffer
 
@@ -16,11 +17,7 @@ import CarboKitten.Components: CopyingSedimentBuffer, CircularSedimentBuffer
             facies = [record_type(:Facies, SB, impl)()],
             sediment_buffer_size = 10,
             depositional_resolution = 1.0u"m")
-        state = record_type(:State, SB, impl)(
-            step = 0,
-            bathymetry = zeros(Amount, input.box.grid_size...),
-            sediment_buffer = initial_sediment_buffer(input),
-            sediment_thickness = zeros(Amount, input.box.grid_size...))
+        state = initial_state(record_type(:State, SB, impl), input)
 
         @test size(state.sediment_thickness) == (10, 1)
         @test state.sediment_buffer isa fieldtype(impl.State, :sediment_buffer)
@@ -49,11 +46,7 @@ import CarboKitten.Components: CopyingSedimentBuffer, CircularSedimentBuffer
             facies = [record_type(:Facies, SB)()],
             sediment_buffer_size = 10,
             depositional_resolution = 1.0u"m")
-        state = record_type(:State, SB)(
-            step = 0,
-            bathymetry = zeros(Amount, input.box.grid_size...),
-            sediment_buffer = initial_sediment_buffer(input),
-            sediment_thickness = zeros(Amount, input.box.grid_size...))
+        state = initial_state(record_type(:State, SB), input)
 
         @test size(state.sediment_buffer) == (10, 1, 10, 1)
 

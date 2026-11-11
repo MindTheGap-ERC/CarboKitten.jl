@@ -27,7 +27,7 @@ const Facies = record_type(:Facies, WithDenudation)
 
 export Input, Facies, BenthicProduction, PelagicProduction
 
-initial_state(input::AbstractInput) = Common.initial_state(State, input)
+initial_state(input::AbstractInput) = Common.initial_state(input)
 
 function initial_frame(input::Input)
     dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)

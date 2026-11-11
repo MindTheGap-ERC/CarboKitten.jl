@@ -101,6 +101,8 @@ include("./Algorithms/Skeleton.jl")
 import .Skeleton: skeleton
 include("./Algorithms/Romberg.jl")
 import .Romberg: romberg
+include("./Algorithms/CopyingBuffers.jl")
+include("./Algorithms/CircularBuffers.jl")
 end
 
 include("./BoundaryTrait.jl")
@@ -108,7 +110,7 @@ include("./Vectors.jl")
 include("./Boxes.jl")
 include("./Config.jl")
 include("./Stencil.jl")
-include("./SedimentStack.jl")
+include("./SedimentBuffers.jl")
 include("./Utility.jl")
 include("./DataSets.jl")
 include("./Production.jl")

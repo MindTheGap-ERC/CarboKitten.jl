@@ -5,7 +5,7 @@ import ..Tag, ..Diagnostics, ..Output, ..Production, ..ActiveLayer, ..InitialSed
 
 using ..Common
 using ..FaciesBase: n_facies
-using ..SedimentBuffer: push_sediment
+using ..SedimentBuffer: push_sediment, initial_sediment_buffer
 using ..ActiveLayer: lithification_factor
 using ..Production: uniform_production
 using ..TimeIntegration
@@ -24,7 +24,7 @@ export Input, Facies
 
 function initial_state(input::Input)
     sediment_thickness = zeros(Height, input.box.grid_size...)
-    sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
+    sediment_buffer = initial_sediment_buffer(input)
     active_layer = zeros(Amount, n_facies(input), input.box.grid_size...)
     state = State(
         step=0,

@@ -4,7 +4,7 @@ using Unitful
 
 using CarboKitten
 using CarboKitten.Denudation.DissolutionMod: dissolution, dominant_facies
-using CarboKitten.SedimentStack: push_sediment!, peek_sediment 
+using CarboKitten.SedimentBuffers: push_sediment!, peek_sediment
 using CarboKitten.Components.SedimentBuffer: pop_sediment
 using CarboKitten.Components.Common
 using CarboKitten.Components: Denudation as D
@@ -155,20 +155,20 @@ end
     )
     some_sed = zeros(Float64,3,3,3)
     some_sed[1,:,:] .+= 1.0
-    push_sediment!(state.sediment_buffer, some_sed)
+    push_sediment!(state, some_sed)
     @test dominant_facies(state, CartesianIndex(1,1), 2.0) == 1    
 
     some_sed[2,:,:] .+= 2.0 
-    push_sediment!(state.sediment_buffer, some_sed)
+    push_sediment!(state, some_sed)
     @test dominant_facies(state, CartesianIndex(1,1), 2.0) == 2
 
     some_sed[3,:,:] .+= 3.0 
-    push_sediment!(state.sediment_buffer, some_sed)
+    push_sediment!(state, some_sed)
     @test dominant_facies(state, CartesianIndex(1,1), 2.0) == 3
 
     # if there's no maximum, takes the first index
     same_sed = ones(Float64,3,3,3)
-    push_sediment!(state.sediment_buffer, same_sed)
+    push_sediment!(state, same_sed)
     @test dominant_facies(state, CartesianIndex(1,1), 2.0) == 1
 
 end

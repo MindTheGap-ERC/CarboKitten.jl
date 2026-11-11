@@ -32,6 +32,12 @@ Modules = [CarboKitten.WaveField]
 Modules = [CarboKitten.Export]
 ```
 
+## Interfaces
+
+```@autodocs
+Modules = [CarboKitten.SedimentBuffers]
+```
+
 ## Components
 
 ```@autodocs

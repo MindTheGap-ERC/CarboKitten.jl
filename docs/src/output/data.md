@@ -58,7 +58,8 @@ end
 
     initial_topography::Matrix{Amount}
     sea_level::Vector{Length}
-    subsidence_rate::Rate
+    subsidence_rate::Union{Rate, Nothing} = nothing
+    total_subsidence::Union{Matrix{Amount}, Nothing} = nothing
     data_sets::Dict{Symbol,DataHeader}
     attributes::Dict{String,Any} = Dict()
 end
@@ -77,10 +78,17 @@ n_facies(header::Header) = header.n_facies
 """
     total_subsidence(header)
 
-Total amount of subsidence over the entire run.
+Total amount of subsidence over the entire run. For time or space variable
+subsidence this is a matrix with the subsidence for each grid cell. Older
+output files only store a constant `subsidence_rate`, in which case the total
+subsidence is computed from the duration of the run.
 """
 total_subsidence(header::Header) =
-    (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    if header.total_subsidence !== nothing
+        header.total_subsidence
+    else
+        (header.axes.t[end] - header.axes.t[1]) * header.subsidence_rate
+    end
 
 """
     bedrock(header)

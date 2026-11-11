@@ -166,6 +166,7 @@ using .Output.MemoryWriter: MemoryOutput
 using .Models: BS92, CAP, ALCAP
 using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 using .Production: BenthicProduction, PelagicProduction, InterpolatedProduction, ProductionBoost
+using .Components.WaterDepth: TimeVariableSubsidenceRate, SpaceTimeVariableSubsidenceRate
 using GeometryBasics: Vec2
 using .WaveField
 
@@ -174,6 +175,7 @@ export run_model, Box, box_axes, TimeProperties, time_axis,
     AbstractBox, Boundary, Coast, Periodic, Reflected,
     Vec2, OutputSpec, MemoryOutput, new_output, n_steps,
     BenthicProduction, PelagicProduction, InterpolatedProduction, ProductionBoost,
-    water_depth, stratigraphic_column, load, load_volume, load_slice, load_column
+    water_depth, stratigraphic_column, load, load_volume, load_slice, load_column,
+    TimeVariableSubsidenceRate, SpaceTimeVariableSubsidenceRate
 
 end # module CarboKitten

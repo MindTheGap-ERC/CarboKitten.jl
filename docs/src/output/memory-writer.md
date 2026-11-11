@@ -151,7 +151,7 @@ import ..Abstract:
     write_production, write_disintegration, write_deposition, write_active_layer,
     load, load_volume, load_slice, load_column, AbstractBundle, header
 using ...Components.Common
-using ...Components.WaterDepth: initial_topography
+using ...Components.WaterDepth: initial_topography, cumulative_subsidence
 using ...CarboKitten: time_axis, box_axes, OutputSpec, AbstractOutput, AbstractInput, AbstractState
 
 struct MemoryOutput <: AbstractOutput
@@ -194,7 +194,8 @@ function new_output(::Type{MemoryOutput}, input::Input) where {Input <: Abstract
         n_facies=length(input.facies),
         initial_topography=h0,
         sea_level=sl,
-        subsidence_rate=input.subsidence_rate,
+        subsidence_rate=input.subsidence_rate isa Quantity ? input.subsidence_rate : nothing,
+        total_subsidence=cumulative_subsidence(input),
         data_sets=Dict(),
         attributes=Dict())
 

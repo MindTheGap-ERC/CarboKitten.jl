@@ -5,12 +5,13 @@ using ..Common
 using HDF5
 using ..TimeIntegration: time, time_axis
 
-export water_depth, subsider, initial_topography
+export water_depth, subsider, initial_topography, cumulative_subsidence
+export TimeVariableSubsidenceRate, SpaceTimeVariableSubsidenceRate
 
 @kwdef struct Input <: AbstractInput
     sea_level = t -> 0.0u"m"
     initial_topography = (x, y) -> 0.0u"m"
-    subsidence_rate::Rate = 0.0u"m/Myr"
+    subsidence_rate = 0.0u"m/Myr"
 end
 
 @kwdef mutable struct State <: AbstractState
@@ -35,12 +36,60 @@ function initial_topography(input::AbstractInput)
     return input.initial_topography.(x, y')
 end
 
-function subsider(input::AbstractInput)
-    Δσ = input.subsidence_rate * input.time.Δt
+struct TimeVariableSubsidenceRate
+    f
+end
 
-    function (state::AbstractState)
+struct SpaceTimeVariableSubsidenceRate
+    f
+end
+
+subsider(input::AbstractInput) = subsider(input, input.subsidence_rate)
+
+function subsider(input::AbstractInput, s::SpaceTimeVariableSubsidenceRate)
+    get_time = time(input)
+    x, y = box_axes(input.box)
+    dt = input.time.Δt
+
+    return function (state::AbstractState)
+        t = get_time(state)
+        Δσ = s.f.(x, y', t) * dt
         state.bathymetry .-= Δσ
     end
+end
+
+function subsider(input::AbstractInput, s::TimeVariableSubsidenceRate)
+    get_time = time(input)
+    dt = input.time.Δt
+
+    return function (state::AbstractState)
+        t = get_time(state)
+        Δσ = s.f(t) * dt
+        state.bathymetry .-= Δσ
+    end
+end
+
+function subsider(input::AbstractInput, s::Quantity)
+    Δσ = input.subsidence_rate * input.time.Δt
+
+    return function (state::AbstractState)
+        state.bathymetry .-= Δσ
+    end
+end
+
+"""
+    cumulative_subsidence(input)
+
+Total amount of subsidence over the entire run, for each grid cell.
+"""
+function cumulative_subsidence(input::AbstractInput)
+    state = State(step=0, bathymetry=zeros(Amount, input.box.grid_size...))
+    subside! = subsider(input)
+    for _ in 1:input.time.steps
+        subside!(state)
+        state.step += 1
+    end
+    return .-state.bathymetry
 end
 
 function water_depth(input::AbstractInput)
@@ -58,7 +107,10 @@ function write_header(input::AbstractInput, output::AbstractOutput)
     t = time_axis(input)
     set_attribute(output, "initial_topography", initial_topography(input) |> in_units_of(u"m"))
     set_attribute(output, "sea_level", input.sea_level.(t) .|> in_units_of(u"m"))
-    set_attribute(output, "subsidence_rate", input.subsidence_rate |> in_units_of(u"m/Myr"))
+    set_attribute(output, "total_subsidence", cumulative_subsidence(input) |> in_units_of(u"m"))
+    if input.subsidence_rate isa Quantity
+        set_attribute(output, "subsidence_rate", input.subsidence_rate |> in_units_of(u"m/Myr"))
+    end
 end
 
 end

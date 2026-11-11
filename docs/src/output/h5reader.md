@@ -75,7 +75,10 @@ function read_header(fid)
         n_facies = n_facies,
         initial_topography = fid["input/initial_topography"][] * u"m",
         sea_level = fid["input/sea_level"][] * u"m",
-        subsidence_rate = attrs["subsidence_rate"][] * u"m/Myr",
+        subsidence_rate = haskey(attrs, "subsidence_rate") ?
+            attrs["subsidence_rate"][] * u"m/Myr" : nothing,
+        total_subsidence = haskey(fid["input"], "total_subsidence") ?
+            fid["input/total_subsidence"][] * u"m" : nothing,
         data_sets = data_sets)
 end
 

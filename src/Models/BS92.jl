@@ -19,10 +19,7 @@ const Facies = record_type(:Facies, BS92)
 
 export Input, Facies
 
-function initial_state(input::Input)
-    bathymetry = initial_topography(input)
-    return State(step=0, bathymetry=bathymetry)
-end
+initial_state(input::Input) = Common.initial_state(State, input)
 
 function initial_frame(input::Input)
     return Frame(production=zeros(Sediment,length(input.facies), input.box.grid_size...),

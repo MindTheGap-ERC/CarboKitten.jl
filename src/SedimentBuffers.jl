@@ -1,10 +1,10 @@
 # ~/~ begin <<docs/src/components/sediment_buffer.md#src/SedimentBuffers.jl>>[init]
 module SedimentBuffers
 
-export AbstractSedimentBuffer, initial_sediment_buffer, push_sediment!, pop_sediment!, peek_sediment
+export AbstractSedimentBuffer, push_sediment!, pop_sediment!, peek_sediment
 
 using ModuleMixins.Procedural: component
-using ..CarboKitten: AbstractInput, AbstractState
+using ..CarboKitten: AbstractState
 
 """
     AbstractSedimentBuffer
@@ -13,13 +13,6 @@ Role for components that store the facies composition of deposited sediment.
 An implementing component contributes a `sediment_buffer` field to the `State`.
 """
 abstract type AbstractSedimentBuffer end
-
-"""
-    initial_sediment_buffer(input)
-
-Create an empty sediment buffer, to be stored in the `sediment_buffer` field of the `State`.
-"""
-function initial_sediment_buffer end
 
 """
     push_sediment!(state, sediment::AbstractArray{F, 3})
@@ -45,8 +38,6 @@ Return the sediment that would be popped by `pop_sediment!`, without changing th
 """
 function peek_sediment end
 
-initial_sediment_buffer(input::AbstractInput) =
-    initial_sediment_buffer(component(input, AbstractSedimentBuffer), input)
 push_sediment!(state::AbstractState, args...) =
     push_sediment!(component(state, AbstractSedimentBuffer), args...)
 pop_sediment!(state::AbstractState, args...) =

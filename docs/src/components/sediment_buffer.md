@@ -43,6 +43,25 @@ We define two functions `push_sediment!` and `pop_sediment!`. Given a $s \times 
   @test peek_sediment(stack2, 1.0) == [1.0, 0.0, 0.0]
 end
 
+@testset "SedimentStack edge cases" begin
+  using CarboKitten.SedimentStack: push_sediment!, pop_sediment!
+
+  # pushing more than the buffer can hold fills every row with the parcel's fractions
+  stack = zeros(Float64, 4, 2)
+  @test_logs (:warn,) push_sediment!(stack, [6.0, 2.0])
+  @test all(stack .== [0.75 0.25])
+
+  # popping several rows from a full buffer keeps the deepest rows
+  stack = [1.0 0.0; 1.0 0.0; 0.0 1.0; 0.0 1.0]
+  @test pop_sediment!(stack, 2.0) == [2.0, 0.0]
+  @test stack == [0.0 1.0; 0.0 1.0; 0.0 0.0; 0.0 0.0]
+
+  # popping more than the buffer holds returns everything, counting each row once
+  stack = [1.0 0.0; 1.0 0.0; 0.0 1.0; 0.0 1.0]
+  @test (@test_logs (:error,) pop_sediment!(stack, 10.0)) == [2.0, 2.0]
+  @test all(stack .== 0.0)
+end
+
 @testset "SedimentArray" begin
   using CarboKitten.SedimentStack: push_sediment!, peek_sediment
   sediment = zeros(Float64, 10, 3, 5, 5)
@@ -52,6 +71,26 @@ end
   end
   a = peek_sediment(sediment, 1.0)
   @test all(sum(a; dims=1) .≈ 1.0)
+end
+```
+
+### Shifting rows
+
+Both pushing and popping need to move rows of the buffer up or down. These shifts are done in place. Since source and destination overlap, the order of iteration matters: when shifting down we start at the bottom, when shifting up we start at the top. Rows that are shifted in are left untouched; the caller should overwrite them.
+
+``` {.julia #sediment-stack-impl}
+@inline function shift_down!(col::AbstractMatrix, k::Int)
+    s = size(col, 1)
+    @inbounds for j in axes(col, 2), i in s:-1:k+1
+        col[i, j] = col[i - k, j]
+    end
+end
+
+@inline function shift_up!(col::AbstractMatrix, k::Int)
+    s = size(col, 1)
+    @inbounds for j in axes(col, 2), i in 1:s-k
+        col[i, j] = col[i + k, j]
+    end
 end
 ```
 
@@ -76,8 +115,7 @@ end
 
 if mass > size(col)[1]
     @warn "pushing a very large parcel of sediment: $mass times depositional resolution"
-    frac = parcel ./ mass
-    col .= frac
+    col .= transpose(parcel ./ mass)
     return
 end
 ```
@@ -85,7 +123,7 @@ end
 First we determine the total sediment amount $\Delta$, being the sum of the parcel, as well as the amount of sediment in our *bucket*, the head row.
 
 ``` {.julia #push-sediment}
-bucket = sum(col[1, :])
+bucket = sum(@view col[1, :])
 @assert bucket >= 0.0 && bucket <= 1.0
 ```
 
@@ -93,85 +131,99 @@ If the bucket has enough space left for the parcel, we can just add the parcel t
 
 ``` {.julia #push-sediment}
 if bucket + mass < 1.0
-    col[1,:] .+= parcel
+    @views col[1, :] .+= parcel
     return
 end
 ```
 
-Otherwise, we compute the normalized fractions `frac` of facies in the parcel. We add as much sediment as we can to fill the bucket and copy rows down as far as needed.
+Otherwise, the normalized fractions of facies in the parcel are `parcel ./ total`. We add as much sediment as we can to fill the bucket and copy rows down as far as needed.
 
 ``` {.julia #push-sediment}
-frac = parcel ./ mass
-col[1,:] .+= frac .* (1.0 - bucket)
-mass -= (1.0 - bucket)
+total = mass
+space = 1.0 - bucket
+@views col[1, :] .+= parcel ./ total .* space
+mass -= space
 n = floor(Int64, mass)
 
-col[n+2:end,:] .= col[1:end-n-1,:]
+shift_down!(col, n + 1)
 ```
 
-If the parcel has enough material left to fill more rows, those are all filled with the fractions in `frac`. The head row is assigned whatever is left.
+If the parcel has enough material left to fill more rows, those are all filled with the normalized fractions. The head row is assigned whatever is left.
 
 ``` {.julia #push-sediment}
-na = [CartesianIndex()]
-col[2:n+1,:] .= frac[na,:]
 mass -= n
-col[1,:] .= frac .* mass
+for j in axes(col, 2)
+    frac = parcel[j] / total
+    col[2:n+1, j] .= frac
+    col[1, j] = frac * mass
+end
 ```
 
 ### Popping sediment
 
-Similar to `push_sediment!` we have `pop_sediment!`. We give `pop_sediment!` the sedimentary column `col` and the total amount of sediment we require. There is a bit that we will reuse called `pop_fraction`, which only works if the amount of popped sediment is lower than the contents of the bucket.
+Similar to `push_sediment!` we have `pop_sediment!`. We give `pop_sediment!` the sedimentary column `col`, the total amount of sediment we require and an output vector `parcel` that will contain the popped sediment. A two-argument version allocates the output for us. There is a bit that we will reuse called `pop_fraction!`, which only works if the amount of popped sediment is lower than the contents of the bucket. It adds the popped sediment to `parcel`.
 
 ``` {.julia #sediment-stack-impl}
-@inline function pop_fraction(col::AbstractMatrix{F}, mass::F) where F <: Real
-    bucket = sum(col[1,:])
+@inline function pop_fraction!(parcel::AbstractVector{F}, col::AbstractMatrix{F}, mass::F) where F <: Real
+    bucket = sum(@view col[1, :])
     if mass == 0 || bucket == 0
-        return zeros(F, size(col)[2])
+        return parcel
     end
 
     @assert mass < bucket "pop_fraction can only pop from the top cell: $(col), $(mass)"
-    parcel = (mass / bucket) .* col[1,:]
-    col[1,:] .-= parcel
+    r = mass / bucket
+    for j in axes(col, 2)
+        p = r * col[1, j]
+        parcel[j] += p
+        col[1, j] -= p
+    end
     return parcel
 end
 
-function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real  # -> Vector{F}
+function pop_sediment!(col::AbstractMatrix{F}, Δ::F, parcel::AbstractVector{F}) where F <: Real
     <<pop-sediment>>
 end
+
+pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F <: Real =
+    pop_sediment!(col, Δ, zeros(F, size(col, 2)))
 ```
 
-We start by computing the bucket size again. If it is greater than the required amount, we call `pop_fraction`.
+We start by computing the bucket size again. If it is greater than the required amount, we call `pop_fraction!`.
 
 ``` {.julia #pop-sediment}
-bucket = sum(col[1,:])
+bucket = sum(@view col[1, :])
 @assert bucket >= 0.0
 
 if Δ < bucket
-  return pop_fraction(col, Δ)
+    parcel .= zero(F)
+    return pop_fraction!(parcel, col, Δ)
 end
 ```
 
-Otherwise, we start a parcel with the contents of the bucket. Add to that the remaining material in rows below. Now we copy rows from below, setting the bottom $n$ rows to 0. The last step is to call `pop_fraction` one more time with the remaining required amount.
+Otherwise, we start a parcel with the contents of the bucket. Add to that the remaining material in rows below. Now we copy rows from below, setting the bottom $n$ rows to 0. The last step is to call `pop_fraction!` one more time with the remaining required amount.
 
 ``` {.julia #pop-sediment}
-parcel = copy(col[1,:])
+@views parcel .= col[1, :]
 Δ -= bucket
 n = floor(Int64, Δ)
 
 if n > (size(col)[1] - 2)
     @error "too much material popped of the stack: Δ = $Δ"
-    parcel .+= sum(col; dims=1)'
+    for j in axes(col, 2)
+        parcel[j] = sum(@view col[:, j])
+    end
     col .= 0.0
     return parcel
 end
 
-parcel .+= sum(col[2:n+1,:]; dims=1)'
-col[1:end-n-1, :] = col[n+2:end, :]
-col[end-n-1:end, :] .= 0
+for j in axes(col, 2)
+    parcel[j] += sum(@view col[2:n+1, j])
+end
+shift_up!(col, n + 1)
+col[end-n:end, :] .= 0
 Δ -= n
 
-parcel .+= pop_fraction(col, Δ)
-return parcel
+return pop_fraction!(parcel, col, Δ)
 ```
 
 ### Peeking
@@ -235,7 +287,7 @@ end
 
 function pop_sediment!(cols::AbstractArray{F, 4}, amount::AbstractArray{F, 2}, out::AbstractArray{F, 3}) where F <: Real
   @views for i in CartesianIndices(amount)
-      out[:, i[1], i[2]] = pop_sediment!(cols[:, :, i[1], i[2]], amount[i[1], i[2]])
+      pop_sediment!(cols[:, :, i[1], i[2]], amount[i[1], i[2]], out[:, i[1], i[2]])
   end
 end
 
@@ -252,7 +304,6 @@ end # module
 @component module SedimentBuffer
 @mixin Boxes, FaciesBase, WaterDepth
 
-using StaticArrays
 using Unitful
 
 using ..Common
@@ -275,28 +326,31 @@ function push_sediment(input::AbstractInput)
     res = input.depositional_resolution
     n_f = n_facies(input)
     n_g = input.box.grid_size
+    parcel = Vector{Float64}(undef, n_f)
 
     function (state::AbstractState, sediment::Array{Amount, 3})
         for i in CartesianIndices(n_g)
             total = sum(@view sediment[:, i[1], i[2]])
             state.sediment_thickness[i] += total
             state.bathymetry[i] += total
-            v = SVector{n_f, Float64}(sediment[:, i[1], i[2]] ./ res .|> NoUnits)
-            push_sediment!(view(state.sediment_buffer, :, :, i[1], i[2]), v)
+            parcel .= @view(sediment[:, i[1], i[2]]) ./ res .|> NoUnits
+            push_sediment!(view(state.sediment_buffer, :, :, i[1], i[2]), parcel)
         end
     end
 end
 
 function pop_sediment(input::AbstractInput)
     res = input.depositional_resolution
+    n_f = n_facies(input)
     n_g = input.box.grid_size
+    parcel = Vector{Float64}(undef, n_f)
 
     function (state::AbstractState, amount::Array{Amount, 2}, out::Array{Amount, 3})
         for i in CartesianIndices(n_g)
             state.sediment_thickness[i] -= amount[i]
             state.bathymetry[i] -= amount[i]
-            v = pop_sediment!(@view(state.sediment_buffer[:, :, i[1], i[2]]), amount[i] ./ res .|> NoUnits)
-            view(out, :, i[1], i[2]) .= v .* res
+            pop_sediment!(@view(state.sediment_buffer[:, :, i[1], i[2]]), amount[i] / res |> NoUnits, parcel)
+            view(out, :, i[1], i[2]) .= parcel .* res
         end
     end
 end

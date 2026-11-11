@@ -35,7 +35,11 @@ Modules = [CarboKitten.Export]
 ## Components
 
 ```@autodocs
+<<<<<<< HEAD
 Modules = [CarboKitten.Components.Common, CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer, CarboKitten.Components.Production, CarboKitten.Components.WaterDepth]
+=======
+Modules = [CarboKitten.Components.CellularAutomaton, CarboKitten.Components.ActiveLayer, CarboKitten.Components.Production, CarboKitten.Components.WaterDepth]
+>>>>>>> main
 ```
 
 ## Output

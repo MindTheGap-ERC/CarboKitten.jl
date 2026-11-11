@@ -158,6 +158,8 @@ makedocs(
             "Nested Sequence Enumeration" => "algorithms/enumerate_seq.md",
             "Skeleton" => "algorithms/skeleton.md",
             "Stratigraphic Column" => "algorithms/stratigraphic_column.md",
+            "Copying Stack" => "algorithms/copying_stack.md",
+            "Circular Stack" => "algorithms/circular_stack.md",
         ],
         "API Documentation" => "api.md",
         "References" => "references.md"

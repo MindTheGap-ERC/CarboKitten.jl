@@ -68,7 +68,7 @@ module Abstract
 
 using ...BoundaryTrait: Boundary
 using ...Boxes: Box
-using ...SedimentStack: peek_sediment
+using ...SedimentBuffers: peek_sediment
 
 using Unitful
 
@@ -120,7 +120,7 @@ end
 # not sure this is the right place for this, but it's common to multiple modes of denudation
 function dominant_facies(state, i::CartesianIndex, peek_depth::Float64)
     # look at top of the sediment buffer column, first two cells of buffer
-    buffer_facies = peek_sediment(state.sediment_buffer[:,:,i[1],i[2]], peek_depth)
+    buffer_facies = peek_sediment(state, i, peek_depth)
     max_f = findmax(buffer_facies)
 
     # we shouldn't be calling this function with an empty sediment buffer

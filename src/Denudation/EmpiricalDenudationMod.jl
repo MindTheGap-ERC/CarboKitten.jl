@@ -3,7 +3,7 @@ module EmpiricalDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
 using ...Boxes: Box
-using CarboKitten.SedimentStack: peek_sediment
+using CarboKitten.SedimentBuffers: peek_sediment
 
 using Unitful
 export slope_kernel

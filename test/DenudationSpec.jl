@@ -147,7 +147,7 @@ end
 end
 
 @testset "dominant_facies" begin
-    state = D.State(
+    state = record_type(:State, D)(
         step=0,
         bathymetry=zeros(Height, 3,3),
         sediment_thickness=zeros(Height, 3,3),

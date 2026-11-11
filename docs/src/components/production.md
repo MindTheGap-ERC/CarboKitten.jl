@@ -11,11 +11,11 @@ CarboKitten.Components.Production
 ### Input parameters
 
 ``` {.julia #production-input}
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     insolation = 400.0u"W/m^2"
 end
 
-@kwdef struct Facies <: AbstractFacies
+@kwdef struct Facies <: FaciesPart
     production = NoProduction()
 end
 
@@ -64,9 +64,10 @@ production vs depth as a family of time-slice curves.
 We put the basic production equations in a separate module `CarboKitten.Production`. This will contain the dynamic API (`production_profile`) and the implementation of `BenthicProduction` and `PelagicProduction`. We isolate these from the component `CarboKitten.Components.Production` implementation to prevent these production objects from being replicated in derived components, leading to problems with dispatch on `production_profile`.
 
 ``` {.julia file=src/Components/Production.jl}
-@compose module Production
+@component module Production
 @mixin TimeIntegration, WaterDepth, FaciesBase
 using ..Common
+import ..Common: write_header
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
 using ...Production: NoProduction, production_profile, insolation_curve
@@ -81,7 +82,7 @@ export uniform_production
 
 <<production-input>>
 
-function write_header(input::AbstractInput, output::AbstractOutput)
+function write_header(::Input, input::AbstractInput, output::AbstractOutput)
     # Insolation time series
     I_of_t = insolation_curve(input)
     t_write = write_times(input)[1:end-1]
@@ -134,11 +135,12 @@ Insolation is captured inside each production spec closure — the production
 loop only needs the current time, not an insolation value.
 
 ``` {.julia file=src/Components/CAProduction.jl}
-@compose module CAProduction
+@component module CAProduction
     @mixin TimeIntegration, CellularAutomaton, Production
     using ..Common
     using ..TimeIntegration: time
     using ..WaterDepth: water_depth
+    using ..FaciesBase: n_facies
     using ...Production: production_profile
     using Logging
 
@@ -303,9 +305,13 @@ module ProductionSpec
     using Test
     using CarboKitten
     using CarboKitten.Components.Common
-    using CarboKitten.Components.Production: Facies, Input, uniform_production
+    using CarboKitten.Components: Production
+    using CarboKitten.Components.Production: uniform_production
     using CarboKitten.Components.WaterDepth: initial_state
     using CarboKitten.Production: InterpolatedProduction, MultiplyProduction
+
+    const Facies = record_type(:Facies, Production)
+    const Input = record_type(:Input, Production)
     <<production-spec>>
 end
 ```

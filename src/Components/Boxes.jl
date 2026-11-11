@@ -1,12 +1,13 @@
 # ~/~ begin <<docs/src/components/boxes.md#src/Components/Boxes.jl>>[init]
-@compose module Boxes
+@component module Boxes
 using ..Common
+import ..Common: write_header
 
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     box::Box
 end
 
-function write_header(input::AbstractInput, output::AbstractOutput)
+function write_header(::Input, input::AbstractInput, output::AbstractOutput)
     x, y = box_axes(input.box)
     set_attribute(output, "x", collect(x) |> in_units_of(u"m"))
     set_attribute(output, "y", collect(y) |> in_units_of(u"m"))

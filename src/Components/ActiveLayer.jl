@@ -1,25 +1,30 @@
 # ~/~ begin <<docs/src/active-layer-transport.md#src/Components/ActiveLayer.jl>>[init]
-@compose module ActiveLayer
+@component module ActiveLayer
 @mixin WaterDepth, FaciesBase, SedimentBuffer
 
 export disintegrator, transporter, lithification_factor
 
 using ..Common
+using ..WaterDepth: water_depth
+using ..FaciesBase: n_facies
+using ..SedimentBuffer: pop_sediment
+import ..TimeIntegration
+import ..Common: write_header
 using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
 using CarboKitten.Transport.Solvers: runge_kutta_4, forward_euler
 using Unitful
 using GeometryBasics
 
-@kwdef struct Facies <: AbstractFacies
+@kwdef struct Facies <: FaciesPart
     transport_coefficient::typeof(1.0u"m/yr") = 0.0u"m/Myr"
     wave_velocity = _ -> (Vec2(0.0u"m/Myr", 0.0u"m/Myr"), Vec2(0.0u"1/Myr", 0.0u"1/Myr"))
 end
 
-@kwdef mutable struct State <: AbstractState
+@kwdef mutable struct State <: StatePart
     active_layer::Array{Amount,3}
 end
 
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
     disintegration_transfer::Function = x -> x
@@ -28,9 +33,6 @@ end
     transport_substeps = :adaptive
     save_active_layer::Bool = false
 end
-
-@constructor _initial_state(input)::State[active_layer] = (
-    active_layer = zeros(Amount, n_facies(input), input.box.grid_size...),)
 
 courant_max(::Type{Val{:RK4}}) = 2.0
 courant_max(::Type{Val{:forward_euler}}) = 1.0
@@ -182,7 +184,7 @@ function transporter(input)
     end
 end
 
-function write_header(input::AbstractInput, output::AbstractOutput)
+function write_header(::Input, input::AbstractInput, output::AbstractOutput)
     set_attribute(output, "intertidal_zone", input.intertidal_zone |> in_units_of(u"m"))
     set_attribute(output, "disintegration_rate", input.disintegration_rate |> in_units_of(u"m/Myr"))
     if input.lithification_time !== nothing

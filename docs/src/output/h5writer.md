@@ -75,7 +75,7 @@ function H5Output(input::Input, filename::String) where {Input <: AbstractInput}
     header = make_header(input)
     fid = h5open(filename, "w")
     create_group(fid, "input")
-    save_active_layer = hasfield(Input, :save_active_layer) ?
+    save_active_layer = hasproperty(input, :save_active_layer) ?
         input.save_active_layer : false
 
     finalizer(H5Output(header, save_active_layer, fid)) do x
@@ -86,7 +86,7 @@ end
 
 function H5Output(f, input::Input, filename::String) where {Input <: AbstractInput}
     header = make_header(input)
-    save_active_layer = hasfield(Input, :save_active_layer) ?
+    save_active_layer = hasproperty(input, :save_active_layer) ?
         input.save_active_layer : false
     h5open(filename, "w") do fid
         create_group(fid, "input")

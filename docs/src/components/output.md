@@ -20,7 +20,7 @@ const INPUT = ALCAP.Input(
 Saving the full output of this simulation would take several hundreds of gigabytes, not gargantuan, but a bit unwieldy if you want to save many simulation runs. With this output specification, we cut down on this significantly.
 
 ``` {.julia #output-spec}
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     output = Dict(:full => OutputSpec((:, :), 1))
 end
 ```
@@ -34,7 +34,7 @@ The default is to write all output, which is fine for smaller runs. The `slice` 
 If an output with a `write_interval` that does not divide the total number of timesteps is specified, the output array will contain `div(time.steps, write_interval)` values and the value for the remainder of the steps at the end of the model will not be recorded (since this will not cover an equal interval of time as the rest of the values).
 
 ``` {.julia file=src/Components/Output.jl}
-@compose module Output
+@component module Output
 using ..Common
 
 <<output-spec>>

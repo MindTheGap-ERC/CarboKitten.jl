@@ -6,14 +6,14 @@ using CarboKitten.Components.Common
 using CarboKitten.Components: CellularAutomaton as CA
 
 @testset "Components/CellularAutomaton" begin
-    let facies = fill(CA.Facies(
+    let facies = fill(record_type(:Facies, CA)(
             viability_range=(4, 10),
             activation_range=(6, 10),
             active=true), 3),
-        input1 = CA.Input(
+        input1 = record_type(:Input, CA)(
             box=Box{Periodic{2}}(grid_size=(50, 50), phys_scale=1.0u"m"),
             facies=facies),
-        input2 = CA.Input(
+        input2 = record_type(:Input, CA)(
             box=Box{Periodic{2}}(grid_size=(50, 50), phys_scale=1.0u"m"),
             facies=facies,
             ca_random_seed=1)
@@ -37,11 +37,11 @@ using CarboKitten.Components: CellularAutomaton as CA
     end
 
     @testset "inactive facies" begin
-        let facies = [CA.Facies(active=true),
-                      CA.Facies(active=false),
-                      CA.Facies(active=true),
-                      CA.Facies(active=false)],
-            input = CA.Input(
+        let facies = [record_type(:Facies, CA)(active=true),
+                      record_type(:Facies, CA)(active=false),
+                      record_type(:Facies, CA)(active=true),
+                      record_type(:Facies, CA)(active=false)],
+            input = record_type(:Input, CA)(
                 box=Box{Periodic{2}}(grid_size=(10, 10), phys_scale=1.0u"m"),
                 facies=facies)
 

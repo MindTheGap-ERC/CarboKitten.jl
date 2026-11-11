@@ -2,20 +2,22 @@
 module Common
 export @u_str, Quantity, Amount, Time, Location, Rate, Intensity, Height, Sediment
 export AbstractFacies, AbstractInput, AbstractState, AbstractOutput, set_attribute
+export InputPart, StatePart, FaciesPart, write_header
 export OutputSpec
 export Box, box_axes, Boundary, Coast, Periodic, Reflected, TimeProperties
 export in_units_of
 export Model
-export @for_each
+export record_type
 export Size
 export n_steps
 export AbstractProduction, NoProduction, BenthicProduction, PelagicProduction, production_profile, InterpolatedProduction
 
-using ModuleMixins
+using ModuleMixins.Procedural: record_type, parts
 using Unitful
 using StaticArrays
 
-using ...CarboKitten: Model, AbstractInput, AbstractState, AbstractOutput, OutputSpec, set_attribute, n_steps
+using ...CarboKitten: Model, AbstractInput, AbstractState, AbstractFacies, AbstractOutput, OutputSpec, set_attribute, n_steps
+using ...CarboKitten: InputPart, StatePart, FaciesPart
 using ...BoundaryTrait
 using ...Config: TimeProperties
 using ...Boxes: Box, box_axes
@@ -30,7 +32,21 @@ const Rate = typeof(1.0u"m/Myr")
 const Intensity = typeof(1.0u"W/m^2")
 const Sediment = typeof(1.0u"m")
 
-abstract type AbstractFacies end
+"""
+    write_header(part, input, output)
+
+Write the attributes of a single component to the output header. Components
+extend this method for their own `Input` part.
+"""
+write_header(part, input::AbstractInput, output::AbstractOutput) = nothing
+
+"""
+    write_header(input, output)
+
+Write the header for all components of a model.
+"""
+write_header(input::AbstractInput, output::AbstractOutput) =
+    foreach(p -> write_header(p, input, output), parts(input))
 
 end
 # ~/~ end

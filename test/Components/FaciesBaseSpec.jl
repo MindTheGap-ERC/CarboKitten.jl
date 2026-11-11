@@ -2,7 +2,11 @@
 module FaciesBaseSpec
     using Test
     using CarboKitten.Components.Common
-    using CarboKitten.Components.FaciesBase: Facies, Input, n_facies
+    using CarboKitten.Components: FaciesBase
+    using CarboKitten.Components.FaciesBase: n_facies
+
+    const Facies = record_type(:Facies, FaciesBase)
+    const Input = record_type(:Input, FaciesBase)
 
     @testset "Components/FaciesBase" begin
         let input = Input(facies=fill(Facies(), 23))

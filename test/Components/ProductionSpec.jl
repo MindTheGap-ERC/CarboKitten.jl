@@ -3,9 +3,13 @@ module ProductionSpec
     using Test
     using CarboKitten
     using CarboKitten.Components.Common
-    using CarboKitten.Components.Production: Facies, Input, uniform_production
+    using CarboKitten.Components: Production
+    using CarboKitten.Components.Production: uniform_production
     using CarboKitten.Components.WaterDepth: initial_state
     using CarboKitten.Production: InterpolatedProduction, MultiplyProduction
+
+    const Facies = record_type(:Facies, Production)
+    const Input = record_type(:Input, Production)
     # ~/~ begin <<docs/src/components/production.md#production-spec>>[init]
     @testset "Components/Production" begin
         let prod = BenthicProduction(

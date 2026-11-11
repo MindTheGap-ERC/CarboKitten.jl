@@ -1,24 +1,24 @@
 # ~/~ begin <<docs/src/components/cellular-automata.md#src/Components/CellularAutomaton.jl>>[init]
-@compose module CellularAutomaton
+@component module CellularAutomaton
     @mixin Boxes, FaciesBase
     using ..Common
     using ...Stencil: stencil!
     using Random
 
     # ~/~ begin <<docs/src/components/cellular-automata.md#ca-input>>[init]
-    @kwdef struct Facies <: AbstractFacies
+    @kwdef struct Facies <: FaciesPart
         viability_range::Tuple{Int,Int} = (4, 10)
         activation_range::Tuple{Int,Int} = (6, 10)
         active::Bool = true
     end
     
-    @kwdef struct Input <: AbstractInput
+    @kwdef struct Input <: InputPart
         ca_interval::Int      = 1
         ca_random_seed::Int   = 0
     end
     # ~/~ end
     # ~/~ begin <<docs/src/components/cellular-automata.md#ca-state>>[init]
-    @kwdef mutable struct State <: AbstractState
+    @kwdef mutable struct State <: StatePart
         ca::Matrix{Int}
         ca_priority::Vector{Int}
     end
@@ -67,13 +67,6 @@
         end
     end
     # ~/~ end
-
-    @constructor function _initial_state(input)::State[ca, ca_priority]
-        n_facies = length(input.facies)
-        active_facies = 1:n_facies |> filter(f->input.facies[f].active==true)
-        ca = rand(MersenneTwister(input.ca_random_seed), [0; active_facies], input.box.grid_size...)
-        return (ca = ca, ca_priority = active_facies |> collect)
-    end
 
     function initial_state(input::AbstractInput)
         n_facies = length(input.facies)

@@ -12,13 +12,13 @@ We have reimplemented the CA used in [Burgess2013](@cite), which uses three spec
 We depend on the box properties being defined. Each `Facies` should have a `viability_range` and `activation_range` defined.  The `active` property determines whether a facies is active in the cellular automaton. Two other parameters are the `ca_interval` setting how many time steps between every CA advancement, and the `ca_random_seed` setting the random seed for generating the initial noise.
 
 ``` {.julia #ca-input}
-@kwdef struct Facies <: AbstractFacies
+@kwdef struct Facies <: FaciesPart
     viability_range::Tuple{Int,Int} = (4, 10)
     activation_range::Tuple{Int,Int} = (6, 10)
     active::Bool = true
 end
 
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     ca_interval::Int      = 1
     ca_random_seed::Int   = 0
 end
@@ -27,7 +27,7 @@ end
 The state of the CA is stored in `ca` and `ca_priority`.
 
 ``` {.julia #ca-state}
-@kwdef mutable struct State <: AbstractState
+@kwdef mutable struct State <: StatePart
     ca::Matrix{Int}
     ca_priority::Vector{Int}
 end
@@ -93,13 +93,14 @@ A prerequisite for our CA rule was that it shows no convergence on stable patter
 module Script
 using CarboKitten
 using CarboKitten.Components: CellularAutomaton as CA
+using CarboKitten.Components.Common: record_type
 using CairoMakie
 
 function main()
-  input = CA.Input(
+  input = record_type(:Input, CA)(
       box = CarboKitten.Box{Periodic{2}}(
         grid_size=(50, 50), phys_scale=1.0u"m"),
-      facies = fill(CA.Facies(), 3)
+      facies = fill(record_type(:Facies, CA)(), 3)
   )
 
   state = CA.initial_state(input)
@@ -152,10 +153,10 @@ Users are welcome to explore the permanence of spatial patterns for other sets o
 It can be interesting to model feedback on the CA state due to environmental factors. For example, we can kill off facies if it turns out they're not able to produce. 
 
 ``` {.julia file=src/Components/CAFeedback.jl}
-@compose module CAFeedback
+@component module CAFeedback
 using ..Common
 
-@kwdef struct Facies
+@kwdef struct Facies <: FaciesPart
     minimum_production::Union{typeof(0.0u"m/Myr"),Nothing} = nothing
 end
 
@@ -328,14 +329,14 @@ using CarboKitten.Components.Common
 using CarboKitten.Components: CellularAutomaton as CA
 
 @testset "Components/CellularAutomaton" begin
-    let facies = fill(CA.Facies(
+    let facies = fill(record_type(:Facies, CA)(
             viability_range=(4, 10),
             activation_range=(6, 10),
             active=true), 3),
-        input1 = CA.Input(
+        input1 = record_type(:Input, CA)(
             box=Box{Periodic{2}}(grid_size=(50, 50), phys_scale=1.0u"m"),
             facies=facies),
-        input2 = CA.Input(
+        input2 = record_type(:Input, CA)(
             box=Box{Periodic{2}}(grid_size=(50, 50), phys_scale=1.0u"m"),
             facies=facies,
             ca_random_seed=1)
@@ -359,11 +360,11 @@ using CarboKitten.Components: CellularAutomaton as CA
     end
 
     @testset "inactive facies" begin
-        let facies = [CA.Facies(active=true),
-                      CA.Facies(active=false),
-                      CA.Facies(active=true),
-                      CA.Facies(active=false)],
-            input = CA.Input(
+        let facies = [record_type(:Facies, CA)(active=true),
+                      record_type(:Facies, CA)(active=false),
+                      record_type(:Facies, CA)(active=true),
+                      record_type(:Facies, CA)(active=false)],
+            input = record_type(:Input, CA)(
                 box=Box{Periodic{2}}(grid_size=(10, 10), phys_scale=1.0u"m"),
                 facies=facies)
 
@@ -384,7 +385,7 @@ end
 ## Component
 
 ``` {.julia file=src/Components/CellularAutomaton.jl}
-@compose module CellularAutomaton
+@component module CellularAutomaton
     @mixin Boxes, FaciesBase
     using ..Common
     using ...Stencil: stencil!
@@ -393,13 +394,6 @@ end
     <<ca-input>>
     <<ca-state>>
     <<ca-step>>
-
-    @constructor function _initial_state(input)::State[ca, ca_priority]
-        n_facies = length(input.facies)
-        active_facies = 1:n_facies |> filter(f->input.facies[f].active==true)
-        ca = rand(MersenneTwister(input.ca_random_seed), [0; active_facies], input.box.grid_size...)
-        return (ca = ca, ca_priority = active_facies |> collect)
-    end
 
     function initial_state(input::AbstractInput)
         n_facies = length(input.facies)

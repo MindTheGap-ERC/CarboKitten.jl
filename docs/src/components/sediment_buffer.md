@@ -17,17 +17,17 @@ There are two implementations of the sediment buffer:
 
 ## Role
 
-Components that need a sediment buffer don't need to know which implementation is used. The `SedimentBuffer` component requires the `AbstractSedimentBuffer` role, which is implemented by the `CopyingSedimentBuffer` (the default) and `CircularSedimentBuffer` components. Each of these contributes a `sediment_buffer` to the `State`, and implements the following methods for its own `Input` or `State` part. When called on a complete `Input` or `State`, these methods forward to the part that implements the role.
+Components that need a sediment buffer don't need to know which implementation is used. The `SedimentBuffer` component requires the `AbstractSedimentBuffer` role, which is implemented by the `CopyingSedimentBuffer` (the default) and `CircularSedimentBuffer` components. Each of these contributes a `sediment_buffer` to the `State`, and implements the following methods for its own `State` part. When called on a complete `State`, these methods forward to the part that implements the role.
 
 All amounts are unit-free, measured in units of the depositional resolution.
 
 ``` {.julia file=src/SedimentBuffers.jl}
 module SedimentBuffers
 
-export AbstractSedimentBuffer, initial_sediment_buffer, push_sediment!, pop_sediment!, peek_sediment
+export AbstractSedimentBuffer, push_sediment!, pop_sediment!, peek_sediment
 
 using ModuleMixins.Procedural: component
-using ..CarboKitten: AbstractInput, AbstractState
+using ..CarboKitten: AbstractState
 
 """
     AbstractSedimentBuffer
@@ -36,13 +36,6 @@ Role for components that store the facies composition of deposited sediment.
 An implementing component contributes a `sediment_buffer` field to the `State`.
 """
 abstract type AbstractSedimentBuffer end
-
-"""
-    initial_sediment_buffer(input)
-
-Create an empty sediment buffer, to be stored in the `sediment_buffer` field of the `State`.
-"""
-function initial_sediment_buffer end
 
 """
     push_sediment!(state, sediment::AbstractArray{F, 3})
@@ -68,8 +61,6 @@ Return the sediment that would be popped by `pop_sediment!`, without changing th
 """
 function peek_sediment end
 
-initial_sediment_buffer(input::AbstractInput) =
-    initial_sediment_buffer(component(input, AbstractSedimentBuffer), input)
 push_sediment!(state::AbstractState, args...) =
     push_sediment!(component(state, AbstractSedimentBuffer), args...)
 pop_sediment!(state::AbstractState, args...) =
@@ -93,9 +84,9 @@ using Unitful
 
 using ..Common
 using ..FaciesBase: n_facies
-using ...SedimentBuffers: AbstractSedimentBuffer, initial_sediment_buffer, push_sediment!, pop_sediment!
+using ...SedimentBuffers: AbstractSedimentBuffer, push_sediment!, pop_sediment!
 
-export pop_sediment, push_sediment, initial_sediment_buffer
+export pop_sediment, push_sediment
 
 @kwdef struct Input <: InputPart
     sediment_buffer_size::Int = 50
@@ -105,6 +96,9 @@ end
 @kwdef mutable struct State <: StatePart
     sediment_thickness::Array{Height, 2}
 end
+
+Common.initial_state(::Input, input::AbstractInput) =
+    State(sediment_thickness=zeros(Height, input.box.grid_size...))
 
 function push_sediment(input::AbstractInput)
     res = input.depositional_resolution
@@ -154,7 +148,7 @@ Both implementations are thin wrappers around their algorithms. The `CopyingSedi
 using ..Common
 using ..FaciesBase: n_facies
 using ...SedimentBuffers: AbstractSedimentBuffer
-import ...SedimentBuffers: initial_sediment_buffer, push_sediment!, pop_sediment!, peek_sediment
+import ...SedimentBuffers: push_sediment!, pop_sediment!, peek_sediment
 import ModuleMixins.Procedural: default_implementation
 using ...Algorithms: CopyingBuffers
 
@@ -164,8 +158,8 @@ struct Input <: InputPart end
     sediment_buffer::Array{Float64, 4}
 end
 
-initial_sediment_buffer(::Input, input::AbstractInput) =
-    zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
+Common.initial_state(::Input, input::AbstractInput) = State(
+    sediment_buffer=zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...))
 
 push_sediment!(s::State, args...) = CopyingBuffers.push_sediment!(s.sediment_buffer, args...)
 pop_sediment!(s::State, args...) = CopyingBuffers.pop_sediment!(s.sediment_buffer, args...)
@@ -186,7 +180,7 @@ To use the circular buffer, add `CircularSedimentBuffer` to the components of a 
 using ..Common
 using ..FaciesBase: n_facies
 using ...SedimentBuffers: AbstractSedimentBuffer
-import ...SedimentBuffers: initial_sediment_buffer, push_sediment!, pop_sediment!, peek_sediment
+import ...SedimentBuffers: push_sediment!, pop_sediment!, peek_sediment
 using ...Algorithms: CircularBuffers
 using ...Algorithms.CircularBuffers: CircularBuffer
 
@@ -196,8 +190,8 @@ struct Input <: InputPart end
     sediment_buffer::CircularBuffer{Float64}
 end
 
-initial_sediment_buffer(::Input, input::AbstractInput) =
-    CircularBuffer{Float64}(input.sediment_buffer_size, n_facies(input), input.box.grid_size)
+Common.initial_state(::Input, input::AbstractInput) = State(
+    sediment_buffer=CircularBuffer{Float64}(input.sediment_buffer_size, n_facies(input), input.box.grid_size))
 
 push_sediment!(s::State, args...) = CircularBuffers.push_sediment!(s.sediment_buffer, args...)
 pop_sediment!(s::State, args...) = CircularBuffers.pop_sediment!(s.sediment_buffer, args...)
@@ -216,7 +210,8 @@ using Test
 using Unitful
 using CarboKitten
 using CarboKitten.Components.Common: Amount, record_type
-using CarboKitten.SedimentBuffers: initial_sediment_buffer, peek_sediment
+using CarboKitten.Components.Common: initial_state
+using CarboKitten.SedimentBuffers: peek_sediment
 import CarboKitten.Components.SedimentBuffer as SB
 import CarboKitten.Components: CopyingSedimentBuffer, CircularSedimentBuffer
 
@@ -228,11 +223,7 @@ import CarboKitten.Components: CopyingSedimentBuffer, CircularSedimentBuffer
             facies = [record_type(:Facies, SB, impl)()],
             sediment_buffer_size = 10,
             depositional_resolution = 1.0u"m")
-        state = record_type(:State, SB, impl)(
-            step = 0,
-            bathymetry = zeros(Amount, input.box.grid_size...),
-            sediment_buffer = initial_sediment_buffer(input),
-            sediment_thickness = zeros(Amount, input.box.grid_size...))
+        state = initial_state(record_type(:State, SB, impl), input)
 
         @test size(state.sediment_thickness) == (10, 1)
         @test state.sediment_buffer isa fieldtype(impl.State, :sediment_buffer)
@@ -261,11 +252,7 @@ import CarboKitten.Components: CopyingSedimentBuffer, CircularSedimentBuffer
             facies = [record_type(:Facies, SB)()],
             sediment_buffer_size = 10,
             depositional_resolution = 1.0u"m")
-        state = record_type(:State, SB)(
-            step = 0,
-            bathymetry = zeros(Amount, input.box.grid_size...),
-            sediment_buffer = initial_sediment_buffer(input),
-            sediment_thickness = zeros(Amount, input.box.grid_size...))
+        state = initial_state(record_type(:State, SB), input)
 
         @test size(state.sediment_buffer) == (10, 1, 10, 1)
 

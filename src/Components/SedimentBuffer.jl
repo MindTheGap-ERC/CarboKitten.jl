@@ -7,9 +7,9 @@ using Unitful
 
 using ..Common
 using ..FaciesBase: n_facies
-using ...SedimentBuffers: AbstractSedimentBuffer, initial_sediment_buffer, push_sediment!, pop_sediment!
+using ...SedimentBuffers: AbstractSedimentBuffer, push_sediment!, pop_sediment!
 
-export pop_sediment, push_sediment, initial_sediment_buffer
+export pop_sediment, push_sediment
 
 @kwdef struct Input <: InputPart
     sediment_buffer_size::Int = 50
@@ -19,6 +19,9 @@ end
 @kwdef mutable struct State <: StatePart
     sediment_thickness::Array{Height, 2}
 end
+
+Common.initial_state(::Input, input::AbstractInput) =
+    State(sediment_thickness=zeros(Height, input.box.grid_size...))
 
 function push_sediment(input::AbstractInput)
     res = input.depositional_resolution

@@ -809,6 +809,9 @@ end
     save_active_layer::Bool = false
 end
 
+Common.initial_state(::Input, input::AbstractInput) =
+    State(active_layer=zeros(Amount, n_facies(input), input.box.grid_size...))
+
 courant_max(::Type{Val{:RK4}}) = 2.0
 courant_max(::Type{Val{:forward_euler}}) = 1.0
 

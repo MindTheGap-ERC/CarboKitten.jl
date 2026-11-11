@@ -5,7 +5,7 @@ import ..Tag, ..Diagnostics, ..Output, ..Production, ..ActiveLayer, ..Denudation
 
 using ..Common
 using ..FaciesBase: n_facies
-using ..SedimentBuffer: push_sediment, pop_sediment, initial_sediment_buffer
+using ..SedimentBuffer: push_sediment, pop_sediment
 using ..ActiveLayer: lithification_factor
 using ..Denudation: slope_function, denudation, redistribution
 using ..Production: uniform_production
@@ -26,21 +26,7 @@ const Facies = record_type(:Facies, WithoutCADenudation)
 
 export Input, Facies
 
-function initial_state(input::Input)
-    bathymetry = initial_topography(input)
-    sediment_thickness = zeros(Height, input.box.grid_size...)
-    sediment_buffer = initial_sediment_buffer(input)
-    active_layer = zeros(Amount, n_facies(input), input.box.grid_size...)
-    
-    state = State(
-        step=0,
-        bathymetry=bathymetry,
-        sediment_thickness=sediment_thickness,
-        sediment_buffer=sediment_buffer,
-        active_layer=active_layer)
-    InitialSediment.push_initial_sediment!(input, state)
-    return state
-end
+initial_state(input::Input) = Common.initial_state(State, input)
 
 function initial_frame(input::Input)
     dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)

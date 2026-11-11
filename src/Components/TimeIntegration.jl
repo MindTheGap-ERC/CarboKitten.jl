@@ -17,6 +17,8 @@ end
 
 State(_::AbstractInput) = State(0)
 
+Common.initial_state(::Input, input::AbstractInput) = State(input)
+
 """
     time(input, state)
 

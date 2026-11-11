@@ -21,18 +21,7 @@ const Facies = record_type(:Facies, CAP)
 
 export Input, Facies
 
-function initial_state(input::Input)
-    ca_state = CellularAutomaton.initial_state(input)
-    for _ in 1:20
-        CellularAutomaton.step!(input)(ca_state)
-    end
-
-    state = State(
-        step=0, bathymetry=initial_topography(input),
-        ca=ca_state.ca, ca_priority=ca_state.ca_priority)
-
-    return state
-end
+initial_state(input::Input) = Common.initial_state(State, input)
 
 function initial_frame(input::Input)
     return Frame(production=zeros(Sediment,n_facies(input), input.box.grid_size...),

@@ -6,7 +6,7 @@
 using ..Common
 using ..FaciesBase: n_facies
 using ...SedimentBuffers: AbstractSedimentBuffer
-import ...SedimentBuffers: initial_sediment_buffer, push_sediment!, pop_sediment!, peek_sediment
+import ...SedimentBuffers: push_sediment!, pop_sediment!, peek_sediment
 import ModuleMixins.Procedural: default_implementation
 using ...Algorithms: CopyingBuffers
 
@@ -16,8 +16,8 @@ struct Input <: InputPart end
     sediment_buffer::Array{Float64, 4}
 end
 
-initial_sediment_buffer(::Input, input::AbstractInput) =
-    zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
+Common.initial_state(::Input, input::AbstractInput) = State(
+    sediment_buffer=zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...))
 
 push_sediment!(s::State, args...) = CopyingBuffers.push_sediment!(s.sediment_buffer, args...)
 pop_sediment!(s::State, args...) = CopyingBuffers.pop_sediment!(s.sediment_buffer, args...)

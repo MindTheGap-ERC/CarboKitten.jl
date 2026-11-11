@@ -114,9 +114,9 @@ end
 module Components
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
-    CAProduction, CAFeedback, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
+    CAProduction, CAFeedback, CellularAutomaton, ActiveLayer, SedimentBuffer,
     CopyingSedimentBuffer, CircularSedimentBuffer,
-    ActiveLayerOnshore, Denudation, InitialSediment, Output, Diagnostics
+    Denudation, InitialSediment, Output, Diagnostics
 
 using ModuleMixins.Syntactic: @component
 
@@ -141,9 +141,34 @@ include("Components/Denudation.jl")
 
 include("Components/Output.jl")
 
-list_components() = filter(
-    c -> c isa Module && c !== Components && c !== Common,
-    map(eval, names(Components)))
+"""
+    list_components()
 
+All components, being the modules defined in `Components`, except `Common`.
+"""
+list_components() = [
+    getfield(Components, n) for n in names(Components; all=true)
+    if is_component(getfield(Components, n))]
+
+is_component(m) = m isa Module && m !== Components && m !== Common &&
+    parentmodule(m) === Components
+
+end
+```
+
+``` {.julia file=test/Components/ComponentsSpec.jl}
+@testset "Components" begin
+    using CarboKitten.Components: Components, list_components
+
+    # every exported name exists
+    @test all(n -> isdefined(Components, n), names(Components))
+
+    components = list_components()
+    @test all(c -> c isa Module, components)
+    @test Components.SedimentBuffer in components
+    @test Components.CircularSedimentBuffer in components
+    @test Components.Common ∉ components
+    # every component is exported
+    @test all(c -> nameof(c) in names(Components), components)
 end
 ```

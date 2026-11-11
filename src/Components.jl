@@ -2,9 +2,9 @@
 module Components
 
 export Tag, TimeIntegration, Boxes, WaterDepth, FaciesBase, Production,
-    CAProduction, CAFeedback, CellularAutomaton, H5Writer, ActiveLayer, SedimentBuffer,
+    CAProduction, CAFeedback, CellularAutomaton, ActiveLayer, SedimentBuffer,
     CopyingSedimentBuffer, CircularSedimentBuffer,
-    ActiveLayerOnshore, Denudation, InitialSediment, Output, Diagnostics
+    Denudation, InitialSediment, Output, Diagnostics
 
 using ModuleMixins.Syntactic: @component
 
@@ -29,9 +29,17 @@ include("Components/Denudation.jl")
 
 include("Components/Output.jl")
 
-list_components() = filter(
-    c -> c isa Module && c !== Components && c !== Common,
-    map(eval, names(Components)))
+"""
+    list_components()
+
+All components, being the modules defined in `Components`, except `Common`.
+"""
+list_components() = [
+    getfield(Components, n) for n in names(Components; all=true)
+    if is_component(getfield(Components, n))]
+
+is_component(m) = m isa Module && m !== Components && m !== Common &&
+    parentmodule(m) === Components
 
 end
 # ~/~ end

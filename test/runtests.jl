@@ -40,6 +40,7 @@ TEST_PATH = mktempdir()
     include("Algorithms/CopyingBuffersSpec.jl")
     include("Algorithms/CircularBuffersSpec.jl")
 
+    include("Components/ComponentsSpec.jl")
     include("Components/CellularAutomatonSpec.jl")
     include("Components/SedimentBufferSpec.jl")
     include("Components/FaciesBaseSpec.jl")

@@ -23,10 +23,9 @@ const Facies = record_type(:Facies, ALCAP)
 
 export Input, Facies, BenthicProduction, PelagicProduction
 
-# The optional state type `S` allows the same model to be run with a different
-# composition, for instance `record_type(:State, ALCAP, CircularSedimentBuffer)`.
-initial_state(input::AbstractInput, ::Type{S}=State) where {S <: AbstractState} =
-    Common.initial_state(S, input)
+# The state is composed of the same components as the input, so ALCAP can also
+# run with, for instance, `record_type(:Input, ALCAP, CircularSedimentBuffer)`.
+initial_state(input::AbstractInput) = Common.initial_state(input)
 
 function initial_frame(input::AbstractInput)
     dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)

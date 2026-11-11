@@ -311,7 +311,7 @@ end
 
 ## Benchmark
 
-To compare the two implementations, we run the [ALCAP model](../models/alcap.md) once with each buffer. The circular variant of ALCAP only differs in its `Input` and `State` records, which include `CircularSedimentBuffer` instead of the default `CopyingSedimentBuffer`. Both runs should end up with the same sediment.
+To compare the two implementations, we run the [ALCAP model](../models/alcap.md) once with each buffer. The circular variant of ALCAP only differs in its `Input` record, which includes `CircularSedimentBuffer` instead of the default `CopyingSedimentBuffer`. The rest follows from there: the initial state is composed of the same components as the input. Both runs should end up with the same sediment.
 
 Most time in a model run is spent on other things than the sediment buffer, like transport. That is why we also time pushing and popping on the final state of each run.
 
@@ -323,24 +323,13 @@ using CarboKitten
 using CarboKitten.Components.Common: Amount
 using CarboKitten.Components.SedimentBuffer: push_sediment, pop_sediment
 using CarboKitten.SedimentBuffers: peek_sediment
+using CarboKitten.Components.Common: record_type
+using CarboKitten.Components: CircularSedimentBuffer
 using CarboKitten.Models.ALCAP.Example: FACIES
 
-module CircularALCAP
-    using CarboKitten: ALCAP
-    using CarboKitten.Components.Common: record_type
-    using CarboKitten.Components: CircularSedimentBuffer
-
-    const Input = record_type(:Input, ALCAP, CircularSedimentBuffer)
-    const State = record_type(:State, ALCAP, CircularSedimentBuffer)
-
-    initial_state(input) = ALCAP.initial_state(input, State)
-    initial_frame(input) = ALCAP.initial_frame(input)
-    step!(input) = ALCAP.step!(input)
-end
-
-const MODELS = [
-    "copying" => (ALCAP, ALCAP.Input),
-    "circular" => (CircularALCAP, CircularALCAP.Input)]
+const INPUTS = [
+    "copying" => ALCAP.Input,
+    "circular" => record_type(:Input, ALCAP, CircularSedimentBuffer)]
 
 make_input(Input, steps) = Input(
     tag="buffer-benchmark",
@@ -359,7 +348,7 @@ make_input(Input, steps) = Input(
     depositional_resolution=0.5u"m",
     facies=FACIES)
 
-run(M, input) = run_model((_, _) -> nothing, Model{M}, input)
+run(input) = run_model((_, _) -> nothing, Model{ALCAP}, input)
 
 function best_of(f, n)
     best = (time=Inf, bytes=0)
@@ -388,10 +377,10 @@ end
 function main(; steps=1000, repeats=3)
     states = Dict()
     println("ALCAP, 100×50 grid, $(steps) steps, best of $(repeats)")
-    for (name, (M, Input)) in MODELS
-        run(M, make_input(Input, 10))  # compile
+    for (name, Input) in INPUTS
+        run(make_input(Input, 10))  # compile
         input = make_input(Input, steps)
-        model = best_of(() -> states[name] = run(M, input), repeats)
+        model = best_of(() -> states[name] = run(input), repeats)
         ops = best_of(buffer_ops(input, deepcopy(states[name])), repeats)
         println(rpad(name, 10),
             "model run: ", lpad(round(model.time; digits=2), 7), " s  ",

@@ -170,7 +170,7 @@ default_implementation(::Type{AbstractSedimentBuffer}) = CopyingSedimentBuffer
 end
 ```
 
-To use the circular buffer, add `CircularSedimentBuffer` to the components of a model, for example `record_type(:State, ALCAP, CircularSedimentBuffer)`.
+To use the circular buffer, add `CircularSedimentBuffer` to the components of a model, for example `record_type(:Input, ALCAP, CircularSedimentBuffer)`. The initial state then follows the composition of the input.
 
 ``` {.julia file=src/Components/CircularSedimentBuffer.jl}
 @component module CircularSedimentBuffer
@@ -223,7 +223,7 @@ import CarboKitten.Components: CopyingSedimentBuffer, CircularSedimentBuffer
             facies = [record_type(:Facies, SB, impl)()],
             sediment_buffer_size = 10,
             depositional_resolution = 1.0u"m")
-        state = initial_state(record_type(:State, SB, impl), input)
+        state = initial_state(input)
 
         @test size(state.sediment_thickness) == (10, 1)
         @test state.sediment_buffer isa fieldtype(impl.State, :sediment_buffer)
@@ -252,7 +252,7 @@ import CarboKitten.Components: CopyingSedimentBuffer, CircularSedimentBuffer
             facies = [record_type(:Facies, SB)()],
             sediment_buffer_size = 10,
             depositional_resolution = 1.0u"m")
-        state = initial_state(record_type(:State, SB), input)
+        state = initial_state(input)
 
         @test size(state.sediment_buffer) == (10, 1, 10, 1)
 

@@ -66,16 +66,14 @@ that need the complete state to initialize, extend this method for their own
 initialize!(part::InputPart, input::AbstractInput, state::AbstractState) = nothing
 
 """
-    initial_state(S, input)
+    initial_state(input)
 
-The initial state of type `S` for a model. The parts of the state are
-collected from all components, after which `initialize!` is called for each
-component, in dependency order.
+The initial state for a model. The parts of the state are collected from all
+components, after which `initialize!` is called for each component, in
+dependency order.
 """
-function initial_state(::Type{S}, input::AbstractInput) where {S <: AbstractState}
-    # `map_components` creates a `Composite` without knowledge of roles.
-    # Converting to `S` makes role lookups type stable.
-    state = S(parts(map_components(p -> initial_state(p, input), input)))
+function initial_state(input::AbstractInput)
+    state = map_components(p -> initial_state(p, input), input)
     foreach(p -> initialize!(p, input, state), parts(input))
     return state
 end

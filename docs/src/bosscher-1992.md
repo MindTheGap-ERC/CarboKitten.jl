@@ -220,7 +220,7 @@ const Facies = record_type(:Facies, BS92)
 
 export Input, Facies
 
-initial_state(input::Input) = Common.initial_state(State, input)
+initial_state(input::Input) = Common.initial_state(input)
 
 function initial_frame(input::Input)
     return Frame(production=zeros(Sediment,length(input.facies), input.box.grid_size...),

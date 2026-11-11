@@ -58,8 +58,7 @@ end
 Common.initial_state(::Input, input::AbstractInput) =
     State(bathymetry=initial_topography(input))
 
-initial_state(input::AbstractInput) =
-    Common.initial_state(record_type(:State, WaterDepth), input)
+initial_state(input::AbstractInput) = Common.initial_state(input)
 
 function initial_topography(input::AbstractInput)
     if input.initial_topography isa AbstractMatrix

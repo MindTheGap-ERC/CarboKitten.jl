@@ -10,10 +10,10 @@ Mermaid is broken...
 
 Not all of these are equally important. The `H5Writer` implements the core simulation loop and writing a simulation to HDF5 files. For a `Model` to work with `H5Writer` it needs to have `initial_state`, `step!`, and `write_header` functions implemented. Each component can have its own `write_header(::Input, input, output)` implementation, dispatching on its own `Input` part. The generic `write_header(input, output)` calls it for every part of the input.
 
-The initial state is composed in the same way. Each component that has a `State` part implements `initial_state(::Input, input)`, returning its part of the state. The generic `initial_state(State, input)` collects these parts using `map_components` from ModuleMixins. When a component needs the complete state to initialize, for instance to push the initial sediment onto the sediment buffer, it implements `initialize!(::Input, input, state)`, which is called after all parts are created. A model's `initial_state` is then a one-liner:
+The initial state is composed in the same way. Each component that has a `State` part implements `initial_state(::Input, input)`, returning its part of the state. The generic `initial_state(input)` collects these parts using `map_components` from ModuleMixins. The resulting state is composed of the same components as the input, so a model that is composed with a different implementation of a role, gets the matching state. When a component needs the complete state to initialize, for instance to push the initial sediment onto the sediment buffer, it implements `initialize!(::Input, input, state)`, which is called after all parts are created. A model's `initial_state` is then a one-liner:
 
 ```julia
-initial_state(input::AbstractInput) = Common.initial_state(State, input)
+initial_state(input::AbstractInput) = Common.initial_state(input)
 ```
 
 ## Contents
@@ -95,16 +95,14 @@ that need the complete state to initialize, extend this method for their own
 initialize!(part::InputPart, input::AbstractInput, state::AbstractState) = nothing
 
 """
-    initial_state(S, input)
+    initial_state(input)
 
-The initial state of type `S` for a model. The parts of the state are
-collected from all components, after which `initialize!` is called for each
-component, in dependency order.
+The initial state for a model. The parts of the state are collected from all
+components, after which `initialize!` is called for each component, in
+dependency order.
 """
-function initial_state(::Type{S}, input::AbstractInput) where {S <: AbstractState}
-    # `map_components` creates a `Composite` without knowledge of roles.
-    # Converting to `S` makes role lookups type stable.
-    state = S(parts(map_components(p -> initial_state(p, input), input)))
+function initial_state(input::AbstractInput)
+    state = map_components(p -> initial_state(p, input), input)
     foreach(p -> initialize!(p, input, state), parts(input))
     return state
 end

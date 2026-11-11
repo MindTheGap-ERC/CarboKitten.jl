@@ -157,10 +157,7 @@ We test that each type of subsidence rate gives the expected bathymetry after a 
 ``` {.julia file=test/Components/WaterDepthSpec.jl}
 using CarboKitten
 import CarboKitten.Components.WaterDepth as WD
-<<<<<<< HEAD
 using CarboKitten.Components.Common: record_type
-=======
->>>>>>> main
 using CarboKitten.Components.WaterDepth:
     TimeVariableSubsidenceRate, SpaceTimeVariableSubsidenceRate
 
@@ -193,11 +190,7 @@ end
     x, y = box_axes(box)
 
     function run_subsider(input)
-<<<<<<< HEAD
         state = record_type(:State, WD)(step=0, bathymetry=zeros(typeof(1.0u"m"), box.grid_size...))
-=======
-        state = WD.State(step=0, bathymetry=zeros(typeof(1.0u"m"), box.grid_size...))
->>>>>>> main
         sub! = WD.subsider(input)
         for _ in 1:input.time.steps
             sub!(state)
@@ -208,11 +201,7 @@ end
 
     @testset "time variable" begin
         # rate is 1, 2, 3, 4 m/Myr at t = 1, 2, 3, 4 Myr
-<<<<<<< HEAD
         input = record_type(:Input, WD)(
-=======
-        input = WD.Input(
->>>>>>> main
             box = box, time = time,
             subsidence_rate = TimeVariableSubsidenceRate(t -> t * 1.0u"m/Myr^2"))
         @test all(run_subsider(input) .≈ -10.0u"m")
@@ -221,11 +210,7 @@ end
 
     @testset "space-time variable" begin
         f(x, y, t) = x * t * 1.0u"1/Myr^2" + y * 1.0u"1/Myr"
-<<<<<<< HEAD
         input = record_type(:Input, WD)(
-=======
-        input = WD.Input(
->>>>>>> main
             box = box, time = time,
             subsidence_rate = SpaceTimeVariableSubsidenceRate(f))
         expected = x .* 10.0u"Myr^-1" .* 1.0u"Myr" .+ y' .* 4.0u"Myr^-1" .* 1.0u"Myr"
@@ -234,17 +219,10 @@ end
     end
 
     @testset "constant rate is a special case" begin
-<<<<<<< HEAD
         constant = record_type(:Input, WD)(box = box, time = time, subsidence_rate = 3.0u"m/Myr")
         timevar = record_type(:Input, WD)(box = box, time = time,
             subsidence_rate = TimeVariableSubsidenceRate(_ -> 3.0u"m/Myr"))
         spacetimevar = record_type(:Input, WD)(box = box, time = time,
-=======
-        constant = WD.Input(box = box, time = time, subsidence_rate = 3.0u"m/Myr")
-        timevar = WD.Input(box = box, time = time,
-            subsidence_rate = TimeVariableSubsidenceRate(_ -> 3.0u"m/Myr"))
-        spacetimevar = WD.Input(box = box, time = time,
->>>>>>> main
             subsidence_rate = SpaceTimeVariableSubsidenceRate((_, _, _) -> 3.0u"m/Myr"))
         @test run_subsider(timevar) ≈ run_subsider(constant)
         @test run_subsider(spacetimevar) ≈ run_subsider(constant)

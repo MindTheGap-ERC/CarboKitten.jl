@@ -33,7 +33,7 @@ end
 # ~/~ begin <<docs/src/algorithms/finite-difference-transport.md#advection-coef>>[1]
 function max_dt(adv, dx, courant_max)
     u(a) = abs(a[1]) + abs(a[2])
-    return courant_max / maximum(u.(adv) ./ dx)
+    return courant_max / (maximum(u, adv) / dx)
 end
 # ~/~ end
 # ~/~ begin <<docs/src/algorithms/finite-difference-transport.md#advection-coef>>[2]

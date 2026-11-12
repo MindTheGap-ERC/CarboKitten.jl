@@ -10,7 +10,7 @@ using ..FaciesBase: n_facies
 using ..SedimentBuffer: pop_sediment
 import ..TimeIntegration
 import ..Common: write_header
-using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
+using CarboKitten.Transport.Advection: transport!, advection_coef!, transport_dC!, max_dt
 using CarboKitten.Transport.Solvers: runge_kutta_4, forward_euler
 using Unitful
 using GeometryBasics
@@ -58,7 +58,8 @@ function adaptive_transporter(input)
     w = water_depth(input)
     box = input.box
     Δt = input.time.Δt  # / input.transport_substeps
-    fs = input.facies
+    transport_coefficients = Tuple(f.transport_coefficient for f in input.facies)
+    wave_velocities = Tuple(f.wave_velocity for f in input.facies)
     adv = Matrix{Vec2{Rate}}(undef, box.grid_size...)
     rct = Matrix{typeof(1.0u"1/Myr")}(undef, box.grid_size...)
     dC = Matrix{Rate}(undef, box.grid_size...)
@@ -70,8 +71,8 @@ function adaptive_transporter(input)
         wd .+= iz
 
         C = state.active_layer
-        for (i, f) in pairs(fs)
-            advection_coef!(box, f.transport_coefficient, f.wave_velocity, wd, adv, rct)
+        for i in eachindex(wave_velocities)
+            advection_coef!(box, transport_coefficients[i], wave_velocities[i], wd, adv, rct)
             m = max_dt(adv, box.phys_scale, cm)
             steps = ceil(Int, Δt / m)
 
@@ -118,14 +119,13 @@ function disintegrator(input)
     iz = input.intertidal_zone
     tf = input.disintegration_transfer
     pop! = pop_sediment(input)
+    h = Matrix{Height}(undef, input.box.grid_size...)
 
     return function (state)
         wn = w(state)
-        wn .+= iz
-        h = min.(max_h, state.sediment_thickness)
-        h[wn.<=0.0u"m"] .= 0.0u"m"
-
-        @assert all(h .<= max_h)
+        for i in eachindex(h, wn)
+            h[i] = wn[i] + iz <= 0.0u"m" ? 0.0u"m" : min(max_h, state.sediment_thickness[i])
+        end
         pop!(state, h, output)
         return output
     end
@@ -148,20 +148,22 @@ function transporter(input)
     box = input.box
     Δt = input.time.Δt / input.transport_substeps
     steps = input.transport_substeps
-    fs = input.facies
+    transport_coefficients = Tuple(f.transport_coefficient for f in input.facies)
+    wave_velocities = Tuple(f.wave_velocity for f in input.facies)
     iz = input.intertidal_zone
+    dC = Matrix{Rate}(undef, box.grid_size...)
 
     return function (state)
         wd = w(state)
         wd .+= iz
 
         C = state.active_layer
-        for (i, f) in pairs(fs)
+        for i in eachindex(wave_velocities)
             for j in 1:steps
                 solver(
-                    (C, _) -> transport(
-                        input.box, f.transport_coefficient, f.wave_velocity,
-                        C, wd),
+                    (C, _) -> transport!(
+                        input.box, transport_coefficients[i], wave_velocities[i],
+                        C, wd, dC),
                     view(C, i, :, :), TimeIntegration.time(input, state), Δt)
             end
         end

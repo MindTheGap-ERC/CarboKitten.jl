@@ -79,11 +79,15 @@ function runge_kutta_4(::Type{T}, box) where {T}
     k2 = Array{U}(undef, box.grid_size...)
     k3 = Array{U}(undef, box.grid_size...)
     k4 = Array{U}(undef, box.grid_size...)
+    tmp = Array{T}(undef, box.grid_size...)
     function (df, y, t, dt)
         k1 .= df(y, t)
-        k2 .= df(y .+ dt/2 .* k1, t + dt/2)
-        k3 .= df(y .+ dt/2 .* k2, t + dt/2)
-        k4 .= df(y .+ dt .* k3, t + dt)
+        tmp .= y .+ dt/2 .* k1
+        k2 .= df(tmp, t + dt/2)
+        tmp .= y .+ dt/2 .* k2
+        k3 .= df(tmp, t + dt/2)
+        tmp .= y .+ dt .* k3
+        k4 .= df(tmp, t + dt)
         y .+= (k1 .+ 2 .* k2 .+ 2 .* k3 .+ k4) .* (dt/6)
     end
 end
@@ -164,7 +168,7 @@ Given the advection coefficients we can figure out what the maximal timestep sho
 ``` {.julia #advection-coef}
 function max_dt(adv, dx, courant_max)
     u(a) = abs(a[1]) + abs(a[2])
-    return courant_max / maximum(u.(adv) ./ dx)
+    return courant_max / (maximum(u, adv) / dx)
 end
 ```
 

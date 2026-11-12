@@ -87,8 +87,7 @@ function subsider(input::AbstractInput, s::SpaceTimeVariableSubsidenceRate)
 
     return function (state::AbstractState)
         t = get_time(state)
-        Δσ = s.f.(x, y', t) * dt
-        state.bathymetry .-= Δσ
+        state.bathymetry .-= s.f.(x, y', t) .* dt
     end
 end
 
@@ -126,13 +125,22 @@ function cumulative_subsidence(input::AbstractInput)
     return .-state.bathymetry
 end
 
+"""
+    water_depth(input) -> f
+
+Returns a function `f(state)` that computes the water depth for the given state.
+The result is written into a buffer owned by `f`, so the returned array is
+overwritten on the next call.
+"""
 function water_depth(input::AbstractInput)
     sea_level = input.sea_level
     get_time = time(input)
+    out = Matrix{Height}(undef, input.box.grid_size...)
 
     return function (state::AbstractState)
         t = get_time(state)
-        return sea_level(t) .- state.bathymetry
+        out .= sea_level(t) .- state.bathymetry
+        return out
     end
 end
 

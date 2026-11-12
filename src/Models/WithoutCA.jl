@@ -39,6 +39,7 @@ function step!(input::Input)
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
     pf = lithification_factor(input)
+    deposit = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
     dtf = input.disintegration_transfer
     push! = push_sediment(input)
     subside! = subsider(input)
@@ -52,7 +53,7 @@ function step!(input::Input)
         state.active_layer .+= dtf(d)
         transport!(state)
 
-        deposit = pf .* state.active_layer
+        deposit .= pf .* state.active_layer
         push!(state, deposit)
         state.active_layer .-= deposit
         subside!(state)

@@ -107,15 +107,18 @@ end
 
 function uniform_production(input::AbstractInput)
     w = water_depth(input)
-    na = [CartesianIndex()]
     facies = input.facies
     dt = input.time.Δt
     production_rates = [production_profile(input, f.production) for f in facies]
     get_time = time(input)
+    output = Array{Amount, 3}(undef, length(facies), input.box.grid_size...)
 
     p(state::AbstractState, wd::AbstractMatrix) = begin
         t = get_time(state)
-        capped_production.(production_rates[:, na, na], t, wd[na, :, :], dt)
+        for i in CartesianIndices(wd), f in eachindex(production_rates)
+            output[f, i] = capped_production(production_rates[f], t, wd[i], dt)
+        end
+        return output
     end
     p(state::AbstractState) = p(state, w(state))
     return p

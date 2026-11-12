@@ -44,6 +44,7 @@ function step!(input::AbstractInput)
     local_water_depth = water_depth(input)
     na = [CartesianIndex()]
     pf = lithification_factor(input)
+    deposit = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
     dtf = input.disintegration_transfer
     debug = input.diagnostics
     push! = push_sediment(input)
@@ -77,7 +78,7 @@ function step!(input::AbstractInput)
             @debug "   post-transport ambitus: " extrema(state.active_layer)
         end
 
-        deposit = pf .* state.active_layer
+        deposit .= pf .* state.active_layer
         push!(state, deposit)
         state.active_layer .-= deposit
         subside!(state)

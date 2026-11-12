@@ -76,8 +76,8 @@ function step_ca(box::Box{BT}, facies) where {BT<:Boundary{2}}
         stencil!(BT, Size(5, 5), tmp, state.ca) do nb
             rules(facies_, p, nb)
         end
-        state.ca, tmp = tmp, state.ca
-        state.ca_priority = circshift(state.ca_priority, 1)
+        state.ca .= tmp
+        circshift!(state.ca_priority, 1)
         return state
     end
 end

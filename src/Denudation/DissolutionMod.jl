@@ -46,8 +46,8 @@ end
 function dissolution(temp, precip, pco2, alpha, water_depth, facies)
     reactive_surface =  facies.reactive_surface ./u"m^2/m^3"
     R = 8.314
-    E_a = 30.0e3
-    alpha_temp = alpha .* exp(-(E_a/R) * (1/temp - 1/298.15))
+    E_a = 23.0e3
+    alpha_temp = alpha .* exp(-(E_a/R) * (1/temp - 1/283.15))
     λ = precip .* facies.infiltration_coefficient ./ (alpha_temp .* reactive_surface)
     eq = equilibrium(temp, pco2, precip, facies) # pass ceq Deq from the last function
 

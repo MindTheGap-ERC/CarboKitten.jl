@@ -18,8 +18,8 @@ end
 
 # ~/~ begin <<docs/src/denudation/chemical.md#karst-parameter-function>>[init]
 function karst_denudation_parameters(temp::Float64)
-    A = -0.4883 + 8.074 * 0.0001 * (temp - 273.0)
-    B = -0.3241 + 1.6 * 0.0001 * (temp - 273.0)
+    A = 0.4883 + 8.074 * 0.0001 * (temp - 273.0)
+    B = 0.3241 + 1.6 * 0.0001 * (temp - 273.0)
     IA = 0.1 # ion activity
 
     (K1=10^(-356.3094 - 0.06091964 * temp + 21834.37 / temp + 126.8339 * log10(temp) - 1684915 / (temp^2)),
@@ -37,7 +37,7 @@ function equilibrium(temp::Float64, pco2::Float64, precip::Float64, facies)
     p = karst_denudation_parameters(temp)
     mass_density = facies.mass_density ./ u"kg/m^3"
     eq_c = (pco2 .* (p.K1 * p.KC * p.KH) ./ (4 * p.K2 * p.activity_Ca .* (p.activity_Alk)^2)) .^ (1 / 3)
-    eq_d = 1e6 * precip .* facies.infiltration_coefficient * 40 * 1000 .* eq_c ./ mass_density
+    eq_d = 1e6 * precip .* facies.infiltration_coefficient * 100 .* eq_c ./ mass_density #results: m/Myr
     (concentration=eq_c, denudation=eq_d)
 end
 # ~/~ end
@@ -45,7 +45,8 @@ end
 # ~/~ begin <<docs/src/denudation/chemical.md#karst-dissolution-function>>[init]
 function dissolution(temp, precip, pco2, alpha, water_depth, facies)
     reactive_surface =  facies.reactive_surface ./u"m^2/m^3"
-    λ = precip * 100 .* facies.infiltration_coefficient ./ (alpha .* reactive_surface)
+    
+    λ = precip .* facies.infiltration_coefficient ./ (alpha .* reactive_surface)
     eq = equilibrium(temp, pco2, precip, facies) # pass ceq Deq from the last function
     eq.denudation .* (1 - (λ ./ -water_depth) .* (1 - exp.(water_depth ./ λ))) * u"m/Myr"
 end

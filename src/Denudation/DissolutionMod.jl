@@ -45,10 +45,13 @@ end
 # ~/~ begin <<docs/src/denudation/chemical.md#karst-dissolution-function>>[init]
 function dissolution(temp, precip, pco2, alpha, water_depth, facies)
     reactive_surface =  facies.reactive_surface ./u"m^2/m^3"
-    
-    λ = precip .* facies.infiltration_coefficient ./ (alpha .* reactive_surface)
+    R = 8.314
+    E_a = 30.0e3
+    alpha_temp = alpha .* exp(-(E_a/R) * (1/temp - 1/298.15))
+    λ = precip .* facies.infiltration_coefficient ./ (alpha_temp .* reactive_surface)
     eq = equilibrium(temp, pco2, precip, facies) # pass ceq Deq from the last function
-    eq.denudation .* (1 - (λ ./ -water_depth) .* (1 - exp.(water_depth ./ λ))) * u"m/Myr"
+
+    eq.denudation .* (1 - (0.7 * λ ./ -water_depth) .* (1 - exp.(water_depth ./ λ))) * u"m/Myr"
 end
 # ~/~ end
 

@@ -38,30 +38,35 @@
 </div><p>Base module for including facies.</p><div class="noweb-label">file:<i>test/Components/FaciesBaseSpec.jl</i></div><pre><code class="language- julia hljs">module FaciesBaseSpec
     using Test
     using CarboKitten.Components.Common
-    using CarboKitten.Components.FaciesBase: Facies, Input, n_facies
+    using CarboKitten.Components: FaciesBase
+    using CarboKitten.Components.FaciesBase: n_facies
+
+    const Facies = record_type(:Facies, FaciesBase)
+    const Input = record_type(:Input, FaciesBase)
 
     @testset &quot;Components/FaciesBase&quot; begin
         let input = Input(facies=fill(Facies(), 23))
             @test n_facies(input) == 23
         end
     end
-end</code></pre><div class="noweb-label">file:<i>src/Components/FaciesBase.jl</i></div><pre><code class="language- julia hljs">@compose module FaciesBase
+end</code></pre><div class="noweb-label">file:<i>src/Components/FaciesBase.jl</i></div><pre><code class="language- julia hljs">@component module FaciesBase
 using ..Common
+import ..Common: write_header
 
 using HDF5
 export n_facies
 
-@kwdef struct Facies &lt;: AbstractFacies
+@kwdef struct Facies &lt;: FaciesPart
     name::Union{String,Nothing} = nothing
 end
 
-@kwdef struct Input &lt;: AbstractInput
+@kwdef struct Input &lt;: InputPart
     facies::Vector{Facies} = []
 end
 
 n_facies(input::AbstractInput) = length(input.facies)
 
-function write_header(input::AbstractInput, output::AbstractOutput)
+function write_header(::Input, input::AbstractInput, output::AbstractOutput)
     set_attribute(output, &quot;n_facies&quot;, n_facies(input))
 
     for (i, f) in enumerate(input.facies)
@@ -70,4 +75,4 @@ function write_header(input::AbstractInput, output::AbstractOutput)
         end
     end
 end
-end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../output/">« Output</a><a class="docs-footer-nextpage" href="../cellular-automata/">Cellular Automata »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 11 November 2026 16:47">Wednesday 11 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../output/">« Output</a><a class="docs-footer-nextpage" href="../cellular-automata/">Cellular Automata »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 13:36">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

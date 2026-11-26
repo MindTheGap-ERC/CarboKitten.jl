@@ -35,44 +35,46 @@
 </g>
 </g>
 </svg>
-</div><article><details class="docstring" open="true"><summary id="CarboKitten.Components.TimeIntegration.time"><a class="docstring-binding" href="#CarboKitten.Components.TimeIntegration.time"><code>CarboKitten.Components.TimeIntegration.time</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">time(input, state)</code></pre><p>Return the time given input and state.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/5520e5f6b72e8bc98c12bd5e9c44a89567ccb02e/src/Components/TimeIntegration.jl#L21-L25">source</a></section></details></article><div class="noweb-label">file:<i>test/Components/TimeIntegrationSpec.jl</i></div><pre><code class="language- julia hljs">module TimeIntegrationSpec
+</div><article><details class="docstring" open="true"><summary id="CarboKitten.Components.TimeIntegration.time"><a class="docstring-binding" href="#CarboKitten.Components.TimeIntegration.time"><code>CarboKitten.Components.TimeIntegration.time</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">time(input, state)</code></pre><p>Return the time given input and state.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/ae7a412397d32dfc64b130af126c60a263d694a1/src/Components/TimeIntegration.jl#L20-L24">source</a></section></details></article><div class="noweb-label">file:<i>test/Components/TimeIntegrationSpec.jl</i></div><pre><code class="language- julia hljs">module TimeIntegrationSpec
 using Test
 using CarboKitten.Components.Common
 
 @testset &quot;Components/TimeIntegration&quot; begin
-    using CarboKitten.Components.TimeIntegration: write_times, Input, State, time, n_writes
+    using CarboKitten.Components: TimeIntegration
+    using CarboKitten.Components.TimeIntegration: write_times, time, n_writes
+    Input = record_type(:Input, TimeIntegration)
+    State = record_type(:State, TimeIntegration)
 
     let input = Input(time=TimeProperties(
         Δt = 0.2u&quot;Myr&quot;, steps = 5))
       @test write_times(input) |&gt; collect == [0.0, 0.2, 0.4, 0.6, 0.8, 1.0] .* u&quot;Myr&quot;
-      @test time(input, State(4)) == 0.8u&quot;Myr&quot;
+      @test time(input, State(step=4)) == 0.8u&quot;Myr&quot;
       @test n_writes(input) == 5
     end
 
     let input = Input(time=TimeProperties(
         Δt = 0.02u&quot;Myr&quot;, steps = 50, t0 = -1.0u&quot;Myr&quot;))
       @test n_writes(input) == 50
-      @test time(input, State(25)) == -0.5u&quot;Myr&quot;
+      @test time(input, State(step=25)) == -0.5u&quot;Myr&quot;
     end
 end
-end</code></pre><div class="noweb-label">file:<i>src/Components/TimeIntegration.jl</i></div><pre><code class="language- julia hljs">@compose module TimeIntegration
+end</code></pre><div class="noweb-label">file:<i>src/Components/TimeIntegration.jl</i></div><pre><code class="language- julia hljs">@component module TimeIntegration
 using ..Common
+import ..Common: write_header
 import ...CarboKitten: time_axis, n_writes, n_steps
 
 using HDF5
 export time, n_writes, time_axis
 
-@kwdef struct Input &lt;: AbstractInput
+@kwdef struct Input &lt;: InputPart
     time::TimeProperties
 end
 
-@kwdef mutable struct State &lt;: AbstractState
+@kwdef mutable struct State &lt;: StatePart
     step::Int
 end
 
 State(_::AbstractInput) = State(0)
-
-@constructor _initial_state(input)::State[step] = (step = 0,)
 
 &quot;&quot;&quot;
     time(input, state)
@@ -93,11 +95,11 @@ time_axis(input::AbstractInput) = time_axis(input.time)
 n_writes(input::AbstractInput) = n_writes(input.time)
 n_steps(input::AbstractInput) = input.time.steps
 
-function write_header(input::AbstractInput, output::AbstractOutput)
+function write_header(::Input, input::AbstractInput, output::AbstractOutput)
     set_attribute(output, &quot;t&quot;, write_times(input) .|&gt; in_units_of(u&quot;Myr&quot;))
     set_attribute(output, &quot;t0&quot;, input.time.t0 |&gt; in_units_of(u&quot;Myr&quot;))
     set_attribute(output, &quot;delta_t&quot;, input.time.Δt |&gt; in_units_of(u&quot;Myr&quot;))
     set_attribute(output, &quot;time_steps&quot;, input.time.steps)
 end
 
-end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../boxes/">« Boxes</a><a class="docs-footer-nextpage" href="../output/">Output »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 11 November 2026 16:47">Wednesday 11 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../boxes/">« Boxes</a><a class="docs-footer-nextpage" href="../output/">Output »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 13:36">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

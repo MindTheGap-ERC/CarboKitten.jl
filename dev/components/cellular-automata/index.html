@@ -105,16 +105,16 @@
 </g>
 </g>
 </svg>
-</div><p>Following CarboCAT by [<a href="../../references/#Burgess2013" id="Burgess2013-cite-2">2</a>], we use a <a href="https://en.wikipedia.org/wiki/Cellular_automaton">cellular automaton</a> to obtain complex, time-variable spatial distribution patterns of sediment producers while maintaining low computational effort and generality, i.e. not attempting to simulate specific organism groups.</p><p>In the cellular automaton, we refer to the units interacting with each other as species. These species can be a biological species or an assemblage (guild) of carbonate producers. Here it is important that they are the progenitor of some (limestone) facies type. Therefore, we map: one species <span>$-&gt;$</span> one facies. In the original 2013 model, this stage is implemented with a celullar automaton (or CA).</p><p>We have reimplemented the CA used in [<a href="../../references/#Burgess2013" id="Burgess2013-cite-3">2</a>], which uses three species and assesses interactions on a 5 <span>$\times$</span> 5 neighborhood grid. For each facies, we assess two ranges: the <strong>activation range</strong> (here set to 6 ≤ n ≤ 10 ) and the <strong>viability range</strong> (here 4 ≤ n ≤ 10 ). If the number of live neighbours is in the viability range, the cell stays alive. If the cell is dead, but the number of live neighbours is in the activation range, the cell becomes alive. The ranges can be set for each facies separately, but the results of using different rules for each facies have not been explored. The 5 <span>$\times$</span> 5 is currently not a parameter, but a hard-coded feature, but it can be modified should a use case arise.</p><p>We depend on the box properties being defined. Each <code>Facies</code> should have a <code>viability_range</code> and <code>activation_range</code> defined.  The <code>active</code> property determines whether a facies is active in the cellular automaton. Two other parameters are the <code>ca_interval</code> setting how many time steps between every CA advancement, and the <code>ca_random_seed</code> setting the random seed for generating the initial noise.</p><div class="noweb-label">⪡ca-input⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Facies &lt;: AbstractFacies
+</div><p>Following CarboCAT by [<a href="../../references/#Burgess2013" id="Burgess2013-cite-2">2</a>], we use a <a href="https://en.wikipedia.org/wiki/Cellular_automaton">cellular automaton</a> to obtain complex, time-variable spatial distribution patterns of sediment producers while maintaining low computational effort and generality, i.e. not attempting to simulate specific organism groups.</p><p>In the cellular automaton, we refer to the units interacting with each other as species. These species can be a biological species or an assemblage (guild) of carbonate producers. Here it is important that they are the progenitor of some (limestone) facies type. Therefore, we map: one species <span>$-&gt;$</span> one facies. In the original 2013 model, this stage is implemented with a celullar automaton (or CA).</p><p>We have reimplemented the CA used in [<a href="../../references/#Burgess2013" id="Burgess2013-cite-3">2</a>], which uses three species and assesses interactions on a 5 <span>$\times$</span> 5 neighborhood grid. For each facies, we assess two ranges: the <strong>activation range</strong> (here set to 6 ≤ n ≤ 10 ) and the <strong>viability range</strong> (here 4 ≤ n ≤ 10 ). If the number of live neighbours is in the viability range, the cell stays alive. If the cell is dead, but the number of live neighbours is in the activation range, the cell becomes alive. The ranges can be set for each facies separately, but the results of using different rules for each facies have not been explored. The 5 <span>$\times$</span> 5 is currently not a parameter, but a hard-coded feature, but it can be modified should a use case arise.</p><p>We depend on the box properties being defined. Each <code>Facies</code> should have a <code>viability_range</code> and <code>activation_range</code> defined.  The <code>active</code> property determines whether a facies is active in the cellular automaton. Two other parameters are the <code>ca_interval</code> setting how many time steps between every CA advancement, and the <code>ca_random_seed</code> setting the random seed for generating the initial noise.</p><div class="noweb-label">⪡ca-input⪢≣</div><pre><code class="language- julia hljs">@kwdef struct Facies &lt;: FaciesPart
     viability_range::Tuple{Int,Int} = (4, 10)
     activation_range::Tuple{Int,Int} = (6, 10)
     active::Bool = true
 end
 
-@kwdef struct Input &lt;: AbstractInput
+@kwdef struct Input &lt;: InputPart
     ca_interval::Int      = 1
     ca_random_seed::Int   = 0
-end</code></pre><p>The state of the CA is stored in <code>ca</code> and <code>ca_priority</code>.</p><div class="noweb-label">⪡ca-state⪢≣</div><pre><code class="language- julia hljs">@kwdef mutable struct State &lt;: AbstractState
+end</code></pre><p>The state of the CA is stored in <code>ca</code> and <code>ca_priority</code>.</p><div class="noweb-label">⪡ca-state⪢≣</div><pre><code class="language- julia hljs">@kwdef mutable struct State &lt;: StatePart
     ca::Matrix{Int}
     ca_priority::Vector{Int}
 end</code></pre><p>The <code>rules</code> function computes the next value of a cell, given the configured vector of facies, the current facies priority order, and a neighbourhood around the cell.</p><div class="noweb-label">⪡ca-step⪢≣</div><pre><code class="language- julia hljs">function rules(facies, ca_priority, neighbourhood)
@@ -160,13 +160,14 @@ end</code></pre><h2 id="Infinite-heterogeneity-in-space-and-time"><a class="docs
 module Script
 using CarboKitten
 using CarboKitten.Components: CellularAutomaton as CA
+using CarboKitten.Components.Common: record_type
 using CairoMakie
 
 function main()
-  input = CA.Input(
+  input = record_type(:Input, CA)(
       box = CarboKitten.Box{Periodic{2}}(
         grid_size=(50, 50), phys_scale=1.0u&quot;m&quot;),
-      facies = fill(CA.Facies(), 3)
+      facies = fill(record_type(:Facies, CA)(), 3)
   )
 
   state = CA.initial_state(input)
@@ -205,10 +206,10 @@ end
 
 end
 
-Script.main()</code></pre><p><img src="../../fig/ca-long-term.svg" alt="CA"/></p><h2 id="CA-rules"><a class="docs-heading-anchor" href="#CA-rules">CA rules</a><a id="CA-rules-1"></a><a class="docs-heading-anchor-permalink" href="#CA-rules" title="Permalink"></a></h2><p>Users are welcome to explore the permanence of spatial patterns for other sets of rules using the <a href="https://github.com/MindTheGap-ERC/CAExplorer.jl/tree/v0.1.0">interactive explorer</a>. A non-systematic exploration indicates that most deviations from the rules used by [<a href="../../references/#Burgess2013" id="Burgess2013-cite-5">2</a>] lead to quick stabilization of spatial distribution and thus constant patterns. The neighborhood size and the rules represent a case of Larger than Life family of two-dimensional cellula automata [<a href="../../references/#evans_larger_1996" id="evans_larger_1996-cite-1">4</a>], but none of the well known rules.</p><h2 id="Production-feedback"><a class="docs-heading-anchor" href="#Production-feedback">Production feedback</a><a id="Production-feedback-1"></a><a class="docs-heading-anchor-permalink" href="#Production-feedback" title="Permalink"></a></h2><p>It can be interesting to model feedback on the CA state due to environmental factors. For example, we can kill off facies if it turns out they&#39;re not able to produce. </p><div class="noweb-label">file:<i>src/Components/CAFeedback.jl</i></div><pre><code class="language- julia hljs">@compose module CAFeedback
+Script.main()</code></pre><p><img src="../../fig/ca-long-term.svg" alt="CA"/></p><h2 id="CA-rules"><a class="docs-heading-anchor" href="#CA-rules">CA rules</a><a id="CA-rules-1"></a><a class="docs-heading-anchor-permalink" href="#CA-rules" title="Permalink"></a></h2><p>Users are welcome to explore the permanence of spatial patterns for other sets of rules using the <a href="https://github.com/MindTheGap-ERC/CAExplorer.jl/tree/v0.1.0">interactive explorer</a>. A non-systematic exploration indicates that most deviations from the rules used by [<a href="../../references/#Burgess2013" id="Burgess2013-cite-5">2</a>] lead to quick stabilization of spatial distribution and thus constant patterns. The neighborhood size and the rules represent a case of Larger than Life family of two-dimensional cellula automata [<a href="../../references/#evans_larger_1996" id="evans_larger_1996-cite-1">4</a>], but none of the well known rules.</p><h2 id="Production-feedback"><a class="docs-heading-anchor" href="#Production-feedback">Production feedback</a><a id="Production-feedback-1"></a><a class="docs-heading-anchor-permalink" href="#Production-feedback" title="Permalink"></a></h2><p>It can be interesting to model feedback on the CA state due to environmental factors. For example, we can kill off facies if it turns out they&#39;re not able to produce. </p><div class="noweb-label">file:<i>src/Components/CAFeedback.jl</i></div><pre><code class="language- julia hljs">@component module CAFeedback
 using ..Common
 
-@kwdef struct Facies
+@kwdef struct Facies &lt;: FaciesPart
     minimum_production::Union{typeof(0.0u&quot;m/Myr&quot;),Nothing} = nothing
 end
 
@@ -363,14 +364,14 @@ using CarboKitten.Components.Common
 using CarboKitten.Components: CellularAutomaton as CA
 
 @testset &quot;Components/CellularAutomaton&quot; begin
-    let facies = fill(CA.Facies(
+    let facies = fill(record_type(:Facies, CA)(
             viability_range=(4, 10),
             activation_range=(6, 10),
             active=true), 3),
-        input1 = CA.Input(
+        input1 = record_type(:Input, CA)(
             box=Box{Periodic{2}}(grid_size=(50, 50), phys_scale=1.0u&quot;m&quot;),
             facies=facies),
-        input2 = CA.Input(
+        input2 = record_type(:Input, CA)(
             box=Box{Periodic{2}}(grid_size=(50, 50), phys_scale=1.0u&quot;m&quot;),
             facies=facies,
             ca_random_seed=1)
@@ -394,11 +395,11 @@ using CarboKitten.Components: CellularAutomaton as CA
     end
 
     @testset &quot;inactive facies&quot; begin
-        let facies = [CA.Facies(active=true),
-                      CA.Facies(active=false),
-                      CA.Facies(active=true),
-                      CA.Facies(active=false)],
-            input = CA.Input(
+        let facies = [record_type(:Facies, CA)(active=true),
+                      record_type(:Facies, CA)(active=false),
+                      record_type(:Facies, CA)(active=true),
+                      record_type(:Facies, CA)(active=false)],
+            input = record_type(:Input, CA)(
                 box=Box{Periodic{2}}(grid_size=(10, 10), phys_scale=1.0u&quot;m&quot;),
                 facies=facies)
 
@@ -413,7 +414,7 @@ using CarboKitten.Components: CellularAutomaton as CA
     end
 end
 
-end</code></pre><h2 id="Component"><a class="docs-heading-anchor" href="#Component">Component</a><a id="Component-1"></a><a class="docs-heading-anchor-permalink" href="#Component" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Components/CellularAutomaton.jl</i></div><pre><code class="language- julia hljs">@compose module CellularAutomaton
+end</code></pre><h2 id="Component"><a class="docs-heading-anchor" href="#Component">Component</a><a id="Component-1"></a><a class="docs-heading-anchor-permalink" href="#Component" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Components/CellularAutomaton.jl</i></div><pre><code class="language- julia hljs">@component module CellularAutomaton
     @mixin Boxes, FaciesBase
     using ..Common
     using ...Stencil: stencil!
@@ -422,13 +423,6 @@ end</code></pre><h2 id="Component"><a class="docs-heading-anchor" href="#Compone
     &lt;&lt;ca-input&gt;&gt;
     &lt;&lt;ca-state&gt;&gt;
     &lt;&lt;ca-step&gt;&gt;
-
-    @constructor function _initial_state(input)::State[ca, ca_priority]
-        n_facies = length(input.facies)
-        active_facies = 1:n_facies |&gt; filter(f-&gt;input.facies[f].active==true)
-        ca = rand(MersenneTwister(input.ca_random_seed), [0; active_facies], input.box.grid_size...)
-        return (ca = ca, ca_priority = active_facies |&gt; collect)
-    end
 
     function initial_state(input::AbstractInput)
         n_facies = length(input.facies)
@@ -440,4 +434,4 @@ end</code></pre><h2 id="Component"><a class="docs-heading-anchor" href="#Compone
     function step!(input::AbstractInput)
         return step_ca(input.box, input.facies)
     end
-end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../facies/">« Facies</a><a class="docs-footer-nextpage" href="../waterdepth/">Water Depth »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 11 November 2026 16:47">Wednesday 11 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../facies/">« Facies</a><a class="docs-footer-nextpage" href="../waterdepth/">Water Depth »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 13:36">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

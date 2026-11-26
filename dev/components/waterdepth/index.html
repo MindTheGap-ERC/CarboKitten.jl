@@ -34,10 +34,10 @@
 </g>
 </g>
 <!-- WaterDepth -->
-<g id="node2" class="node">
+<g id="node3" class="node">
 <title>WaterDepth</title>
 <path fill="none" stroke="black" d="M281.65,-127.15C281.65,-127.15 56.25,-127.15 56.25,-127.15 50.25,-127.15 44.25,-121.15 44.25,-115.15 44.25,-115.15 44.25,-12 44.25,-12 44.25,-6 50.25,0 56.25,0 56.25,0 281.65,0 281.65,0 287.65,0 293.65,-6 293.65,-12 293.65,-12 293.65,-115.15 293.65,-115.15 293.65,-121.15 287.65,-127.15 281.65,-127.15"/>
-<g id="a_node2_1"><a xlink:title="WaterDepth">
+<g id="a_node3_1"><a xlink:title="WaterDepth">
 <polyline fill="none" stroke="black" points="51.45,-94.7 286.45,-94.7"/>
 <text xml:space="preserve" text-anchor="start" x="121.7" y="-103.65" font-family="Times,serif" font-weight="bold" font-size="14.00">WaterDepth</text>
 <polygon fill="#cccccc" stroke="none" points="51.45,-69.45 51.45,-94.7 167.45,-94.7 167.45,-69.45 51.45,-69.45"/>
@@ -74,10 +74,10 @@
 <polygon fill="black" stroke="black" points="125.89,-139.04 128.29,-128.72 119.98,-135.29 125.89,-139.04"/>
 </g>
 <!-- Boxes -->
-<g id="node3" class="node">
+<g id="node2" class="node">
 <title>Boxes</title>
 <path fill="none" stroke="black" d="M325.9,-248.8C325.9,-248.8 190,-248.8 190,-248.8 184,-248.8 178,-242.8 178,-236.8 178,-236.8 178,-175.15 178,-175.15 178,-169.15 184,-163.15 190,-163.15 190,-163.15 325.9,-163.15 325.9,-163.15 331.9,-163.15 337.9,-169.15 337.9,-175.15 337.9,-175.15 337.9,-236.8 337.9,-236.8 337.9,-242.8 331.9,-248.8 325.9,-248.8"/>
-<g id="a_node3_2"><a xlink:title="Boxes">
+<g id="a_node2_2"><a xlink:title="Boxes">
 <polyline fill="none" stroke="black" points="185.2,-216.35 330.7,-216.35"/>
 <text xml:space="preserve" text-anchor="start" x="234.7" y="-225.3" font-family="Times,serif" font-weight="bold" font-size="14.00">Boxes</text>
 <polygon fill="#cccccc" stroke="none" points="185.2,-191.1 185.2,-216.35 231.45,-216.35 231.45,-191.1 185.2,-191.1"/>
@@ -106,31 +106,29 @@
 </g>
 </svg>
 </div><p>The <code>WaterDepth</code> module computes the water depth, given the bedrock elevation, sea level curve, subsidence rate and current sediment height.</p><h2 id="Input"><a class="docs-heading-anchor" href="#Input">Input</a><a id="Input-1"></a><a class="docs-heading-anchor-permalink" href="#Input" title="Permalink"></a></h2><ul><li><code>initial_topography(x, y)</code> (a.k.a. initial depth) should be a function taking two coordinates in units of meters, returning an elevation also in meters.</li><li><code>sea_level(t)</code> should be a function taking a time in millions of years (Myr) returning the eustatic sealevel. This could also be an interpolated table.</li><li><code>subsidence_rate</code> the rate of subsidence. This is one of:<ul><li>a constant rate, e.g. <code>50.0u&quot;m/Myr&quot;</code>;</li><li>a <code>TimeVariableSubsidenceRate(t -&gt; ...)</code>, wrapping a function of time returning a rate;</li><li>a <code>SpaceTimeVariableSubsidenceRate((x, y, t) -&gt; ...)</code>, wrapping a function of position and time returning a rate.</li></ul></li></ul><p>The signs of these quantities should be such that the following equation holds:</p><p class="math-container">\[T + E = S + W,\]</p><p>saying Tectonic subsidence plus Eustatic sea-level change equals Sedimentation plus change in Water depth.</p><h3 id="Variable-subsidence"><a class="docs-heading-anchor" href="#Variable-subsidence">Variable subsidence</a><a id="Variable-subsidence-1"></a><a class="docs-heading-anchor-permalink" href="#Variable-subsidence" title="Permalink"></a></h3><p>The subsidence rate is integrated with a forward Euler step: at step <span>$k$</span> the bathymetry is lowered by <span>$\sigma(x, y, t_k) \Delta t$</span>, where <span>$t_k = t_0 + k \Delta t$</span>. For instance, to model a margin that tilts seaward, where fault activity dies out over the course of the run, we could write:</p><pre><code class="language-julia hljs">subsidence_rate = SpaceTimeVariableSubsidenceRate(
-    (x, y, t) -&gt; 20.0u&quot;m/Myr&quot; + x * 5.0u&quot;1/Myr&quot; * exp(-t / 0.5u&quot;Myr&quot;))</code></pre><p>Note that the function is evaluated at the cell centers, and that, like with <code>initial_topography</code>, the function needs to be vectorizable using the dot syntax.</p><p>Since the subsidence is no longer a single number, post-processing can&#39;t simply multiply the rate with the duration of the run. Instead, the <code>cumulative_subsidence</code> function computes the total amount of subsidence for each grid cell, by running the <code>subsider</code> on an empty state. This guarantees that the result agrees exactly with what the model does. The output header stores this total, so that <code>bedrock(header)</code> gives the correct bedrock for any type of subsidence.</p><div class="noweb-label">file:<i>src/Components/WaterDepth.jl</i></div><pre><code class="language- julia hljs">@compose module WaterDepth
+    (x, y, t) -&gt; 20.0u&quot;m/Myr&quot; + x * 5.0u&quot;1/Myr&quot; * exp(-t / 0.5u&quot;Myr&quot;))</code></pre><p>Note that the function is evaluated at the cell centers, and that, like with <code>initial_topography</code>, the function needs to be vectorizable using the dot syntax.</p><p>Since the subsidence is no longer a single number, post-processing can&#39;t simply multiply the rate with the duration of the run. Instead, the <code>cumulative_subsidence</code> function computes the total amount of subsidence for each grid cell, by running the <code>subsider</code> on an empty state. This guarantees that the result agrees exactly with what the model does. The output header stores this total, so that <code>bedrock(header)</code> gives the correct bedrock for any type of subsidence.</p><div class="noweb-label">file:<i>src/Components/WaterDepth.jl</i></div><pre><code class="language- julia hljs">@component module WaterDepth
 @mixin TimeIntegration, Boxes
 using ..Common
+import ..Common: write_header
 using HDF5
 using ..TimeIntegration: time, time_axis
 
 export water_depth, subsider, initial_topography, cumulative_subsidence
 export TimeVariableSubsidenceRate, SpaceTimeVariableSubsidenceRate
 
-@kwdef struct Input &lt;: AbstractInput
+@kwdef struct Input &lt;: InputPart
     sea_level = t -&gt; 0.0u&quot;m&quot;
     initial_topography = (x, y) -&gt; 0.0u&quot;m&quot;
     subsidence_rate = 0.0u&quot;m/Myr&quot;
 end
 
-@kwdef mutable struct State &lt;: AbstractState
+@kwdef mutable struct State &lt;: StatePart
     bathymetry::Matrix{Height}
 end
 
-@constructor _initial_state(input)::State[bathymetry] =
-    (bathymetry = initial_topography(input),)
-
 function initial_state(input::AbstractInput)
     bathymetry = initial_topography(input)
-    return State(step=0, bathymetry=bathymetry)
+    return record_type(:State, WaterDepth)(step=0, bathymetry=bathymetry)
 end
 
 function initial_topography(input::AbstractInput)
@@ -190,7 +188,7 @@ end
 Total amount of subsidence over the entire run, for each grid cell.
 &quot;&quot;&quot;
 function cumulative_subsidence(input::AbstractInput)
-    state = State(step=0, bathymetry=zeros(Amount, input.box.grid_size...))
+    state = record_type(:State, WaterDepth)(step=0, bathymetry=zeros(Amount, input.box.grid_size...))
     subside! = subsider(input)
     for _ in 1:input.time.steps
         subside!(state)
@@ -209,7 +207,7 @@ function water_depth(input::AbstractInput)
     end
 end
 
-function write_header(input::AbstractInput, output::AbstractOutput)
+function write_header(::Input, input::AbstractInput, output::AbstractOutput)
     x, y = box_axes(input.box)
     t = time_axis(input)
     set_attribute(output, &quot;initial_topography&quot;, initial_topography(input) |&gt; in_units_of(u&quot;m&quot;))
@@ -222,18 +220,19 @@ end
 
 end</code></pre><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><p>We test that each type of subsidence rate gives the expected bathymetry after a few steps, and that <code>cumulative_subsidence</code> agrees with stepping the <code>subsider</code>.</p><div class="noweb-label">file:<i>test/Components/WaterDepthSpec.jl</i></div><pre><code class="language- julia hljs">using CarboKitten
 import CarboKitten.Components.WaterDepth as WD
+using CarboKitten.Components.Common: record_type
 using CarboKitten.Components.WaterDepth:
     TimeVariableSubsidenceRate, SpaceTimeVariableSubsidenceRate
 
 @testset &quot;Components/WaterDepth&quot; begin
-    input = WD.Input(
+    input = record_type(:Input, WD)(
         box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u&quot;m&quot;),
         time = TimeProperties(Δt=1.0u&quot;Myr&quot;, steps=10),
         sea_level = t -&gt; 2.0u&quot;m&quot;,
         initial_topography = (x, y) -&gt; -10.0u&quot;m&quot;,
         subsidence_rate = 5.0u&quot;m/Myr&quot;
     )
-    state = WD._initial_state(input)
+    state = WD.initial_state(input)
 
 
     @test all(state.bathymetry .== WD.initial_topography(input))
@@ -254,7 +253,7 @@ end
     x, y = box_axes(box)
 
     function run_subsider(input)
-        state = WD.State(step=0, bathymetry=zeros(typeof(1.0u&quot;m&quot;), box.grid_size...))
+        state = record_type(:State, WD)(step=0, bathymetry=zeros(typeof(1.0u&quot;m&quot;), box.grid_size...))
         sub! = WD.subsider(input)
         for _ in 1:input.time.steps
             sub!(state)
@@ -265,7 +264,7 @@ end
 
     @testset &quot;time variable&quot; begin
         # rate is 1, 2, 3, 4 m/Myr at t = 1, 2, 3, 4 Myr
-        input = WD.Input(
+        input = record_type(:Input, WD)(
             box = box, time = time,
             subsidence_rate = TimeVariableSubsidenceRate(t -&gt; t * 1.0u&quot;m/Myr^2&quot;))
         @test all(run_subsider(input) .≈ -10.0u&quot;m&quot;)
@@ -274,7 +273,7 @@ end
 
     @testset &quot;space-time variable&quot; begin
         f(x, y, t) = x * t * 1.0u&quot;1/Myr^2&quot; + y * 1.0u&quot;1/Myr&quot;
-        input = WD.Input(
+        input = record_type(:Input, WD)(
             box = box, time = time,
             subsidence_rate = SpaceTimeVariableSubsidenceRate(f))
         expected = x .* 10.0u&quot;Myr^-1&quot; .* 1.0u&quot;Myr&quot; .+ y&#39; .* 4.0u&quot;Myr^-1&quot; .* 1.0u&quot;Myr&quot;
@@ -283,12 +282,12 @@ end
     end
 
     @testset &quot;constant rate is a special case&quot; begin
-        constant = WD.Input(box = box, time = time, subsidence_rate = 3.0u&quot;m/Myr&quot;)
-        timevar = WD.Input(box = box, time = time,
+        constant = record_type(:Input, WD)(box = box, time = time, subsidence_rate = 3.0u&quot;m/Myr&quot;)
+        timevar = record_type(:Input, WD)(box = box, time = time,
             subsidence_rate = TimeVariableSubsidenceRate(_ -&gt; 3.0u&quot;m/Myr&quot;))
-        spacetimevar = WD.Input(box = box, time = time,
+        spacetimevar = record_type(:Input, WD)(box = box, time = time,
             subsidence_rate = SpaceTimeVariableSubsidenceRate((_, _, _) -&gt; 3.0u&quot;m/Myr&quot;))
         @test run_subsider(timevar) ≈ run_subsider(constant)
         @test run_subsider(spacetimevar) ≈ run_subsider(constant)
     end
-end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cellular-automata/">« Cellular Automata</a><a class="docs-footer-nextpage" href="../production/">Production »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 11 November 2026 16:47">Wednesday 11 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cellular-automata/">« Cellular Automata</a><a class="docs-footer-nextpage" href="../production/">Production »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 13:36">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

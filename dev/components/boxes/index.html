@@ -164,19 +164,20 @@ end</code></pre><div class="noweb-label">file:<i>test/Components/BoxesSpec.jl</i
 
     @testset &quot;Components/Boxes&quot; begin
         let box = Box{Periodic{2}}(grid_size=(10, 10), phys_scale=2.0u&quot;m&quot;),
-            input = Boxes.Input(box=box)
+            input = record_type(:Input, Boxes)(box=box)
             @test input.box.grid_size == (10, 10)
             @test input.box.phys_scale == 2.0u&quot;m&quot;
         end
     end
-end</code></pre><div class="noweb-label">file:<i>src/Components/Boxes.jl</i></div><pre><code class="language- julia hljs">@compose module Boxes
+end</code></pre><div class="noweb-label">file:<i>src/Components/Boxes.jl</i></div><pre><code class="language- julia hljs">@component module Boxes
 using ..Common
+import ..Common: write_header
 
-@kwdef struct Input &lt;: AbstractInput
+@kwdef struct Input &lt;: InputPart
     box::Box
 end
 
-function write_header(input::AbstractInput, output::AbstractOutput)
+function write_header(::Input, input::AbstractInput, output::AbstractOutput)
     x, y = box_axes(input.box)
     set_attribute(output, &quot;x&quot;, collect(x) |&gt; in_units_of(u&quot;m&quot;))
     set_attribute(output, &quot;y&quot;, collect(y) |&gt; in_units_of(u&quot;m&quot;))
@@ -184,4 +185,4 @@ function write_header(input::AbstractInput, output::AbstractOutput)
     set_attribute(output, &quot;grid_size_y&quot;, input.box.grid_size[2])
     set_attribute(output, &quot;phys_scale&quot;, input.box.phys_scale |&gt; in_units_of(u&quot;m&quot;))
 end
-end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tag/">« Tags</a><a class="docs-footer-nextpage" href="../time/">Time »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 11 November 2026 16:47">Wednesday 11 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tag/">« Tags</a><a class="docs-footer-nextpage" href="../time/">Time »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 13:36">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -186,6 +186,25 @@
   @test peek_sediment(stack2, 1.0) == [1.0, 0.0, 0.0]
 end
 
+@testset &quot;SedimentStack edge cases&quot; begin
+  using CarboKitten.SedimentStack: push_sediment!, pop_sediment!
+
+  # pushing more than the buffer can hold fills every row with the parcel&#39;s fractions
+  stack = zeros(Float64, 4, 2)
+  @test_logs (:warn,) push_sediment!(stack, [6.0, 2.0])
+  @test all(stack .== [0.75 0.25])
+
+  # popping several rows from a full buffer keeps the deepest rows
+  stack = [1.0 0.0; 1.0 0.0; 0.0 1.0; 0.0 1.0]
+  @test pop_sediment!(stack, 2.0) == [2.0, 0.0]
+  @test stack == [0.0 1.0; 0.0 1.0; 0.0 0.0; 0.0 0.0]
+
+  # popping more than the buffer holds returns everything, counting each row once
+  stack = [1.0 0.0; 1.0 0.0; 0.0 1.0; 0.0 1.0]
+  @test (@test_logs (:error,) pop_sediment!(stack, 10.0)) == [2.0, 2.0]
+  @test all(stack .== 0.0)
+end
+
 @testset &quot;SedimentArray&quot; begin
   using CarboKitten.SedimentStack: push_sediment!, peek_sediment
   sediment = zeros(Float64, 10, 3, 5, 5)
@@ -195,6 +214,18 @@ end
   end
   a = peek_sediment(sediment, 1.0)
   @test all(sum(a; dims=1) .≈ 1.0)
+end</code></pre><h3 id="Shifting-rows"><a class="docs-heading-anchor" href="#Shifting-rows">Shifting rows</a><a id="Shifting-rows-1"></a><a class="docs-heading-anchor-permalink" href="#Shifting-rows" title="Permalink"></a></h3><p>Both pushing and popping need to move rows of the buffer up or down. These shifts are done in place. Since source and destination overlap, the order of iteration matters: when shifting down we start at the bottom, when shifting up we start at the top. Rows that are shifted in are left untouched; the caller should overwrite them.</p><div class="noweb-label">⪡sediment-stack-impl⪢≣</div><pre><code class="language- julia hljs">@inline function shift_down!(col::AbstractMatrix, k::Int)
+    s = size(col, 1)
+    @inbounds for j in axes(col, 2), i in s:-1:k+1
+        col[i, j] = col[i - k, j]
+    end
+end
+
+@inline function shift_up!(col::AbstractMatrix, k::Int)
+    s = size(col, 1)
+    @inbounds for j in axes(col, 2), i in 1:s-k
+        col[i, j] = col[i + k, j]
+    end
 end</code></pre><h3 id="Pushing-sediment"><a class="docs-heading-anchor" href="#Pushing-sediment">Pushing sediment</a><a id="Pushing-sediment-1"></a><a class="docs-heading-anchor-permalink" href="#Pushing-sediment" title="Permalink"></a></h3><p>The single-cell version of <code>push_sediment!</code> takes as argument <code>col</code> a column (physically speaking a column of sediment) represented by a <span>$s \times n$</span>-matrix and a parcel a <span>$n$</span>-vector.</p><div class="noweb-label">⪡sediment-stack-impl⪢≣</div><pre><code class="language- julia hljs">function push_sediment!(col::AbstractMatrix{F}, parcel::AbstractVector{F}) where F &lt;: Real
     @assert size(col, 2) == length(parcel) &quot;column $(size(col)) doesn&#39;t match parcel $(size(parcel))&quot;
     &lt;&lt;push-sediment&gt;&gt;
@@ -205,58 +236,71 @@ end
 
 if mass &gt; size(col)[1]
     @warn &quot;pushing a very large parcel of sediment: $mass times depositional resolution&quot;
-    frac = parcel ./ mass
-    col .= frac
+    col .= transpose(parcel ./ mass)
     return
-end</code></pre><p>First we determine the total sediment amount <span>$\Delta$</span>, being the sum of the parcel, as well as the amount of sediment in our <em>bucket</em>, the head row.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">bucket = sum(col[1, :])
+end</code></pre><p>First we determine the total sediment amount <span>$\Delta$</span>, being the sum of the parcel, as well as the amount of sediment in our <em>bucket</em>, the head row.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">bucket = sum(@view col[1, :])
 @assert bucket &gt;= 0.0 &amp;&amp; bucket &lt;= 1.0</code></pre><p>If the bucket has enough space left for the parcel, we can just add the parcel to the bucket and return.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">if bucket + mass &lt; 1.0
-    col[1,:] .+= parcel
+    @views col[1, :] .+= parcel
     return
-end</code></pre><p>Otherwise, we compute the normalized fractions <code>frac</code> of facies in the parcel. We add as much sediment as we can to fill the bucket and copy rows down as far as needed.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">frac = parcel ./ mass
-col[1,:] .+= frac .* (1.0 - bucket)
-mass -= (1.0 - bucket)
+end</code></pre><p>Otherwise, the normalized fractions of facies in the parcel are <code>parcel ./ total</code>. We add as much sediment as we can to fill the bucket and copy rows down as far as needed.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">total = mass
+space = 1.0 - bucket
+@views col[1, :] .+= parcel ./ total .* space
+mass -= space
 n = floor(Int64, mass)
 
-col[n+2:end,:] .= col[1:end-n-1,:]</code></pre><p>If the parcel has enough material left to fill more rows, those are all filled with the fractions in <code>frac</code>. The head row is assigned whatever is left.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">na = [CartesianIndex()]
-col[2:n+1,:] .= frac[na,:]
-mass -= n
-col[1,:] .= frac .* mass</code></pre><h3 id="Popping-sediment"><a class="docs-heading-anchor" href="#Popping-sediment">Popping sediment</a><a id="Popping-sediment-1"></a><a class="docs-heading-anchor-permalink" href="#Popping-sediment" title="Permalink"></a></h3><p>Similar to <code>push_sediment!</code> we have <code>pop_sediment!</code>. We give <code>pop_sediment!</code> the sedimentary column <code>col</code> and the total amount of sediment we require. There is a bit that we will reuse called <code>pop_fraction</code>, which only works if the amount of popped sediment is lower than the contents of the bucket.</p><div class="noweb-label">⪡sediment-stack-impl⪢≣</div><pre><code class="language- julia hljs">@inline function pop_fraction(col::AbstractMatrix{F}, mass::F) where F &lt;: Real
-    bucket = sum(col[1,:])
+shift_down!(col, n + 1)</code></pre><p>If the parcel has enough material left to fill more rows, those are all filled with the normalized fractions. The head row is assigned whatever is left.</p><div class="noweb-label">⪡push-sediment⪢≣</div><pre><code class="language- julia hljs">mass -= n
+for j in axes(col, 2)
+    frac = parcel[j] / total
+    col[2:n+1, j] .= frac
+    col[1, j] = frac * mass
+end</code></pre><h3 id="Popping-sediment"><a class="docs-heading-anchor" href="#Popping-sediment">Popping sediment</a><a id="Popping-sediment-1"></a><a class="docs-heading-anchor-permalink" href="#Popping-sediment" title="Permalink"></a></h3><p>Similar to <code>push_sediment!</code> we have <code>pop_sediment!</code>. We give <code>pop_sediment!</code> the sedimentary column <code>col</code>, the total amount of sediment we require and an output vector <code>parcel</code> that will contain the popped sediment. A two-argument version allocates the output for us. There is a bit that we will reuse called <code>pop_fraction!</code>, which only works if the amount of popped sediment is lower than the contents of the bucket. It adds the popped sediment to <code>parcel</code>.</p><div class="noweb-label">⪡sediment-stack-impl⪢≣</div><pre><code class="language- julia hljs">@inline function pop_fraction!(parcel::AbstractVector{F}, col::AbstractMatrix{F}, mass::F) where F &lt;: Real
+    bucket = sum(@view col[1, :])
     if mass == 0 || bucket == 0
-        return zeros(F, size(col)[2])
+        return parcel
     end
 
     @assert mass &lt; bucket &quot;pop_fraction can only pop from the top cell: $(col), $(mass)&quot;
-    parcel = (mass / bucket) .* col[1,:]
-    col[1,:] .-= parcel
+    r = mass / bucket
+    for j in axes(col, 2)
+        p = r * col[1, j]
+        parcel[j] += p
+        col[1, j] -= p
+    end
     return parcel
 end
 
-function pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F &lt;: Real  # -&gt; Vector{F}
+function pop_sediment!(col::AbstractMatrix{F}, Δ::F, parcel::AbstractVector{F}) where F &lt;: Real
     &lt;&lt;pop-sediment&gt;&gt;
-end</code></pre><p>We start by computing the bucket size again. If it is greater than the required amount, we call <code>pop_fraction</code>.</p><div class="noweb-label">⪡pop-sediment⪢≣</div><pre><code class="language- julia hljs">bucket = sum(col[1,:])
+end
+
+pop_sediment!(col::AbstractMatrix{F}, Δ::F) where F &lt;: Real =
+    pop_sediment!(col, Δ, zeros(F, size(col, 2)))</code></pre><p>We start by computing the bucket size again. If it is greater than the required amount, we call <code>pop_fraction!</code>.</p><div class="noweb-label">⪡pop-sediment⪢≣</div><pre><code class="language- julia hljs">bucket = sum(@view col[1, :])
 @assert bucket &gt;= 0.0
 
 if Δ &lt; bucket
-  return pop_fraction(col, Δ)
-end</code></pre><p>Otherwise, we start a parcel with the contents of the bucket. Add to that the remaining material in rows below. Now we copy rows from below, setting the bottom <span>$n$</span> rows to 0. The last step is to call <code>pop_fraction</code> one more time with the remaining required amount.</p><div class="noweb-label">⪡pop-sediment⪢≣</div><pre><code class="language- julia hljs">parcel = copy(col[1,:])
+    parcel .= zero(F)
+    return pop_fraction!(parcel, col, Δ)
+end</code></pre><p>Otherwise, we start a parcel with the contents of the bucket. Add to that the remaining material in rows below. Now we copy rows from below, setting the bottom <span>$n$</span> rows to 0. The last step is to call <code>pop_fraction!</code> one more time with the remaining required amount.</p><div class="noweb-label">⪡pop-sediment⪢≣</div><pre><code class="language- julia hljs">@views parcel .= col[1, :]
 Δ -= bucket
 n = floor(Int64, Δ)
 
 if n &gt; (size(col)[1] - 2)
     @error &quot;too much material popped of the stack: Δ = $Δ&quot;
-    parcel .+= sum(col; dims=1)&#39;
+    for j in axes(col, 2)
+        parcel[j] = sum(@view col[:, j])
+    end
     col .= 0.0
     return parcel
 end
 
-parcel .+= sum(col[2:n+1,:]; dims=1)&#39;
-col[1:end-n-1, :] = col[n+2:end, :]
-col[end-n-1:end, :] .= 0
+for j in axes(col, 2)
+    parcel[j] += sum(@view col[2:n+1, j])
+end
+shift_up!(col, n + 1)
+col[end-n:end, :] .= 0
 Δ -= n
 
-parcel .+= pop_fraction(col, Δ)
-return parcel</code></pre><h3 id="Peeking"><a class="docs-heading-anchor" href="#Peeking">Peeking</a><a id="Peeking-1"></a><a class="docs-heading-anchor-permalink" href="#Peeking" title="Permalink"></a></h3><p>Instead of popping sediment, we can also <em>peek</em> at the stack with <code>peek_sediment!</code>, which is a non-destructive way to inspect what the returned parcel would be if we were to call <code>pop_sediment!</code> with the same arguments.</p><details><summary>SedimentStack impl</summary><div class="noweb-label">file:<i>src/SedimentStack.jl</i></div><pre><code class="language- julia hljs">module SedimentStack
+return pop_fraction!(parcel, col, Δ)</code></pre><h3 id="Peeking"><a class="docs-heading-anchor" href="#Peeking">Peeking</a><a id="Peeking-1"></a><a class="docs-heading-anchor-permalink" href="#Peeking" title="Permalink"></a></h3><p>Instead of popping sediment, we can also <em>peek</em> at the stack with <code>peek_sediment!</code>, which is a non-destructive way to inspect what the returned parcel would be if we were to call <code>pop_sediment!</code> with the same arguments.</p><details><summary>SedimentStack impl</summary><div class="noweb-label">file:<i>src/SedimentStack.jl</i></div><pre><code class="language- julia hljs">module SedimentStack
 
 export push_sediment!, pop_sediment!, peek_sediment
 
@@ -308,14 +352,13 @@ end
 
 function pop_sediment!(cols::AbstractArray{F, 4}, amount::AbstractArray{F, 2}, out::AbstractArray{F, 3}) where F &lt;: Real
   @views for i in CartesianIndices(amount)
-      out[:, i[1], i[2]] = pop_sediment!(cols[:, :, i[1], i[2]], amount[i[1], i[2]])
+      pop_sediment!(cols[:, :, i[1], i[2]], amount[i[1], i[2]], out[:, i[1], i[2]])
   end
 end
 
 end # module</code></pre></details><h2 id="Component"><a class="docs-heading-anchor" href="#Component">Component</a><a id="Component-1"></a><a class="docs-heading-anchor-permalink" href="#Component" title="Permalink"></a></h2><div class="noweb-label">file:<i>src/Components/SedimentBuffer.jl</i></div><pre><code class="language- julia hljs">@component module SedimentBuffer
 @mixin Boxes, FaciesBase, WaterDepth
 
-using StaticArrays
 using Unitful
 
 using ..Common
@@ -338,28 +381,31 @@ function push_sediment(input::AbstractInput)
     res = input.depositional_resolution
     n_f = n_facies(input)
     n_g = input.box.grid_size
+    parcel = Vector{Float64}(undef, n_f)
 
     function (state::AbstractState, sediment::Array{Amount, 3})
         for i in CartesianIndices(n_g)
             total = sum(@view sediment[:, i[1], i[2]])
             state.sediment_thickness[i] += total
             state.bathymetry[i] += total
-            v = SVector{n_f, Float64}(sediment[:, i[1], i[2]] ./ res .|&gt; NoUnits)
-            push_sediment!(view(state.sediment_buffer, :, :, i[1], i[2]), v)
+            parcel .= @view(sediment[:, i[1], i[2]]) ./ res .|&gt; NoUnits
+            push_sediment!(view(state.sediment_buffer, :, :, i[1], i[2]), parcel)
         end
     end
 end
 
 function pop_sediment(input::AbstractInput)
     res = input.depositional_resolution
+    n_f = n_facies(input)
     n_g = input.box.grid_size
+    parcel = Vector{Float64}(undef, n_f)
 
     function (state::AbstractState, amount::Array{Amount, 2}, out::Array{Amount, 3})
         for i in CartesianIndices(n_g)
             state.sediment_thickness[i] -= amount[i]
             state.bathymetry[i] -= amount[i]
-            v = pop_sediment!(@view(state.sediment_buffer[:, :, i[1], i[2]]), amount[i] ./ res .|&gt; NoUnits)
-            view(out, :, i[1], i[2]) .= v .* res
+            pop_sediment!(@view(state.sediment_buffer[:, :, i[1], i[2]]), amount[i] / res |&gt; NoUnits, parcel)
+            view(out, :, i[1], i[2]) .= parcel .* res
         end
     end
 end
@@ -398,4 +444,4 @@ import CarboKitten.Components.SedimentBuffer as SB
     @test state.sediment_buffer[1, 1, :, 1] .% 1.0 ≈ repeat([0.25, 0.5, 0.75, 0.0], 3)[1:10]
     # no initial topography, no subsidence
     @test state.sediment_thickness ≈ state.bathymetry
-end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../production/">« Production</a><a class="docs-footer-nextpage" href="../../active-layer-transport/">Active Layer Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 13:36">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../production/">« Production</a><a class="docs-footer-nextpage" href="../../active-layer-transport/">Active Layer Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 13:43">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -795,7 +795,7 @@ using ..FaciesBase: n_facies
 using ..SedimentBuffer: pop_sediment
 import ..TimeIntegration
 import ..Common: write_header
-using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
+using CarboKitten.Transport.Advection: transport!, advection_coef!, transport_dC!, max_dt
 using CarboKitten.Transport.Solvers: runge_kutta_4, forward_euler
 using Unitful
 using GeometryBasics
@@ -843,7 +843,8 @@ function adaptive_transporter(input)
     w = water_depth(input)
     box = input.box
     Δt = input.time.Δt  # / input.transport_substeps
-    fs = input.facies
+    transport_coefficients = Tuple(f.transport_coefficient for f in input.facies)
+    wave_velocities = Tuple(f.wave_velocity for f in input.facies)
     adv = Matrix{Vec2{Rate}}(undef, box.grid_size...)
     rct = Matrix{typeof(1.0u&quot;1/Myr&quot;)}(undef, box.grid_size...)
     dC = Matrix{Rate}(undef, box.grid_size...)
@@ -855,8 +856,8 @@ function adaptive_transporter(input)
         wd .+= iz
 
         C = state.active_layer
-        for (i, f) in pairs(fs)
-            advection_coef!(box, f.transport_coefficient, f.wave_velocity, wd, adv, rct)
+        for i in eachindex(wave_velocities)
+            advection_coef!(box, transport_coefficients[i], wave_velocities[i], wd, adv, rct)
             m = max_dt(adv, box.phys_scale, cm)
             steps = ceil(Int, Δt / m)
 
@@ -903,14 +904,13 @@ function disintegrator(input)
     iz = input.intertidal_zone
     tf = input.disintegration_transfer
     pop! = pop_sediment(input)
+    h = Matrix{Height}(undef, input.box.grid_size...)
 
     return function (state)
         wn = w(state)
-        wn .+= iz
-        h = min.(max_h, state.sediment_thickness)
-        h[wn.&lt;=0.0u&quot;m&quot;] .= 0.0u&quot;m&quot;
-
-        @assert all(h .&lt;= max_h)
+        for i in eachindex(h, wn)
+            h[i] = wn[i] + iz &lt;= 0.0u&quot;m&quot; ? 0.0u&quot;m&quot; : min(max_h, state.sediment_thickness[i])
+        end
         pop!(state, h, output)
         return output
     end
@@ -933,20 +933,22 @@ function transporter(input)
     box = input.box
     Δt = input.time.Δt / input.transport_substeps
     steps = input.transport_substeps
-    fs = input.facies
+    transport_coefficients = Tuple(f.transport_coefficient for f in input.facies)
+    wave_velocities = Tuple(f.wave_velocity for f in input.facies)
     iz = input.intertidal_zone
+    dC = Matrix{Rate}(undef, box.grid_size...)
 
     return function (state)
         wd = w(state)
         wd .+= iz
 
         C = state.active_layer
-        for (i, f) in pairs(fs)
+        for i in eachindex(wave_velocities)
             for j in 1:steps
                 solver(
-                    (C, _) -&gt; transport(
-                        input.box, f.transport_coefficient, f.wave_velocity,
-                        C, wd),
+                    (C, _) -&gt; transport!(
+                        input.box, transport_coefficients[i], wave_velocities[i],
+                        C, wd, dC),
                     view(C, i, :, :), TimeIntegration.time(input, state), Δt)
             end
         end
@@ -1206,4 +1208,4 @@ Script.main()</code></pre><p>The following tests that we see the expected behavi
 
     @test !isapprox(output2[10:30], output2[50:70], atol=1.0u&quot;m&quot;)
     @test output2[50:70] ≈ output2[90:110] atol=0.01u&quot;m&quot;
-end</code></pre><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Literature on active (or mixing) layer transport modeling is vast. Most of which is concerned with much smaller time scales, and more complicated physics than we are mostly dealing with.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Note that in other approaches to active layer transport, like Paola 1992, there would be a factor <span>$1/C_f$</span>. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../components/sediment_buffer/">« Sediment Buffers</a><a class="docs-footer-nextpage" href="../onshore-transport/">Onshore Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 14:02">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Literature on active (or mixing) layer transport modeling is vast. Most of which is concerned with much smaller time scales, and more complicated physics than we are mostly dealing with.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Note that in other approaches to active layer transport, like Paola 1992, there would be a factor <span>$1/C_f$</span>. Here we have a different interpretation to what the concentration means: the sediment settles down after transport, such that the concentration has no impact on the change in sediment surface elevation.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../components/sediment_buffer/">« Sediment Buffers</a><a class="docs-footer-nextpage" href="../onshore-transport/">Onshore Transport »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 14:07">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

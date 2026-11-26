@@ -32,11 +32,15 @@ function runge_kutta_4(::Type{T}, box) where {T}
     k2 = Array{U}(undef, box.grid_size...)
     k3 = Array{U}(undef, box.grid_size...)
     k4 = Array{U}(undef, box.grid_size...)
+    tmp = Array{T}(undef, box.grid_size...)
     function (df, y, t, dt)
         k1 .= df(y, t)
-        k2 .= df(y .+ dt/2 .* k1, t + dt/2)
-        k3 .= df(y .+ dt/2 .* k2, t + dt/2)
-        k4 .= df(y .+ dt .* k3, t + dt)
+        tmp .= y .+ dt/2 .* k1
+        k2 .= df(tmp, t + dt/2)
+        tmp .= y .+ dt/2 .* k2
+        k3 .= df(tmp, t + dt/2)
+        tmp .= y .+ dt .* k3
+        k4 .= df(tmp, t + dt)
         y .+= (k1 .+ 2 .* k2 .+ 2 .* k3 .+ k4) .* (dt/6)
     end
 end
@@ -72,7 +76,7 @@ return rct - adv</code></pre><h2 id="Adaptive-integration"><a class="docs-headin
     end
 end</code></pre><p>Given the advection coefficients we can figure out what the maximal timestep should be.</p><div class="noweb-label">⪡advection-coef⪢≣</div><pre><code class="language- julia hljs">function max_dt(adv, dx, courant_max)
     u(a) = abs(a[1]) + abs(a[2])
-    return courant_max / maximum(u.(adv) ./ dx)
+    return courant_max / (maximum(u, adv) / dx)
 end</code></pre><h3 id="Compute-dC"><a class="docs-heading-anchor" href="#Compute-dC">Compute <code>dC</code></a><a id="Compute-dC-1"></a><a class="docs-heading-anchor-permalink" href="#Compute-dC" title="Permalink"></a></h3><p>Once we know our time step, we can use the <code>adv</code> and <code>rct</code> coefficients to evaluate the sediment transport. We again can&#39;t use the stencil or finite difference functionalities, since that would do needless computations. </p><div class="noweb-label">⪡advection-coef⪢≣</div><pre><code class="language- julia hljs">function transport_dC!(box::Box{BT}, adv, rct, C, dC) where {BT}
     dx = box.phys_scale
     di = (CartesianIndex(1, 0), CartesianIndex(0, 1))
@@ -368,4 +372,4 @@ for speed in observed_speeds
     @test speed ≈ expected_speed atol=tolerance
 end
 
-end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../utility/">« Utility</a><a class="docs-footer-nextpage" href="../range_finder/">Range Finder »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 14:02">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../utility/">« Utility</a><a class="docs-footer-nextpage" href="../range_finder/">Range Finder »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 14:07">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -67,7 +67,7 @@ The denudation models all follow the same API.
 module Abstract
 
 using ...BoundaryTrait: Boundary
-using ...Boxes: Box
+using CarboKitten: Box
 using ...SedimentBuffers: peek_sediment
 
 using Unitful
@@ -145,7 +145,7 @@ Doesn't do any denudation: used for testing purposes.
 module NoDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
-using ...Boxes: Box
+using CarboKitten: Box
 using Unitful
 
 struct NoDenudation <: DenudationType end

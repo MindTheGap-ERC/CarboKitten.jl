@@ -4,7 +4,7 @@ module PhysicalErosionMod
 import ..Abstract: DenudationType, denudation, redistribution, dominant_facies
 using ...Stencil: Boundary, Periodic, offset_value, offset_index, stencil
 using ...BoundaryTrait
-using ...Boxes: Box
+using CarboKitten: Box
 
 using Unitful
 

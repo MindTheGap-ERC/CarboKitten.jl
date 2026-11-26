@@ -19,8 +19,7 @@ using StaticArrays
 using ...CarboKitten: Model, AbstractInput, AbstractState, AbstractFacies, AbstractOutput, OutputSpec, set_attribute, n_steps
 using ...CarboKitten: InputPart, StatePart, FaciesPart
 using ...BoundaryTrait
-using ...Config: TimeProperties
-using ...Boxes: Box, box_axes
+using CarboKitten: TimeProperties, Box, box_axes
 using ...Utility: in_units_of
 using ...Production
 

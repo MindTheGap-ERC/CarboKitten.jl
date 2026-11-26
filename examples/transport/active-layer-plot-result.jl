@@ -5,7 +5,7 @@ module ActiveLayerPlot
 include("active-layer.jl")
 using CairoMakie
 using Unitful
-using CarboKitten.Config: axes
+using CarboKitten: box_axes
 using CarboKitten.Utility: in_units_of
 using .ActiveLayer: input, run_model
 
@@ -13,7 +13,7 @@ function main()
   result = Iterators.map(deepcopy,
       Iterators.filter(x -> mod(x[1], 100) == 0, enumerate(run_model(input)))) |> collect
 
-    (x, y) = axes(input.box)
+    (x, y) = box_axes(input.box)
     η = input.initial_topography.(x, y') .+ result[10][2].sediment .- input.subsidence_rate * result[10][2].time
     # p = input.production.(x, y')
 

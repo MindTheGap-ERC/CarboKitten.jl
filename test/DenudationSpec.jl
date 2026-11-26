@@ -12,8 +12,7 @@ using CarboKitten.Production: NoProduction
 
 
 using CarboKitten.Stencil: Periodic, Reflected, stencil
-using CarboKitten.Config: Vectors, TimeProperties
-using CarboKitten.Boxes: Box
+using CarboKitten: TimeProperties, Box
 using CarboKitten.Models: WithDenudation as WD
 using CarboKitten.Models.WithDenudation: Input, State, initial_state, step!, initial_frame
 using CarboKitten.Denudation.EmpiricalDenudationMod: slope_kernel

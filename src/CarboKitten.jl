@@ -106,7 +106,7 @@ include("./Algorithms/CircularBuffers.jl")
 end
 
 include("./BoundaryTrait.jl")
-include("./Vectors.jl")
+using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 include("./Boxes.jl")
 include("./Config.jl")
 include("./Stencil.jl")
@@ -175,7 +175,6 @@ using .Output.Abstract: new_output, load, load_volume, load_slice, load_column
 using .Output.Storage: water_depth, stratigraphic_column
 using .Output.MemoryWriter: MemoryOutput
 using .Models: BS92, CAP, ALCAP
-using .BoundaryTrait: Boundary, Coast, Periodic, Reflected
 using .Production: BenthicProduction, PelagicProduction, InterpolatedProduction, ProductionBoost
 using .Components.WaterDepth: TimeVariableSubsidenceRate, SpaceTimeVariableSubsidenceRate
 using GeometryBasics: Vec2

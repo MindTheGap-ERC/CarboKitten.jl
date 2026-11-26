@@ -18,7 +18,7 @@ function sediment_accumulation!(ax::Axis, p::PackSlice;
     colormap=Reverse(:curl),
     range::NTuple{2,Rate}=(-100.0u"m/Myr", 100.0u"m/Myr"))
     magnitude = dropdims(sum(net_deposition(p); dims=1), dims=1) ./ write_time_step(p)
-    blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
+    blur = convolution(Coast, ones(Float64, smooth_size...) ./ *(smooth_size...))
     mag = zeros(Float64, size(magnitude))
     blur(magnitude / u"m/Myr", mag)
 
@@ -46,7 +46,7 @@ function dominant_facies!(ax::Axis, p::PackSlice;
     n_f = n_facies(p)
     colormax(d) = getindex.(argmax(d; dims=1)[1, :, :], 1)
 
-    blur = convolution(Shelf, ones(Float64, smooth_size...) ./ *(smooth_size...))
+    blur = convolution(Coast, ones(Float64, smooth_size...) ./ *(smooth_size...))
     wd_raw = water_depth(p) / u"m"
     wd = zeros(Float64, size(wd_raw))
     blur(wd_raw, wd)

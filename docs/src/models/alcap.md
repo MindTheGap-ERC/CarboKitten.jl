@@ -131,8 +131,7 @@ module Example
 using Unitful
 using ..ALCAP: ALCAP
 using CarboKitten.Production: BenthicProduction
-using CarboKitten.Boxes: Box, Coast
-using CarboKitten.Config: TimeProperties
+using CarboKitten: Box, Coast, TimeProperties
 using CarboKitten: OutputSpec
 
 <<alcap-example-input>>

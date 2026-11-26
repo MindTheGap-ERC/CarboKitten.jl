@@ -104,7 +104,7 @@ Note that this mode only considers the destruction of mass and does not apply an
 module EmpiricalDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
-using ...Boxes: Box
+using CarboKitten: Box
 using CarboKitten.SedimentBuffers: peek_sediment
 
 using Unitful

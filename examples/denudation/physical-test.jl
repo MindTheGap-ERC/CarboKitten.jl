@@ -6,7 +6,7 @@ using CarboKitten.Denudation.EmpiricalDenudationMod: slope_kernel
 using CarboKitten.Denudation.PhysicalErosionMod: physical_erosion, redistribution_kernel
 using CarboKitten.Stencil: Boundary, Periodic, offset_value, offset_index, stencil
 using CarboKitten.BoundaryTrait
-import CarboKitten.Config: Box
+import CarboKitten: Box
 
 const inf = 0.5
 const erodibility = 0.0025

@@ -239,7 +239,7 @@ module DissolutionMod
 
 import ..Abstract: DenudationType, denudation, redistribution, dominant_facies
 using ...BoundaryTrait: Boundary
-using ...Boxes: Box
+using CarboKitten: Box
 
 export Dissolution
 using Unitful

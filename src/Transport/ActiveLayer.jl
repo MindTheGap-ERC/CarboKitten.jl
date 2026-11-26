@@ -4,7 +4,7 @@ module ActiveLayer
 using Unitful
 using StaticArrays
 using ...BoundaryTrait
-using ...Boxes: Box
+using CarboKitten: Box, box_axes
 using ...Stencil: stencil!
 
 const Rate = typeof(1.0u"m/Myr")

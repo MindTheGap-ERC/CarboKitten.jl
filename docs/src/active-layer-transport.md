@@ -283,8 +283,7 @@ Suppose we have an incline in one direction, as per usual on a coastal slice. Pr
 module ActiveLayer
 
 using Unitful
-using CarboKitten.Config: Box, axes
-using CarboKitten.BoundaryTrait: Shelf
+using CarboKitten: Box, box_axes, Coast
 using CarboKitten.Utility: in_units_of
 using CarboKitten.Transport.ActiveLayer: pde_stencil, Amount, Rate
 
@@ -325,7 +324,7 @@ production_patch(center, radius, rate) = function(x, y)
 end
 
 const input = Input(
-    box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     Δt=0.001u"Myr",
     t_end=1.0u"Myr",
 
@@ -357,13 +356,13 @@ const input = Input(
 
 include("active-layer.jl")
 using Unitful
-using CarboKitten.Config: axes
+using CarboKitten: box_axes
 using CarboKitten.Utility: in_units_of
 using CairoMakie
 using .ActiveLayer: input
 
 function main()
-  (x, y) = axes(input.box)
+  (x, y) = box_axes(input.box)
   η = input.initial_topography.(x, y')
   p = input.production.(x, y')
 
@@ -394,7 +393,7 @@ module ActiveLayer
 using Unitful
 using StaticArrays
 using ...BoundaryTrait
-using ...Boxes: Box
+using CarboKitten: Box, box_axes
 using ...Stencil: stencil!
 
 const Rate = typeof(1.0u"m/Myr")
@@ -432,7 +431,7 @@ mutable struct State
 end
 
 function initial_state(input)
-    x, y = axes(input.box)
+    x, y = box_axes(input.box)
     State(0.0u"Myr", input.initial_sediment.(x, y'))
 end
 
@@ -443,7 +442,7 @@ end
 
 function propagator(input)
     δ = Matrix{Amount}(undef, input.box.grid_size...)
-    x, y = axes(input.box)
+    x, y = box_axes(input.box)
     μ0 = input.initial_topography.(x, y')
     box = input.box
     Δt = input.Δt
@@ -501,7 +500,7 @@ module ActiveLayerPlot
 include("active-layer.jl")
 using CairoMakie
 using Unitful
-using CarboKitten.Config: axes
+using CarboKitten: box_axes
 using CarboKitten.Utility: in_units_of
 using .ActiveLayer: input, run_model
 
@@ -509,7 +508,7 @@ function main()
   result = Iterators.map(deepcopy,
       Iterators.filter(x -> mod(x[1], 100) == 0, enumerate(run_model(input)))) |> collect
 
-    (x, y) = axes(input.box)
+    (x, y) = box_axes(input.box)
     η = input.initial_topography.(x, y') .+ result[10][2].sediment .- input.subsidence_rate * result[10][2].time
     # p = input.production.(x, y')
 

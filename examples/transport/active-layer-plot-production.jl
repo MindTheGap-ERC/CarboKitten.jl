@@ -2,13 +2,13 @@
 
 include("active-layer.jl")
 using Unitful
-using CarboKitten.Config: axes
+using CarboKitten: box_axes
 using CarboKitten.Utility: in_units_of
 using CairoMakie
 using .ActiveLayer: input
 
 function main()
-  (x, y) = axes(input.box)
+  (x, y) = box_axes(input.box)
   η = input.initial_topography.(x, y')
   p = input.production.(x, y')
 

@@ -2,7 +2,7 @@
 module Abstract
 
 using ...BoundaryTrait: Boundary
-using ...Boxes: Box
+using CarboKitten: Box
 using ...SedimentBuffers: peek_sediment
 
 using Unitful

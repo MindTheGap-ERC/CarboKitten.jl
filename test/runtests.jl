@@ -39,6 +39,7 @@ TEST_PATH = mktempdir()
     include("DenudationSpec.jl")
     include("Algorithms/CopyingBuffersSpec.jl")
     include("Algorithms/CircularBuffersSpec.jl")
+    include("Algorithms/SkeletonSpec.jl")
 
     include("Components/ComponentsSpec.jl")
     include("Components/CellularAutomatonSpec.jl")

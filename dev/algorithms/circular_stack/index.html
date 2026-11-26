@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Circular Stack · CarboKitten</title><meta name="title" content="Circular Stack · CarboKitten"/><meta property="og:title" content="Circular Stack · CarboKitten"/><meta property="twitter:title" content="Circular Stack · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/documentercitations/citations-hover.css" rel="stylesheet" type="text/css"/><link href="../../assets/documentercitations/citations.css" rel="stylesheet" type="text/css"/><script src="../../assets/documentercitations/citations-data.js"></script><script src="../../assets/documentercitations/citations-hover.js"></script><script src="../../assets/documentercitations/citations-backlinks.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><a class="tocitem" href="../../getting-started/">Getting started</a></li><li><span class="tocitem">User Manual</span><ul><li><a class="tocitem" href="../../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../../production/production/">Production</a></li><li><a class="tocitem" href="../../analysis/">Analysis and Visualization</a></li><li><a class="tocitem" href="../../data-export/">Data Export</a></li><li><a class="tocitem" href="../../visualization/overview/">Visualization</a></li><li><a class="tocitem" href="../../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../../cases/variable-subsidence/">Variable Subsidence</a></li><li><a class="tocitem" href="../../initial-topography/">Initial Topography</a></li></ul></li><li><span class="tocitem">Production Models</span><ul><li><a class="tocitem" href="../../production/benthic/">Benthic Production</a></li><li><a class="tocitem" href="../../production/pelagic/">Pelagic Production</a></li><li><a class="tocitem" href="../../production/interpolated/">Interpolation</a></li><li><a class="tocitem" href="../../production/modifiers/">Modifiers</a></li></ul></li><li><span class="tocitem">Interface</span><ul><li><a class="tocitem" href="../../wavefield/">Wave fields</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../../output/abstract/">Data API</a></li><li><a class="tocitem" href="../../output/data/">Data Implementation</a></li><li><a class="tocitem" href="../../output/h5reader/">HDF5 Reader</a></li><li><a class="tocitem" href="../../output/h5writer/">HDF5 Writer</a></li><li><a class="tocitem" href="../../output/memory-writer/">Output to Memory</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="../../visualization/profiles/">Profiles</a></li><li><a class="tocitem" href="../../visualization/fence-diagrams/">Fence Diagram</a></li><li><a class="tocitem" href="../../visualization/topography/">Topography</a></li><li><a class="tocitem" href="../../visualization/">Other</a></li></ul></li><li><span class="tocitem">Developer</span><ul><li><a class="tocitem" href="../../CONTRIBUTING/">Contributing to this repository</a></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li></ul></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../../components/components/">Components</a></li><li><a class="tocitem" href="../../components/tag/">Tags</a></li><li><a class="tocitem" href="../../components/boxes/">Boxes</a></li><li><a class="tocitem" href="../../components/time/">Time</a></li><li><a class="tocitem" href="../../components/output/">Output</a></li><li><a class="tocitem" href="../../components/facies/">Facies</a></li><li><a class="tocitem" href="../../components/cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../../components/waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../../components/production/">Production</a></li><li><a class="tocitem" href="../../components/sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../overview/">Overview</a></li><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li><li><a class="tocitem" href="../finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../range_finder/">Range Finder</a></li><li><a class="tocitem" href="../enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../skeleton/">Skeleton</a></li><li><a class="tocitem" href="../stratigraphic_column/">Stratigraphic Column</a></li><li><a class="tocitem" href="../copying_stack/">Copying Stack</a></li><li class="is-active"><a class="tocitem" href>Circular Stack</a><ul class="internal"><li><a class="tocitem" href="#Data-structure"><span>Data structure</span></a></li><li><a class="tocitem" href="#Pushing-sediment"><span>Pushing sediment</span></a></li><li><a class="tocitem" href="#Popping-sediment"><span>Popping sediment</span></a></li><li><a class="tocitem" href="#Peeking"><span>Peeking</span></a></li><li><a class="tocitem" href="#Grid"><span>Grid</span></a></li><li><a class="tocitem" href="#Benchmark"><span>Benchmark</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Algorithms</a></li><li class="is-active"><a href>Circular Stack</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Circular Stack</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/algorithms/circular_stack.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Circular-Stack"><a class="docs-heading-anchor" href="#Circular-Stack">Circular Stack</a><a id="Circular-Stack-1"></a><a class="docs-heading-anchor-permalink" href="#Circular-Stack" title="Permalink"></a></h1><p>The <a href="../copying_stack/">copying stack</a> keeps the head of each column at the first row. Every time the head overflows (or is emptied), all rows below are copied one or more rows down (or up). The circular stack avoids this copying. Instead, it remembers for each column which row is the head. The rows below the head are found by walking downward from it, wrapping around at the end. So, for a buffer of depth <span>$D$</span>, the logical row <span>$r$</span> (counting from the head) is found at physical row <span>$\textrm{mod1}(h - r + 1, D)$</span>, where <span>$h$</span> is the head. This means we have something of a <a href="https://en.wikipedia.org/wiki/Circular_buffer">circular buffer</a>.</p><p>Pushing sediment that overflows the head moves the head forward, overwriting the deepest rows, which would have been dropped by the copying stack anyway. Popping sediment moves the head back, and zeroes the rows that were popped, which the copying stack would have filled with zeros from below.</p><p>The algorithms below follow the copying stack step by step. The result is the same, up to round-off errors and the position of the head.</p><div class="noweb-label">file:<i>test/Algorithms/CircularBuffersSpec.jl</i></div><pre><code class="language- julia hljs">module CircularBuffersSpec
+using Test
+using CarboKitten.Algorithms.CircularBuffers: CircularBuffer, push_sediment!, pop_sediment!, peek_sediment, unroll
+using CarboKitten.Algorithms: CopyingBuffers
+using Random: Xoshiro
+
+@testset &quot;Algorithms/CircularBuffers&quot; begin
+  @testset &quot;column&quot; begin
+    col = zeros(Float64, 10, 3)
+    head = 1
+    parcel = zeros(Float64, 3)
+    head = pop_sediment!(col, head, 0.0, parcel)
+    @test parcel == [0.0, 0.0, 0.0]
+    head = push_sediment!(col, head, [5.0, 0, 0])
+    head = pop_sediment!(col, head, 1.5, parcel)
+    @test parcel == [1.5, 0.0, 0.0]
+    head = push_sediment!(col, head, [0.0, 2.0, 0.0])
+    head = pop_sediment!(col, head, 2.0, parcel)
+    @test parcel == [0.25, 1.75, 0.0]
+    head = pop_sediment!(col, head, 1.5, parcel)
+    @test parcel == [1.25, 0.25, 0.0]
+    head = pop_sediment!(col, head, 0.0, parcel)
+    @test parcel == [0.0, 0.0, 0.0]
+  end
+
+  @testset &quot;edge cases&quot; begin
+    # pushing more than the buffer can hold fills every row with the parcel&#39;s fractions
+    col = zeros(Float64, 4, 2)
+    head = @test_logs (:warn,) push_sediment!(col, 1, [6.0, 2.0])
+    @test all(col .== [0.75 0.25])
+
+    # popping more than the buffer holds returns everything
+    col = [0.0 1.0; 0.0 1.0; 1.0 0.0; 1.0 0.0]
+    parcel = zeros(Float64, 2)
+    @test_logs (:error,) pop_sediment!(col, 4, 10.0, parcel)
+    @test parcel == [2.0, 2.0]
+    @test all(col .== 0.0)
+
+    # the head wraps around
+    col = zeros(Float64, 4, 2)
+    head = push_sediment!(col, 4, [1.5, 0.0])
+    @test head == 1
+    @test col[:, 1] == [0.5, 0.0, 0.0, 1.0]
+    @test unroll(col, head) == [0.5 0.0; 1.0 0.0; 0.0 0.0; 0.0 0.0]
+  end
+
+  @testset &quot;equivalent to copying stack&quot; begin
+    rng = Xoshiro(0)
+    for _ in 1:20
+      copying = zeros(Float64, 8, 3)
+      circular = zeros(Float64, 8, 3)
+      head = rand(rng, 1:8)
+      for _ in 1:50
+        if rand(rng, Bool)
+          parcel = rand(rng, 3) .* rand(rng, (0.1, 1.0, 2.0))
+          CopyingBuffers.push_sediment!(copying, parcel)
+          head = push_sediment!(circular, head, parcel)
+        else
+          Δ = rand(rng) * rand(rng, (0.1, 1.0, 3.0))
+          @test peek_sediment(circular, head, Δ) ≈ CopyingBuffers.peek_sediment(copying, Δ)
+          expected = CopyingBuffers.pop_sediment!(copying, Δ)
+          parcel = zeros(Float64, 3)
+          head = pop_sediment!(circular, head, Δ, parcel)
+          @test parcel ≈ expected
+        end
+        @test unroll(circular, head) ≈ copying
+      end
+    end
+  end
+
+  @testset &quot;grid&quot; begin
+    buffer = CircularBuffer{Float64}(10, 3, (5, 5))
+    for x in 1:10
+      production = rand(3, 5, 5)
+      push_sediment!(buffer, production)
+    end
+    a = peek_sediment(buffer, 1.0)
+    @test all(sum(a; dims=1) .≈ 1.0)
+
+    out = zeros(Float64, 3, 5, 5)
+    pop_sediment!(buffer, fill(1.0, 5, 5), out)
+    @test out ≈ a
+  end
+end
+end</code></pre><h2 id="Data-structure"><a class="docs-heading-anchor" href="#Data-structure">Data structure</a><a id="Data-structure-1"></a><a class="docs-heading-anchor-permalink" href="#Data-structure" title="Permalink"></a></h2><p>The <code>CircularBuffer</code> contains the data in the same layout as the copying stack, together with a matrix of heads, one for each column.</p><div class="noweb-label">⪡circular-buffer⪢≣</div><pre><code class="language- julia hljs">struct CircularBuffer{F &lt;: Real}
+    data::Array{F, 4}
+    heads::Matrix{Int}
+end
+
+CircularBuffer{F}(depth::Int, n_facies::Int, grid_size::NTuple{2, Int}) where F &lt;: Real =
+    CircularBuffer{F}(zeros(F, depth, n_facies, grid_size...), ones(Int, grid_size...))</code></pre><p>We need a few helper functions to walk the rows of a column. The <code>unroll</code> function returns a column in the layout of the copying stack, which is useful for testing.</p><div class="noweb-label">⪡circular-buffer⪢≣</div><pre><code class="language- julia hljs">@inline row_sum(col::AbstractMatrix, r::Int) = sum(@view col[r, :])
+@inline next_row(col::AbstractMatrix, r::Int) = mod1(r + 1, size(col, 1))
+@inline prev_row(col::AbstractMatrix, r::Int) = mod1(r - 1, size(col, 1))
+
+unroll(col::AbstractMatrix, head::Int) = col[mod1.(head .- (0:size(col, 1)-1), size(col, 1)), :]</code></pre><h2 id="Pushing-sediment"><a class="docs-heading-anchor" href="#Pushing-sediment">Pushing sediment</a><a id="Pushing-sediment-1"></a><a class="docs-heading-anchor-permalink" href="#Pushing-sediment" title="Permalink"></a></h2><p>The column version of <code>push_sediment!</code> takes the column <code>col</code>, the current <code>head</code> and a <code>parcel</code>. It returns the new head. The first steps are identical to those of the copying stack.</p><div class="noweb-label">⪡circular-buffer⪢≣</div><pre><code class="language- julia hljs">function push_sediment!(col::AbstractMatrix{F}, head::Int, parcel::AbstractVector{F}) where F &lt;: Real
+    @assert size(col, 2) == length(parcel) &quot;column $(size(col)) doesn&#39;t match parcel $(size(parcel))&quot;
+    mass = sum(parcel)
+    if mass == 0.0
+        return head
+    end
+
+    if mass &gt; size(col, 1)
+        @warn &quot;pushing a very large parcel of sediment: $mass times depositional resolution&quot;
+        col .= transpose(parcel ./ mass)
+        return head
+    end
+
+    bucket = row_sum(col, head)
+    @assert bucket &gt;= 0.0 &amp;&amp; bucket &lt;= 1.0
+
+    if bucket + mass &lt; 1.0
+        @views col[head, :] .+= parcel
+        return head
+    end
+
+    total = mass
+    space = 1.0 - bucket
+    @views col[head, :] .+= parcel ./ total .* space
+    mass -= space
+    n = floor(Int64, mass)
+    &lt;&lt;circular-push-rows&gt;&gt;
+end</code></pre><p>Where the copying stack shifts all rows down by <span>$n + 1$</span>, we move the head forward instead. The <span>$n$</span> rows we pass are filled with the normalized fractions, the new head with whatever is left.</p><div class="noweb-label">⪡circular-push-rows⪢≣</div><pre><code class="language- julia hljs">for _ in 1:n
+    head = next_row(col, head)
+    for j in axes(col, 2)
+        col[head, j] = parcel[j] / total
+    end
+end
+
+head = next_row(col, head)
+mass -= n
+for j in axes(col, 2)
+    col[head, j] = parcel[j] / total * mass
+end
+return head</code></pre><h2 id="Popping-sediment"><a class="docs-heading-anchor" href="#Popping-sediment">Popping sediment</a><a id="Popping-sediment-1"></a><a class="docs-heading-anchor-permalink" href="#Popping-sediment" title="Permalink"></a></h2><p>Again, <code>pop_sediment!</code> returns the new head, writing the popped sediment to <code>parcel</code>.</p><div class="noweb-label">⪡circular-buffer⪢≣</div><pre><code class="language- julia hljs">@inline function pop_fraction!(parcel::AbstractVector{F}, col::AbstractMatrix{F}, head::Int, mass::F) where F &lt;: Real
+    bucket = row_sum(col, head)
+    if mass == 0 || bucket == 0
+        return parcel
+    end
+
+    @assert mass &lt; bucket &quot;pop_fraction can only pop from the top cell: $(col), $(mass)&quot;
+    r = mass / bucket
+    for j in axes(col, 2)
+        p = r * col[head, j]
+        parcel[j] += p
+        col[head, j] -= p
+    end
+    return parcel
+end
+
+function pop_sediment!(col::AbstractMatrix{F}, head::Int, Δ::F, parcel::AbstractVector{F}) where F &lt;: Real
+    bucket = row_sum(col, head)
+    @assert bucket &gt;= 0.0
+
+    parcel .= zero(F)
+    if Δ &lt; bucket
+        pop_fraction!(parcel, col, head, Δ)
+        return head
+    end
+
+    Δ -= bucket
+    n = floor(Int64, Δ)
+
+    if n &gt; size(col, 1) - 2
+        @error &quot;too much material popped of the stack: Δ = $Δ&quot;
+        for j in axes(col, 2)
+            parcel[j] = sum(@view col[:, j])
+        end
+        col .= 0.0
+        return head
+    end
+    &lt;&lt;circular-pop-rows&gt;&gt;
+end</code></pre><p>Where the copying stack shifts the rows up by <span>$n + 1$</span>, we take the head and the <span>$n$</span> rows below it, zeroing them and moving the head back as we go. The remainder is taken from the new head.</p><div class="noweb-label">⪡circular-pop-rows⪢≣</div><pre><code class="language- julia hljs">for _ in 0:n
+    for j in axes(col, 2)
+        parcel[j] += col[head, j]
+        col[head, j] = zero(F)
+    end
+    head = prev_row(col, head)
+end
+Δ -= n
+
+pop_fraction!(parcel, col, head, Δ)
+return head</code></pre><h2 id="Peeking"><a class="docs-heading-anchor" href="#Peeking">Peeking</a><a id="Peeking-1"></a><a class="docs-heading-anchor-permalink" href="#Peeking" title="Permalink"></a></h2><p>Peeking walks the same rows as popping, without changing the buffer.</p><div class="noweb-label">⪡circular-buffer⪢≣</div><pre><code class="language- julia hljs">function peek_sediment(col::AbstractMatrix{F}, head::Int, Δ::F) where F &lt;: Real  # -&gt; Vector{F}
+    parcel = zeros(F, size(col, 2))
+    if Δ == 0
+        return parcel
+    end
+
+    bucket = row_sum(col, head)
+    if Δ &lt; bucket
+        @views parcel .= (Δ / bucket) .* col[head, :]
+        return parcel
+    end
+
+    Δ -= bucket
+    n = min(floor(Int64, Δ), size(col, 1) - 1)
+    for _ in 0:n
+        @views parcel .+= col[head, :]
+        head = prev_row(col, head)
+    end
+    Δ -= n
+
+    if n + 2 &lt;= size(col, 1)
+        last_bucket = row_sum(col, head)
+        if last_bucket &gt; 0
+            @views parcel .+= (Δ / last_bucket) .* col[head, :]
+        end
+    end
+
+    return parcel
+end</code></pre><h2 id="Grid"><a class="docs-heading-anchor" href="#Grid">Grid</a><a id="Grid-1"></a><a class="docs-heading-anchor-permalink" href="#Grid" title="Permalink"></a></h2><p>Same as for the copying stack, we have methods that work on a single column of the grid, and methods that loop over all columns.</p><div class="noweb-label">⪡circular-buffer⪢≣</div><pre><code class="language- julia hljs">function push_sediment!(buffer::CircularBuffer{F}, i::CartesianIndex{2}, parcel::AbstractVector{F}) where F &lt;: Real
+    buffer.heads[i] = push_sediment!(view(buffer.data, :, :, i), buffer.heads[i], parcel)
+end
+
+function pop_sediment!(buffer::CircularBuffer{F}, i::CartesianIndex{2}, Δ::F, parcel::AbstractVector{F}) where F &lt;: Real
+    buffer.heads[i] = pop_sediment!(view(buffer.data, :, :, i), buffer.heads[i], Δ, parcel)
+    return parcel
+end
+
+peek_sediment(buffer::CircularBuffer{F}, i::CartesianIndex{2}, Δ::F) where F &lt;: Real =
+    peek_sediment(view(buffer.data, :, :, i), buffer.heads[i], Δ)
+
+function push_sediment!(buffer::CircularBuffer{F}, p::AbstractArray{F, 3}) where F &lt;: Real
+    @assert size(buffer.data, 2) == size(p, 1) &quot;shapes for buffer $(size(buffer.data)) doesn&#39;t match p $(size(p))&quot;
+    @views for i in CartesianIndices(buffer.heads)
+        push_sediment!(buffer, i, p[:, i])
+    end
+end
+
+function pop_sediment!(buffer::CircularBuffer{F}, amount::AbstractArray{F, 2}, out::AbstractArray{F, 3}) where F &lt;: Real
+    @views for i in CartesianIndices(amount)
+        pop_sediment!(buffer, i, amount[i], out[:, i])
+    end
+end
+
+function peek_sediment(buffer::CircularBuffer{F}, Δ::F) where F &lt;: Real
+    _, f, x, y = size(buffer.data)
+    out = Array{F, 3}(undef, f, x, y)
+    for i in CartesianIndices((x, y))
+        out[:, i] = peek_sediment(buffer, i, Δ)
+    end
+    return out
+end</code></pre><h2 id="Benchmark"><a class="docs-heading-anchor" href="#Benchmark">Benchmark</a><a id="Benchmark-1"></a><a class="docs-heading-anchor-permalink" href="#Benchmark" title="Permalink"></a></h2><p>To compare the two implementations, we run the <a href="../../models/alcap/">ALCAP model</a> once with each buffer. The circular variant of ALCAP only differs in its <code>Input</code> record, which includes <code>CircularSedimentBuffer</code> instead of the default <code>CopyingSedimentBuffer</code>. The rest follows from there: the initial state is composed of the same components as the input. Both runs should end up with the same sediment.</p><p>Most time in a model run is spent on other things than the sediment buffer, like transport. That is why we also time pushing and popping on the final state of each run.</p><div class="noweb-label">file:<i>examples/model/alcap/buffer-benchmark.jl</i></div><pre><code class="language- julia hljs">module BufferBenchmark
+
+using Unitful
+using CarboKitten
+using CarboKitten.Components.Common: Amount
+using CarboKitten.Components.SedimentBuffer: push_sediment, pop_sediment
+using CarboKitten.SedimentBuffers: peek_sediment
+using CarboKitten.Components.Common: record_type
+using CarboKitten.Components: CircularSedimentBuffer
+using CarboKitten.Models.ALCAP.Example: FACIES
+
+const INPUTS = [
+    &quot;copying&quot; =&gt; ALCAP.Input,
+    &quot;circular&quot; =&gt; record_type(:Input, ALCAP, CircularSedimentBuffer)]
+
+make_input(Input, steps) = Input(
+    tag=&quot;buffer-benchmark&quot;,
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u&quot;m&quot;),
+    time=TimeProperties(
+        Δt=0.0002u&quot;Myr&quot;,
+        steps=steps),
+    ca_interval=1,
+    initial_topography=(x, y) -&gt; -x / 300.0,
+    sea_level=t -&gt; 4.0u&quot;m&quot; * sin(2π * t / 0.2u&quot;Myr&quot;),
+    subsidence_rate=50.0u&quot;m/Myr&quot;,
+    disintegration_rate=50.0u&quot;m/Myr&quot;,
+    lithification_time=100.0u&quot;yr&quot;,
+    insolation=400.0u&quot;W/m^2&quot;,
+    sediment_buffer_size=50,
+    depositional_resolution=0.5u&quot;m&quot;,
+    facies=FACIES)
+
+run(input) = run_model((_, _) -&gt; nothing, Model{ALCAP}, input)
+
+function best_of(f, n)
+    best = (time=Inf, bytes=0)
+    for _ in 1:n
+        GC.gc()
+        t = @timed f()
+        if t.time &lt; best.time
+            best = (time=t.time, bytes=t.bytes)
+        end
+    end
+    return best
+end
+
+function buffer_ops(input, state)
+    push! = push_sediment(input)
+    pop! = pop_sediment(input)
+    deposit = fill(0.4u&quot;m&quot;, length(input.facies), input.box.grid_size...)
+    amount = fill(1.2u&quot;m&quot;, input.box.grid_size...)
+    out = zeros(Amount, length(input.facies), input.box.grid_size...)
+    return () -&gt; for _ in 1:100
+        push!(state, deposit)
+        pop!(state, amount, out)
+    end
+end
+
+function main(; steps=1000, repeats=3)
+    states = Dict()
+    println(&quot;ALCAP, 100×50 grid, $(steps) steps, best of $(repeats)&quot;)
+    for (name, Input) in INPUTS
+        run(make_input(Input, 10))  # compile
+        input = make_input(Input, steps)
+        model = best_of(() -&gt; states[name] = run(input), repeats)
+        ops = best_of(buffer_ops(input, deepcopy(states[name])), repeats)
+        println(rpad(name, 10),
+            &quot;model run: &quot;, lpad(round(model.time; digits=2), 7), &quot; s  &quot;,
+            lpad(Base.format_bytes(model.bytes), 10), &quot;    &quot;,
+            &quot;100 × push+pop: &quot;, lpad(round(ops.time * 1000; digits=1), 7), &quot; ms  &quot;,
+            lpad(Base.format_bytes(ops.bytes), 10))
+    end
+
+    copying, circular = states[&quot;copying&quot;], states[&quot;circular&quot;]
+    same_thickness = copying.sediment_thickness ≈ circular.sediment_thickness
+    same_buffer = peek_sediment(copying, 50.0) ≈ peek_sediment(circular, 50.0)
+    println(&quot;same result: thickness $(same_thickness), buffer contents $(same_buffer)&quot;)
+end
+
+end
+
+BufferBenchmark.main()</code></pre><details><summary>CircularBuffers module</summary><div class="noweb-label">file:<i>src/Algorithms/CircularBuffers.jl</i></div><pre><code class="language- julia hljs">module CircularBuffers
+
+export CircularBuffer, push_sediment!, pop_sediment!, peek_sediment
+
+&lt;&lt;circular-buffer&gt;&gt;
+
+end # module</code></pre></details></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../copying_stack/">« Copying Stack</a><a class="docs-footer-nextpage" href="../../api/">API Documentation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 14:02">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

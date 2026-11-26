@@ -1,202 +1,238 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Initial Sediment · CarboKitten</title><meta name="title" content="Initial Sediment · CarboKitten"/><meta property="og:title" content="Initial Sediment · CarboKitten"/><meta property="twitter:title" content="Initial Sediment · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/documentercitations/citations-hover.css" rel="stylesheet" type="text/css"/><link href="../../assets/documentercitations/citations.css" rel="stylesheet" type="text/css"/><script src="../../assets/documentercitations/citations-data.js"></script><script src="../../assets/documentercitations/citations-hover.js"></script><script src="../../assets/documentercitations/citations-backlinks.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><a class="tocitem" href="../../getting-started/">Getting started</a></li><li><span class="tocitem">User Manual</span><ul><li><a class="tocitem" href="../../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../../production/production/">Production</a></li><li><a class="tocitem" href="../../analysis/">Analysis and Visualization</a></li><li><a class="tocitem" href="../../data-export/">Data Export</a></li><li><a class="tocitem" href="../../visualization/overview/">Visualization</a></li><li><a class="tocitem" href="../../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../../cases/variable-subsidence/">Variable Subsidence</a></li><li><a class="tocitem" href="../../initial-topography/">Initial Topography</a></li></ul></li><li><span class="tocitem">Production Models</span><ul><li><a class="tocitem" href="../../production/benthic/">Benthic Production</a></li><li><a class="tocitem" href="../../production/pelagic/">Pelagic Production</a></li><li><a class="tocitem" href="../../production/interpolated/">Interpolation</a></li><li><a class="tocitem" href="../../production/modifiers/">Modifiers</a></li></ul></li><li><span class="tocitem">Interface</span><ul><li><a class="tocitem" href="../../wavefield/">Wave fields</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../../output/abstract/">Data API</a></li><li><a class="tocitem" href="../../output/data/">Data Implementation</a></li><li><a class="tocitem" href="../../output/h5reader/">HDF5 Reader</a></li><li><a class="tocitem" href="../../output/h5writer/">HDF5 Writer</a></li><li><a class="tocitem" href="../../output/memory-writer/">Output to Memory</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="../../visualization/profiles/">Profiles</a></li><li><a class="tocitem" href="../../visualization/fence-diagrams/">Fence Diagram</a></li><li><a class="tocitem" href="../../visualization/topography/">Topography</a></li><li><a class="tocitem" href="../../visualization/">Other</a></li></ul></li><li><span class="tocitem">Developer</span><ul><li><a class="tocitem" href="../../CONTRIBUTING/">Contributing to this repository</a></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li></ul></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/">Components</a></li><li><a class="tocitem" href="../tag/">Tags</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../time/">Time</a></li><li><a class="tocitem" href="../output/">Output</a></li><li><a class="tocitem" href="../facies/">Facies</a></li><li><a class="tocitem" href="../cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../production/">Production</a></li><li><a class="tocitem" href="../sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li><li><a class="tocitem" href="../../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../../algorithms/stratigraphic_column/">Stratigraphic Column</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Initial Sediment</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Initial Sediment</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/components/initial_sediment.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Initial-Sediment"><a class="docs-heading-anchor" href="#Initial-Sediment">Initial Sediment</a><a id="Initial-Sediment-1"></a><a class="docs-heading-anchor-permalink" href="#Initial-Sediment" title="Permalink"></a></h1><div class="component-dag" style="overflow: scroll"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Initial Sediment · CarboKitten</title><meta name="title" content="Initial Sediment · CarboKitten"/><meta property="og:title" content="Initial Sediment · CarboKitten"/><meta property="twitter:title" content="Initial Sediment · CarboKitten"/><meta name="description" content="Documentation for CarboKitten."/><meta property="og:description" content="Documentation for CarboKitten."/><meta property="twitter:description" content="Documentation for CarboKitten."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/documentercitations/citations-hover.css" rel="stylesheet" type="text/css"/><link href="../../assets/documentercitations/citations.css" rel="stylesheet" type="text/css"/><script src="../../assets/documentercitations/citations-data.js"></script><script src="../../assets/documentercitations/citations-hover.js"></script><script src="../../assets/documentercitations/citations-backlinks.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="CarboKitten logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CarboKitten</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><a class="tocitem" href="../../getting-started/">Getting started</a></li><li><span class="tocitem">User Manual</span><ul><li><a class="tocitem" href="../../input-methods/">Input Methods</a></li><li><a class="tocitem" href="../../production/production/">Production</a></li><li><a class="tocitem" href="../../analysis/">Analysis and Visualization</a></li><li><a class="tocitem" href="../../data-export/">Data Export</a></li><li><a class="tocitem" href="../../visualization/overview/">Visualization</a></li><li><a class="tocitem" href="../../debugging/">Trouble shooting and diagnostics</a></li></ul></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../bosscher-1992/">Bosscher and Schlager 1992</a></li><li><a class="tocitem" href="../../models/ca-with-production/">Model with CA and Production</a></li><li><a class="tocitem" href="../../models/alcap/">ALCAPS</a></li><li><a class="tocitem" href="../../models/without-ca/">Model without CA</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../first_tutorial/">Tutorial (Pluto notebook)</a></li><li><a class="tocitem" href="../../cases/tabular-sea-level/">Tabular Sea Levels</a></li><li><a class="tocitem" href="../../cases/variable-subsidence/">Variable Subsidence</a></li><li><a class="tocitem" href="../../initial-topography/">Initial Topography</a></li></ul></li><li><span class="tocitem">Production Models</span><ul><li><a class="tocitem" href="../../production/benthic/">Benthic Production</a></li><li><a class="tocitem" href="../../production/pelagic/">Pelagic Production</a></li><li><a class="tocitem" href="../../production/interpolated/">Interpolation</a></li><li><a class="tocitem" href="../../production/modifiers/">Modifiers</a></li></ul></li><li><span class="tocitem">Interface</span><ul><li><a class="tocitem" href="../../wavefield/">Wave fields</a></li></ul></li><li><span class="tocitem">Input &amp; Output</span><ul><li><a class="tocitem" href="../../output/abstract/">Data API</a></li><li><a class="tocitem" href="../../output/data/">Data Implementation</a></li><li><a class="tocitem" href="../../output/h5reader/">HDF5 Reader</a></li><li><a class="tocitem" href="../../output/h5writer/">HDF5 Writer</a></li><li><a class="tocitem" href="../../output/memory-writer/">Output to Memory</a></li></ul></li><li><span class="tocitem">Visualizations</span><ul><li><a class="tocitem" href="../../visualization/profiles/">Profiles</a></li><li><a class="tocitem" href="../../visualization/fence-diagrams/">Fence Diagram</a></li><li><a class="tocitem" href="../../visualization/topography/">Topography</a></li><li><a class="tocitem" href="../../visualization/">Other</a></li></ul></li><li><span class="tocitem">Developer</span><ul><li><a class="tocitem" href="../../CONTRIBUTING/">Contributing to this repository</a></li><li><a class="tocitem" href="../../architecture/">Architecture</a></li></ul></li><li><span class="tocitem">Model Components</span><ul><li><a class="tocitem" href="../components/">Components</a></li><li><a class="tocitem" href="../tag/">Tags</a></li><li><a class="tocitem" href="../boxes/">Boxes</a></li><li><a class="tocitem" href="../time/">Time</a></li><li><a class="tocitem" href="../output/">Output</a></li><li><a class="tocitem" href="../facies/">Facies</a></li><li><a class="tocitem" href="../cellular-automata/">Cellular Automata</a></li><li><a class="tocitem" href="../waterdepth/">Water Depth</a></li><li><a class="tocitem" href="../production/">Production</a></li><li><a class="tocitem" href="../sediment_buffer/">Sediment Buffers</a></li><li><a class="tocitem" href="../../active-layer-transport/">Active Layer Transport</a></li><li><a class="tocitem" href="../../onshore-transport/">Onshore Transport</a></li></ul></li><li><span class="tocitem">Denudation</span><ul><li><a class="tocitem" href="../../denudation/denudation/">Denudation</a></li><li><a class="tocitem" href="../../denudation/empirical/">Empirical Denudation</a></li><li><a class="tocitem" href="../../denudation/chemical/">Chemical Dissolution</a></li><li><a class="tocitem" href="../../denudation/physical_erosion/">Physical Erosion</a></li></ul></li><li><span class="tocitem">Algorithms</span><ul><li><a class="tocitem" href="../../algorithms/overview/">Overview</a></li><li><a class="tocitem" href="../../unitful/">Unitful</a></li><li><a class="tocitem" href="../../boxes/">Boxes</a></li><li><a class="tocitem" href="../../stencils/">Stencils</a></li><li><a class="tocitem" href="../../utility/">Utility</a></li><li><a class="tocitem" href="../../algorithms/finite-difference-transport/">Finite Difference</a></li><li><a class="tocitem" href="../../algorithms/range_finder/">Range Finder</a></li><li><a class="tocitem" href="../../algorithms/enumerate_seq/">Nested Sequence Enumeration</a></li><li><a class="tocitem" href="../../algorithms/skeleton/">Skeleton</a></li><li><a class="tocitem" href="../../algorithms/stratigraphic_column/">Stratigraphic Column</a></li><li><a class="tocitem" href="../../algorithms/copying_stack/">Copying Stack</a></li><li><a class="tocitem" href="../../algorithms/circular_stack/">Circular Stack</a></li></ul></li><li><a class="tocitem" href="../../api/">API Documentation</a></li><li><a class="tocitem" href="../../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Initial Sediment</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Initial Sediment</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MindTheGap-ERC/CarboKitten.jl/blob/main/docs/transpiled/components/initial_sediment.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Initial-Sediment"><a class="docs-heading-anchor" href="#Initial-Sediment">Initial Sediment</a><a id="Initial-Sediment-1"></a><a class="docs-heading-anchor-permalink" href="#Initial-Sediment" title="Permalink"></a></h1><div class="component-dag" style="overflow: scroll"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Generated by graphviz version 15.1.0 (20260618.0150)
  -->
 <!-- Pages: 1 -->
-<svg width="480pt" height="521pt"
- viewBox="0.00 0.00 480.00 521.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="524pt" height="521pt"
+ viewBox="0.00 0.00 524.00 521.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 516.85)">
-<polygon fill="white" stroke="none" points="-4,4 -4,-516.85 475.9,-516.85 475.9,4 -4,4"/>
+<polygon fill="white" stroke="none" points="-4,4 -4,-516.85 519.9,-516.85 519.9,4 -4,4"/>
 <!-- FaciesBase -->
 <g id="node1" class="node">
 <title>FaciesBase</title>
-<path fill="none" stroke="black" d="M147.9,-370.45C147.9,-370.45 12,-370.45 12,-370.45 6,-370.45 0,-364.45 0,-358.45 0,-358.45 0,-296.8 0,-296.8 0,-290.8 6,-284.8 12,-284.8 12,-284.8 147.9,-284.8 147.9,-284.8 153.9,-284.8 159.9,-290.8 159.9,-296.8 159.9,-296.8 159.9,-358.45 159.9,-358.45 159.9,-364.45 153.9,-370.45 147.9,-370.45"/>
+<path fill="none" stroke="black" d="M147.9,-512.85C147.9,-512.85 12,-512.85 12,-512.85 6,-512.85 0,-506.85 0,-500.85 0,-500.85 0,-439.2 0,-439.2 0,-433.2 6,-427.2 12,-427.2 12,-427.2 147.9,-427.2 147.9,-427.2 153.9,-427.2 159.9,-433.2 159.9,-439.2 159.9,-439.2 159.9,-500.85 159.9,-500.85 159.9,-506.85 153.9,-512.85 147.9,-512.85"/>
 <g id="a_node1_0"><a xlink:title="FaciesBase">
-<polyline fill="none" stroke="black" points="7.2,-338 152.7,-338"/>
-<text xml:space="preserve" text-anchor="start" x="36.45" y="-346.95" font-family="Times,serif" font-weight="bold" font-size="14.00">FaciesBase</text>
-<polygon fill="#cccccc" stroke="none" points="7.2,-312.75 7.2,-338 53.45,-338 53.45,-312.75 7.2,-312.75"/>
-<polyline fill="none" stroke="black" points="7.2,-312.75 53.45,-312.75 53.45,-338 7.2,-338"/>
-<text xml:space="preserve" text-anchor="start" x="11.2" y="-320.5" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="none" points="53.45,-312.75 53.45,-338 106.45,-338 106.45,-312.75 53.45,-312.75"/>
-<polygon fill="none" stroke="black" points="53.45,-312.75 53.45,-338 106.45,-338 106.45,-312.75 53.45,-312.75"/>
-<text xml:space="preserve" text-anchor="start" x="57.45" y="-320.5" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="none" points="106.45,-312.75 106.45,-338 152.7,-338 152.7,-312.75 106.45,-312.75"/>
-<polyline fill="none" stroke="black" points="152.7,-338 106.45,-338 106.45,-312.75 152.7,-312.75"/>
-<text xml:space="preserve" text-anchor="start" x="110.45" y="-320.5" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="53.45,-292 53.45,-312.75"/>
-<text xml:space="preserve" text-anchor="start" x="11.2" y="-299" font-family="monospace" font-size="10.00">facies</text>
-<polyline fill="none" stroke="black" points="106.45,-292 106.45,-312.75"/>
-<text xml:space="preserve" text-anchor="start" x="57.45" y="-299" font-family="monospace" font-size="10.00">name</text>
-<text xml:space="preserve" text-anchor="start" x="109.45" y="-299" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="7.2,-480.4 152.7,-480.4"/>
+<text xml:space="preserve" text-anchor="start" x="36.45" y="-489.35" font-family="Times,serif" font-weight="bold" font-size="14.00">FaciesBase</text>
+<polygon fill="#cccccc" stroke="none" points="7.2,-455.15 7.2,-480.4 53.45,-480.4 53.45,-455.15 7.2,-455.15"/>
+<polyline fill="none" stroke="black" points="7.2,-455.15 53.45,-455.15 53.45,-480.4 7.2,-480.4"/>
+<text xml:space="preserve" text-anchor="start" x="11.2" y="-462.9" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="none" points="53.45,-455.15 53.45,-480.4 106.45,-480.4 106.45,-455.15 53.45,-455.15"/>
+<polygon fill="none" stroke="black" points="53.45,-455.15 53.45,-480.4 106.45,-480.4 106.45,-455.15 53.45,-455.15"/>
+<text xml:space="preserve" text-anchor="start" x="57.45" y="-462.9" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="none" points="106.45,-455.15 106.45,-480.4 152.7,-480.4 152.7,-455.15 106.45,-455.15"/>
+<polyline fill="none" stroke="black" points="152.7,-480.4 106.45,-480.4 106.45,-455.15 152.7,-455.15"/>
+<text xml:space="preserve" text-anchor="start" x="110.45" y="-462.9" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="53.45,-434.4 53.45,-455.15"/>
+<text xml:space="preserve" text-anchor="start" x="11.2" y="-441.4" font-family="monospace" font-size="10.00">facies</text>
+<polyline fill="none" stroke="black" points="106.45,-434.4 106.45,-455.15"/>
+<text xml:space="preserve" text-anchor="start" x="57.45" y="-441.4" font-family="monospace" font-size="10.00">name</text>
+<text xml:space="preserve" text-anchor="start" x="109.45" y="-441.4" font-family="monospace" font-size="10.00"> </text>
 </a>
 </g>
 </g>
-<!-- SedimentBuffer -->
+<!-- CopyingSedimentBuffer -->
 <g id="node5" class="node">
-<title>SedimentBuffer</title>
-<path fill="none" stroke="black" d="M342.65,-228.05C342.65,-228.05 39.25,-228.05 39.25,-228.05 33.25,-228.05 27.25,-222.05 27.25,-216.05 27.25,-216.05 27.25,-133.65 27.25,-133.65 27.25,-127.65 33.25,-121.65 39.25,-121.65 39.25,-121.65 342.65,-121.65 342.65,-121.65 348.65,-121.65 354.65,-127.65 354.65,-133.65 354.65,-133.65 354.65,-216.05 354.65,-216.05 354.65,-222.05 348.65,-228.05 342.65,-228.05"/>
-<g id="a_node5_1"><a xlink:title="SedimentBuffer">
-<polyline fill="none" stroke="black" points="34.45,-195.6 347.45,-195.6"/>
-<text xml:space="preserve" text-anchor="start" x="128.32" y="-204.55" font-family="Times,serif" font-weight="bold" font-size="14.00">SedimentBuffer</text>
-<polygon fill="#cccccc" stroke="none" points="34.45,-170.35 34.45,-195.6 180.45,-195.6 180.45,-170.35 34.45,-170.35"/>
-<polyline fill="none" stroke="black" points="34.45,-170.35 180.45,-170.35 180.45,-195.6 34.45,-195.6"/>
-<text xml:space="preserve" text-anchor="start" x="38.45" y="-178.1" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="none" points="180.45,-170.35 180.45,-195.6 233.45,-195.6 233.45,-170.35 180.45,-170.35"/>
-<polygon fill="none" stroke="black" points="180.45,-170.35 180.45,-195.6 233.45,-195.6 233.45,-170.35 180.45,-170.35"/>
-<text xml:space="preserve" text-anchor="start" x="184.45" y="-178.1" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="none" points="233.45,-170.35 233.45,-195.6 347.45,-195.6 347.45,-170.35 233.45,-170.35"/>
-<polyline fill="none" stroke="black" points="347.45,-195.6 233.45,-195.6 233.45,-170.35 347.45,-170.35"/>
-<text xml:space="preserve" text-anchor="start" x="237.45" y="-178.1" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="180.45,-149.6 180.45,-170.35"/>
-<text xml:space="preserve" text-anchor="start" x="38.45" y="-156.6" font-family="monospace" font-size="10.00">sediment_buffer_size</text>
-<polyline fill="none" stroke="black" points="233.45,-149.6 233.45,-170.35"/>
-<text xml:space="preserve" text-anchor="start" x="184.45" y="-156.6" font-family="monospace" font-size="10.00"> </text>
-<text xml:space="preserve" text-anchor="start" x="236.45" y="-156.6" font-family="monospace" font-size="10.00">sediment_buffer</text>
-<polyline fill="none" stroke="black" points="180.45,-128.85 180.45,-149.6"/>
-<text xml:space="preserve" text-anchor="start" x="38.45" y="-135.85" font-family="monospace" font-size="10.00">depositional_resolution</text>
-<polyline fill="none" stroke="black" points="233.45,-128.85 233.45,-149.6"/>
-<text xml:space="preserve" text-anchor="start" x="184.45" y="-135.85" font-family="monospace" font-size="10.00"> </text>
-<text xml:space="preserve" text-anchor="start" x="236.45" y="-135.85" font-family="monospace" font-size="10.00">sediment_thickness</text>
+<title>CopyingSedimentBuffer</title>
+<path fill="none" stroke="black" d="M227.65,-370.45C227.65,-370.45 40.25,-370.45 40.25,-370.45 34.25,-370.45 28.25,-364.45 28.25,-358.45 28.25,-358.45 28.25,-296.8 28.25,-296.8 28.25,-290.8 34.25,-284.8 40.25,-284.8 40.25,-284.8 227.65,-284.8 227.65,-284.8 233.65,-284.8 239.65,-290.8 239.65,-296.8 239.65,-296.8 239.65,-358.45 239.65,-358.45 239.65,-364.45 233.65,-370.45 227.65,-370.45"/>
+<g id="a_node5_1"><a xlink:title="CopyingSedimentBuffer">
+<polyline fill="none" stroke="black" points="35.45,-338 232.45,-338"/>
+<text xml:space="preserve" text-anchor="start" x="39.45" y="-346.95" font-family="Times,serif" font-weight="bold" font-size="14.00">CopyingSedimentBuffer</text>
+<polygon fill="#cccccc" stroke="none" points="35.45,-312.75 35.45,-338 82.28,-338 82.28,-312.75 35.45,-312.75"/>
+<polyline fill="none" stroke="black" points="35.45,-312.75 82.28,-312.75 82.28,-338 35.45,-338"/>
+<text xml:space="preserve" text-anchor="start" x="39.45" y="-320.5" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="none" points="82.28,-312.75 82.28,-338 135.87,-338 135.87,-312.75 82.28,-312.75"/>
+<polygon fill="none" stroke="black" points="82.28,-312.75 82.28,-338 135.87,-338 135.87,-312.75 82.28,-312.75"/>
+<text xml:space="preserve" text-anchor="start" x="86.28" y="-320.5" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="none" points="135.87,-312.75 135.87,-338 232.45,-338 232.45,-312.75 135.87,-312.75"/>
+<polyline fill="none" stroke="black" points="232.45,-338 135.87,-338 135.87,-312.75 232.45,-312.75"/>
+<text xml:space="preserve" text-anchor="start" x="139.87" y="-320.5" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="82.28,-292 82.28,-312.75"/>
+<text xml:space="preserve" text-anchor="start" x="39.45" y="-299" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="135.87,-292 135.87,-312.75"/>
+<text xml:space="preserve" text-anchor="start" x="86.28" y="-299" font-family="monospace" font-size="10.00"> </text>
+<text xml:space="preserve" text-anchor="start" x="138.87" y="-299" font-family="monospace" font-size="10.00">sediment_buffer</text>
 </a>
 </g>
 </g>
-<!-- FaciesBase&#45;&gt;SedimentBuffer -->
-<g id="edge3" class="edge">
-<title>FaciesBase&#45;&gt;SedimentBuffer</title>
-<path fill="none" stroke="black" d="M110.87,-284.63C121.59,-270.06 133.85,-253.41 145.5,-237.58"/>
-<polygon fill="black" stroke="black" points="148.27,-239.73 151.38,-229.6 142.63,-235.58 148.27,-239.73"/>
+<!-- FaciesBase&#45;&gt;CopyingSedimentBuffer -->
+<g id="edge4" class="edge">
+<title>FaciesBase&#45;&gt;CopyingSedimentBuffer</title>
+<path fill="none" stroke="black" d="M96.15,-426.9C101.65,-412.6 107.87,-396.44 113.65,-381.42"/>
+<polygon fill="black" stroke="black" points="116.89,-382.72 117.22,-372.13 110.36,-380.21 116.89,-382.72"/>
 </g>
 <!-- TimeIntegration -->
 <g id="node2" class="node">
 <title>TimeIntegration</title>
-<path fill="none" stroke="black" d="M281.9,-512.85C281.9,-512.85 146,-512.85 146,-512.85 140,-512.85 134,-506.85 134,-500.85 134,-500.85 134,-439.2 134,-439.2 134,-433.2 140,-427.2 146,-427.2 146,-427.2 281.9,-427.2 281.9,-427.2 287.9,-427.2 293.9,-433.2 293.9,-439.2 293.9,-439.2 293.9,-500.85 293.9,-500.85 293.9,-506.85 287.9,-512.85 281.9,-512.85"/>
+<path fill="none" stroke="black" d="M503.9,-512.85C503.9,-512.85 368,-512.85 368,-512.85 362,-512.85 356,-506.85 356,-500.85 356,-500.85 356,-439.2 356,-439.2 356,-433.2 362,-427.2 368,-427.2 368,-427.2 503.9,-427.2 503.9,-427.2 509.9,-427.2 515.9,-433.2 515.9,-439.2 515.9,-439.2 515.9,-500.85 515.9,-500.85 515.9,-506.85 509.9,-512.85 503.9,-512.85"/>
 <g id="a_node2_2"><a xlink:title="TimeIntegration">
-<polyline fill="none" stroke="black" points="141.2,-480.4 286.7,-480.4"/>
-<text xml:space="preserve" text-anchor="start" x="148.7" y="-489.35" font-family="Times,serif" font-weight="bold" font-size="14.00">TimeIntegration</text>
-<polygon fill="#cccccc" stroke="none" points="141.2,-455.15 141.2,-480.4 187.45,-480.4 187.45,-455.15 141.2,-455.15"/>
-<polyline fill="none" stroke="black" points="141.2,-455.15 187.45,-455.15 187.45,-480.4 141.2,-480.4"/>
-<text xml:space="preserve" text-anchor="start" x="145.2" y="-462.9" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="none" points="187.45,-455.15 187.45,-480.4 240.45,-480.4 240.45,-455.15 187.45,-455.15"/>
-<polygon fill="none" stroke="black" points="187.45,-455.15 187.45,-480.4 240.45,-480.4 240.45,-455.15 187.45,-455.15"/>
-<text xml:space="preserve" text-anchor="start" x="191.45" y="-462.9" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="none" points="240.45,-455.15 240.45,-480.4 286.7,-480.4 286.7,-455.15 240.45,-455.15"/>
-<polyline fill="none" stroke="black" points="286.7,-480.4 240.45,-480.4 240.45,-455.15 286.7,-455.15"/>
-<text xml:space="preserve" text-anchor="start" x="244.45" y="-462.9" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="187.45,-434.4 187.45,-455.15"/>
-<text xml:space="preserve" text-anchor="start" x="145.2" y="-441.4" font-family="monospace" font-size="10.00">time</text>
-<polyline fill="none" stroke="black" points="240.45,-434.4 240.45,-455.15"/>
-<text xml:space="preserve" text-anchor="start" x="191.45" y="-441.4" font-family="monospace" font-size="10.00"> </text>
-<text xml:space="preserve" text-anchor="start" x="243.45" y="-441.4" font-family="monospace" font-size="10.00">step</text>
+<polyline fill="none" stroke="black" points="363.2,-480.4 508.7,-480.4"/>
+<text xml:space="preserve" text-anchor="start" x="370.7" y="-489.35" font-family="Times,serif" font-weight="bold" font-size="14.00">TimeIntegration</text>
+<polygon fill="#cccccc" stroke="none" points="363.2,-455.15 363.2,-480.4 409.45,-480.4 409.45,-455.15 363.2,-455.15"/>
+<polyline fill="none" stroke="black" points="363.2,-455.15 409.45,-455.15 409.45,-480.4 363.2,-480.4"/>
+<text xml:space="preserve" text-anchor="start" x="367.2" y="-462.9" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="none" points="409.45,-455.15 409.45,-480.4 462.45,-480.4 462.45,-455.15 409.45,-455.15"/>
+<polygon fill="none" stroke="black" points="409.45,-455.15 409.45,-480.4 462.45,-480.4 462.45,-455.15 409.45,-455.15"/>
+<text xml:space="preserve" text-anchor="start" x="413.45" y="-462.9" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="none" points="462.45,-455.15 462.45,-480.4 508.7,-480.4 508.7,-455.15 462.45,-455.15"/>
+<polyline fill="none" stroke="black" points="508.7,-480.4 462.45,-480.4 462.45,-455.15 508.7,-455.15"/>
+<text xml:space="preserve" text-anchor="start" x="466.45" y="-462.9" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="409.45,-434.4 409.45,-455.15"/>
+<text xml:space="preserve" text-anchor="start" x="367.2" y="-441.4" font-family="monospace" font-size="10.00">time</text>
+<polyline fill="none" stroke="black" points="462.45,-434.4 462.45,-455.15"/>
+<text xml:space="preserve" text-anchor="start" x="413.45" y="-441.4" font-family="monospace" font-size="10.00"> </text>
+<text xml:space="preserve" text-anchor="start" x="465.45" y="-441.4" font-family="monospace" font-size="10.00">step</text>
 </a>
 </g>
 </g>
 <!-- WaterDepth -->
 <g id="node4" class="node">
 <title>WaterDepth</title>
-<path fill="none" stroke="black" d="M415.65,-391.2C415.65,-391.2 190.25,-391.2 190.25,-391.2 184.25,-391.2 178.25,-385.2 178.25,-379.2 178.25,-379.2 178.25,-276.05 178.25,-276.05 178.25,-270.05 184.25,-264.05 190.25,-264.05 190.25,-264.05 415.65,-264.05 415.65,-264.05 421.65,-264.05 427.65,-270.05 427.65,-276.05 427.65,-276.05 427.65,-379.2 427.65,-379.2 427.65,-385.2 421.65,-391.2 415.65,-391.2"/>
+<path fill="none" stroke="black" d="M494.65,-391.2C494.65,-391.2 269.25,-391.2 269.25,-391.2 263.25,-391.2 257.25,-385.2 257.25,-379.2 257.25,-379.2 257.25,-276.05 257.25,-276.05 257.25,-270.05 263.25,-264.05 269.25,-264.05 269.25,-264.05 494.65,-264.05 494.65,-264.05 500.65,-264.05 506.65,-270.05 506.65,-276.05 506.65,-276.05 506.65,-379.2 506.65,-379.2 506.65,-385.2 500.65,-391.2 494.65,-391.2"/>
 <g id="a_node4_3"><a xlink:title="WaterDepth">
-<polyline fill="none" stroke="black" points="185.45,-358.75 420.45,-358.75"/>
-<text xml:space="preserve" text-anchor="start" x="255.7" y="-367.7" font-family="Times,serif" font-weight="bold" font-size="14.00">WaterDepth</text>
-<polygon fill="#cccccc" stroke="none" points="185.45,-333.5 185.45,-358.75 301.45,-358.75 301.45,-333.5 185.45,-333.5"/>
-<polyline fill="none" stroke="black" points="185.45,-333.5 301.45,-333.5 301.45,-358.75 185.45,-358.75"/>
-<text xml:space="preserve" text-anchor="start" x="189.45" y="-341.25" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="none" points="301.45,-333.5 301.45,-358.75 354.45,-358.75 354.45,-333.5 301.45,-333.5"/>
-<polygon fill="none" stroke="black" points="301.45,-333.5 301.45,-358.75 354.45,-358.75 354.45,-333.5 301.45,-333.5"/>
-<text xml:space="preserve" text-anchor="start" x="305.45" y="-341.25" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="none" points="354.45,-333.5 354.45,-358.75 420.45,-358.75 420.45,-333.5 354.45,-333.5"/>
-<polyline fill="none" stroke="black" points="420.45,-358.75 354.45,-358.75 354.45,-333.5 420.45,-333.5"/>
-<text xml:space="preserve" text-anchor="start" x="358.45" y="-341.25" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="301.45,-312.75 301.45,-333.5"/>
-<text xml:space="preserve" text-anchor="start" x="189.45" y="-319.75" font-family="monospace" font-size="10.00">sea_level</text>
-<polyline fill="none" stroke="black" points="354.45,-312.75 354.45,-333.5"/>
-<text xml:space="preserve" text-anchor="start" x="305.45" y="-319.75" font-family="monospace" font-size="10.00"> </text>
-<text xml:space="preserve" text-anchor="start" x="357.45" y="-319.75" font-family="monospace" font-size="10.00">bathymetry</text>
-<polyline fill="none" stroke="black" points="301.45,-292 301.45,-312.75"/>
-<text xml:space="preserve" text-anchor="start" x="189.45" y="-299" font-family="monospace" font-size="10.00">initial_topography</text>
-<polyline fill="none" stroke="black" points="354.45,-292 354.45,-312.75"/>
-<text xml:space="preserve" text-anchor="start" x="305.45" y="-299" font-family="monospace" font-size="10.00"> </text>
-<text xml:space="preserve" text-anchor="start" x="357.45" y="-299" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="301.45,-271.25 301.45,-292"/>
-<text xml:space="preserve" text-anchor="start" x="189.45" y="-278.25" font-family="monospace" font-size="10.00">subsidence_rate</text>
-<polyline fill="none" stroke="black" points="354.45,-271.25 354.45,-292"/>
-<text xml:space="preserve" text-anchor="start" x="305.45" y="-278.25" font-family="monospace" font-size="10.00"> </text>
-<text xml:space="preserve" text-anchor="start" x="357.45" y="-278.25" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="264.45,-358.75 499.45,-358.75"/>
+<text xml:space="preserve" text-anchor="start" x="334.7" y="-367.7" font-family="Times,serif" font-weight="bold" font-size="14.00">WaterDepth</text>
+<polygon fill="#cccccc" stroke="none" points="264.45,-333.5 264.45,-358.75 380.45,-358.75 380.45,-333.5 264.45,-333.5"/>
+<polyline fill="none" stroke="black" points="264.45,-333.5 380.45,-333.5 380.45,-358.75 264.45,-358.75"/>
+<text xml:space="preserve" text-anchor="start" x="268.45" y="-341.25" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="none" points="380.45,-333.5 380.45,-358.75 433.45,-358.75 433.45,-333.5 380.45,-333.5"/>
+<polygon fill="none" stroke="black" points="380.45,-333.5 380.45,-358.75 433.45,-358.75 433.45,-333.5 380.45,-333.5"/>
+<text xml:space="preserve" text-anchor="start" x="384.45" y="-341.25" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="none" points="433.45,-333.5 433.45,-358.75 499.45,-358.75 499.45,-333.5 433.45,-333.5"/>
+<polyline fill="none" stroke="black" points="499.45,-358.75 433.45,-358.75 433.45,-333.5 499.45,-333.5"/>
+<text xml:space="preserve" text-anchor="start" x="437.45" y="-341.25" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="380.45,-312.75 380.45,-333.5"/>
+<text xml:space="preserve" text-anchor="start" x="268.45" y="-319.75" font-family="monospace" font-size="10.00">sea_level</text>
+<polyline fill="none" stroke="black" points="433.45,-312.75 433.45,-333.5"/>
+<text xml:space="preserve" text-anchor="start" x="384.45" y="-319.75" font-family="monospace" font-size="10.00"> </text>
+<text xml:space="preserve" text-anchor="start" x="436.45" y="-319.75" font-family="monospace" font-size="10.00">bathymetry</text>
+<polyline fill="none" stroke="black" points="380.45,-292 380.45,-312.75"/>
+<text xml:space="preserve" text-anchor="start" x="268.45" y="-299" font-family="monospace" font-size="10.00">initial_topography</text>
+<polyline fill="none" stroke="black" points="433.45,-292 433.45,-312.75"/>
+<text xml:space="preserve" text-anchor="start" x="384.45" y="-299" font-family="monospace" font-size="10.00"> </text>
+<text xml:space="preserve" text-anchor="start" x="436.45" y="-299" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="380.45,-271.25 380.45,-292"/>
+<text xml:space="preserve" text-anchor="start" x="268.45" y="-278.25" font-family="monospace" font-size="10.00">subsidence_rate</text>
+<polyline fill="none" stroke="black" points="433.45,-271.25 433.45,-292"/>
+<text xml:space="preserve" text-anchor="start" x="384.45" y="-278.25" font-family="monospace" font-size="10.00"> </text>
+<text xml:space="preserve" text-anchor="start" x="436.45" y="-278.25" font-family="monospace" font-size="10.00"> </text>
 </a>
 </g>
 </g>
 <!-- TimeIntegration&#45;&gt;WaterDepth -->
 <g id="edge1" class="edge">
 <title>TimeIntegration&#45;&gt;WaterDepth</title>
-<path fill="none" stroke="black" d="M240.65,-426.9C245.84,-418.71 251.42,-409.92 257.02,-401.08"/>
-<polygon fill="black" stroke="black" points="259.89,-403.09 262.29,-392.77 253.98,-399.34 259.89,-403.09"/>
+<path fill="none" stroke="black" d="M419.75,-426.9C416.73,-419.06 413.5,-410.67 410.25,-402.2"/>
+<polygon fill="black" stroke="black" points="413.53,-400.98 406.67,-392.9 406.99,-403.49 413.53,-400.98"/>
 </g>
 <!-- Boxes -->
 <g id="node3" class="node">
 <title>Boxes</title>
-<path fill="none" stroke="black" d="M459.9,-512.85C459.9,-512.85 324,-512.85 324,-512.85 318,-512.85 312,-506.85 312,-500.85 312,-500.85 312,-439.2 312,-439.2 312,-433.2 318,-427.2 324,-427.2 324,-427.2 459.9,-427.2 459.9,-427.2 465.9,-427.2 471.9,-433.2 471.9,-439.2 471.9,-439.2 471.9,-500.85 471.9,-500.85 471.9,-506.85 465.9,-512.85 459.9,-512.85"/>
+<path fill="none" stroke="black" d="M325.9,-512.85C325.9,-512.85 190,-512.85 190,-512.85 184,-512.85 178,-506.85 178,-500.85 178,-500.85 178,-439.2 178,-439.2 178,-433.2 184,-427.2 190,-427.2 190,-427.2 325.9,-427.2 325.9,-427.2 331.9,-427.2 337.9,-433.2 337.9,-439.2 337.9,-439.2 337.9,-500.85 337.9,-500.85 337.9,-506.85 331.9,-512.85 325.9,-512.85"/>
 <g id="a_node3_4"><a xlink:title="Boxes">
-<polyline fill="none" stroke="black" points="319.2,-480.4 464.7,-480.4"/>
-<text xml:space="preserve" text-anchor="start" x="368.7" y="-489.35" font-family="Times,serif" font-weight="bold" font-size="14.00">Boxes</text>
-<polygon fill="#cccccc" stroke="none" points="319.2,-455.15 319.2,-480.4 365.45,-480.4 365.45,-455.15 319.2,-455.15"/>
-<polyline fill="none" stroke="black" points="319.2,-455.15 365.45,-455.15 365.45,-480.4 319.2,-480.4"/>
-<text xml:space="preserve" text-anchor="start" x="323.2" y="-462.9" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="none" points="365.45,-455.15 365.45,-480.4 418.45,-480.4 418.45,-455.15 365.45,-455.15"/>
-<polygon fill="none" stroke="black" points="365.45,-455.15 365.45,-480.4 418.45,-480.4 418.45,-455.15 365.45,-455.15"/>
-<text xml:space="preserve" text-anchor="start" x="369.45" y="-462.9" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="none" points="418.45,-455.15 418.45,-480.4 464.7,-480.4 464.7,-455.15 418.45,-455.15"/>
-<polyline fill="none" stroke="black" points="464.7,-480.4 418.45,-480.4 418.45,-455.15 464.7,-455.15"/>
-<text xml:space="preserve" text-anchor="start" x="422.45" y="-462.9" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="365.45,-434.4 365.45,-455.15"/>
-<text xml:space="preserve" text-anchor="start" x="323.2" y="-441.4" font-family="monospace" font-size="10.00">box</text>
-<polyline fill="none" stroke="black" points="418.45,-434.4 418.45,-455.15"/>
-<text xml:space="preserve" text-anchor="start" x="369.45" y="-441.4" font-family="monospace" font-size="10.00"> </text>
-<text xml:space="preserve" text-anchor="start" x="421.45" y="-441.4" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="185.2,-480.4 330.7,-480.4"/>
+<text xml:space="preserve" text-anchor="start" x="234.7" y="-489.35" font-family="Times,serif" font-weight="bold" font-size="14.00">Boxes</text>
+<polygon fill="#cccccc" stroke="none" points="185.2,-455.15 185.2,-480.4 231.45,-480.4 231.45,-455.15 185.2,-455.15"/>
+<polyline fill="none" stroke="black" points="185.2,-455.15 231.45,-455.15 231.45,-480.4 185.2,-480.4"/>
+<text xml:space="preserve" text-anchor="start" x="189.2" y="-462.9" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="none" points="231.45,-455.15 231.45,-480.4 284.45,-480.4 284.45,-455.15 231.45,-455.15"/>
+<polygon fill="none" stroke="black" points="231.45,-455.15 231.45,-480.4 284.45,-480.4 284.45,-455.15 231.45,-455.15"/>
+<text xml:space="preserve" text-anchor="start" x="235.45" y="-462.9" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="none" points="284.45,-455.15 284.45,-480.4 330.7,-480.4 330.7,-455.15 284.45,-455.15"/>
+<polyline fill="none" stroke="black" points="330.7,-480.4 284.45,-480.4 284.45,-455.15 330.7,-455.15"/>
+<text xml:space="preserve" text-anchor="start" x="288.45" y="-462.9" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="231.45,-434.4 231.45,-455.15"/>
+<text xml:space="preserve" text-anchor="start" x="189.2" y="-441.4" font-family="monospace" font-size="10.00">box</text>
+<polyline fill="none" stroke="black" points="284.45,-434.4 284.45,-455.15"/>
+<text xml:space="preserve" text-anchor="start" x="235.45" y="-441.4" font-family="monospace" font-size="10.00"> </text>
+<text xml:space="preserve" text-anchor="start" x="287.45" y="-441.4" font-family="monospace" font-size="10.00"> </text>
 </a>
 </g>
 </g>
 <!-- Boxes&#45;&gt;WaterDepth -->
 <g id="edge2" class="edge">
 <title>Boxes&#45;&gt;WaterDepth</title>
-<path fill="none" stroke="black" d="M365.25,-426.9C360.06,-418.71 354.48,-409.92 348.88,-401.08"/>
-<polygon fill="black" stroke="black" points="351.92,-399.34 343.61,-392.77 346.01,-403.09 351.92,-399.34"/>
+<path fill="none" stroke="black" d="M295.15,-426.9C302.69,-418.37 310.81,-409.17 318.96,-399.95"/>
+<polygon fill="black" stroke="black" points="321.43,-402.43 325.43,-392.62 316.19,-397.8 321.43,-402.43"/>
+</g>
+<!-- Boxes&#45;&gt;CopyingSedimentBuffer -->
+<g id="edge3" class="edge">
+<title>Boxes&#45;&gt;CopyingSedimentBuffer</title>
+<path fill="none" stroke="black" d="M220.75,-426.9C207.5,-411.91 192.45,-394.87 178.65,-379.24"/>
+<polygon fill="black" stroke="black" points="181.37,-377.03 172.13,-371.85 176.13,-381.67 181.37,-377.03"/>
+</g>
+<!-- SedimentBuffer -->
+<g id="node6" class="node">
+<title>SedimentBuffer</title>
+<path fill="none" stroke="black" d="M409.65,-228.05C409.65,-228.05 106.25,-228.05 106.25,-228.05 100.25,-228.05 94.25,-222.05 94.25,-216.05 94.25,-216.05 94.25,-133.65 94.25,-133.65 94.25,-127.65 100.25,-121.65 106.25,-121.65 106.25,-121.65 409.65,-121.65 409.65,-121.65 415.65,-121.65 421.65,-127.65 421.65,-133.65 421.65,-133.65 421.65,-216.05 421.65,-216.05 421.65,-222.05 415.65,-228.05 409.65,-228.05"/>
+<g id="a_node6_5"><a xlink:title="SedimentBuffer">
+<polyline fill="none" stroke="black" points="101.45,-195.6 414.45,-195.6"/>
+<text xml:space="preserve" text-anchor="start" x="195.32" y="-204.55" font-family="Times,serif" font-weight="bold" font-size="14.00">SedimentBuffer</text>
+<polygon fill="#cccccc" stroke="none" points="101.45,-170.35 101.45,-195.6 247.45,-195.6 247.45,-170.35 101.45,-170.35"/>
+<polyline fill="none" stroke="black" points="101.45,-170.35 247.45,-170.35 247.45,-195.6 101.45,-195.6"/>
+<text xml:space="preserve" text-anchor="start" x="105.45" y="-178.1" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="none" points="247.45,-170.35 247.45,-195.6 300.45,-195.6 300.45,-170.35 247.45,-170.35"/>
+<polygon fill="none" stroke="black" points="247.45,-170.35 247.45,-195.6 300.45,-195.6 300.45,-170.35 247.45,-170.35"/>
+<text xml:space="preserve" text-anchor="start" x="251.45" y="-178.1" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="none" points="300.45,-170.35 300.45,-195.6 414.45,-195.6 414.45,-170.35 300.45,-170.35"/>
+<polyline fill="none" stroke="black" points="414.45,-195.6 300.45,-195.6 300.45,-170.35 414.45,-170.35"/>
+<text xml:space="preserve" text-anchor="start" x="304.45" y="-178.1" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="247.45,-149.6 247.45,-170.35"/>
+<text xml:space="preserve" text-anchor="start" x="105.45" y="-156.6" font-family="monospace" font-size="10.00">sediment_buffer_size</text>
+<polyline fill="none" stroke="black" points="300.45,-149.6 300.45,-170.35"/>
+<text xml:space="preserve" text-anchor="start" x="251.45" y="-156.6" font-family="monospace" font-size="10.00"> </text>
+<text xml:space="preserve" text-anchor="start" x="303.45" y="-156.6" font-family="monospace" font-size="10.00">sediment_thickness</text>
+<polyline fill="none" stroke="black" points="247.45,-128.85 247.45,-149.6"/>
+<text xml:space="preserve" text-anchor="start" x="105.45" y="-135.85" font-family="monospace" font-size="10.00">depositional_resolution</text>
+<polyline fill="none" stroke="black" points="300.45,-128.85 300.45,-149.6"/>
+<text xml:space="preserve" text-anchor="start" x="251.45" y="-135.85" font-family="monospace" font-size="10.00"> </text>
+<text xml:space="preserve" text-anchor="start" x="303.45" y="-135.85" font-family="monospace" font-size="10.00"> </text>
+</a>
+</g>
 </g>
 <!-- WaterDepth&#45;&gt;SedimentBuffer -->
-<g id="edge4" class="edge">
+<g id="edge5" class="edge">
 <title>WaterDepth&#45;&gt;SedimentBuffer</title>
-<path fill="none" stroke="black" d="M256.1,-263.56C249.67,-254.9 243.08,-246.03 236.67,-237.41"/>
-<polygon fill="black" stroke="black" points="239.49,-235.32 230.72,-229.38 233.87,-239.5 239.49,-235.32"/>
+<path fill="none" stroke="black" d="M330.08,-263.56C322.81,-254.72 315.36,-245.65 308.12,-236.86"/>
+<polygon fill="black" stroke="black" points="310.99,-234.84 301.94,-229.34 305.59,-239.28 310.99,-234.84"/>
+</g>
+<!-- CopyingSedimentBuffer&#45;&gt;SedimentBuffer -->
+<g id="edge6" class="edge">
+<title>CopyingSedimentBuffer&#45;&gt;SedimentBuffer</title>
+<path fill="none" stroke="black" d="M168.49,-284.63C180.58,-269.92 194.42,-253.09 207.54,-237.14"/>
+<polygon fill="black" stroke="black" points="210.13,-239.5 213.78,-229.55 204.73,-235.05 210.13,-239.5"/>
 </g>
 <!-- InitialSediment -->
-<g id="node6" class="node">
+<g id="node7" class="node">
 <title>InitialSediment</title>
-<path fill="none" stroke="black" d="M284.4,-85.65C284.4,-85.65 97.5,-85.65 97.5,-85.65 91.5,-85.65 85.5,-79.65 85.5,-73.65 85.5,-73.65 85.5,-12 85.5,-12 85.5,-6 91.5,0 97.5,0 97.5,0 284.4,0 284.4,0 290.4,0 296.4,-6 296.4,-12 296.4,-12 296.4,-73.65 296.4,-73.65 296.4,-79.65 290.4,-85.65 284.4,-85.65"/>
-<g id="a_node6_5"><a xlink:title="InitialSediment">
-<polyline fill="none" stroke="black" points="92.7,-53.2 289.2,-53.2"/>
-<text xml:space="preserve" text-anchor="start" x="129.07" y="-62.15" font-family="Times,serif" font-weight="bold" font-size="14.00">InitialSediment</text>
-<polygon fill="#cccccc" stroke="none" points="92.7,-27.95 92.7,-53.2 138.95,-53.2 138.95,-27.95 92.7,-27.95"/>
-<polyline fill="none" stroke="black" points="92.7,-27.95 138.95,-27.95 138.95,-53.2 92.7,-53.2"/>
-<text xml:space="preserve" text-anchor="start" x="96.7" y="-35.7" font-family="Times,serif" font-size="14.00">Input</text>
-<polygon fill="#cccccc" stroke="none" points="138.95,-27.95 138.95,-53.2 242.95,-53.2 242.95,-27.95 138.95,-27.95"/>
-<polygon fill="none" stroke="black" points="138.95,-27.95 138.95,-53.2 242.95,-53.2 242.95,-27.95 138.95,-27.95"/>
-<text xml:space="preserve" text-anchor="start" x="142.95" y="-35.7" font-family="Times,serif" font-size="14.00">Facies</text>
-<polygon fill="#cccccc" stroke="none" points="242.95,-27.95 242.95,-53.2 289.2,-53.2 289.2,-27.95 242.95,-27.95"/>
-<polyline fill="none" stroke="black" points="289.2,-53.2 242.95,-53.2 242.95,-27.95 289.2,-27.95"/>
-<text xml:space="preserve" text-anchor="start" x="246.95" y="-35.7" font-family="Times,serif" font-size="14.00">State</text>
-<polyline fill="none" stroke="black" points="138.95,-7.2 138.95,-27.95"/>
-<text xml:space="preserve" text-anchor="start" x="96.7" y="-14.2" font-family="monospace" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="242.95,-7.2 242.95,-27.95"/>
-<text xml:space="preserve" text-anchor="start" x="142.95" y="-14.2" font-family="monospace" font-size="10.00">initial_sediment</text>
-<text xml:space="preserve" text-anchor="start" x="245.95" y="-14.2" font-family="monospace" font-size="10.00"> </text>
+<path fill="none" stroke="black" d="M351.4,-85.65C351.4,-85.65 164.5,-85.65 164.5,-85.65 158.5,-85.65 152.5,-79.65 152.5,-73.65 152.5,-73.65 152.5,-12 152.5,-12 152.5,-6 158.5,0 164.5,0 164.5,0 351.4,0 351.4,0 357.4,0 363.4,-6 363.4,-12 363.4,-12 363.4,-73.65 363.4,-73.65 363.4,-79.65 357.4,-85.65 351.4,-85.65"/>
+<g id="a_node7_6"><a xlink:title="InitialSediment">
+<polyline fill="none" stroke="black" points="159.7,-53.2 356.2,-53.2"/>
+<text xml:space="preserve" text-anchor="start" x="196.07" y="-62.15" font-family="Times,serif" font-weight="bold" font-size="14.00">InitialSediment</text>
+<polygon fill="#cccccc" stroke="none" points="159.7,-27.95 159.7,-53.2 205.95,-53.2 205.95,-27.95 159.7,-27.95"/>
+<polyline fill="none" stroke="black" points="159.7,-27.95 205.95,-27.95 205.95,-53.2 159.7,-53.2"/>
+<text xml:space="preserve" text-anchor="start" x="163.7" y="-35.7" font-family="Times,serif" font-size="14.00">Input</text>
+<polygon fill="#cccccc" stroke="none" points="205.95,-27.95 205.95,-53.2 309.95,-53.2 309.95,-27.95 205.95,-27.95"/>
+<polygon fill="none" stroke="black" points="205.95,-27.95 205.95,-53.2 309.95,-53.2 309.95,-27.95 205.95,-27.95"/>
+<text xml:space="preserve" text-anchor="start" x="209.95" y="-35.7" font-family="Times,serif" font-size="14.00">Facies</text>
+<polygon fill="#cccccc" stroke="none" points="309.95,-27.95 309.95,-53.2 356.2,-53.2 356.2,-27.95 309.95,-27.95"/>
+<polyline fill="none" stroke="black" points="356.2,-53.2 309.95,-53.2 309.95,-27.95 356.2,-27.95"/>
+<text xml:space="preserve" text-anchor="start" x="313.95" y="-35.7" font-family="Times,serif" font-size="14.00">State</text>
+<polyline fill="none" stroke="black" points="205.95,-7.2 205.95,-27.95"/>
+<text xml:space="preserve" text-anchor="start" x="163.7" y="-14.2" font-family="monospace" font-size="10.00"> </text>
+<polyline fill="none" stroke="black" points="309.95,-7.2 309.95,-27.95"/>
+<text xml:space="preserve" text-anchor="start" x="209.95" y="-14.2" font-family="monospace" font-size="10.00">initial_sediment</text>
+<text xml:space="preserve" text-anchor="start" x="312.95" y="-14.2" font-family="monospace" font-size="10.00"> </text>
 </a>
 </g>
 </g>
 <!-- SedimentBuffer&#45;&gt;InitialSediment -->
-<g id="edge5" class="edge">
+<g id="edge7" class="edge">
 <title>SedimentBuffer&#45;&gt;InitialSediment</title>
-<path fill="none" stroke="black" d="M190.95,-121.34C190.95,-113.48 190.95,-105.36 190.95,-97.48"/>
-<polygon fill="black" stroke="black" points="194.45,-97.66 190.95,-87.66 187.45,-97.66 194.45,-97.66"/>
+<path fill="none" stroke="black" d="M257.95,-121.34C257.95,-113.48 257.95,-105.36 257.95,-97.48"/>
+<polygon fill="black" stroke="black" points="261.45,-97.66 257.95,-87.66 254.45,-97.66 261.45,-97.66"/>
 </g>
 </g>
 </svg>
@@ -240,34 +276,25 @@ end
 function push_initial_sediment!(input::AbstractInput, state::AbstractState)
     s = stack(initial_sediment(input.box, f) for f in input.facies; dims=1)
     push_sediment(input)(state, s)
-end</code></pre><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><div class="noweb-label">file:<i>test/Components/InitialSedimentSpec.jl</i></div><pre><code class="language- julia hljs">@testset &quot;Components/InitialSediment&quot; begin
+end
+
+Common.initialize!(::Input, input::AbstractInput, state::AbstractState) =
+    push_initial_sediment!(input, state)</code></pre><h2 id="Tests"><a class="docs-heading-anchor" href="#Tests">Tests</a><a id="Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Tests" title="Permalink"></a></h2><div class="noweb-label">file:<i>test/Components/InitialSedimentSpec.jl</i></div><pre><code class="language- julia hljs">@testset &quot;Components/InitialSediment&quot; begin
 
 using Unitful
 using CarboKitten.Components.Common
-using CarboKitten.Components.WaterDepth: initial_topography
-using CarboKitten.Components.FaciesBase: n_facies
 using CarboKitten.Components: InitialSediment as IS
-
-function initial_state(input::AbstractInput)
-    sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
-    state = record_type(:State, IS)(
-        step = 0,
-        bathymetry = initial_topography(input),
-        sediment_thickness = zeros(IS.Sediment, input.box.grid_size...),
-        sediment_buffer = sediment_buffer)
-    IS.push_initial_sediment!(input, state)
-    return state
-end
 
 let box = Box{Periodic}(grid_size=(50, 50), phys_scale=100.0u&quot;m&quot;),
     input = record_type(:Input, IS)(
         time = TimeProperties(steps=0, Δt=1.0u&quot;yr&quot;),
         box = box,
         facies = [ record_type(:Facies, IS)(initial_sediment=30.0u&quot;m&quot;) ] ),
-    state = initial_state(input)
+    # the initial sediment is pushed by `initialize!`
+    state = Common.initial_state(input)
 
     @test all(isapprox.(state.sediment_thickness, 30.0u&quot;m&quot;))
     @test all(isapprox.(state.sediment_buffer, 1.0))
 end
 
-end</code></pre></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 13:43">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 26 November 2026 14:02">Thursday 26 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

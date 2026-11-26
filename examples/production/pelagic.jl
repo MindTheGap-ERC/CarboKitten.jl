@@ -3,16 +3,18 @@ module PelagicProductionPlot
 
 using CarboKitten
 using CarboKitten.Production
+using CarboKitten.Components: Production as ProductionComponent
+using CarboKitten.Components.Common: record_type
 using CairoMakie
 
-@kwdef struct Input <: CarboKitten.AbstractInput
-    insolation = 400.0u"W/m^2"
-end
+const Input = record_type(:Input, ProductionComponent)
 
 function main()
     water_depth = (0.01:0.1:50.0)u"m"
     fig = Figure(size=(600,600))
-    input = Input()
+    input = Input(
+        box = CarboKitten.Box{Coast}(grid_size=(1, 1), phys_scale=1.0u"m"),
+        time = TimeProperties(Δt=1.0u"kyr", steps=1))
 
     ax = Axis(fig[1, 1], yreversed=true, ylabel="depth [m]", xlabel="production [m/Myr]")
     for (k, prod) in pairs(Production.EXAMPLE)

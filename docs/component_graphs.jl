@@ -9,6 +9,7 @@ using Documenter.HTMLWriter: DCtx
 
 using GraphvizDotLang: digraph, node, edge, HTML
 using MacroTools: @capture
+using ModuleMixins.Procedural: requires, closure, record_part
 
 struct ZipDefault{T,D}
 	its::T
@@ -85,17 +86,28 @@ function format_label(name, fields)
 	format_table(name, rows)
 end
 
-nodes(t, n) = union([n], (nodes(t, m) for m in t[n])...)
-nodes(t) = union([], (nodes(t, n) for n in keys(t))...)
+"""
+    component_fields(m)
+
+The fields that component `m` contributes to each of the `Input`, `Facies` and
+`State` records.
+"""
+component_fields(m) = Dict(
+	s => collect(fieldnames(P))
+	for s in (:Input, :Facies, :State)
+	for P in (record_part(m, s),) if P !== nothing)
+
 transient_dependencies(t, n) = isempty(t[n]) ?
 	Set{Symbol}() :
 	foldl(union, transient_dependencies.((t,), t[n]), init=t[n])
 
 function dependency_graph(m)
-	t = m.MIXIN_TREE
+	components = closure(m)
+	t = Dict(nameof(c) => [nameof(r) for r in requires(c) if r isa Module] for c in components)
 	g = digraph(rankdir="TD")
-	for n in nodes(t)
-		g |> node(string(n); shape="rect", style="rounded", margin="0.1,0.1", label=HTML(format_label(n, getfield(m, n).FIELDS)))
+	for c in components
+		n = nameof(c)
+		g |> node(string(n); shape="rect", style="rounded", margin="0.1,0.1", label=HTML(format_label(n, component_fields(c))))
 	end
 	for (k, v) in pairs(t)
 		for n in v

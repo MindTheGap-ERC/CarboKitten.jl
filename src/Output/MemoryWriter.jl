@@ -40,7 +40,7 @@ function new_output(::Type{MemoryOutput}, input::Input) where {Input <: Abstract
     axes = Axes(x=x_axis, y=y_axis, t=t_axis)
     h0 = initial_topography(input)
     sl = input.sea_level.(t_axis)
-    save_active_layer = hasfield(Input, :save_active_layer) ?
+    save_active_layer = hasproperty(input, :save_active_layer) ?
         input.save_active_layer : false
 
     header = Header(

@@ -1,29 +1,27 @@
 # ~/~ begin <<docs/src/components/waterdepth.md#src/Components/WaterDepth.jl>>[init]
-@compose module WaterDepth
+@component module WaterDepth
 @mixin TimeIntegration, Boxes
 using ..Common
+import ..Common: write_header
 using HDF5
 using ..TimeIntegration: time, time_axis
 
 export water_depth, subsider, initial_topography, cumulative_subsidence
 export TimeVariableSubsidenceRate, SpaceTimeVariableSubsidenceRate
 
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     sea_level = t -> 0.0u"m"
     initial_topography = (x, y) -> 0.0u"m"
     subsidence_rate = 0.0u"m/Myr"
 end
 
-@kwdef mutable struct State <: AbstractState
+@kwdef mutable struct State <: StatePart
     bathymetry::Matrix{Height}
 end
 
-@constructor _initial_state(input)::State[bathymetry] =
-    (bathymetry = initial_topography(input),)
-
 function initial_state(input::AbstractInput)
     bathymetry = initial_topography(input)
-    return State(step=0, bathymetry=bathymetry)
+    return record_type(:State, WaterDepth)(step=0, bathymetry=bathymetry)
 end
 
 function initial_topography(input::AbstractInput)
@@ -83,7 +81,7 @@ end
 Total amount of subsidence over the entire run, for each grid cell.
 """
 function cumulative_subsidence(input::AbstractInput)
-    state = State(step=0, bathymetry=zeros(Amount, input.box.grid_size...))
+    state = record_type(:State, WaterDepth)(step=0, bathymetry=zeros(Amount, input.box.grid_size...))
     subside! = subsider(input)
     for _ in 1:input.time.steps
         subside!(state)
@@ -102,7 +100,7 @@ function water_depth(input::AbstractInput)
     end
 end
 
-function write_header(input::AbstractInput, output::AbstractOutput)
+function write_header(::Input, input::AbstractInput, output::AbstractOutput)
     x, y = box_axes(input.box)
     t = time_axis(input)
     set_attribute(output, "initial_topography", initial_topography(input) |> in_units_of(u"m"))

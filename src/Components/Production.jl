@@ -1,7 +1,8 @@
 # ~/~ begin <<docs/src/components/production.md#src/Components/Production.jl>>[init]
-@compose module Production
+@component module Production
 @mixin TimeIntegration, WaterDepth, FaciesBase
 using ..Common
+import ..Common: write_header
 using ..WaterDepth: water_depth
 using ..TimeIntegration: time, write_times
 using ...Production: NoProduction, production_profile, insolation_curve
@@ -15,11 +16,11 @@ using Logging
 export uniform_production
 
 # ~/~ begin <<docs/src/components/production.md#production-input>>[init]
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     insolation = 400.0u"W/m^2"
 end
 
-@kwdef struct Facies <: AbstractFacies
+@kwdef struct Facies <: FaciesPart
     production = NoProduction()
 end
 
@@ -28,7 +29,7 @@ is_pelagic(facies::AbstractFacies) = is_pelagic(facies.production)
 is_interpolated(facies::AbstractFacies) = is_interpolated(facies.production)
 # ~/~ end
 
-function write_header(input::AbstractInput, output::AbstractOutput)
+function write_header(::Input, input::AbstractInput, output::AbstractOutput)
     # Insolation time series
     I_of_t = insolation_curve(input)
     t_write = write_times(input)[1:end-1]

@@ -7,15 +7,26 @@ CarboKitten.Models.WithoutCA
 ```
 
 ``` {.julia file=src/Models/WithoutCA.jl}
-@compose module WithoutCA
-@mixin Tag, Diagnostics, Output, Production, ActiveLayer, InitialSediment
+module WithoutCA
+import ModuleMixins.Procedural: requires
+import ..Tag, ..Diagnostics, ..Output, ..Production, ..ActiveLayer, ..InitialSediment
 
 using ..Common
+using ..FaciesBase: n_facies
+using ..SedimentBuffer: push_sediment
+using ..ActiveLayer: lithification_factor
 using ..Production: uniform_production
 using ..TimeIntegration
 using ..WaterDepth
 using ...Output: Frame
-using ModuleMixins: @for_each
+
+# The model composes the records of its components. These are defined in the
+# model module itself, so `requires` is defined first, instead of using
+# `@component`, which defines it at the end of the module.
+requires(::Val{WithoutCA}) = (Tag, Diagnostics, Output, Production, ActiveLayer, InitialSediment)
+const Input = record_type(:Input, WithoutCA)
+const State = record_type(:State, WithoutCA)
+const Facies = record_type(:Facies, WithoutCA)
 
 export Input, Facies
 
@@ -72,10 +83,6 @@ function step!(input::Input)
             disintegration=d,
             deposition=deposit)
     end
-end
-
-function write_header(input::AbstractInput, output::AbstractOutput)
-    @for_each(P -> P.write_header(input, output), PARENTS)
 end
 
 end

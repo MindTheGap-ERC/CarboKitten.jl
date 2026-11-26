@@ -96,7 +96,7 @@ The default implementation writes the state for all output data sets, and calls
 function state_writer(input::Input, out) where {Input <: AbstractInput}
     output_sets = input.output
     grid_size = input.box.grid_size
-    save_active_layer = hasfield(Input, :save_active_layer) ?
+    save_active_layer = hasproperty(input, :save_active_layer) ?
         input.save_active_layer : false
 
     return function (idx::Int, state::AbstractState)

@@ -3,18 +3,32 @@
 This is largely identical to the ALCAP model.
 
 ``` {.julia file=src/Models/WithDenudation.jl}
-@compose module WithDenudation
-@mixin Tag, Diagnostics, Output, CAProduction, ActiveLayer, Denudation, InitialSediment
+module WithDenudation
+import ModuleMixins.Procedural: requires
+import ..Tag, ..Diagnostics, ..Output, ..CAProduction, ..ActiveLayer, ..Denudation, ..InitialSediment
 
 using ..Common
+using ..FaciesBase: n_facies
+using ..SedimentBuffer: push_sediment, pop_sediment
+using ..ActiveLayer: lithification_factor
+using ..Denudation: slope_function, denudation, redistribution
+import ..CellularAutomaton
 using ..CAProduction: production
 using ..TimeIntegration
 using ..WaterDepth
-using ModuleMixins: @for_each
 using ...Stencil
 using ...BoundaryTrait
 using ...Denudation.EmpiricalDenudationMod: slope_kernel
 using ...Output: Frame
+
+# The model composes the records of its components. These are defined in the
+# model module itself, so `requires` is defined first, instead of using
+# `@component`, which defines it at the end of the module.
+requires(::Val{WithDenudation}) = (Tag, Diagnostics, Output, CAProduction, ActiveLayer, Denudation, InitialSediment)
+const Input = record_type(:Input, WithDenudation)
+const State = record_type(:State, WithDenudation)
+const Facies = record_type(:Facies, WithDenudation)
+
 export Input, Facies, BenthicProduction, PelagicProduction
 
 function initial_state(input::AbstractInput)
@@ -111,10 +125,6 @@ function step!(input::Input)
             disintegration=d,
             deposition=deposit)
     end
-end
-
-function write_header(input::AbstractInput, output::AbstractOutput)
-    @for_each(P -> P.write_header(input, output), PARENTS)
 end
 end
 ```

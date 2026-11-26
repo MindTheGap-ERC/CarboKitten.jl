@@ -1,10 +1,17 @@
 # ~/~ begin <<docs/src/components/initial_sediment.md#src/Components/InitialSediment.jl>>[init]
-@compose module InitialSediment
+@component module InitialSediment
     @mixin FaciesBase, WaterDepth, SedimentBuffer
+    using ..Common
+    import ..Common: write_header
+    using ..SedimentBuffer: push_sediment
     using Unitful: dimension, NoUnits
 
+    # InitialSediment has no input parameters of its own, but needs a part to
+    # dispatch `write_header` on.
+    struct Input <: InputPart end
+
     # ~/~ begin <<docs/src/components/initial_sediment.md#initial-sediment>>[init]
-    @kwdef struct Facies <: AbstractFacies
+    @kwdef struct Facies <: FaciesPart
         initial_sediment = 0.0u"m"
     end
     # ~/~ end
@@ -32,7 +39,7 @@
     end
     # ~/~ end
 
-    function write_header(input::AbstractInput, output::AbstractOutput)
+    function write_header(::Input, input::AbstractInput, output::AbstractOutput)
         for (i,f) in enumerate(input.facies)
             set_attribute(output, "facies$(i)/initial_sediment", initial_sediment(input.box, f) |> in_units_of(u"m"))
         end

@@ -87,11 +87,12 @@ using Test
 using CarboKitten.Components: ActiveLayer as AL
 using CarboKitten.Components.Common
 using CarboKitten.Components.WaterDepth: initial_topography
+using CarboKitten.Components.FaciesBase: n_facies
 
 @testset "Components/ActiveLayer" begin
     @testset "Disintegration transfer" begin
-        let facies = fill(AL.Facies(), 4),
-            input = AL.Input(
+        let facies = fill(record_type(:Facies, AL)(), 4),
+            input = record_type(:Input, AL)(
                 box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
                 time = TimeProperties(Δt=1.0u"kyr", steps=10),
                 facies=facies,
@@ -100,15 +101,15 @@ using CarboKitten.Components.WaterDepth: initial_topography
             )
 
             bathymetry = initial_topography(input)
-            state = AL.State(
+            state = record_type(:State, AL)(
                 step = 0,
                 bathymetry = bathymetry,
                 sediment_thickness = zeros(Amount, input.box.grid_size...),
-                sediment_buffer = zeros(Float64, input.sediment_buffer_size, AL.n_facies(input), input.box.grid_size...),
-                active_layer=zeros(Amount, AL.n_facies(input), input.box.grid_size...))
+                sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...),
+                active_layer=zeros(Amount, n_facies(input), input.box.grid_size...))
 
 
-            d = ones(Amount, AL.n_facies(input), input.box.grid_size...)
+            d = ones(Amount, n_facies(input), input.box.grid_size...)
 
             dtf = input.disintegration_transfer
             transferred_sed = dtf(d)
@@ -773,27 +774,32 @@ CarboKitten.Components.ActiveLayer
 ```
 
 ``` {.julia file=src/Components/ActiveLayer.jl}
-@compose module ActiveLayer
+@component module ActiveLayer
 @mixin WaterDepth, FaciesBase, SedimentBuffer
 
 export disintegrator, transporter, lithification_factor
 
 using ..Common
+using ..WaterDepth: water_depth
+using ..FaciesBase: n_facies
+using ..SedimentBuffer: pop_sediment
+import ..TimeIntegration
+import ..Common: write_header
 using CarboKitten.Transport.Advection: transport, advection_coef!, transport_dC!, max_dt
 using CarboKitten.Transport.Solvers: runge_kutta_4, forward_euler
 using Unitful
 using GeometryBasics
 
-@kwdef struct Facies <: AbstractFacies
+@kwdef struct Facies <: FaciesPart
     transport_coefficient::typeof(1.0u"m/yr") = 0.0u"m/Myr"
     wave_velocity = _ -> (Vec2(0.0u"m/Myr", 0.0u"m/Myr"), Vec2(0.0u"1/Myr", 0.0u"1/Myr"))
 end
 
-@kwdef mutable struct State <: AbstractState
+@kwdef mutable struct State <: StatePart
     active_layer::Array{Amount,3}
 end
 
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     intertidal_zone::Height = 0.0u"m"
     disintegration_rate::Rate = 50.0u"m/Myr"
     disintegration_transfer::Function = x -> x
@@ -802,9 +808,6 @@ end
     transport_substeps = :adaptive
     save_active_layer::Bool = false
 end
-
-@constructor _initial_state(input)::State[active_layer] = (
-    active_layer = zeros(Amount, n_facies(input), input.box.grid_size...),)
 
 courant_max(::Type{Val{:RK4}}) = 2.0
 courant_max(::Type{Val{:forward_euler}}) = 1.0
@@ -956,7 +959,7 @@ function transporter(input)
     end
 end
 
-function write_header(input::AbstractInput, output::AbstractOutput)
+function write_header(::Input, input::AbstractInput, output::AbstractOutput)
     set_attribute(output, "intertidal_zone", input.intertidal_zone |> in_units_of(u"m"))
     set_attribute(output, "disintegration_rate", input.disintegration_rate |> in_units_of(u"m/Myr"))
     if input.lithification_time !== nothing

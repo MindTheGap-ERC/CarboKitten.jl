@@ -1,7 +1,7 @@
 # Denudation component
 
 ``` {.julia file=src/Components/Denudation.jl}
-@compose module Denudation
+@component module Denudation
     @mixin Boxes, WaterDepth, SedimentBuffer, FaciesBase
     using ..Common
     using CarboKitten.Denudation: DenudationType
@@ -13,14 +13,14 @@
     export Dissolution, EmpiricalDenudation, PhysicalErosion, NoDenudation, denudation, redistribution, slope_kernel
 
 
-    @kwdef struct Facies <: AbstractFacies
+    @kwdef struct Facies <: FaciesPart
         reactive_surface::typeof(1.0u"m^2/m^3") #reactive surface
         mass_density::typeof(1.0u"kg/m^3") #density of different carb factory
         infiltration_coefficient::Float64 #infiltration coeff
         erodibility::typeof(1.0u"m/yr")
     end
 
-    @kwdef struct Input <: AbstractInput
+    @kwdef struct Input <: InputPart
         denudation::DenudationType
     end
 

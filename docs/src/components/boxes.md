@@ -206,7 +206,7 @@ module BoxesSpec
 
     @testset "Components/Boxes" begin
         let box = Box{Periodic{2}}(grid_size=(10, 10), phys_scale=2.0u"m"),
-            input = Boxes.Input(box=box)
+            input = record_type(:Input, Boxes)(box=box)
             @test input.box.grid_size == (10, 10)
             @test input.box.phys_scale == 2.0u"m"
         end
@@ -215,14 +215,15 @@ end
 ```
 
 ``` {.julia file=src/Components/Boxes.jl}
-@compose module Boxes
+@component module Boxes
 using ..Common
+import ..Common: write_header
 
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     box::Box
 end
 
-function write_header(input::AbstractInput, output::AbstractOutput)
+function write_header(::Input, input::AbstractInput, output::AbstractOutput)
     x, y = box_axes(input.box)
     set_attribute(output, "x", collect(x) |> in_units_of(u"m"))
     set_attribute(output, "y", collect(y) |> in_units_of(u"m"))

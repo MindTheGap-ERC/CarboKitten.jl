@@ -1,5 +1,5 @@
 # ~/~ begin <<docs/src/debugging.md#src/Components/Diagnostics.jl>>[init]
-@compose module Diagnostics
+@component module Diagnostics
 
 import ...CarboKitten: get_logger
 using ..Common
@@ -7,7 +7,7 @@ using Logging
 using TerminalLoggers: TerminalLogger
 using LoggingExtras: TeeLogger, MinLevelLogger, FileLogger
 
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     diagnostics::Bool = false
     log_file::String = "./carbokitten.log"
 end

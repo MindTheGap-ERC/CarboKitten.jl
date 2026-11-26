@@ -17,7 +17,7 @@ You can enable diagnostic mode by setting `diagnostics = true` in the input sett
 ## Implementation
 
 ``` {.julia file=src/Components/Diagnostics.jl}
-@compose module Diagnostics
+@component module Diagnostics
 
 import ...CarboKitten: get_logger
 using ..Common
@@ -25,7 +25,7 @@ using Logging
 using TerminalLoggers: TerminalLogger
 using LoggingExtras: TeeLogger, MinLevelLogger, FileLogger
 
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     diagnostics::Bool = false
     log_file::String = "./carbokitten.log"
 end

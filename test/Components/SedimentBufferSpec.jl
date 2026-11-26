@@ -1,16 +1,20 @@
 # ~/~ begin <<docs/src/components/sediment_buffer.md#test/Components/SedimentBufferSpec.jl>>[init]
 using CarboKitten
-using CarboKitten.Components.Common: Amount
+using CarboKitten.Components.Common: Amount, record_type
 import CarboKitten.Components.SedimentBuffer as SB
 
 @testset "Components/SedimentBuffer" begin
-    input = SB.Input(
+    input = record_type(:Input, SB)(
         box = Box{Periodic{2}}(grid_size=(10, 1), phys_scale=1.0u"m"),
         time = TimeProperties(Δt=1.0u"yr", steps=10),
-        facies = [SB.Facies()],
+        facies = [record_type(:Facies, SB)()],
         sediment_buffer_size = 10,
         depositional_resolution = 1.0u"m")
-    state = SB._initial_state(input)
+    state = record_type(:State, SB)(
+        step = 0,
+        bathymetry = zeros(Amount, input.box.grid_size...),
+        sediment_buffer = zeros(Float64, input.sediment_buffer_size, 1, input.box.grid_size...),
+        sediment_thickness = zeros(Amount, input.box.grid_size...))
 
     @test size(state.sediment_thickness) == (10, 1)
     @test size(state.sediment_buffer) == (10, 1, 10, 1)

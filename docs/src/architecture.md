@@ -6,11 +6,11 @@ CarboKitten is modular in design. This gives us the advantage of few repetitions
 
 A model is a module that must have certain data structures and methods implemented.
 
-- `struct Input <: AbstractInput`: contains all input parameters
-- `struct State <: AbstractState`: contains all run-time state
+- `Input <: AbstractInput`: contains all input parameters
+- `State <: AbstractState`: contains all run-time state
 - `function initial_state(input)`: creates an initial `State` from an `Input`
 - `function step!(input)(state)`: curried function to advance state and return a `Frame`
-- `function write_header(fid, input)`: writes meta-data to an open HDF5 file
+- `function write_header(input, output)`: writes meta-data to the output
 
 For most models the `Input` and `State` structures are generated from a hierarchy of components, which is explained below.
 
@@ -90,15 +90,20 @@ A model in CarboKitten is composed of components. Each component extends the `In
 A component has the following syntax:
 
 ```julia
-@compose module MyComponent
+@component module MyComponent
     @mixin DependencyA, DependencyB
     using ..Common
+    import ..Common: write_header
 
-    @kwdef struct Input <: AbstractInput
+    @kwdef struct Input <: InputPart
         ...
     end
 
-    @kwdef struct State <: AbstractState
+    @kwdef struct State <: StatePart
+        ...
+    end
+
+    function write_header(::Input, input::AbstractInput, output::AbstractOutput)
         ...
     end
 
@@ -108,9 +113,28 @@ end
 
 Here the `Common` module is a normal Julia module living in the same scope as the component. This `Common` module contains common definitions used throughout the CarboKitten code base.
 
+A model is a module that requires the components it is made of, and defines its records from them:
+
+```julia
+module MyModel
+    import ModuleMixins.Procedural: requires
+    import ..ComponentA, ..ComponentB
+    using ..Common
+
+    requires(::Val{MyModel}) = (ComponentA, ComponentB)
+    const Input = record_type(:Input, MyModel)
+    const State = record_type(:State, MyModel)
+    const Facies = record_type(:Facies, MyModel)
+
+    ...
+end
+```
+
 ### Module Mixins
 
-CarboKitten uses a non-idiomatic method of abstraction to structure the components. The `@compose` macro is rather special. It takes care of a form of inheritance that is normally absent in the Julia language. All the modules that are mentioned in a `@mixin` clause will be merged into a single module, where all the structs that were defined in those modules are combined. This allows us to layer our code, separating concerns.
+CarboKitten uses [ModuleMixins.jl](https://github.com/jhidding/ModuleMixins.jl) to structure the components. The `@component` macro declares the dependencies of a component: all the modules mentioned in a `@mixin` clause are required by the component. When a model is assembled with `record_type`, the structs of the same name in all required components are combined into a single `Composite` record. Every component keeps its own part of the record, but fields of all parts can be accessed directly from the composite, as in `input.box` or `state.bathymetry`. This allows us to layer our code, separating concerns.
+
+The parts of a record derive from `InputPart`, `StatePart` or `FaciesPart`. The composite records are matched by `AbstractInput`, `AbstractState` and `AbstractFacies`, so functions can dispatch on those. Functions that are defined for each component, like `write_header`, dispatch on the component's own part, and are called for all parts of a record.
 
 The problem is that this abstraction is neither idiomatic for those used to Julia nor those used to traditional object oriented languages. These layers together build two major important structures: `Input` and `State`. This includes any nested data structures (mainly `Facies` for the input data).
 

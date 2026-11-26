@@ -1,28 +1,25 @@
 # ~/~ begin <<docs/src/components/sediment_buffer.md#src/Components/SedimentBuffer.jl>>[init]
-@compose module SedimentBuffer
+@component module SedimentBuffer
 @mixin Boxes, FaciesBase, WaterDepth
 
 using StaticArrays
 using Unitful
 
 using ..Common
+using ..FaciesBase: n_facies
 using CarboKitten.SedimentStack: pop_sediment!, push_sediment!, peek_sediment
 
 export pop_sediment, push_sediment
 
-@kwdef struct Input <: AbstractInput
+@kwdef struct Input <: InputPart
     sediment_buffer_size::Int = 50
     depositional_resolution::Amount = 0.5u"m"
 end
 
-@kwdef mutable struct State <: AbstractState
+@kwdef mutable struct State <: StatePart
     sediment_buffer::Array{Float64,4}
     sediment_thickness::Array{Height, 2}
 end
-
-@constructor _initial_state(input)::State[sediment_buffer, sediment_thickness] = (
-    sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...),
-    sediment_thickness = zeros(Amount, input.box.grid_size...))
 
 function push_sediment(input::AbstractInput)
     res = input.depositional_resolution

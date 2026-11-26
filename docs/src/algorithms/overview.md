@@ -1,9 +1,12 @@
 # Custom Algorithms
 
 ``` {.julia file=test/AlgorithmsSpec.jl}
-@testset "CarboKitten.Algorithms" begin
-    using CarboKitten.Algorithms.RangeFinder
+module AlgorithmsSpec
+using Test
+using CarboKitten.Algorithms: enumerate_seq
 
+@testset "CarboKitten.Algorithms" begin
     <<algorithms-spec>>
+end
 end
 ```

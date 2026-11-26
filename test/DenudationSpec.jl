@@ -146,8 +146,6 @@ end
     
     pop_sediment(INPUT_PHYS_SLOPE)(STATE_PHYS_SLOPE, denudation_mass_PHYS_SLOPE, denuded_sediment)
     redistribution_mass = redistribution(INPUT_PHYS_SLOPE)(STATE_PHYS_SLOPE, water_depth, denuded_sediment)
-    @show sum(denuded_sediment)
-    @show sum(redistribution_mass)
     @test sum(denuded_sediment) ≈ sum(redistribution_mass)
 
 end
@@ -166,7 +164,6 @@ end
             initial_sediment=f.initial_sediment)
         for f in FACIES1
     ]
-    @show no_production_facies
     input = denudation_test_input(
         PhysicalErosion(), t -> -100.0u"m";
         facies=no_production_facies)

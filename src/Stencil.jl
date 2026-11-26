@@ -24,17 +24,27 @@ function stencil!(f::F, ::Type{BT}, ::Size{sz}, out, inp...) where {F, dim, sz, 
     stencil_multi!(f, BT, Size(sz), out, inp)
 end
 
-function stencil_multi!(f::F, ::Type{BT}, ::Size{sz}, out, inp) where {F, dim, sz, BT <: Boundary{dim}}
+@inline function gather_interior(::Size{sz}, a, corner) where {sz}
+    offsets = CartesianIndices(sz)
+    SArray{Tuple{sz...}}(ntuple(k -> @inbounds(a[corner + offsets[k]]), Val(prod(sz))))
+end
+
+function stencil_multi!(f::F, ::Type{BT}, s::Size{sz}, out, inp) where {F, dim, sz, BT <: Boundary{dim}}
     @assert(
-        all(size(a) == size(out) for a in inp),
+        all(axes(a) == axes(out) for a in inp),
         "inputs have wrong shape: $([size(a) for a in inp]), should be $(size(out))")
 
     center = CartesianIndex((div.(sz, 2) .+ 1)...)
-    for i in eachindex(IndexCartesian(), out)
-        nb = (SArray{Tuple{sz...}}(
-                get_bounded(BT, a, i + j - center)
-                for j in CartesianIndices(sz))
-              for a in inp)
+    indices = CartesianIndices(out)
+    interior = (first(indices) + center - oneunit(center)):(last(indices) - center + oneunit(center))
+    for i in indices
+        nb = if i in interior
+            map(a -> gather_interior(s, a, i - center), inp)
+        else
+            map(a -> SArray{Tuple{sz...}}(
+                    get_bounded(BT, a, i + j - center)
+                    for j in CartesianIndices(sz)), inp)
+        end
         out[i] = f(nb...)
     end
     return out

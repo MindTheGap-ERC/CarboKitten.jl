@@ -2,7 +2,6 @@
 @component module SedimentBuffer
 @mixin Boxes, FaciesBase, WaterDepth
 
-using StaticArrays
 using Unitful
 
 using ..Common
@@ -25,28 +24,31 @@ function push_sediment(input::AbstractInput)
     res = input.depositional_resolution
     n_f = n_facies(input)
     n_g = input.box.grid_size
+    parcel = Vector{Float64}(undef, n_f)
 
     function (state::AbstractState, sediment::Array{Amount, 3})
         for i in CartesianIndices(n_g)
             total = sum(@view sediment[:, i[1], i[2]])
             state.sediment_thickness[i] += total
             state.bathymetry[i] += total
-            v = SVector{n_f, Float64}(sediment[:, i[1], i[2]] ./ res .|> NoUnits)
-            push_sediment!(view(state.sediment_buffer, :, :, i[1], i[2]), v)
+            parcel .= @view(sediment[:, i[1], i[2]]) ./ res .|> NoUnits
+            push_sediment!(view(state.sediment_buffer, :, :, i[1], i[2]), parcel)
         end
     end
 end
 
 function pop_sediment(input::AbstractInput)
     res = input.depositional_resolution
+    n_f = n_facies(input)
     n_g = input.box.grid_size
+    parcel = Vector{Float64}(undef, n_f)
 
     function (state::AbstractState, amount::Array{Amount, 2}, out::Array{Amount, 3})
         for i in CartesianIndices(n_g)
             state.sediment_thickness[i] -= amount[i]
             state.bathymetry[i] -= amount[i]
-            v = pop_sediment!(@view(state.sediment_buffer[:, :, i[1], i[2]]), amount[i] ./ res .|> NoUnits)
-            view(out, :, i[1], i[2]) .= v .* res
+            pop_sediment!(@view(state.sediment_buffer[:, :, i[1], i[2]]), amount[i] / res |> NoUnits, parcel)
+            view(out, :, i[1], i[2]) .= parcel .* res
         end
     end
 end

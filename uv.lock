@@ -44,11 +44,15 @@ name = "carbokitten"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "brei" },
     { name = "entangled-cli" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "entangled-cli" }]
+requires-dist = [
+    { name = "brei", specifier = ">=0.3.2" },
+    { name = "entangled-cli" },
+]
 
 [[package]]
 name = "click"

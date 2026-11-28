@@ -41,7 +41,7 @@ results or an already opened bundle.
 
 module Script
 
-using Makie
+using GLMakie
 using Unitful
 using CarboKitten
 using CarboKitten.Export: read_volume, read_slice

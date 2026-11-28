@@ -5,7 +5,7 @@ using CarboKitten
 using CSV
 using Tables
 
-include("get_init_topo.jl")
+include("prerun.jl")
 
 const PATH = Prerun.PATH
 
@@ -18,7 +18,7 @@ end
 function run()
     input = ALCAP.Input(
         tag = "mainrun",
-        time = time = TimeProperties(
+        time = TimeProperties(
             Δt = 200u"yr",
             steps = 5000
         ),

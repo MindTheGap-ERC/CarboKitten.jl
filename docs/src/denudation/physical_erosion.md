@@ -24,13 +24,11 @@ and the output of this function for a range of slope angles is plotted here:
 <details><summary>Plotting code</summary>
 ```
 
-``` {.julia .task file=examples/denudation/physical-test.jl}
-#| requires: examples/denudation/physical-test.jl
-#| creates: docs/src/_fig/PhysicalSlope.png
-#| collect: figures
+``` {.julia file=examples/denudation/physical-test.jl}
 module PhysicalSpec
 
 using CairoMakie
+using Unitful
 using CarboKitten.Denudation.EmpiricalDenudationMod: slope_kernel
 using CarboKitten.Denudation.PhysicalErosionMod: physical_erosion, redistribution_kernel
 using CarboKitten.Stencil: Boundary, Periodic, offset_value, offset_index, stencil
@@ -38,15 +36,11 @@ using CarboKitten.BoundaryTrait
 import CarboKitten: Box
 
 const inf = 0.5
-const erodibility = 0.0025
+const erodibility = 0.0025u"m/Myr"
 
 function main()
     SLOPE = collect(1:0.2:30)
-    DEN_MASS = Vector{Float64}(undef,size(SLOPE))
-
-    for i in eachindex(SLOPE)
-        DEN_MASS[i] = physical_erosion(SLOPE[i],inf,erodibility)
-    end
+    DEN_MASS = [physical_erosion(s, inf, erodibility) |> u"m/Myr" |> ustrip for s in SLOPE]
 
     w = 10 .* [ 0.0663001  0.115606  0.646196
     0.601523   0.130196  0.390821

@@ -116,7 +116,7 @@ using CarboKitten
 using CSV
 using Tables
 
-include("get_init_topo.jl")
+include("prerun.jl")
 
 const PATH = Prerun.PATH
 
@@ -125,7 +125,7 @@ const PATH = Prerun.PATH
 function run()
     input = ALCAP.Input(
         tag = "mainrun",
-        time = time = TimeProperties(
+        time = TimeProperties(
             Δt = 200u"yr",
             steps = 5000
         ),
@@ -166,7 +166,7 @@ Workflow
 #| creates: ["data/output/initial-topography/prerun.h5"]
 #| requires:
 #|   - examples/initial_topography/prerun.jl
-include("examples/initial_topography/prerun.jl")
+include(joinpath(pwd(), "examples/initial_topography/prerun.jl"))
 Prerun.prerun()
 ```
 
@@ -175,7 +175,7 @@ Prerun.prerun()
 #| requires:
 #|   - examples/initial_topography/prerun.jl
 #|   - data/output/initial-topography/prerun.h5
-include("examples/initial_topography/prerun.jl")
+include(joinpath(pwd(), "examples/initial_topography/prerun.jl"))
 Prerun.save_final_topography("data/output/initial-topography/prerun.h5")
 ```
 
@@ -184,7 +184,7 @@ Prerun.save_final_topography("data/output/initial-topography/prerun.h5")
 #| requires:
 #|   - examples/initial_topography/production_run.jl
 #|   - data/output/initial-topography/initial-topography.csv
-include("examples/initial_topography/production_run.jl")
+include(joinpath(pwd(), "examples/initial_topography/production_run.jl"))
 ProductionRun.run()
 ```
 

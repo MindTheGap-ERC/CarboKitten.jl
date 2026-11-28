@@ -128,7 +128,7 @@ using CarboKitten.Visualization: sediment_profile, sediment_proportion
 function main()
     header, vol = read_volume("data/output/alcap-example.h5", :topography)
 
-    nx, ny = size(vol.sediment_thickness)[1:2]
+    nx, ny = size(vol.bathymetry)[1:2]
     dip    = vol[:, div(ny, 2) + 1]   # dip section at mid-y
     strike = vol[div(nx, 2) + 1, :]   # strike section at mid-x
 

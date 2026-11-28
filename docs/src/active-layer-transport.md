@@ -132,7 +132,7 @@ end
 
 ### Transport coefficient
 
-The transport coefficient used in CarboKitten is expressed in $\unit{m/Myr}$, because it is derived from the parameter $\nu_f$, transport velocity, that is expressed per unit slope. It is not the same as molecular-like diffusion coefficient, which have units $\unit{m^2/Myr}$. CarboKitten separates sediment lithification (`cementation_time`), disintegration (`disintegration_rate`) and transport on the slope. It also allows defining different wave velocity profiles by users. As a result, the transport coefficient differs from the diffusion coefficients reported in the literature. The effective diffusion coefficient of a given facies can be estimated for a given facies. In the example below, facies are assigned diffusivities that are relative to a minimum diffusivity, set to be 2.5 m/Myr, and the most mobile facies is assigned a quadruple of this value. Estimates of diffusion coefficients for these values have been obtained based on @hidding_carbokittenjl_2025.
+The transport coefficient used in CarboKitten is expressed in $\unit{m/Myr}$, because it is derived from the parameter $\nu_f$, transport velocity, that is expressed per unit slope. It is not the same as molecular-like diffusion coefficient, which have units $\unit{m^2/Myr}$. CarboKitten separates sediment lithification (`lithification_time`), disintegration (`disintegration_rate`) and transport on the slope. It also allows defining different wave velocity profiles by users. As a result, the transport coefficient differs from the diffusion coefficients reported in the literature. The effective diffusion coefficient of a given facies can be estimated for a given facies. In the example below, facies are assigned diffusivities that are relative to a minimum diffusivity, set to be 2.5 m/Myr, and the most mobile facies is assigned a quadruple of this value. Estimates of diffusion coefficients for these values have been obtained based on @hidding_carbokittenjl_2025.
 
 |          | Transport coefficient $\unit{m/Myr}$ | Effective diffusion coefficient $\unit{m^2/Myr}$ |
 |----------|----------------------------|--------------------------------------------------|
@@ -212,7 +212,7 @@ const INPUT = ALCAP.Input(
     initial_topography=(x, y) -> -x / 300.0,
     sea_level=t -> AMPLITUDE * sin(2π * t / PERIOD),
     subsidence_rate=50.0u"m/Myr",
-    cementation_time = 5000u"yr",
+    lithification_time = 5000u"yr",
     disintegration_rate=5.0u"m/Myr",
     disintegration_transfer = f -> stack((0.0.*f[1,:,:], 0.0.*f[2,:,:], 0.0.*f[3,:,:],
                                       f[1,:,:].+f[4,:,:], f[2,:,:].+f[5,:,:], f[3,:,:].+f[6,:,:]), dims=1),
@@ -994,15 +994,17 @@ function run()
 
     facies = [
         M.Facies(
-            maximum_growth_rate=100.0u"m/Myr",
-            extinction_coefficient=0.8u"m^-1",
-            saturation_intensity=60u"W/m^2",
+            production=BenthicProduction(
+                maximum_growth_rate=100.0u"m/Myr",
+                extinction_coefficient=0.8u"m^-1",
+                saturation_intensity=60u"W/m^2"),
             transport_coefficient=100.0u"m/yr",
             wave_velocity=v_const(-5.0u"m/yr")),
         M.Facies(
-            maximum_growth_rate=20.0u"m/Myr",
-            extinction_coefficient=0.8u"m^-1",
-            saturation_intensity=60u"W/m^2",
+            production=BenthicProduction(
+                maximum_growth_rate=20.0u"m/Myr",
+                extinction_coefficient=0.8u"m^-1",
+                saturation_intensity=60u"W/m^2"),
             transport_coefficient=10.0u"m/yr",
             wave_velocity=v_const(0.0u"m/yr"))]
 
@@ -1062,9 +1064,9 @@ function plot(result::MemoryOutput)
         f2 = result.data_columns[k].deposition[2,:]
         f_total = f1 .+ f2
         ax = Axis(fig[2, i], title=string(k) * " amount")
-        lines!(ax, f1 |> in_units_of(u"m"), t[1:end-1] |> in_units_of(u"Myr"); label="facies 1")
-        lines!(ax, f2 |> in_units_of(u"m"), t[1:end-1] |> in_units_of(u"Myr"); label="facies 2")
-        lines!(ax, f_total |> in_units_of(u"m"), t[1:end-1] |> in_units_of(u"Myr"); label="total", color=:black, linewidth=2)
+        lines!(ax, f1 |> in_units_of(u"m"), t |> in_units_of(u"Myr"); label="facies 1")
+        lines!(ax, f2 |> in_units_of(u"m"), t |> in_units_of(u"Myr"); label="facies 2")
+        lines!(ax, f_total |> in_units_of(u"m"), t |> in_units_of(u"Myr"); label="total", color=:black, linewidth=2)
         axislegend(ax)
     end
 

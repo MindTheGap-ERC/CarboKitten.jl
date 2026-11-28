@@ -47,7 +47,7 @@ input = M.Input(
 	time = TimeProperties(Δt=Δt, steps=t_steps),
 	output = Dict(:profile => OutputSpec(slice=(:, 1), write_interval=write_interval)),
 	
-	cementation_time = 100.0u"yr",
+	lithification_time = 100.0u"yr",
 	disintegration_rate = 50.0u"m/Myr",
 	subsidence_rate = 0.0u"m/Myr",
 	sea_level = _ -> 0.0u"m",

@@ -24,7 +24,6 @@ end
 function run()
     facies = [
         M.Facies(
-            maximum_growth_rate=0.0u"m/Myr",
             initial_sediment=initial_sediment),
         M.Facies(
             transport_coefficient=100.0u"m/yr",
@@ -42,7 +41,7 @@ function run()
         sea_level=t -> 0.0u"m",
         subsidence_rate=0.0u"m/Myr",
         disintegration_rate=10.0*u"m/Myr",
-        cementation_time=10.0*u"yr",
+        lithification_time=10.0*u"yr",
         insolation=400.0u"W/m^2",
         sediment_buffer_size=50,
         depositional_resolution=0.5u"m",

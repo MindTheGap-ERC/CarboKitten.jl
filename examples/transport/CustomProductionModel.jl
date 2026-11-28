@@ -1,66 +1,101 @@
+# Example of a custom model: active-layer transport with a user-defined
+# production function `production(t, x, y, water_depth)` that returns a
+# production rate for each facies.
+
+module CustomProductionModel
+
+import ModuleMixins.Procedural: requires
 using CarboKitten
+using CarboKitten.Components: Tag, Diagnostics, Output, ActiveLayer, InitialSediment
 using CarboKitten.Components.Common
-using CarboKitten.Components:
-    TimeIntegration, Boxes, FaciesBase, SedimentBuffer, WaterDepth,
-    Tag, ActiveLayer, Output, Diagnostics
-using ModuleMixins
-using ModuleMixins: @for_each
-
-@compose module CustomProduction
-@mixin Tag, ActiveLayer, Output, Diagnostics
-
+using CarboKitten.Components.FaciesBase: n_facies
+using CarboKitten.Components.SedimentBuffer: push_sediment
+using CarboKitten.Components.ActiveLayer: lithification_factor
+using CarboKitten.Components.TimeIntegration: TimeIntegration
+using CarboKitten.Components.WaterDepth: water_depth, subsider
 using CarboKitten.Output: Frame
 
-@kwdef struct Input <: AbstractInput
-    production    # a function of (step, x, y, wd)
+# A minimal component that adds the `production` field to the input.
+module CustomProduction
+using CarboKitten.Components.Common
+
+@kwdef struct Input <: InputPart
+    production   # function of (t, x, y, water_depth), returning a vector of rates
+end
 end
 
-function initial_state(input::AbstractInput)
-    sediment_height = zeros(Height, input.box.grid_size...)
-    sediment_buffer = zeros(Float64, input.sediment_buffer_size, n_facies(input), input.box.grid_size...)
-    active_layer = zeros(Amount, n_facies(input), input.box.grid_size...)
+requires(::Val{CustomProductionModel}) = (Tag, Diagnostics, Output, ActiveLayer, InitialSediment, CustomProduction)
+const Input = record_type(:Input, CustomProductionModel)
+const State = record_type(:State, CustomProductionModel)
+const Facies = record_type(:Facies, CustomProductionModel)
 
-    state = State(
-        step=0, sediment_height=sediment_height,
-        sediment_buffer=sediment_buffer,
-        active_layer = active_layer)
+initial_state(input::Input) = Common.initial_state(input)
 
-    return state
+function initial_frame(input::Input)
+    dep = stack(InitialSediment.initial_sediment(input.box, f) for f in input.facies; dims=1)
+    return Frame(production=zeros(Sediment, size(dep)),
+                 disintegration=zeros(Sediment, size(dep)),
+                 deposition=dep)
 end
 
 function step!(input::Input)
     disintegrate! = ActiveLayer.disintegrator(input)
     transport! = ActiveLayer.transporter(input)
     local_water_depth = water_depth(input)
+    get_time = TimeIntegration.time(input)
     x, y = box_axes(input.box)
-    na = [CartesianIndex()]
-    produce(s, wd) = input.production.(Ref(s.step), x[:,na], y[na,:], wd)[na,:,:]
-    pf = cementation_factor(input)
+    dt = input.time.Δt
+    pf = lithification_factor(input)
+    dtf = input.disintegration_transfer
+    push! = push_sediment(input)
+    subside! = subsider(input)
+
+    p = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
+    deposit = Array{Amount, 3}(undef, n_facies(input), input.box.grid_size...)
 
     function (state::State)
+        t = get_time(state)
         wd = local_water_depth(state)
-        p = produce(state, wd)
+        for j in eachindex(y), i in eachindex(x)
+            p[:, i, j] .= input.production(t, x[i], y[j], wd[i, j]) .* dt
+        end
         d = disintegrate!(state)
 
         state.active_layer .+= p
-        state.active_layer .+= d
+        state.active_layer .+= dtf(d)
         transport!(state)
 
-        deposit = pf .* state.active_layer
-        push_sediment!(state.sediment_buffer, deposit ./ input.depositional_resolution .|> NoUnits)
+        deposit .= pf .* state.active_layer
+        push!(state, deposit)
         state.active_layer .-= deposit
-        state.sediment_height .+= sum(deposit; dims=1)[1,:,:]
+        subside!(state)
         state.step += 1
 
         return Frame(
-            production = p,
-            disintegration = d,
-            deposition = deposit)
+            production=copy(p),
+            disintegration=d,
+            deposition=copy(deposit))
     end
 end
 
-function write_header(input::AbstractInput, output::AbstractOutput)
-    @for_each(P -> P.write_header(input, output), PARENTS)
+function main()
+    # a single facies producing at a fixed rate in water shallower than 20 m
+    production(t, x, y, wd) = [0.0 < wd / u"m" < 20.0 ? 200.0u"m/Myr" : 0.0u"m/Myr"]
+
+    input = Input(
+        box=Box{Coast}(grid_size=(100, 1), phys_scale=150.0u"m"),
+        time=TimeProperties(Δt=200.0u"yr", steps=1000),
+        output=Dict(:profile => OutputSpec(slice=(:, 1))),
+        facies=[Facies(transport_coefficient=10.0u"m/yr")],
+        production=production,
+        initial_topography=(x, y) -> -x / 300.0,
+        sea_level=t -> 0.0u"m",
+        subsidence_rate=50.0u"m/Myr",
+        disintegration_rate=50.0u"m/Myr")
+
+    run_model(Model{CustomProductionModel}, input, MemoryOutput(input))
 end
 
 end
+
+CustomProductionModel.main()

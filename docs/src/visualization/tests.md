@@ -34,21 +34,24 @@ And some extras to stress test the visualization.
 ``` {.julia #standard-facies}
 const FACIES = [
     ALCAP.Facies(
-        maximum_growth_rate=500u"m/Myr",
-        extinction_coefficient=0.8u"m^-1",
-        saturation_intensity=60u"W/m^2",
+        production=BenthicProduction(
+            maximum_growth_rate=500u"m/Myr",
+            extinction_coefficient=0.8u"m^-1",
+            saturation_intensity=60u"W/m^2"),
         transport_coefficient=50.0u"m/yr",
         name="euphotic"),
     ALCAP.Facies(
-        maximum_growth_rate=400u"m/Myr",
-        extinction_coefficient=0.1u"m^-1",
-        saturation_intensity=60u"W/m^2",
+        production=BenthicProduction(
+            maximum_growth_rate=400u"m/Myr",
+            extinction_coefficient=0.1u"m^-1",
+            saturation_intensity=60u"W/m^2"),
         transport_coefficient=25.0u"m/yr",
         name="oligophotic"),
     ALCAP.Facies(
-        maximum_growth_rate=100u"m/Myr",
-        extinction_coefficient=0.005u"m^-1",
-        saturation_intensity=60u"W/m^2",
+        production=BenthicProduction(
+            maximum_growth_rate=100u"m/Myr",
+            extinction_coefficient=0.005u"m^-1",
+            saturation_intensity=60u"W/m^2"),
         transport_coefficient=12.5u"m/yr",
         name="aphotic"),
 
@@ -175,7 +178,9 @@ Test plotting with higher-frequency sea-level changes creating multiple thin lay
 - Repeated unconformities at regular intervals
 - Tests balance between visual clarity and feature density
 
-``` {.julia file=examples/extreme-sealevel/run.jl}
+``` {.julia .task file=examples/extreme-sealevel/run.jl}
+#| creates:
+#|   - data/output/alcap-rapid-oscillation.h5
 module ScriptRapidOscillation
 
 using Unitful
@@ -227,7 +232,7 @@ Plotting
 #|   - data/output/alcap-rapid-oscillation.h5
 #| creates:
 #|   - docs/src/_fig/alcap-extreme-erosion.png
-#|   - docs/src/_fig/alcap-rapid-oscillation.h5
+#|   - docs/src/_fig/alcap-rapid-oscillation.png
 #| collect: figures
 using GLMakie
 using CarboKitten.Visualization

@@ -2,7 +2,7 @@
 
 module Script
 
-using Makie
+using GLMakie
 using Unitful
 using CarboKitten
 using CarboKitten.Export: read_volume, read_slice
@@ -19,7 +19,7 @@ function from_file_categorical()
         show_coeval_lines   = true,
         show_sealevel       = true,
         color_by            = :facies)
-    save("docs/src/fig/fence_diagram_file_cat.png", fig)
+    save("docs/src/_fig/fence_diagram_file_cat.png", fig)
 end
 
 # -- Example 2: proportional colouring from HDF5 file -------------------------
@@ -35,7 +35,7 @@ function from_file_fraction()
         color_by            = :facies_fraction,
         facies              = 2,
         colormap            = :viridis)
-    save("docs/src/fig/fence_diagram_file_fraction.png", fig)
+    save("docs/src/_fig/fence_diagram_file_fraction.png", fig)
 end
 
 # -- Example 3: sequence of DataSlice -----------------------------------------
@@ -59,7 +59,7 @@ function from_slice_sequence()
         color_by = :facies,
         show_unconformities = true,
         show_coeval_lines   = true)
-    save("docs/src/fig/fence_diagram_slice_sequence.png", fig)
+    save("docs/src/_fig/fence_diagram_slice_sequence.png", fig)
 end
 
 # -- Example 4: all slices from HDF5 file ------------------------------------
@@ -67,7 +67,7 @@ end
 function from_all_slices()
     fig = fence_diagram("data/output/alcap-example.h5";
         color_by = :facies)
-    save("docs/src/fig/fence_diagram_all_slices.png", fig)
+    save("docs/src/_fig/fence_diagram_all_slices.png", fig)
 end
 
 function main()

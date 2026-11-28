@@ -112,10 +112,10 @@ It takes one dip section and one strike section from the mid-grid position, then
 plots all four combinations of section direction × proportion mode.
 
 ``` {.julia .task file=examples/visualization/cross_sections.jl}
-#| creates: docs/src/_fig/xsec_dip.png
-#|          docs/src/_fig/xsec_strike.png
-#|          docs/src/_fig/xsec_proportion_deposited.png
-#|          docs/src/_fig/xsec_proportion_preserved.png
+#| creates:
+#|   - docs/src/_fig/xsec_dip.png
+#|   - docs/src/_fig/xsec_strike.png
+#|   - docs/src/_fig/xsec_proportion.png
 #| requires: data/output/alcap-example.h5
 #| collect: figures
 
@@ -128,7 +128,7 @@ using CarboKitten.Visualization: sediment_profile, sediment_proportion
 function main()
     header, vol = read_volume("data/output/alcap-example.h5", :topography)
 
-    nx, ny = size(vol.sediment_thickness)[1:2]
+    nx, ny = size(vol.bathymetry)[1:2]
     dip    = vol[:, div(ny, 2) + 1]   # dip section at mid-y
     strike = vol[div(nx, 2) + 1, :]   # strike section at mid-x
 

@@ -323,7 +323,7 @@ const INPUT = TestModel.Input(
     box = BOX,
     time = TimeProperties(Δt=50u"yr", steps=100),
     topography = zeros(typeof(1.0u"m"), BOX.grid_size),
-    initial_state = load("data/cat256.pgm")'[:, end:-1:1] .|> Float64,
+    initial_state = FileIO.load("data/cat256.pgm")'[:, end:-1:1] .|> Float64,
     wave_velocity = _ -> ((0.4u"m/yr", -0.3u"m/yr"), (0.0u"1/yr", 0.0u"1/yr")),
     solver = forward_euler   # runge_kutta_4(Float64, BOX)
 )
@@ -381,7 +381,7 @@ const N = 288
 function load_cat()
     b = div(N - 256, 2)
     cat = zeros(Float64, N, N)
-    cat[b+1:256+b, b+1:256+b] .= (load("data/cat256.pgm")'[:, end:-1:1] .|> Float64)
+    cat[b+1:256+b, b+1:256+b] .= (FileIO.load("data/cat256.pgm")'[:, end:-1:1] .|> Float64)
     return cat
 end
 

@@ -3,7 +3,6 @@ module Prerun
 
 using CarboKitten
 using CarboKitten.Export: read_volume
-using CarboKitten.Output: bedrock
 
 using Tables
 using CSV: write as write_csv
@@ -15,19 +14,22 @@ const DATAFILE = joinpath(PATH, "initial-topography.csv")
 # ~/~ begin <<docs/src/initial-topography.md#initial-topography-prerun-param>>[init]
 const FACIES = [
     ALCAP.Facies(
-        maximum_growth_rate=500u"m/Myr",
-        extinction_coefficient=0.8u"m^-1",
-        saturation_intensity=60u"W/m^2",
+        production=BenthicProduction(
+            maximum_growth_rate=500u"m/Myr",
+            extinction_coefficient=0.8u"m^-1",
+            saturation_intensity=60u"W/m^2"),
         transport_coefficient=50.0u"m/yr"),
     ALCAP.Facies(
-        maximum_growth_rate=400u"m/Myr",
-        extinction_coefficient=0.1u"m^-1",
-        saturation_intensity=60u"W/m^2",
+        production=BenthicProduction(
+            maximum_growth_rate=400u"m/Myr",
+            extinction_coefficient=0.1u"m^-1",
+            saturation_intensity=60u"W/m^2"),
         transport_coefficient=25.0u"m/yr"),
     ALCAP.Facies(
-        maximum_growth_rate=100u"m/Myr",
-        extinction_coefficient=0.005u"m^-1",
-        saturation_intensity=60u"W/m^2",
+        production=BenthicProduction(
+            maximum_growth_rate=100u"m/Myr",
+            extinction_coefficient=0.005u"m^-1",
+            saturation_intensity=60u"W/m^2"),
         transport_coefficient=12.5u"m/yr")
 ]
 
@@ -60,8 +62,8 @@ end
 function save_final_topography(prerun_filename)
     header, data = read_volume(prerun_filename, :topography)
 
-    delta_h = data.sediment_thickness[:, :, end]
-    h = bedrock(header) .+ delta_h
+    # bathymetry is the height of the sediment surface at each write
+    h = data.bathymetry[:, :, end]
 
     write_csv(DATAFILE, h |> in_units_of(u"m") |> Tables.table)
 end

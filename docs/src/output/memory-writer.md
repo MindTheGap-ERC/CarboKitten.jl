@@ -55,15 +55,17 @@ function run()
 
     facies = [
         M.Facies(
-            maximum_growth_rate=100.0u"m/Myr",
-            extinction_coefficient=0.8u"m^-1",
-            saturation_intensity=60u"W/m^2",
+            production=BenthicProduction(
+                maximum_growth_rate=100.0u"m/Myr",
+                extinction_coefficient=0.8u"m^-1",
+                saturation_intensity=60u"W/m^2"),
             transport_coefficient=100.0u"m/yr",
             wave_velocity=v_const(-5.0u"m/yr")),
         M.Facies(
-            maximum_growth_rate=20.0u"m/Myr",
-            extinction_coefficient=0.8u"m^-1",
-            saturation_intensity=60u"W/m^2",
+            production=BenthicProduction(
+                maximum_growth_rate=20.0u"m/Myr",
+                extinction_coefficient=0.8u"m^-1",
+                saturation_intensity=60u"W/m^2"),
             transport_coefficient=10.0u"m/yr",
             wave_velocity=v_const(0.0u"m/yr"))]
 
@@ -122,9 +124,9 @@ function plot(result::MemoryOutput)
         f2 = result.data_columns[k].deposition[2,:]
         f_total = f1 .+ f2
         ax = Axis(fig[2, i], title=string(k) * " amount")
-        lines!(ax, f1 |> in_units_of(u"m"), t[1:end-1] |> in_units_of(u"Myr"); label="facies 1")
-        lines!(ax, f2 |> in_units_of(u"m"), t[1:end-1] |> in_units_of(u"Myr"); label="facies 2")
-        lines!(ax, f_total |> in_units_of(u"m"), t[1:end-1] |> in_units_of(u"Myr"); label="total", color=:black, linewidth=2)
+        lines!(ax, f1 |> in_units_of(u"m"), t |> in_units_of(u"Myr"); label="facies 1")
+        lines!(ax, f2 |> in_units_of(u"m"), t |> in_units_of(u"Myr"); label="facies 2")
+        lines!(ax, f_total |> in_units_of(u"m"), t |> in_units_of(u"Myr"); label="total", color=:black, linewidth=2)
         axislegend(ax)
     end
 

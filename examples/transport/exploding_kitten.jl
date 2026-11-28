@@ -17,7 +17,7 @@ const N = 288
 function load_cat()
     b = div(N - 256, 2)
     cat = zeros(Float64, N, N)
-    cat[b+1:256+b, b+1:256+b] .= (load("data/cat256.pgm")'[:, end:-1:1] .|> Float64)
+    cat[b+1:256+b, b+1:256+b] .= (FileIO.load("data/cat256.pgm")'[:, end:-1:1] .|> Float64)
     return cat
 end
 

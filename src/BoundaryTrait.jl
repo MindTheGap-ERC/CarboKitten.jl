@@ -2,7 +2,7 @@
 # FIXME: Rename this module
 module BoundaryTrait
 
-export Boundary, Reflected, Periodic, Constant, Coast, Shelf, offset_index, offset_value, canonical, get_bounded
+export Boundary, Reflected, Periodic, Constant, Coast, offset_index, offset_value, canonical, get_bounded
 
 # ~/~ begin <<docs/src/components/boxes.md#boundary-types>>[init]
 abstract type Boundary{dim} end
@@ -11,7 +11,7 @@ struct Periodic{dim} <: Boundary{dim} end
 struct Constant{dim,value} <: Boundary{dim} end
 struct Coast <: Boundary{2} end
 
-const Shelf = Coast  # FIXME: Old name, should be removed
+Base.@deprecate_binding Shelf Coast
 
 @inline modflip(a, l) = let b = mod1(a, 2l)
     b > l ? 2l - b + 1 : b

@@ -23,7 +23,7 @@ struct Periodic{dim} <: Boundary{dim} end
 struct Constant{dim,value} <: Boundary{dim} end
 struct Coast <: Boundary{2} end
 
-const Shelf = Coast  # FIXME: Old name, should be removed
+Base.@deprecate_binding Shelf Coast
 
 @inline modflip(a, l) = let b = mod1(a, 2l)
     b > l ? 2l - b + 1 : b
@@ -121,7 +121,7 @@ end
 # FIXME: Rename this module
 module BoundaryTrait
 
-export Boundary, Reflected, Periodic, Constant, Coast, Shelf, offset_index, offset_value, canonical, get_bounded
+export Boundary, Reflected, Periodic, Constant, Coast, offset_index, offset_value, canonical, get_bounded
 
 <<boundary-types>>
 <<offset-indexing>>
@@ -130,70 +130,39 @@ export Boundary, Reflected, Periodic, Constant, Coast, Shelf, offset_index, offs
 end
 ```
 
-## Box properties
+## Deprecated modules
 
-``` {.julia #box-type}
-const axes = box_axes
-
-phys_size(grid_size, phys_scale) = (
-    x = grid_size[1] * (phys_scale / m |> NoUnits),
-    y = grid_size[2] * (phys_scale / m |> NoUnits))
-```
-
-### Floating-point vectors
-
-We need to define how particles move past boundaries. Similar to the grid based `offset_index` method, we define the `offset` method for a `Vec2`.
-
-``` {.julia #vector-offset}
-Base.in(a::Vec2, box::Box) =
-    a.x >= 0.0 && a.x < box.phys_size.x && a.y >= 0.0 && a.y < box.phys_size.y
-
-function offset(box::AbstractBox{Reflected{2}}, a::Vec2, Δa::Vec2)
-    clip(i, a, b) = (i < a ? a + a - i : (i > b ? b + b - i : i))
-    (x=clip(a.x+Δa.x, 0.0, box.phys_size.x)
-    ,y=clip(a.y+Δa.y, 0.0, box.phys_size.y))
-end
-
-function offset(box::AbstractBox{Periodic{2}}, a::Vec2, Δa::Vec2)
-    (x=mod(a.x+Δa.x, box.phys_size.x)
-    ,y=mod(a.y+Δa.y, box.phys_size.y))
-end
-
-function offset(box::AbstractBox{Constant{2,Value}}, a::Vec2, Δa::Vec2) where Value
-    b = a + Δa
-    if b ∉ box
-        nothing
-    else
-        b
-    end
-end
-
-function offset(box::AbstractBox{Shelf}, a::Vec2, Δa::Vec2)
-    b = a + Δa
-    if b.x < 0.0 || b.x >= box.phys_size.x
-        nothing
-    else
-        (x=b.x, y=mod(b.y, box.phys_size.y))
-    end
-end
-```
-
-## Modules
+`Box`, `AbstractBox` and `box_axes` are defined in the `CarboKitten` module itself, and the boundary types live in `BoundaryTrait`. The `Boxes` and `Config` modules used to re-export these names. They are kept only as deprecated aliases, so that existing scripts keep working; import the names from `CarboKitten` instead.
 
 ``` {.julia file=src/Boxes.jl}
 module Boxes
 
-using ..BoundaryTrait
-using ..CarboKitten: AbstractBox, Box, box_axes
-using ..Vectors
+import ..CarboKitten
+import ..BoundaryTrait
 
-using Unitful
-using Unitful.DefaultSymbols
+Base.@deprecate_binding AbstractBox CarboKitten.AbstractBox
+Base.@deprecate_binding Box CarboKitten.Box
+Base.@deprecate_binding box_axes CarboKitten.box_axes
+Base.@deprecate_binding axes CarboKitten.box_axes false
 
-export AbstractBox, Box, box_axes
+Base.@deprecate_binding Boundary BoundaryTrait.Boundary false
+Base.@deprecate_binding Reflected BoundaryTrait.Reflected false
+Base.@deprecate_binding Periodic BoundaryTrait.Periodic false
+Base.@deprecate_binding Constant BoundaryTrait.Constant false
+Base.@deprecate_binding Coast BoundaryTrait.Coast false
+Base.@deprecate_binding Shelf BoundaryTrait.Coast false
 
-<<box-type>>
-<<vector-offset>>
+end
+```
+
+``` {.julia file=src/Config.jl}
+module Config
+
+import ..CarboKitten
+
+Base.@deprecate_binding TimeProperties CarboKitten.TimeProperties
+Base.@deprecate_binding Box CarboKitten.Box
+Base.@deprecate_binding axes CarboKitten.box_axes
 
 end
 ```

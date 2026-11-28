@@ -150,7 +150,6 @@ makedocs(
         "Algorithms" => [
             "Overview" => "algorithms/overview.md",
             "Unitful" => "unitful.md",
-            "Boxes" => "boxes.md",
             "Stencils" => "stencils.md",
             "Utility" => "utility.md",
             "Finite Difference" => "algorithms/finite-difference-transport.md",

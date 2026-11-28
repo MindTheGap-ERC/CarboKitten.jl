@@ -2,8 +2,7 @@
 module ActiveLayer
 
 using Unitful
-using CarboKitten.Config: Box, axes
-using CarboKitten.BoundaryTrait: Shelf
+using CarboKitten: Box, box_axes, Coast
 using CarboKitten.Utility: in_units_of
 using CarboKitten.Transport.ActiveLayer: pde_stencil, Amount, Rate
 
@@ -29,7 +28,7 @@ production_patch(center, radius, rate) = function(x, y)
 end
 
 const input = Input(
-    box=Box{Shelf}(grid_size=(100, 50), phys_scale=150.0u"m"),
+    box=Box{Coast}(grid_size=(100, 50), phys_scale=150.0u"m"),
     Δt=0.001u"Myr",
     t_end=1.0u"Myr",
 
@@ -54,7 +53,7 @@ mutable struct State
 end
 
 function initial_state(input)
-    x, y = axes(input.box)
+    x, y = box_axes(input.box)
     State(0.0u"Myr", input.initial_sediment.(x, y'))
 end
 
@@ -65,7 +64,7 @@ end
 
 function propagator(input)
     δ = Matrix{Amount}(undef, input.box.grid_size...)
-    x, y = axes(input.box)
+    x, y = box_axes(input.box)
     μ0 = input.initial_topography.(x, y')
     box = input.box
     Δt = input.Δt

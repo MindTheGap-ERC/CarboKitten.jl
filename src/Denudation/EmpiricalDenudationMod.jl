@@ -2,7 +2,7 @@
 module EmpiricalDenudationMod
 
 import ..Abstract: DenudationType, denudation, redistribution
-using ...Boxes: Box
+using CarboKitten: Box
 using CarboKitten.SedimentBuffers: peek_sediment
 
 using Unitful

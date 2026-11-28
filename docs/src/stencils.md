@@ -96,7 +96,7 @@ module Stencil
 
 using StaticArrays
 
-using ..Boxes: AbstractBox
+using ..CarboKitten: AbstractBox
 using ..BoundaryTrait
 
 export stencil, convolution

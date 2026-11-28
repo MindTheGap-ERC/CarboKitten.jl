@@ -1,21 +1,11 @@
-# ~/~ begin <<docs/src/boxes.md#src/Config.jl>>[init]
+# ~/~ begin <<docs/src/components/boxes.md#src/Config.jl>>[init]
 module Config
 
-export TimeProperties
+import ..CarboKitten
 
-using ..BoundaryTrait
-using ..Vectors
-
-using ..Boxes: Box, axes
-export Box, axes
-
-using Unitful
-using Unitful.DefaultSymbols
-using ..CarboKitten: TimeProperties
-
-# ~/~ begin <<docs/src/boxes.md#config-types>>[init]
-
-# ~/~ end
+Base.@deprecate_binding TimeProperties CarboKitten.TimeProperties
+Base.@deprecate_binding Box CarboKitten.Box
+Base.@deprecate_binding axes CarboKitten.box_axes
 
 end
 # ~/~ end
